@@ -1,0 +1,9 @@
+﻿  pch.cpp
+  dllmain.cpp
+  ExampleMod.cpp
+     Creating library C:\Users\Dragon\Documents\Unreal Engine Projects\Hexa\Build\x64_Release\Mods\ExampleMod\ExampleMod.lib and object C:\Users\Dragon\Documents\Unreal Engine Projects\Hexa\Build\x64_Release\Mods\ExampleMod\ExampleMod.exp
+  Generating code
+  Previous IPDB not found, fall back to full compilation.
+  All 33 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  ExampleMod.vcxproj -> C:\Users\Dragon\Documents\Unreal Engine Projects\Hexa\Build\x64_Release\Mods\ExampleMod\ExampleMod.dll

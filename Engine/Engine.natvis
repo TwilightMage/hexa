@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?> 
+<AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <Type Name="String">
+        <DisplayString Condition="length > 0">{inner,na}</DisplayString>
+        <DisplayString Condition="length == 0">empty</DisplayString>
+        <StringView Condition="length > 0">inner</StringView>
+        <Expand>
+            <Item Name="[allocated length]" ExcludeView="simple">allocatedLength</Item>
+            <ArrayItems>
+                <Size>length</Size>
+                <ValuePointer>inner</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="Array&lt;*&gt;">
+        <DisplayString Condition="length > 0">{{ length={length} }}</DisplayString>
+        <DisplayString Condition="length == 0">{{ empty }}</DisplayString>
+        <Expand>
+            <Item Name="[allocated length]" ExcludeView="simple">allocatedLength</Item>
+            <ArrayItems>
+                <Size>length</Size>
+                <ValuePointer>inner</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="List&lt;*&gt;">
+        <DisplayString Condition="length > 0">{{ length={length} }}</DisplayString>
+        <DisplayString Condition="length == 0">{{ empty }}</DisplayString>
+        <Expand>
+            <Item Name="[allocated length]" ExcludeView="simple">allocatedLength</Item>
+            <ArrayItems>
+                <Size>length</Size>
+                <ValuePointer>inner</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
+    <Type Name="Set&lt;*&gt;">
+        <DisplayString Condition="length > 0">{{ length={length} }}</DisplayString>
+        <DisplayString Condition="length == 0">{{ empty }}</DisplayString>
+        <Expand>
+            <Item Name="[allocated length]" ExcludeView="simple">allocatedLength</Item>
+            <ArrayItems>
+                <Size>length</Size>
+                <ValuePointer>inner</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+</AutoVisualizer>

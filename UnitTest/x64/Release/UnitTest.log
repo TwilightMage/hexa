@@ -1,0 +1,2 @@
+﻿  UnitTest.cpp
+LINK : fatal error LNK1104: cannot open file 'vulkan-1.lib'

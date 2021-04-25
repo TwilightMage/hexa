@@ -2,24 +2,9 @@
 
 #include <filesystem>
 
+
+#include "Game.h"
 #include "Regex.h"
-
-Path Path::appPath = Path();
-bool Path::appPathSet = false;
-
-const Path& Path::GetAppPath()
-{
-	return appPath;
-}
-
-void Path::SetAppPath(const Path& newPath)
-{
-	if (!appPathSet)
-	{
-		appPath = newPath;
-		appPathSet = true;
-	}
-}
 
 Path::Path()
     : isGlobal(false)
@@ -45,7 +30,7 @@ Path::Path(const String& pathStr)
 
 	isGlobal = Regex("^([A-Z]:/|/).*").Check(parent);
 
-	if (!isGlobal && appPathSet) path = std::filesystem::path((appPath.parent + "/" + ToString()).std());
+	if (!isGlobal && Game::IsAppPathSet()) path = std::filesystem::path((Game::GetAppPath().parent + "/" + ToString()).std());
 
 	if (is_block_file(path)) type = EPathType::Block;
 	else if (is_character_file(path)) type = EPathType::Character;
@@ -59,7 +44,7 @@ Path::Path(const String& pathStr)
 
 bool Path::Exists() const
 {
-	return std::filesystem::exists(!isGlobal && appPathSet ? (appPath.parent + "/" + ToString()).std() : ToString().std());
+	return std::filesystem::exists(!isGlobal && Game::IsAppPathSet() ? (Game::GetAppPath().parent + "/" + ToString()).std() : ToString().std());
 }
 
 bool Path::IsGlobal() const
@@ -69,7 +54,7 @@ bool Path::IsGlobal() const
 
 void Path::Create()
 {
-	std::filesystem::create_directories(!isGlobal && appPathSet ? (appPath.parent + "/" + ToString()).std() : ToString().std());
+	std::filesystem::create_directories(!isGlobal && Game::IsAppPathSet() ? (Game::GetAppPath().parent + "/" + ToString()).std() : ToString().std());
 }
 
 Path Path::Up(uint levels) const
@@ -104,7 +89,7 @@ List<Path> Path::List() const
 
 	if (Exists())
 	{
-		for (const auto& entry : std::filesystem::directory_iterator(!isGlobal && appPathSet ? (appPath.parent + "/" + ToString()).std() : ToString().std()))
+		for (const auto& entry : std::filesystem::directory_iterator(!isGlobal && Game::IsAppPathSet() ? (Game::GetAppPath().parent + "/" + ToString()).std() : ToString().std()))
 		{
 			result.push_back(Path(entry.path().string()));
 		}

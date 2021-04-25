@@ -19,9 +19,6 @@ IMPLEMENT_ENUM(EPathType)
 EXTERN class EXPORT Path
 {
 public:
-	static const Path& GetAppPath();
-	static void SetAppPath(const Path& newPath);
-
 	Path();
 	Path(const String& pathStr);
 
@@ -43,8 +40,5 @@ public:
 	EPathType type;
 
 private:
-	static Path appPath;
-	static bool appPathSet;
-
 	bool isGlobal;
 };

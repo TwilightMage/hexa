@@ -1,10 +1,13 @@
 ﻿#pragma once
 
 #include <mutex>
+#include <optional>
+
 
 #include "GameInfo.h"
 #include "List.h"
 #include "LogStream.h"
+#include "Path.h"
 #include "String.h"
 
 enum class ELogLevel
@@ -30,12 +33,17 @@ public:
 
     void NewLogRecord(ELogLevel level, const String& category, const String& message);
 
+    static bool IsAppPathSet();
+    static const Path& GetAppPath();
+
+    static uint GetScreenWidth();
+    static uint GetScreenHeight();
+
 protected:
     virtual void InitGameInfo(GameInfo& outInfo) = 0;
 
 private:
-    bool InitVulkan();
-    bool SetupWindow();
+    void SetupWindow();
     void Prepare();
     void RenderLoop();
 
@@ -43,8 +51,7 @@ private:
 
     void InitGame();
 
-    class Vulkan* vulkan{};
-    class GameWindow* window{};
+    static void SetAppPath(const Path& newAppPath);
 
     static Game* instance;
 
@@ -54,6 +61,13 @@ private:
 
     LogStream logStream;
     std::mutex logStreamMutex;
+    
+    static Path appPath;
+    static bool appPathSet;
+
+    class GLFWwindow* window;
+    uint width = 800;
+    uint height = 600;
 };
 
 template<typename... Args>

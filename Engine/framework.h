@@ -41,7 +41,10 @@
 
 
 // ------------------------- Libs --------------------------
-#pragma comment(lib, "vulkan-1.lib")
+//#pragma comment(lib, "vulkan-1.lib")
+#pragma comment(lib, "glfw3.lib")
+#pragma comment(lib, "glfw3_mt.lib")
+#pragma comment(lib, "glfw3dll.lib")
 
 // Platform-specific libs
 #if PLATFORM_WINDOWS

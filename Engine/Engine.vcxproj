@@ -181,7 +181,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameInfo.h" />
-    <ClInclude Include="GameWindow.h" />
+    <ClInclude Include="linmath.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="LogStream.h" />
     <ClInclude Include="Mod.h" />
@@ -193,11 +193,6 @@
     <ClInclude Include="String.h" />
     <ClInclude Include="TeeBuf.h" />
     <ClInclude Include="Version.h" />
-    <ClInclude Include="Vulkan.h" />
-    <ClInclude Include="VulkanBuffer.h" />
-    <ClInclude Include="VulkanDevice.h" />
-    <ClInclude Include="VulkanSwapChain.h" />
-    <ClInclude Include="VulkanUtilities.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Array.cpp" />
@@ -206,7 +201,6 @@
     <ClCompile Include="File.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameInfo.cpp" />
-    <ClCompile Include="GameWindow.cpp" />
     <ClCompile Include="List.cpp" />
     <ClCompile Include="LogStream.cpp" />
     <ClCompile Include="Mod.cpp" />
@@ -223,11 +217,6 @@
     <ClCompile Include="String.cpp" />
     <ClCompile Include="TeeBuf.cpp" />
     <ClCompile Include="Version.cpp" />
-    <ClCompile Include="Vulkan.cpp" />
-    <ClCompile Include="VulkanBuffer.cpp" />
-    <ClCompile Include="VulkanDevice.cpp" />
-    <ClCompile Include="VulkanSwapChain.cpp" />
-    <ClCompile Include="VulkanUtilities.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="Engine.natvis" />

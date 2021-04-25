@@ -1,14 +1,14 @@
 ﻿#include "Game.h"
 
 #include <map>
+#include <GLFW/glfw3.h>
+#include "linmath.h"
 
-
-#include "GameWindow.h"
 #include "Path.h"
-#include "Vulkan.h"
-#include "VulkanUtilities.h"
 
 Game* Game::instance = nullptr;
+Path Game::appPath = Path();
+bool Game::appPathSet = false;
 
 Game::Game(int argc, char* argv[])
     : logStream(DateTime::Now(), argv[0])
@@ -22,20 +22,24 @@ Game::Game(int argc, char* argv[])
 		instance = this;
 	}
 
-	for (uint i = 0; i < static_cast<uint>(argc); i++)
+	for (int i = 0; i < argc; i++)
 	{
 		args.Add(argv[i]);
 	}
 
-	Path::SetAppPath(String(argv[0]));
+	appPath = String(argv[0]);
 }
 
 void Game::Launch()
 {
 	Verbose("Game", "Launching...");
 
+	if (!glfwInit())
+	{
+		PrintError("Initialization", "Failed to initialize glfw");
+	}
+	
 	InitGame();
-    InitVulkan();
     SetupWindow();
     Prepare();
     RenderLoop();
@@ -66,28 +70,69 @@ void Game::NewLogRecord(ELogLevel level, const String& category, const String& m
 	logStreamMutex.unlock();
 }
 
-bool Game::InitVulkan()
+bool Game::IsAppPathSet()
 {
-	vulkan = new Vulkan();
-	return vulkan->Init();
+	return appPathSet;
 }
 
-bool Game::SetupWindow()
+const Path& Game::GetAppPath()
 {
-	window = new GameWindow();
-	window->TickFunc.Bind(this, &Game::Loop);
-	return window->Init();
+	return appPath;
+}
+
+uint Game::GetScreenWidth()
+{
+	return GetSystemMetrics(SM_CXSCREEN);
+}
+
+uint Game::GetScreenHeight()
+{
+	return GetSystemMetrics(SM_CYSCREEN);
+}
+
+void Game::SetupWindow()
+{
+	window = glfwCreateWindow(width, height, GetInfo().title.c(), nullptr, nullptr);
+	if (!window)
+	{
+		PrintError("Initialization", "Failed to create window");
+		glfwTerminate();
+		exit(EXIT_FAILURE);
+	}
 }
 
 void Game::Prepare()
 {
-	window->Show();
-	window->BindVulkan(vulkan);
+	glfwMakeContextCurrent(window);
+	glfwSwapInterval(1);
 }
 
 void Game::RenderLoop()
 {
-	window->StartLoop();
+	while (!glfwWindowShouldClose(window))
+	{
+		float ratio;
+		int width, height;
+		mat4x4 m, p, mvp;
+ 
+		glfwGetFramebufferSize(window, &width, &height);
+		ratio = width / (float) height;
+ 
+		glViewport(0, 0, width, height);
+		glClear(GL_COLOR_BUFFER_BIT);
+ 
+		mat4x4_identity(m);
+		mat4x4_rotate_Z(m, m, (float) glfwGetTime());
+		mat4x4_ortho(p, -ratio, ratio, -1.f, 1.f, 1.f, -1.f);
+		mat4x4_mul(mvp, p, m);
+ 
+		//glUseProgram(program);
+		//glUniformMatrix4fv(mvp_location, 1, GL_FALSE, (const GLfloat*) mvp);
+		//glDrawArrays(GL_TRIANGLES, 0, 3);
+ 
+		glfwSwapBuffers(window);
+		glfwPollEvents();
+	}
 }
 
 void Game::Loop()
@@ -101,4 +146,10 @@ void Game::InitGame()
 	info.title = "Untitled Game";
 
 	InitGameInfo(info);
+}
+
+void Game::SetAppPath(const Path& newAppPath)
+{
+	appPath = newAppPath;
+	appPathSet = true;
 }

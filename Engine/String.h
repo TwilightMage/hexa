@@ -27,7 +27,12 @@ public:
 
 	std::string std() const;
 	const char* c() const;
-	const wchar_t* wc() const;
+	/*
+	 * return the cope of inner string
+	 * may cause memory leak if you are not careful
+	*/
+	char* c_copy() const;
+	wchar_t* wc() const;
 	std::vector<char> vec() const;
 	List<char> list() const;
 
@@ -132,6 +137,21 @@ static String StringJoin(List<T> items, const String& glue)
 	{
 		if (i > 0) str << glue.std();
 		str << items[i];
+	}
+
+	return str.str();
+}
+
+static String StringJoin(List<String> items, const String& glue)
+{
+	if (items.Length() == 0) return "";
+
+	std::stringstream str;
+
+	for (uint i = 0; i < items.Length(); i++)
+	{
+		if (i > 0) str << glue.std();
+		str << items[i].c();
 	}
 
 	return str.str();

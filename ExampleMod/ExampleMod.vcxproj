@@ -72,25 +72,25 @@
   <PropertyGroup Label="UserMacros" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)Build\$(Platform)_$(Configuration)\Mods\$(ProjectName)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Platform)_$(Configuration)\mods\$(ProjectName)\</OutDir>
     <IncludePath>$(SolutionDir);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Build\$(Platform)_$(Configuration)\;$(SolutionDir)ThirdParty\lib\$(Platform)_$(Configuration)\;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)Build\$(Platform)_$(Configuration)\Mods\$(ProjectName)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Platform)_$(Configuration)\mods\$(ProjectName)\</OutDir>
     <IncludePath>$(SolutionDir);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Build\$(Platform)_$(Configuration)\;$(SolutionDir)ThirdParty\lib\$(Platform)_$(Configuration)\;$(VC_LibraryPath_x86);$(WindowsSDK_LibraryPath_x86)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
-    <OutDir>$(SolutionDir)Build\$(Platform)_$(Configuration)\Mods\$(ProjectName)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Platform)_$(Configuration)\mods\$(ProjectName)\</OutDir>
     <IncludePath>$(SolutionDir);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Build\$(Platform)_$(Configuration)\;$(SolutionDir)ThirdParty\lib\$(Platform)_$(Configuration)\;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
-    <OutDir>$(SolutionDir)Build\$(Platform)_$(Configuration)\Mods\$(ProjectName)\</OutDir>
+    <OutDir>$(SolutionDir)Build\$(Platform)_$(Configuration)\mods\$(ProjectName)\</OutDir>
     <IncludePath>$(SolutionDir);$(IncludePath)</IncludePath>
     <LibraryPath>$(SolutionDir)Build\$(Platform)_$(Configuration)\;$(SolutionDir)ThirdParty\lib\$(Platform)_$(Configuration)\;$(VC_LibraryPath_x64);$(WindowsSDK_LibraryPath_x64)</LibraryPath>
   </PropertyGroup>

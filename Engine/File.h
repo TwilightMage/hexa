@@ -4,13 +4,15 @@
 #include "String.h"
 #include <fstream>
 
+#include "Path.h"
+
 class File
 {
 public:
 	class Reader
 	{
 	public:
-		static Shared<Reader> Open(const String& path);
+		static Shared<Reader> Open(const Path& path);
 
 		String ReadAll();
 		String ReadLine();
@@ -28,7 +30,7 @@ public:
 	class Writer
 	{
 	public:
-		static Shared<Writer> Open(const String& path);
+		static Shared<Writer> Open(const Path& path);
 
 		void Write(const String& data);
 
@@ -42,9 +44,9 @@ public:
 
 	virtual ~File() = delete;
 
-	static String ReadFile(const String& path);
-	static void WriteFile(const String& path, const String& data = "");
-	static void AppendFile(const String& path, const String& data = "");
+	static String ReadFile(const Path& path);
+	static void WriteFile(const Path& path, const String& data = "");
+	static void AppendFile(const Path& path, const String& data = "");
 
 	static bool Exists(const String& path);
 };

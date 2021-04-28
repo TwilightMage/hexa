@@ -11,17 +11,21 @@ String::String()
 }
 
 String::String(const String& src)
-	: inner(_strdup(src.inner))
+	: inner(new char[src.Length() + 1])
     , length(src.length)
     , allocatedLength(src.allocatedLength)
 {
+	memcpy(inner, src.inner, Length());
+	inner[Length()] = '\0';
 }
 
 String::String(const std::string& str)
-	: inner(_strdup(str.c_str()))
+	: inner(new char[str.length() + 1])
     , length(static_cast<uint>(str.length()))
     , allocatedLength(static_cast<uint>(str.length() + 1))
 {
+	memcpy(inner, str.data(), Length());
+	inner[Length()] = '\0';
 }
 
 String::String(char ch, uint count)
@@ -96,7 +100,8 @@ String& String::operator=(const String& rhs)
 
 	delete[] inner;
 
-	inner = _strdup(rhs.inner);
+	inner = new char[rhs.Length() + 1];
+	memcpy(inner, rhs.inner, rhs.Length() + 1);
 	length = rhs.length;
 	allocatedLength = rhs.allocatedLength;
 
@@ -118,7 +123,14 @@ const char* String::c() const
 	return inner;
 }
 
-const wchar_t* String::wc() const
+char* String::c_copy() const
+{
+	char* result = new char[Length() + 1];
+	memcpy(result, inner, Length() + 1);
+	return result;
+}
+
+wchar_t* String::wc() const
 {
 	wchar_t* result = new wchar_t[length];
 
@@ -384,7 +396,14 @@ List<String> String::Split(const String& delimiter, bool removeEmpty) const
 		i = positions[c] + delimiter.length;
 	}
 
-	result.Add(Substring(positions[positions.Length() - 1] + delimiter.length));
+	if (positions.Length() > 0)
+	{
+		result.Add(Substring(positions[positions.Length() - 1] + delimiter.length));
+	}
+	else
+	{
+		return { *this };
+	}
 
 	return result;
 }

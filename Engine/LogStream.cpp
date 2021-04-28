@@ -7,7 +7,7 @@
 LogStream::LogStream(const DateTime& LogStartTime, const char* root)
 	: std::ostream(&tbuf)
 {
-	Path logs = Path(root).Up().GetChild("Logs");
+	Path logs = Path(root).Up().GetChild("logs");
 
 	logs.Create();
 	timedLogFile = std::ofstream(logs.GetChild(LogStartTime.ToString("%Y_%m_%d_%H_%M_%S") + ".log").ToString().c());

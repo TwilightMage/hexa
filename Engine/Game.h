@@ -23,89 +23,95 @@ EXTERN class EXPORT Game
 public:
     Game(int argc, char* argv[]);
 
-    void Launch();
+    void launch();
 
-    const List<String>& GetArgs() const;
+    void possess(class IControllable* controllable);
+    void use_camera(class Camera* camera);
 
-    static Game* GetInstance();
+    const List<String>& get_args() const;
 
-    const GameInfo& GetInfo() const;
+    static Game* get_instance();
 
-    void NewLogRecord(ELogLevel level, const String& category, const String& message);
+    const GameInfo& get_info() const;
 
-    static bool IsAppPathSet();
-    static const Path& GetAppPath();
+    void new_log_record(ELogLevel level, const String& category, const String& message);
 
-    static uint GetScreenWidth();
-    static uint GetScreenHeight();
+    static bool is_app_path_set();
+    static const Path& get_app_path();
+
+    static uint get_screen_width();
+    static uint get_screen_height();
 
 protected:
-    virtual void InitGameInfo(GameInfo& outInfo) = 0;
+    virtual void init_game_info(GameInfo& out_info) = 0;
 
 private:
-    void SetupWindow();
-    void Prepare();
-    void RenderLoop();
+    void setup_window();
+    void prepare();
+    void render_loop();
 
-    void Loop();
+    void init_game();
 
-    void InitGame();
+    static void set_app_path(const Path& new_app_path);
 
-    static void SetAppPath(const Path& newAppPath);
+    static void error_callback(int error, const char* description);
+    static void key_callback(class GLFWwindow* window, int key, int scancode, int action, int mods);
 
-    static Game* instance;
+    static Game* instance_;
 
-    List<String> args;
+    List<String> args_;
 
-    GameInfo info;
+    GameInfo info_;
 
-    LogStream logStream;
-    std::mutex logStreamMutex;
+    LogStream log_stream_;
+    std::mutex log_stream_mutex_;
     
-    static Path appPath;
-    static bool appPathSet;
+    static Path app_path_;
+    static bool app_path_set_;
 
-    class GLFWwindow* window;
-    uint width = 800;
-    uint height = 600;
+    class GLFWwindow* window_;
+
+    class Camera* current_camera_;
+    class IControllable* current_controllable_;
+    class World* world_;
 };
 
 template<typename... Args>
-static void PrintDebug(const String& category, const String& format, Args... args)
+static void print_debug(const String& category, const String& format, Args... args)
 {
     const int size = snprintf(nullptr, 0, format.c(), std::forward<Args>(args)...);
 	char* buffer = new char[size + 1];
 	sprintf_s(buffer, size + 1, format.c(), std::forward<Args>(args)...);
 
-	Game::GetInstance()->NewLogRecord(ELogLevel::Debug, category, buffer);
+	Game::get_instance()->new_log_record(ELogLevel::Debug, category, buffer);
 }
 
 template<typename... Args>
-static void PrintWarning(const String& category, const String& format, Args... args)
+static void print_warning(const String& category, const String& format, Args... args)
 {
     const int size = snprintf(nullptr, 0, format.c(), std::forward<Args>(args)...);
 	char* buffer = new char[size + 1];
 	sprintf_s(buffer, size + 1, format.c(), std::forward<Args>(args)...);
 
-    Game::GetInstance()->NewLogRecord(ELogLevel::Warning, category, buffer);
+    Game::get_instance()->new_log_record(ELogLevel::Warning, category, buffer);
 }
 
 template<typename... Args>
-static void PrintError(const String& category, const String& format, Args... args)
+static void print_error(const String& category, const String& format, Args... args)
 {
     const int size = snprintf(nullptr, 0, format.c(), std::forward<Args>(args)...);
 	char* buffer = new char[size + 1];
 	sprintf_s(buffer, size + 1, format.c(), std::forward<Args>(args)...);
 
-    Game::GetInstance()->NewLogRecord(ELogLevel::Error, category, buffer);
+    Game::get_instance()->new_log_record(ELogLevel::Error, category, buffer);
 }
 
 template<typename... Args>
-static void Verbose(const String& category, const String& format, Args... args)
+static void verbose(const String& category, const String& format, Args... args)
 {
     const int size = snprintf(nullptr, 0, format.c(), std::forward<Args>(args)...);
 	char* buffer = new char[size + 1];
 	sprintf_s(buffer, size + 1, format.c(), std::forward<Args>(args)...);
 
-    Game::GetInstance()->NewLogRecord(ELogLevel::Verbose, category, buffer);
+    Game::get_instance()->new_log_record(ELogLevel::Verbose, category, buffer);
 }

@@ -5,7 +5,7 @@ HexaGame::HexaGame(int argc, char* argv[])
 {
 }
 
-void HexaGame::InitGameInfo(GameInfo& outInfo)
+void HexaGame::init_game_info(GameInfo& outInfo)
 {
     outInfo.title = "Hexa";
 }

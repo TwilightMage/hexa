@@ -44,9 +44,9 @@ void UnloadMod(Shared<Mod>)
 int main(int argc, char* argv[])
 {
     HexaGame game(argc, argv);
-    game.Launch();
+    game.launch();
 
-    /*for (const auto& entry : Path("Mods").List())
+    /*for (const auto& entry : Path("mods").List())
     {
         if (Mod::VerifySignature(entry))
         {

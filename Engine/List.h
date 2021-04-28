@@ -19,55 +19,49 @@ public:
 
     List()
     {
-        inner = nullptr;
-        length = 0;
-        allocatedLength = 0;
     }
 
     List(const List& rhs)
+        : List(rhs.inner, rhs.Length())
     {
-        inner = new T[rhs.allocatedLength];
-        length = rhs.length;
-        allocatedLength = rhs.allocatedLength;
-
-        memcpy(inner, rhs.inner, sizeof(T) * length);
     }
 
     List(T* inner, uint length)
     {
         allocatedLength = GetAllocateSize(length);
-
-        if (length == allocatedLength)
-        {
-            this->inner = inner;
-        }
-        else
+        this->length = length;
+        if (length > 0)
         {
             this->inner = new T[allocatedLength];
-            memcpy(this->inner, inner, sizeof(T) * length);
+            for (uint i = 0; i < length; i++)
+            {
+                this->inner[i] = std::move(inner[i]);
+            }
         }
+    }
+
+    List(const T* inner, uint length)
+    {
+        allocatedLength = GetAllocateSize(length);
         this->length = length;
+        if (length > 0)
+        {
+            this->inner = new T[allocatedLength];
+            for (uint i = 0; i < length; i++)
+            {
+                this->inner[i] = std::move(inner[i]);
+            }
+        }
     }
 
     List(const std::vector<T>& vec)
+        : List(vec.data(), static_cast<uint>(vec.size()))
     {
-        allocatedLength = GetAllocateSize(length);
-
-        inner = new T[allocatedLength];
-        length = static_cast<uint>(vec.size());
-
-        memcpy(inner, vec.data(), sizeof(T) * vec.size());
     }
 
     List(const std::initializer_list<T>& il)
+        : List(static_cast<const T*>(il.begin()), static_cast<uint>(il.size()))
     {
-        allocatedLength = GetAllocateSize(static_cast<uint>(il.size()));
-
-        inner = new T[allocatedLength];
-        length = static_cast<uint>(il.size());
-
-
-        memcpy(inner, il.begin(), sizeof(T) * il.size());
     }
 
     List& operator=(const List& rhs)

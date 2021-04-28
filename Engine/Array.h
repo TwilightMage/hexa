@@ -5,7 +5,7 @@
 template<typename T>
 class Array
 {
-public:
+public:   
     ~Array()
     {
         delete[] inner;
@@ -71,9 +71,9 @@ protected:
     {
         T* newInner = newLength > 0 ? new T[newLength] : nullptr;
 
-        if (newLength > 0)
+        for (uint i = 0; i < Length(); i++)
         {
-            memcpy(newInner, inner, sizeof(T) * length);
+            newInner[i] = std::move(inner[i]);
         }
 
         delete[] inner;

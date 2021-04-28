@@ -21,12 +21,14 @@ EXTERN class EXPORT Path
 public:
 	Path();
 	Path(const String& pathStr);
+	Path(const char* str);
 
     bool Exists() const;
 	bool IsGlobal() const;
 	void Create();
 	Path Up(uint levels = 1) const;
 	Path GetChild(const String& child) const;
+	Path get_absolute() const;
 	List<Path> List() const;
 	String GetFileExt() const;
 
@@ -41,4 +43,5 @@ public:
 
 private:
 	bool isGlobal;
+	String get_absolute_string() const;
 };

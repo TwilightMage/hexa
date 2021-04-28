@@ -75,24 +75,28 @@
     <OutDir>$(SolutionDir)Build\$(Platform)_$(Configuration)\</OutDir>
     <LibraryPath>$(SolutionDir)Build\$(Platform)_$(Configuration)\;$(SolutionDir)ThirdParty\lib\$(Platform)_$(Configuration)\;$(LibraryPath)</LibraryPath>
     <IncludePath>$(SolutionDir);$(SolutionDir)ThirdParty\include\;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <SourcePath>$(VC_SourcePath);</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Build\$(Platform)_$(Configuration)\</OutDir>
     <LibraryPath>$(SolutionDir)Build\$(Platform)_$(Configuration)\;$(SolutionDir)ThirdParty\lib\$(Platform)_$(Configuration)\;$(LibraryPath)</LibraryPath>
     <IncludePath>$(SolutionDir);$(SolutionDir)ThirdParty\include\;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <SourcePath>$(VC_SourcePath);</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <LinkIncremental>true</LinkIncremental>
     <OutDir>$(SolutionDir)Build\$(Platform)_$(Configuration)\</OutDir>
     <LibraryPath>$(SolutionDir)Build\$(Platform)_$(Configuration)\;$(SolutionDir)ThirdParty\lib\$(Platform)_$(Configuration)\;$(LibraryPath)</LibraryPath>
     <IncludePath>$(SolutionDir);$(SolutionDir)ThirdParty\include\;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <SourcePath>$(VC_SourcePath);</SourcePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <LinkIncremental>false</LinkIncremental>
     <OutDir>$(SolutionDir)Build\$(Platform)_$(Configuration)\</OutDir>
     <LibraryPath>$(SolutionDir)Build\$(Platform)_$(Configuration)\;$(SolutionDir)ThirdParty\lib\$(Platform)_$(Configuration)\;$(LibraryPath)</LibraryPath>
     <IncludePath>$(SolutionDir);$(SolutionDir)ThirdParty\include\;$(VC_IncludePath);$(WindowsSDK_IncludePath);</IncludePath>
+    <SourcePath>$(VC_SourcePath);</SourcePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
@@ -110,6 +114,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>python "$(SolutionDir)move_resources.py" "$(SolutionDir)\." Engine "$(OutDir)\."</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -132,6 +139,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>python "$(SolutionDir)move_resources.py" "$(SolutionDir)\." Engine "$(OutDir)\."</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -149,6 +159,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>python "$(SolutionDir)move_resources.py" "$(SolutionDir)\." Engine "$(OutDir)\."</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -171,38 +184,57 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>python "$(SolutionDir)move_resources.py" "$(SolutionDir)\." Engine "$(OutDir)\."</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Array.h" />
     <ClInclude Include="BasicTypes.h" />
+    <ClInclude Include="Camera.h" />
     <ClInclude Include="DateTime.h" />
+    <ClInclude Include="DebugPlayer.h" />
     <ClInclude Include="Delegate.h" />
     <ClInclude Include="File.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameInfo.h" />
+    <ClInclude Include="IControllable.h" />
+    <ClInclude Include="ITickable.h" />
     <ClInclude Include="linmath.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="LogStream.h" />
+    <ClInclude Include="Mesh.h" />
     <ClInclude Include="Mod.h" />
     <ClInclude Include="ModInfo.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Regex.h" />
+    <ClInclude Include="Renderable.h" />
     <ClInclude Include="Set.h" />
+    <ClInclude Include="Shader.h" />
     <ClInclude Include="String.h" />
     <ClInclude Include="TeeBuf.h" />
+    <ClInclude Include="Utils.h" />
     <ClInclude Include="Version.h" />
+    <ClInclude Include="World.h" />
+    <ClInclude Include="WorldObject.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Array.cpp" />
+    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DateTime.cpp" />
+    <ClCompile Include="DebugPlayer.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameInfo.cpp" />
+    <ClCompile Include="glad.c" />
+    <ClCompile Include="IControllable.cpp" />
+    <ClCompile Include="ITickable.cpp" />
     <ClCompile Include="List.cpp" />
     <ClCompile Include="LogStream.cpp" />
+    <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Mod.cpp" />
     <ClCompile Include="ModInfo.cpp" />
     <ClCompile Include="Path.cpp" />
@@ -213,13 +245,25 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Regex.cpp" />
+    <ClCompile Include="Renderable.cpp" />
     <ClCompile Include="Set.cpp" />
+    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="String.cpp" />
     <ClCompile Include="TeeBuf.cpp" />
+    <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Version.cpp" />
+    <ClCompile Include="World.cpp" />
+    <ClCompile Include="WorldObject.cpp" />
   </ItemGroup>
   <ItemGroup>
     <Natvis Include="Engine.natvis" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="resources\engine" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="resources\engine\shaders\base.frag" />
+    <Content Include="resources\engine\shaders\base.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

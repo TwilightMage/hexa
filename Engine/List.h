@@ -73,8 +73,14 @@ public:
         length = rhs.length;
         allocatedLength = rhs.allocatedLength;
 
-        inner = new T[allocatedLength];
-        memcpy(inner, rhs.inner, sizeof(T) * length);
+        if (length > 0)
+        {
+            inner = new T[allocatedLength];
+            for (uint i = 0; i < length; i++)
+            {
+                inner[i] = std::move(rhs.inner[i]);
+            }
+        }
 
         return *this;
     }

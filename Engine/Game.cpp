@@ -139,46 +139,23 @@ void Game::prepare()
 	glfwSetKeyCallback(window_, key_callback);
 }
 
-static const struct
-{
-	float x, y, z;
-	float u, v;
-	float r, g, b;
-} vertices[3] =
-{
-	{ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.f, 0.f, 0.f },
-	{ 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.f, 0.f, 0.f },
-	{ 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.f, 1.f, 0.f }
-};
-
 void Game::render_loop()
 {
-	basic_shader_ = Shader::compile(Path("resources/engine/shaders/basic.frag"), Path("resources/engine/shaders/basic.vert"));
-
-	uint vertex_buffer;
-	glGenBuffers(1, &vertex_buffer);
-	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
-
-	basic_shader_->link();
-
-	GLint mvp_location = glGetUniformLocation(basic_shader_->program, "MVP");
-	GLint vpos_location = glGetAttribLocation(basic_shader_->program, "vPos");
-	GLint vpos_uv = glGetAttribLocation(basic_shader_->program, "vUV");
-	GLint vcol_location = glGetAttribLocation(basic_shader_->program, "vCol");
- 
-	glEnableVertexAttribArray(vpos_location);
-	glVertexAttribPointer(vpos_location, 3, GL_FLOAT, GL_FALSE, sizeof(vertices[0]), (void*) 0);
-	glEnableVertexAttribArray(vpos_uv);
-	glVertexAttribPointer(vpos_uv, 2, GL_FLOAT, GL_FALSE, sizeof(vertices[0]), (void*) (sizeof(float) * 3));
-	glEnableVertexAttribArray(vcol_location);
-	glVertexAttribPointer(vcol_location, 3, GL_FLOAT, GL_FALSE, sizeof(vertices[0]), (void*) (sizeof(float) * 5));
+	Shader::meta basic_shader_meta;
+	basic_shader_meta.vertex_param_size = sizeof(Mesh::vertex);
+	basic_shader_meta.vertex_params = {
+		{"vPos", 0, 3, GL_FLOAT},
+		{"vUV", 3, 2, GL_FLOAT},
+		{"vCol", 5, 3, GL_FLOAT}
+	};
+	basic_shader_meta.uniform_param_name = "MVP";
+	basic_shader_ = Shader::compile(Path("resources/engine/shaders/basic.frag"), Path("resources/engine/shaders/basic.vert"), basic_shader_meta);
 
 	world_ = new World();
 	world_->start();
 
 	world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
-	world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
+	//world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
 
 	auto player = world_->spawn<DebugPlayer>(glm::vec3(-5.0f, 0.0f, 1.0f), glm::quat(glm::vec3(0.0f, 0.3f, 0.0f)));
 	possess(player);
@@ -203,10 +180,10 @@ void Game::render_loop()
 			{
 				world_->tick(last_delta_time);
 			}
-			
+
 			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
+			model = rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
+			model = translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 
 			glm::vec3 cam_from = current_camera_->owner->position;
 			glm::vec3 cam_to = current_camera_->owner->position + current_camera_->owner->rotation * glm::vec3(1.0f, 0.0f, 0.0f);
@@ -225,11 +202,26 @@ void Game::render_loop()
 
 			glm::mat4 proj = glm::perspective(current_camera_->fov, (float) width / (float) height, 0.0f, 10.0f);
 
-			glm::mat4 mvp = proj * view * model;
+			glm::mat4 mvp = model * view * proj;
 
-			glUseProgram(basic_shader_->program);
-			glUniformMatrix4fv(mvp_location, 1, GL_FALSE, value_ptr(mvp));
-			glDrawArrays(GL_TRIANGLES, 0, 3);
+			for (const auto& shader_meshes : render_database)
+			{
+				glUseProgram(shader_meshes.second.gl_shader_id);
+				glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.second.gl_vertex_buffer_id);
+				
+				for (const auto& mesh_objects : shader_meshes.second)
+				{				
+					for (const auto& object : mesh_objects.second)
+					{
+						if (!shader_meshes.first->get_meta().uniform_param_name.IsEmpty())
+						{
+							glUniformMatrix4fv(shader_meshes.first->get_meta().uniform_param_id, 1, GL_FALSE, value_ptr(mvp));
+						}
+						
+						glDrawArrays(GL_TRIANGLES, mesh_objects.second.vertex_buffer_offset, mesh_objects.second.size_in_vertex_buffer);
+					}
+				}
+			}
 		}
  
 		glfwSwapBuffers(window_);

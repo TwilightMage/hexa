@@ -4,8 +4,10 @@
 
 class Mesh
 {
+    friend class Entity;
+
 public:
-    struct Vertex
+    struct vertex
     {
         vec3 pos;
         vec2 uv;
@@ -14,6 +16,10 @@ public:
     
     static Mesh* load_obj(const Path& path);
 
+    uint get_usage_count() const;
+
+    List<vertex> vertices; // TODO: Make private
 private:
-    List<Vertex> vertices;
+    List<uint> indices;
+    uint usage_count_;
 };

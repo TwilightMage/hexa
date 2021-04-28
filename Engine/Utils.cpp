@@ -40,6 +40,13 @@ bool Utils::check_gl_error()
     return true;
 }
 
+void Utils::discard_gl_error()
+{
+    while (glGetError())
+    { 
+    }
+}
+
 List<String> Utils::get_callstack(uint offset)
 {
     offset += 1;

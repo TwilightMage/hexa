@@ -11,6 +11,16 @@ public:
         delete[] inner;
     }
 
+    const T* begin() const
+    {
+        return inner;
+    }
+
+    const T* end() const
+    {
+        return inner + length;
+    }
+
     T* begin()
     {
         return inner;

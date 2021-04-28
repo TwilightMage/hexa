@@ -7,7 +7,7 @@
 #include "Utils.h"
 
 Shader* Shader::compile(const Path& frag, const Path& vert)
-{
+{    
     if (frag.Exists() && vert.Exists())
     {
         const auto result = new Shader();
@@ -62,6 +62,9 @@ Shader* Shader::compile(const Path& frag, const Path& vert)
         result->program = glCreateProgram();
         glAttachShader(result->program, vertex_shader);
         glAttachShader(result->program, fragment_shader);
+
+        Game::instance_->shaders.Add(result);
+        
         return result;
     }
     

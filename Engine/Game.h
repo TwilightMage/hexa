@@ -1,14 +1,19 @@
 ﻿#pragma once
 
+#include <map>
 #include <mutex>
 #include <optional>
-
 
 #include "GameInfo.h"
 #include "List.h"
 #include "LogStream.h"
+#include "Mesh.h"
 #include "Path.h"
+#include "RenderDatabase.h"
+#include "Shader.h"
 #include "String.h"
+
+
 
 enum class ELogLevel
 {
@@ -20,6 +25,10 @@ enum class ELogLevel
 
 EXTERN class EXPORT Game
 {
+    friend class World;
+    friend class Shader;
+    friend class Mesh;
+    
 public:
     Game(int argc, char* argv[]);
 
@@ -38,6 +47,8 @@ public:
 
     static bool is_app_path_set();
     static const Path& get_app_path();
+
+    class Shader* get_basic_shader() const;
 
     static uint get_screen_width();
     static uint get_screen_height();
@@ -70,6 +81,12 @@ private:
     static bool app_path_set_;
 
     class GLFWwindow* window_;
+    class Shader* basic_shader_;
+
+    List<class Shader*> shaders;
+    List<class Mesh*> meshes;
+    
+    render_database render_database;
 
     class Camera* current_camera_;
     class IControllable* current_controllable_;

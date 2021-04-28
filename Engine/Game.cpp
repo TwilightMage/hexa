@@ -9,6 +9,7 @@
 
 #include "Camera.h"
 #include "DebugPlayer.h"
+#include "DemoMeshEntity.h"
 #include "linmath.h"
 #include "Path.h"
 #include "Shader.h"
@@ -99,6 +100,11 @@ const Path& Game::get_app_path()
 	return app_path_;
 }
 
+Shader* Game::get_basic_shader() const
+{
+	return basic_shader_;
+}
+
 uint Game::get_screen_width()
 {
 	return GetSystemMetrics(SM_CXSCREEN);
@@ -140,26 +146,26 @@ static const struct
 	float r, g, b;
 } vertices[3] =
 {
-	{ -0.5f, -0.5f, 0.0f, 0.0f, 0.0f, 1.f, 0.f, 0.f },
-	{ 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.f, 1.f, 0.f },
-	{ -0.5f,  0.5f, 0.0f, 0.0f, 1.0f, 0.f, 0.f, 1.f }
+	{ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.f, 0.f, 0.f },
+	{ 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.f, 0.f, 0.f },
+	{ 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.f, 1.f, 0.f }
 };
 
 void Game::render_loop()
 {
-	auto shader = Shader::compile(Path("resources/engine/shaders/base.frag"), Path("resources/engine/shaders/base.vert"));
+	basic_shader_ = Shader::compile(Path("resources/engine/shaders/basic.frag"), Path("resources/engine/shaders/basic.vert"));
 
 	uint vertex_buffer;
 	glGenBuffers(1, &vertex_buffer);
 	glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_DYNAMIC_DRAW);
 
-	shader->link();
+	basic_shader_->link();
 
-	GLint mvp_location = glGetUniformLocation(shader->program, "MVP");
-	GLint vpos_location = glGetAttribLocation(shader->program, "vPos");
-	GLint vpos_uv = glGetAttribLocation(shader->program, "vUV");
-	GLint vcol_location = glGetAttribLocation(shader->program, "vCol");
+	GLint mvp_location = glGetUniformLocation(basic_shader_->program, "MVP");
+	GLint vpos_location = glGetAttribLocation(basic_shader_->program, "vPos");
+	GLint vpos_uv = glGetAttribLocation(basic_shader_->program, "vUV");
+	GLint vcol_location = glGetAttribLocation(basic_shader_->program, "vCol");
  
 	glEnableVertexAttribArray(vpos_location);
 	glVertexAttribPointer(vpos_location, 3, GL_FLOAT, GL_FALSE, sizeof(vertices[0]), (void*) 0);
@@ -170,6 +176,9 @@ void Game::render_loop()
 
 	world_ = new World();
 	world_->start();
+
+	world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
+	world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
 
 	auto player = world_->spawn<DebugPlayer>(glm::vec3(-5.0f, 0.0f, 1.0f), glm::quat(glm::vec3(0.0f, 0.3f, 0.0f)));
 	possess(player);
@@ -218,7 +227,7 @@ void Game::render_loop()
 
 			glm::mat4 mvp = proj * view * model;
 
-			glUseProgram(shader->program);
+			glUseProgram(basic_shader_->program);
 			glUniformMatrix4fv(mvp_location, 1, GL_FALSE, value_ptr(mvp));
 			glDrawArrays(GL_TRIANGLES, 0, 3);
 		}

@@ -1,9 +1,9 @@
 ﻿#pragma once
 #include "IControllable.h"
 #include "ITickable.h"
-#include "WorldObject.h"
+#include "Entity.h"
 
-class DebugPlayer : public WorldObject, public IControllable, public ITickable
+class DebugPlayer : public Entity, public IControllable, public ITickable
 {
 public:
     virtual void start() override;

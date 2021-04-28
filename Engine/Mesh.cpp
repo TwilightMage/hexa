@@ -69,15 +69,22 @@ Mesh* Mesh::load_obj(const Path& path)
 
         for (uint i = 0; i < positions.Length(); i++)
         {
-            result->vertices.Add(Vertex {
+            result->vertices.Add(vertex {
                 positions[i].x, positions[i].y, positions[i].z,
                 uvs[i].x, uvs[i].y,
                 1.0f, 1.0f, 1.0f
             });
         }
 
+        Game::instance_->meshes.Add(result);
+
         return result;
     }
 
     return nullptr;
+}
+
+uint Mesh::get_usage_count() const
+{
+    return usage_count_;
 }

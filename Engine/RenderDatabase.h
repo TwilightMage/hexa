@@ -220,6 +220,8 @@ struct shader_render_data : simple_map<Shared<class Mesh>, render_list> // objec
     {
         glDeleteBuffers(1, new uint[1] { gl_vertex_buffer_id });
     }
+
+    inline static const uint objects_count_limit = 256;
     
     uint gl_shader_id;
     uint gl_vertex_buffer_id;

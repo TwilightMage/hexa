@@ -1,6 +1,6 @@
 #version 450
 
-uniform mat4 MVPs[10];
+uniform mat4 MVPs[256];
 attribute vec3 vCol;
 attribute vec2 vUV;
 attribute vec3 vPos;

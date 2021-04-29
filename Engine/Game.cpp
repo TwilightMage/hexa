@@ -212,7 +212,8 @@ void Game::render_loop()
             	glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.value.gl_vertex_buffer_id);
 				shader_meshes.key->map_params();
 
-				glm::mat4* mvp_array = new glm::mat4[shader_meshes.value.objects_count];
+                const uint mvp_array_size = std::min(shader_meshes.value.objects_count, shader_render_data::objects_count_limit);
+				glm::mat4* mvp_array = new glm::mat4[mvp_array_size];
 				{
             		uint i = 0;
             		for (const auto& mesh_objects : shader_meshes.value)
@@ -220,10 +221,12 @@ void Game::render_loop()
             			for (auto object : mesh_objects.value)
             			{
             				mvp_array[i++] = vp * get_model_matrix(object.get());
+            				if (i == mvp_array_size) break;
             			}
+            			if (i == mvp_array_size) break;
             		}
 				}
-				glUniformMatrix4fv(0, shader_meshes.value.objects_count, GL_FALSE, glm::value_ptr(mvp_array[0]));
+				glUniformMatrix4fv(0, mvp_array_size, GL_FALSE, glm::value_ptr(mvp_array[0]));
 				delete mvp_array;
 				
             	for (const auto& mesh_objects : shader_meshes.value)

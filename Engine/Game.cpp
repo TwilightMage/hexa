@@ -167,20 +167,22 @@ void Game::render_loop()
 	world_->start();
 
 	world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
-	world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
 
 	auto player = world_->spawn<DebugPlayer>(glm::vec3(-5.0f, 0.0f, 1.0f), glm::quat(glm::vec3(0.0f, 0.3f, 0.0f)));
 	possess(player);
 	use_camera(player->camera);
-	
-	glBindBuffer(GL_ARRAY_BUFFER, render_database[basic_shader_].gl_vertex_buffer_id);
-	
-	basic_shader_->map_params();
 
 	float last_delta_time = 0.0f;
 	
 	while (!glfwWindowShouldClose(window_))
 	{
+		static bool b = false;
+		if (glfwGetTime() > 10 && !b)
+		{
+			world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
+			b = true;
+		}
+		
 		const auto tick_start = glfwGetTime();
 		
 		int width, height;
@@ -219,10 +221,26 @@ void Game::render_loop()
 			glm::mat4 proj = glm::perspective(current_camera_->fov, (float) width / (float) height, 0.0f, 10.0f);
 
 			glm::mat4 mvp = proj * view * model;
-
-			glUseProgram(basic_shader_->get_program());
-			glUniformMatrix4fv(basic_shader_->get_meta().uniform_param_id, 1, GL_FALSE, value_ptr(mvp));
-			glDrawArrays(GL_TRIANGLES, 0, 3);
+			
+			for (const auto& shader_meshes : render_database)
+            {
+            	glUseProgram(shader_meshes.second.gl_shader_id);
+            	glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.second.gl_vertex_buffer_id);
+				shader_meshes.first->map_params();
+				
+            	for (const auto& mesh_objects : shader_meshes.second)
+            	{				
+            		for (const auto& object : mesh_objects.second)
+            		{
+            			if (!shader_meshes.first->get_meta().uniform_param_name.IsEmpty())
+            			{
+            				glUniformMatrix4fv(shader_meshes.first->get_meta().uniform_param_id, 1, GL_FALSE, value_ptr(mvp));
+            			}
+            			
+            			glDrawArrays(GL_TRIANGLES, mesh_objects.second.vertex_buffer_offset, mesh_objects.second.size_in_vertex_buffer);
+            		}
+            	}
+            }
 		}
  
 		glfwSwapBuffers(window_);

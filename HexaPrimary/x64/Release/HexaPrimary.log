@@ -1,8 +1,0 @@
-﻿  main.cpp
-     Creating library C:\Users\Dragon\Documents\Unreal Engine Projects\Hexa\Build\x64_Release\Hexa.lib and object C:\Users\Dragon\Documents\Unreal Engine Projects\Hexa\Build\x64_Release\Hexa.exp
-  Generating code
-  26 of 38 functions (68.4%) were compiled, the rest were copied from previous compilation.
-    17 functions were new in current compilation
-    0 functions had inline decision re-evaluated but remain unchanged
-  Finished generating code
-  HexaPrimary.vcxproj -> C:\Users\Dragon\Documents\Unreal Engine Projects\Hexa\Build\x64_Release\Hexa.exe

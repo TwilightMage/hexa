@@ -7,7 +7,7 @@
 
 void DebugPlayer::start()
 {
-    camera = new Camera();
+    camera = MakeShared<Camera>();
     camera->owner = this;
     camera->fov = 45.0f;
 }

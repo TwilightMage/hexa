@@ -4,6 +4,7 @@
 #include <mutex>
 #include <optional>
 
+
 #include "GameInfo.h"
 #include "List.h"
 #include "LogStream.h"
@@ -14,6 +15,10 @@
 #include "String.h"
 
 
+class Camera;
+class GLFWwindow;
+class IControllable;
+class World;
 
 enum class ELogLevel
 {
@@ -25,17 +30,17 @@ enum class ELogLevel
 
 EXTERN class EXPORT Game
 {
-    friend class World;
-    friend class Shader;
-    friend class Mesh;
+    friend World;
+    friend Shader;
+    friend Mesh;
     
 public:
     Game(int argc, char* argv[]);
 
     void launch();
 
-    void possess(class IControllable* controllable);
-    void use_camera(class Camera* camera);
+    void possess(const Weak<IControllable>& controllable);
+    void use_camera(const Weak<Camera>& camera);
 
     const List<String>& get_args() const;
 
@@ -48,7 +53,7 @@ public:
     static bool is_app_path_set();
     static const Path& get_app_path();
 
-    Weak<class Shader> get_basic_shader() const;
+    Weak<Shader> get_basic_shader() const;
 
     static uint get_screen_width();
     static uint get_screen_height();
@@ -66,7 +71,7 @@ private:
     static void set_app_path(const Path& new_app_path);
 
     static void error_callback(int error, const char* description);
-    static void key_callback(class GLFWwindow* window, int key, int scancode, int action, int mods);
+    static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
 
     static Game* instance_;
 
@@ -80,17 +85,17 @@ private:
     static Path app_path_;
     static bool app_path_set_;
 
-    class GLFWwindow* window_;
-    Shared<class Shader> basic_shader_;
+    GLFWwindow* window_;
+    Shared<Shader> basic_shader_;
 
-    List<Shared<class Shader>> shaders;
-    List<Shared<class Mesh>> meshes;
+    List<Shared<Shader>> shaders;
+    List<Shared<Mesh>> meshes;
     
     render_database render_database;
 
-    class Camera* current_camera_;
-    class IControllable* current_controllable_;
-    class World* world_;
+    Shared<Camera> current_camera_;
+    Shared<IControllable> current_controllable_;
+    Shared<World> world_;
 };
 
 template<typename... Args>

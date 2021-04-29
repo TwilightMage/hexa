@@ -5,7 +5,7 @@
 #include "BasicTypes.h"
 #include "IRenderable.h"
 
-class Entity : public IRenderable
+class Entity : public IRenderable, std::enable_shared_from_this<Entity>
 {
     friend class World;
 
@@ -13,6 +13,7 @@ public:
     class World* get_world() const;
     
     virtual void start();
+    virtual void on_destroy();
 
     void destroy();
 

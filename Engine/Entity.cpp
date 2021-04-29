@@ -15,6 +15,11 @@ void Entity::start()
     started_ = true;
 }
 
+void Entity::on_destroy()
+{
+    
+}
+
 void Entity::destroy()
 {
     pending_kill_ = true;
@@ -42,7 +47,7 @@ void Entity::use_mesh(const Weak<Mesh>& new_mesh)
 
     if (started_ && !get_shader().expired())
     {
-        world_->notify_renderable_updated(this, old_mesh);
+        world_->notify_renderable_updated(weak_from_this(), old_mesh);
     }
 }
 
@@ -58,7 +63,7 @@ void Entity::clear_mesh()
 
     if (started_ && get_shader().expired())
     {
-        world_->notify_renderable_updated(this, old_mesh);
+        world_->notify_renderable_updated(weak_from_this(), old_mesh);
     }
 }
 

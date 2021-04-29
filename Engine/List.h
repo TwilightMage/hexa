@@ -103,7 +103,14 @@ public:
             throw new std::out_of_range("Parameter \"index\" is greater than last item index");
         }
 
-        memcpy(inner + (index + 1), inner + index, sizeof(T) * (length - index - 1));
+        if (index < length - 1)
+        {
+            for (uint i = index; i < length - 1; i++)
+            {
+                inner[i] = inner[i + 1];
+            }
+        }
+        
         length--;
     }
 
@@ -120,6 +127,7 @@ public:
             }
         }
 
+        // TODO: Remove memcpy or start using malloc and free
         for (uint i = 0; i < entriesAmount - 1; i++)
         {
             memcpy(inner + entries[i] - i, inner + entries[i] + 1, sizeof(T) * (entries[i + 1] - entries[i] - 1));

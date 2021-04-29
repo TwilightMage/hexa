@@ -3,6 +3,8 @@
 #include "ITickable.h"
 #include "Entity.h"
 
+class Camera;
+
 class DebugPlayer : public Entity, public IControllable, public ITickable
 {
 public:
@@ -12,7 +14,7 @@ public:
     void key_up(int key) override;
 
     void tick(float delta_time) override;
-    class Camera* camera;
+    Shared<Camera> camera;
 
 private:
     float move_forward;

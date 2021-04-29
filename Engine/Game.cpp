@@ -1,6 +1,5 @@
 ﻿#include "Game.h"
 
-#include <map>
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
@@ -55,14 +54,14 @@ void Game::launch()
     render_loop();
 }
 
-void Game::possess(IControllable* controllable)
+void Game::possess(const Weak<IControllable>& controllable)
 {
-	current_controllable_ = controllable;
+	current_controllable_ = controllable.lock();
 }
 
-void Game::use_camera(Camera* camera)
+void Game::use_camera(const Weak<Camera>& camera)
 {
-	current_camera_ = camera;
+	current_camera_ = camera.lock();
 }
 
 const List<String>& Game::get_args() const
@@ -155,14 +154,19 @@ void Game::render_loop()
 	};
 	basic_shader_ = Shader::compile(Path("resources/engine/shaders/basic.frag"), Path("resources/engine/shaders/basic.vert"), basic_shader_meta);
 
-	world_ = new World();
+	world_ = MakeShared<World>();
 	world_->start();
 
-	world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
-	world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 1.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(90.0f))));
-	world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 2.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(180.0f))));
-	world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 3.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(270.0f))));
+	auto a = world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
+	auto b = world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(90.0f))));
+	auto c = world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(180.0f))));
+	auto d = world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(270.0f))));
 
+	//a->destroy();
+	//b->destroy();
+	//c->destroy();
+	//d->destroy();
+	
 	auto player = world_->spawn<DebugPlayer>(glm::vec3(-5.0f, 0.0f, 2.0f), glm::quat(glm::vec3(0.0f, glm::radians(30.0f), 0.0f)));
 	possess(player);
 	use_camera(player->camera);
@@ -212,25 +216,21 @@ void Game::render_loop()
             	glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.value.gl_vertex_buffer_id);
 				shader_meshes.key->map_params();
 
-                const uint mvp_array_size = std::min(shader_meshes.value.objects_count, shader_render_data::objects_count_limit);
-				glm::mat4* mvp_array = new glm::mat4[mvp_array_size];
-				{
-            		uint i = 0;
-            		for (const auto& mesh_objects : shader_meshes.value)
+            	for (const auto& mesh_objects : shader_meshes.value)
+            	{
+            		const uint mvp_array_size = std::min(mesh_objects.value.Length(), render_list::objects_count_limit);
+            		glm::mat4* mvp_array = new glm::mat4[mvp_array_size];
             		{
-            			for (auto object : mesh_objects.value)
+            			uint i = 0;
+            			for (const auto& object : mesh_objects.value)
             			{
-            				mvp_array[i++] = vp * get_model_matrix(object.get());
+            				mvp_array[i++] = vp * get_model_matrix(object);
             				if (i == mvp_array_size) break;
             			}
-            			if (i == mvp_array_size) break;
             		}
-				}
-				glUniformMatrix4fv(0, mvp_array_size, GL_FALSE, glm::value_ptr(mvp_array[0]));
-				delete mvp_array;
-				
-            	for (const auto& mesh_objects : shader_meshes.value)
-            	{           		
+            		glUniformMatrix4fv(0, mvp_array_size, GL_FALSE, glm::value_ptr(mvp_array[0]));
+            		delete mvp_array;
+            		
             		glDrawArraysInstanced(GL_TRIANGLES, mesh_objects.value.vertex_buffer_offset, mesh_objects.value.size_in_vertex_buffer, mesh_objects.value.Length());
             	}
             }
@@ -263,7 +263,7 @@ void Game::error_callback(int error, const char* description)
 	print_error("OpenGL", "%i - %s", error, description);
 }
 
-void Game::key_callback(class GLFWwindow* window, int key, int scancode, int action, int mods)
+void Game::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GLFW_TRUE);

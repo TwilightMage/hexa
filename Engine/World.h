@@ -10,7 +10,7 @@ public:
     {
         T* entity = new T();
         entity->position = pos;
-        entity->rotation - rot;
+        entity->rotation = rot;
         setup_spawn(entity);
         return entity;
     }

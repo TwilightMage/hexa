@@ -19,6 +19,8 @@
 #define DEBUG 1
 #endif
 
+#define ENABLE_DEBUG_RENDER (DEBUG && 1)
+
 // Misc definitions
 #define __FILENAME__ (strrchr(__FILE__, '/') ? strrchr(__FILE__, '/') + 1 : (strrchr(__FILE__, '\\') ? strrchr(__FILE__, '\\') + 1 : __FILE__))
 

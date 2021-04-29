@@ -18,7 +18,7 @@ public:
 
     bool is_started() const;
 
-    virtual void use_mesh(class Mesh* new_mesh) override;
+    virtual void use_mesh(const Weak<class Mesh>& new_mesh) override;
     virtual void clear_mesh() override;
     virtual Weak<class Mesh> get_mesh() const override;
     virtual Weak<class Shader> get_shader() const override;

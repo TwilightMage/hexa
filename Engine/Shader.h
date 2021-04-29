@@ -16,11 +16,16 @@ public:
             uint id;
         };
 
+        struct uniform_param
+        {
+            String name;
+            uint id;
+        };
+
         uint vertex_param_size;
         List<vertex_param> vertex_params;
 
-        String uniform_param_name;
-        uint uniform_param_id;
+        List<uniform_param> uniform_params;
     };
 
     uint get_program() const;

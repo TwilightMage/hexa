@@ -139,20 +139,10 @@ void Game::prepare()
 	glfwSetKeyCallback(window_, key_callback);
 }
 
-static const struct
-{
-	float x, y, z;
-	float u, v;
-	float r, g, b;
-} vertices[3] =
-{
-	{ 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.f, 0.f, 0.f },
-	{ 1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.f, 0.f, 0.f },
-	{ 0.0f, 1.0f, 0.0f, 0.0f, 1.0f, 0.f, 1.f, 0.f }
-};
-
 void Game::render_loop()
 {
+	String opengl_version(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+	
 	Shader::meta basic_shader_meta;
 	basic_shader_meta.vertex_param_size = sizeof(Mesh::vertex);
 	basic_shader_meta.vertex_params = {
@@ -160,15 +150,20 @@ void Game::render_loop()
 		{"vUV", sizeof(float) * 3, 2, GL_FLOAT},
 		{"vCol", sizeof(float) * 5, 3, GL_FLOAT}
 	};
-	basic_shader_meta.uniform_param_name = "MVP";
+	basic_shader_meta.uniform_params = {
+		{"MVPs"}
+	};
 	basic_shader_ = Shader::compile(Path("resources/engine/shaders/basic.frag"), Path("resources/engine/shaders/basic.vert"), basic_shader_meta);
 
 	world_ = new World();
 	world_->start();
 
 	world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
+	world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 1.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(90.0f))));
+	world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 2.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(180.0f))));
+	world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 3.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(270.0f))));
 
-	auto player = world_->spawn<DebugPlayer>(glm::vec3(-5.0f, 0.0f, 1.0f), glm::quat(glm::vec3(0.0f, 0.3f, 0.0f)));
+	auto player = world_->spawn<DebugPlayer>(glm::vec3(-5.0f, 0.0f, 2.0f), glm::quat(glm::vec3(0.0f, glm::radians(30.0f), 0.0f)));
 	possess(player);
 	use_camera(player->camera);
 
@@ -213,27 +208,27 @@ void Game::render_loop()
 			
 			for (const auto& shader_meshes : render_database)
             {
-            	glUseProgram(shader_meshes.second.gl_shader_id);
-            	glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.second.gl_vertex_buffer_id);
-				shader_meshes.first->map_params();
-				
-            	for (const auto& mesh_objects : shader_meshes.second)
-            	{				
-            		for (const auto& object : mesh_objects.second)
+            	glUseProgram(shader_meshes.value.gl_shader_id);
+            	glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.value.gl_vertex_buffer_id);
+				shader_meshes.key->map_params();
+
+				glm::mat4* mvp_array = new glm::mat4[shader_meshes.value.objects_count];
+				{
+            		uint i = 0;
+            		for (const auto& mesh_objects : shader_meshes.value)
             		{
-            			if (!shader_meshes.first->get_meta().uniform_param_name.IsEmpty())
+            			for (auto object : mesh_objects.value)
             			{
-            				glm::mat4 model = glm::mat4(1.0f);
-            				model = glm::translate(model, object->get_position());
-            				//model *= glm::toMat4(object->get_rotation());
-            				//glm::rotate(model, 1, glm::vec3());
-            				model = glm::scale(model, object->get_scale());
-            				
-            				glUniformMatrix4fv(shader_meshes.first->get_meta().uniform_param_id, 1, GL_FALSE, value_ptr(vp * model));
+            				mvp_array[i++] = vp * get_model_matrix(object.get());
             			}
-            			
-            			glDrawArrays(GL_TRIANGLES, mesh_objects.second.vertex_buffer_offset, mesh_objects.second.size_in_vertex_buffer);
             		}
+				}
+				glUniformMatrix4fv(0, shader_meshes.value.objects_count, GL_FALSE, glm::value_ptr(mvp_array[0]));
+				delete mvp_array;
+				
+            	for (const auto& mesh_objects : shader_meshes.value)
+            	{           		
+            		glDrawArraysInstanced(GL_TRIANGLES, mesh_objects.value.vertex_buffer_offset, mesh_objects.value.size_in_vertex_buffer, mesh_objects.value.Length());
             	}
             }
 		}

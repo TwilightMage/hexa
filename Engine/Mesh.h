@@ -19,7 +19,6 @@ public:
     uint get_usage_count() const;
 
     List<vertex> vertices; // TODO: Make private
-private:
     List<uint> indices;
     uint usage_count_;
 };

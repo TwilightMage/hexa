@@ -25,20 +25,20 @@ bool Entity::is_started() const
     return started_;
 }
 
-void Entity::use_mesh(Mesh* new_mesh)
+void Entity::use_mesh(const Weak<Mesh>& new_mesh)
 {
     if (mesh_)
     {
         mesh_->usage_count_--;
     }
 
-    if (new_mesh)
+    if (const auto new_mesh_ptr = new_mesh.lock())
     {
-        new_mesh->usage_count_++;
+        new_mesh_ptr->usage_count_++;
     }
 
     const auto old_mesh = mesh_;
-    mesh_ = Shared<Mesh>(new_mesh);
+    mesh_ = new_mesh.lock();
 
     if (started_ && !get_shader().expired())
     {
@@ -79,5 +79,5 @@ glm::vec3 Entity::get_position()
 
 glm::quat Entity::get_rotation()
 {
-    return position;
+    return rotation;
 }

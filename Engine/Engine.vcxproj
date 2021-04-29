@@ -206,6 +206,7 @@
     <ClInclude Include="linmath.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="LogStream.h" />
+    <ClInclude Include="Math.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Mod.h" />
     <ClInclude Include="ModInfo.h" />
@@ -239,6 +240,7 @@
     <ClCompile Include="ITickable.cpp" />
     <ClCompile Include="List.cpp" />
     <ClCompile Include="LogStream.cpp" />
+    <ClCompile Include="Math.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Mod.cpp" />
     <ClCompile Include="ModInfo.cpp" />

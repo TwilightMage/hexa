@@ -28,13 +28,16 @@ void Shader::map_params()
         }
     }
 
-    if (!shader_meta.uniform_param_name.IsEmpty())
+    for (auto& uniform_param : shader_meta.uniform_params)
     {
-        shader_meta.uniform_param_id = glGetUniformLocation(program, shader_meta.uniform_param_name.c());
-    }
-    else
-    {
-        shader_meta.uniform_param_id = -1;
+        if (!uniform_param.name.IsEmpty())
+        {
+            uniform_param.id = glGetUniformLocation(program, uniform_param.name.c());
+        }
+        else
+        {
+            uniform_param.id = GL_INVALID_INDEX;
+        }
     }
 }
 

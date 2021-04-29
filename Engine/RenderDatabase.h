@@ -8,8 +8,6 @@
 #include "Shader.h"
 #include "Utils.h"
 
-#define DEBUG_RENDER 1
-
 /* EXAMPLE
 *
 * Game
@@ -37,6 +35,112 @@
 *       +--bottle_1
 */
 
+__forceinline glm::mat4 get_model_matrix(class IRenderable* renderable)
+{
+    glm::mat4 model = glm::mat4(1.0f);
+    model = glm::translate(model, renderable->get_position());
+
+    const auto& rot = renderable->get_rotation();
+    const auto rot_angle = 2 * acos(rot.w);
+    const auto rot_axis = rot.w == 1.0f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(rot.x / sqrt(1 - rot.w * rot.w), rot.y / sqrt(1 - rot.w * rot.w), rot.z / sqrt(1 - rot.w * rot.w));
+    model = rotate(model, rot_angle, rot_axis);
+            				
+    model = scale(model, renderable->get_scale());
+
+    return model;
+}
+
+template<typename T>
+__forceinline T* extract_gl_buffer(uint buffer, uint buffer_type, int& buffer_size, int add_size = 0)
+{
+    glGetBufferParameteriv(buffer_type, GL_BUFFER_SIZE, &buffer_size);
+    
+    buffer_size /= sizeof(T);
+    buffer_size += add_size;
+
+    T* buffer_data = new T[buffer_size];
+
+    void* buf_ptr = glMapBuffer(buffer_type, GL_READ_ONLY);
+    memcpy(buffer_data, buf_ptr, sizeof(T) * buffer_size);
+    glUnmapBuffer(buffer_type);
+
+    return buffer_data;
+}
+
+template<typename T>
+__forceinline void update_gl_buffer(uint buffer, uint buffer_type, T* buffer_data, int buffer_size)
+{
+    void* buf_ptr = glMapBuffer(buffer_type, GL_WRITE_ONLY);
+    memcpy(buf_ptr, buffer_data, sizeof(T) * buffer_size);
+    glUnmapBuffer(buffer_type);
+}
+
+template<typename K, typename V>
+struct simple_map
+{
+    struct entry
+    {
+        K key;
+        V value;
+
+        bool operator==(const entry& rhs) const
+        {
+            return key == rhs.key = value == rhs.value;
+        }
+    };
+    List<entry> entries;
+
+    V& operator[](const K& key)
+    {
+        for (auto& entry : entries)
+        {
+            if (entry.key == key) return entry.value;
+        }
+        entries.Add({ key, V() });
+        return entries[entries.Length() - 1].value;
+    }
+
+    entry* begin()
+    {
+        return entries.begin();
+    }
+
+    entry* end()
+    {
+        return entries.end();
+    }
+
+    const entry* begin() const
+    {
+        return entries.begin();
+    }
+
+    const entry* end() const
+    {
+        return entries.end();
+    }
+
+    uint size()
+    {
+        return entries.Length();
+    }
+
+    bool have_key(const K& key)
+    {
+        for (auto& kvp : entries)
+        {
+            if (kvp.key == key) return true;
+        }
+
+        return false;
+    }
+
+    entry& last()
+    {
+        return entries[entries.Length() - 1];
+    }
+};
+
 struct render_list : List<Shared<class IRenderable>> // objects
 {
     render_list()
@@ -45,9 +149,9 @@ struct render_list : List<Shared<class IRenderable>> // objects
     {
     }
 
-    render_list(class Mesh* mesh, uint offset)
+    render_list(class Mesh* mesh, uint vertex_offset)
     {
-        vertex_buffer_offset = offset;
+        vertex_buffer_offset = vertex_offset;
         size_in_vertex_buffer = mesh->vertices.Length();
     }
     
@@ -55,69 +159,61 @@ struct render_list : List<Shared<class IRenderable>> // objects
     uint size_in_vertex_buffer;
 };
 
-struct shader_render_data : std::map<Shared<class Mesh>, render_list> // objects for mesh
+struct shader_render_data : simple_map<Shared<class Mesh>, render_list> // objects for mesh
 {
     shader_render_data()
-        : gl_shader_id(0)
-        , gl_vertex_buffer_id(0)
+        : gl_shader_id(-1)
+        , gl_vertex_buffer_id(-1)
+        , objects_count(0)
     {
     }
 
-    explicit shader_render_data(const Weak<class Shader>& shader)
+    explicit shader_render_data(class Shader* shader)
     {
-        if (const auto shader_ptr = shader.lock())
-        {
-            gl_shader_id = shader_ptr->get_program();
-            glGenBuffers(1, &gl_vertex_buffer_id);
-        }
+        gl_shader_id = shader->get_program();
+        glGenBuffers(1, &gl_vertex_buffer_id);
+        objects_count = 0;
     }
     
     void add(class IRenderable* renderable)
     {
         const Shared<Mesh> mesh = Shared<Mesh>(renderable->get_mesh()); // We assume that mesh is valid since we checked it earlier
                    
-        if (find(mesh) == end()) // if we adding mesh
+        if (!have_key(mesh)) // if we adding mesh
         {
-            glBindBuffer(GL_ARRAY_BUFFER, gl_vertex_buffer_id);
-
             // extract current buffer
             Mesh::vertex* vertex_buffer;
-            int copy_data_to_offset = 0;
+            int vertex_buffer_size;
             if (size() > 0) // if new mesh will be first
             {
-                // get current buffer size
-                glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &copy_data_to_offset);
-                copy_data_to_offset /= sizeof(Mesh::vertex);
-
-                // initialize new buffer
-                vertex_buffer = new Mesh::vertex[copy_data_to_offset + mesh->vertices.Length()];
-
-                // read current buffer into current
-                void* buf_ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
-                memcpy(vertex_buffer, buf_ptr, sizeof(Mesh::vertex) * copy_data_to_offset);
-                glUnmapBuffer(GL_ARRAY_BUFFER);
+                // extract existing vertex buffer
+                vertex_buffer = extract_gl_buffer<Mesh::vertex>(GL_ARRAY_BUFFER, gl_vertex_buffer_id, vertex_buffer_size, mesh->vertices.Length());
             }
             else
             {
+                vertex_buffer_size = mesh->vertices.Length();
                 // initialize new empty buffer
-                vertex_buffer = new Mesh::vertex[mesh->vertices.Length()];
+                vertex_buffer = new Mesh::vertex[vertex_buffer_size];
             }
 
             // modify copy of current buffer
-            memcpy(vertex_buffer + copy_data_to_offset, mesh->vertices.GetData(), sizeof(Mesh::vertex) * mesh->vertices.Length());
+            memcpy(vertex_buffer + vertex_buffer_size - mesh->vertices.Length(), mesh->vertices.GetData(), sizeof(Mesh::vertex) * mesh->vertices.Length());
 
+            glBindBuffer(GL_ARRAY_BUFFER, gl_vertex_buffer_id);
             // save updated buffer
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Mesh::vertex) * (copy_data_to_offset + mesh->vertices.Length()), vertex_buffer, GL_STATIC_DRAW);
-        
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Mesh::vertex) * vertex_buffer_size, vertex_buffer, GL_STATIC_DRAW);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
-#if DEBUG_RENDER
-            cached_vertices = List<Mesh::vertex>(vertex_buffer, copy_data_to_offset + mesh->vertices.Length());
+            
+#if ENABLE_DEBUG_RENDER
+            cached_vertices = List<Mesh::vertex>(vertex_buffer, vertex_buffer_size);
 #endif
             delete vertex_buffer;
-                
-            operator[](mesh) = render_list(mesh.get(), copy_data_to_offset);
+            
+            operator[](mesh) = render_list(mesh.get(), vertex_buffer_size - mesh->vertices.Length());
         }
+        
         operator[](mesh).Add(Shared<IRenderable>(renderable));
+        objects_count++;
     }
 
     void cleanup() const
@@ -127,13 +223,14 @@ struct shader_render_data : std::map<Shared<class Mesh>, render_list> // objects
     
     uint gl_shader_id;
     uint gl_vertex_buffer_id;
+    uint objects_count;
 
-#if DEBUG_RENDER
+#if ENABLE_DEBUG_RENDER
     List<Mesh::vertex> cached_vertices;
 #endif
 };
 
-struct render_database : std::map<Shared<class Shader>, shader_render_data> // meshes for shader
+struct render_database : simple_map<Shared<class Shader>, shader_render_data> // meshes for shader
 {
     void add(class IRenderable* renderable)
     {
@@ -143,9 +240,9 @@ struct render_database : std::map<Shared<class Shader>, shader_render_data> // m
             {
                 if (mesh_ptr->vertices.Length() > 0)
                 {
-                    if (find(shared_ptr) == end())
+                    if (!have_key(shared_ptr))
                     {
-                        operator[](shared_ptr) = shader_render_data(shared_ptr);
+                        operator[](shared_ptr) = shader_render_data(shared_ptr.get());
                     }
                     operator[](shared_ptr).add(renderable);
                 }
@@ -153,19 +250,3 @@ struct render_database : std::map<Shared<class Shader>, shader_render_data> // m
         }
     }
 };
-
-template<typename T>
-List<T> dump_gl_buffer(uint buffer, uint buffer_type)
-{
-    int buffer_size;
-    glGetBufferParameteriv(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, &buffer_size);
-    buffer_size /= sizeof(T);
-
-    T* buffer_data = new T[buffer_size];
-
-    void* buf_ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_READ_ONLY);
-    memcpy(buffer_data, buf_ptr, sizeof(T) * buffer_size);
-    glUnmapBuffer(GL_ARRAY_BUFFER);
-
-    return List<T>(buffer_data, buffer_size);
-}

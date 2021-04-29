@@ -5,6 +5,7 @@
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 
 #include "Camera.h"
@@ -13,7 +14,6 @@
 #include "linmath.h"
 #include "Path.h"
 #include "Shader.h"
-#include "Utils.h"
 #include "World.h"
 
 Game* Game::instance_ = nullptr;
@@ -176,13 +176,6 @@ void Game::render_loop()
 	
 	while (!glfwWindowShouldClose(window_))
 	{
-		static bool b = false;
-		if (glfwGetTime() > 10 && !b)
-		{
-			world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
-			b = true;
-		}
-		
 		const auto tick_start = glfwGetTime();
 		
 		int width, height;
@@ -198,10 +191,6 @@ void Game::render_loop()
 			{
 				world_->tick(last_delta_time);
 			}
-			
-			glm::mat4 model = glm::mat4(1.0f);
-			model = glm::rotate(model, 0.0f, glm::vec3(0.0f, 0.0f, 1.0f));
-			model = glm::translate(model, glm::vec3(0.0f, 0.0f, 0.0f));
 
 			glm::vec3 cam_from = current_camera_->owner->position;
 			glm::vec3 cam_to = current_camera_->owner->position + current_camera_->owner->rotation * glm::vec3(1.0f, 0.0f, 0.0f);
@@ -220,7 +209,7 @@ void Game::render_loop()
 
 			glm::mat4 proj = glm::perspective(current_camera_->fov, (float) width / (float) height, 0.0f, 10.0f);
 
-			glm::mat4 mvp = proj * view * model;
+			glm::mat4 vp = proj * view;
 			
 			for (const auto& shader_meshes : render_database)
             {
@@ -234,7 +223,13 @@ void Game::render_loop()
             		{
             			if (!shader_meshes.first->get_meta().uniform_param_name.IsEmpty())
             			{
-            				glUniformMatrix4fv(shader_meshes.first->get_meta().uniform_param_id, 1, GL_FALSE, value_ptr(mvp));
+            				glm::mat4 model = glm::mat4(1.0f);
+            				model = glm::translate(model, object->get_position());
+            				//model *= glm::toMat4(object->get_rotation());
+            				//glm::rotate(model, 1, glm::vec3());
+            				model = glm::scale(model, object->get_scale());
+            				
+            				glUniformMatrix4fv(shader_meshes.first->get_meta().uniform_param_id, 1, GL_FALSE, value_ptr(vp * model));
             			}
             			
             			glDrawArrays(GL_TRIANGLES, mesh_objects.second.vertex_buffer_offset, mesh_objects.second.size_in_vertex_buffer);

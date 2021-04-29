@@ -71,3 +71,13 @@ Weak<Shader> Entity::get_shader() const
 {
     return Game::get_instance()->get_basic_shader();
 }
+
+glm::vec3 Entity::get_position()
+{
+    return position;
+}
+
+glm::quat Entity::get_rotation()
+{
+    return position;
+}

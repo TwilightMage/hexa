@@ -63,10 +63,13 @@ struct shader_render_data : std::map<Shared<class Mesh>, render_list> // objects
     {
     }
 
-    explicit shader_render_data(class Shader* shader)
+    explicit shader_render_data(const Weak<class Shader>& shader)
     {
-        gl_shader_id = shader->get_program();
-        glGenBuffers(1, &gl_vertex_buffer_id);
+        if (const auto shader_ptr = shader.lock())
+        {
+            gl_shader_id = shader_ptr->get_program();
+            glGenBuffers(1, &gl_vertex_buffer_id);
+        }
     }
     
     void add(class IRenderable* renderable)
@@ -134,15 +137,19 @@ struct render_database : std::map<Shared<class Shader>, shader_render_data> // m
 {
     void add(class IRenderable* renderable)
     {
-        const Shared<Shader> shader = Shared<Shader>(renderable->get_shader());
-        Mesh* mesh = renderable->get_mesh();
-        if (shader && mesh && mesh->vertices.Length() > 0)
+        if (const auto shared_ptr = renderable->get_shader().lock())
         {
-            if (find(shader) == end())
+            if (const auto mesh_ptr = renderable->get_mesh().lock())
             {
-                operator[](shader) = shader_render_data(shader.get());
+                if (mesh_ptr->vertices.Length() > 0)
+                {
+                    if (find(shared_ptr) == end())
+                    {
+                        operator[](shared_ptr) = shader_render_data(shared_ptr);
+                    }
+                    operator[](shared_ptr).add(renderable);
+                }
             }
-            operator[](shader).add(renderable);
         }
     }
 };

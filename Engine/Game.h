@@ -48,7 +48,7 @@ public:
     static bool is_app_path_set();
     static const Path& get_app_path();
 
-    class Shader* get_basic_shader() const;
+    Weak<class Shader> get_basic_shader() const;
 
     static uint get_screen_width();
     static uint get_screen_height();
@@ -81,10 +81,10 @@ private:
     static bool app_path_set_;
 
     class GLFWwindow* window_;
-    class Shader* basic_shader_;
+    Shared<class Shader> basic_shader_;
 
-    List<class Shader*> shaders;
-    List<class Mesh*> meshes;
+    List<Shared<class Shader>> shaders;
+    List<Shared<class Mesh>> meshes;
     
     render_database render_database;
 

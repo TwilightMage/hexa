@@ -20,8 +20,8 @@ public:
 
     virtual void use_mesh(class Mesh* new_mesh) override;
     virtual void clear_mesh() override;
-    virtual class Mesh* get_mesh() const override;
-    virtual class Shader* get_shader() const override;
+    virtual Weak<class Mesh> get_mesh() const override;
+    virtual Weak<class Shader> get_shader() const override;
 
     glm::vec3 position;
     glm::quat rotation;

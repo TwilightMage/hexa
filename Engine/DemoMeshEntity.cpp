@@ -8,9 +8,9 @@ void DemoMeshEntity::start()
     
     Mesh* mesh = new Mesh();
     mesh->vertices = List<Mesh::vertex>({
-        { -0.5f, -0.5f, i, 0.0f, 0.0f, 1.f, 0.f, 0.f },
-        { 0.5f, -0.5f, i, 1.0f, 0.0f, 0.f, 1.f, 0.f },
-        { -0.5f,  0.5f, i, 0.0f, 1.0f, 0.f, 0.f, 1.f }
+        { 0.0f, 0.0f, i, 0.0f, 0.0f, 0.f, 0.f, 0.f },
+        { 1.0f, 0.0f, i, 1.0f, 0.0f, 1.f, 0.f, 0.f },
+        { 0.0f, 1.0f, i, 0.0f, 1.0f, 0.f, 1.f, 0.f }
     });
 
     i++;

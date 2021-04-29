@@ -22,7 +22,8 @@ public:
 
     const List<Shared<Entity>>& get_entities() const;
 
-    void notify_renderable_updated(class IRenderable* renderable, class Mesh* old_mesh);
+    static void notify_renderable_added(class IRenderable* renderable);
+    static void notify_renderable_updated(class IRenderable* renderable, Weak<class Mesh> old_mesh);
 
 protected:
     virtual void on_start();

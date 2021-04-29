@@ -10,9 +10,9 @@ void World::setup_spawn(Entity* entity)
     entity->world_ = this;
     entities_.Add(Shared<Entity>(entity));
     entity->start();
-    if (entity->get_mesh() != nullptr &&  entity->get_shader() != nullptr)
+    if (!entity->get_mesh().expired() &&  !entity->get_shader().expired())
     {
-        notify_renderable_updated(entity, nullptr);
+        notify_renderable_added(entity);
     }
 }
 
@@ -48,19 +48,25 @@ const List<Shared<Entity>>& World::get_entities() const
     return entities_;
 }
 
-void World::notify_renderable_updated(IRenderable* renderable, class Mesh* old_mesh)
+void World::notify_renderable_added(IRenderable* renderable)
+{
+    notify_renderable_updated(renderable, Shared<Mesh>(nullptr));
+}
+
+void World::notify_renderable_updated(IRenderable* renderable, Weak<Mesh> old_mesh)
 {
     // TODO: Rework so we will have render_database.add, render_database.remove, render_database.transfer_mesh, render_database.transfer_shader
-    Mesh* new_mesh = renderable->get_mesh();
+    const auto new_mesh_ptr = renderable->get_mesh().lock();
+    const auto old_mesh_ptr = old_mesh.lock();
 
 
-    if (renderable->get_mesh() != old_mesh)
+    if (new_mesh_ptr != old_mesh_ptr)
     {
-        if (!old_mesh) // add
+        if (!old_mesh_ptr) // add
         {
             Game::get_instance()->render_database.add(renderable);
         }
-        else if (!new_mesh) // remove
+        else if (!new_mesh_ptr) // remove
         {
             //Game::get_instance()->render_database.remove(renderable);
         }

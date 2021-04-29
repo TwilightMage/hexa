@@ -25,9 +25,10 @@ public:
 
     uint get_program() const;
     const meta& get_meta() const;
+
+    void map_params();
     
-    static Shader* compile(const Path& frag, const Path& vert, const meta& shader_meta);
-    void link() const;
+    static Shared<Shader> compile(const Path& frag, const Path& vert, const meta& shader_meta);
 
 private:
     uint program;

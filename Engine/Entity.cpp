@@ -40,9 +40,9 @@ void Entity::use_mesh(Mesh* new_mesh)
     const auto old_mesh = mesh_;
     mesh_ = Shared<Mesh>(new_mesh);
 
-    if (started_ && get_shader() != nullptr)
+    if (started_ && !get_shader().expired())
     {
-        world_->notify_renderable_updated(this, old_mesh.get());
+        world_->notify_renderable_updated(this, old_mesh);
     }
 }
 
@@ -56,18 +56,18 @@ void Entity::clear_mesh()
     const auto old_mesh = mesh_;
     mesh_ = nullptr;
 
-    if (started_ && get_shader() != nullptr)
+    if (started_ && get_shader().expired())
     {
-        world_->notify_renderable_updated(this, old_mesh.get());
+        world_->notify_renderable_updated(this, old_mesh);
     }
 }
 
-Mesh* Entity::get_mesh() const
+Weak<Mesh> Entity::get_mesh() const
 {
-    return mesh_.get();
+    return mesh_;
 }
 
-Shader* Entity::get_shader() const
+Weak<Shader> Entity::get_shader() const
 {
     return Game::get_instance()->get_basic_shader();
 }

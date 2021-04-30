@@ -100,7 +100,7 @@ Shared<Shader> Shader::compile(const Path& frag, const Path& vert, const meta& s
 
         result->shader_meta = shader_meta;
         
-        Game::instance_->shaders.Add(result);
+        Game::instance_->shaders_.Add(result);
         
         return result;
     }

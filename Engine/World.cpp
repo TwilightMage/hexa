@@ -4,6 +4,7 @@
 #include "Game.h"
 #include "ITickable.h"
 #include "Mesh.h"
+#include "Renderer.h"
 
 void World::setup_spawn(const Weak<Entity>& entity)
 {
@@ -25,7 +26,7 @@ void World::start()
 
     for (auto entity : entities_)
     {
-        Game::get_instance()->render_database.add(entity);
+        notify_renderable_added(entity);
     }
 }
 
@@ -67,12 +68,12 @@ const List<Shared<Entity>>& World::get_entities() const
 
 void World::notify_renderable_added(const Weak<IRenderable>& renderable)
 {
-    Game::get_instance()->render_database.add(renderable);
+    Game::get_instance()->renderer_.register_object(renderable);
 }
 
 void World::notify_renderable_deleted(const Weak<IRenderable>& renderable)
 {
-    Game::get_instance()->render_database.remove(renderable);
+    Game::get_instance()->renderer_.unregister_object(renderable);
 }
 
 void World::notify_renderable_updated(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh)
@@ -88,11 +89,11 @@ void World::notify_renderable_updated(const Weak<IRenderable>& renderable, const
         {
             if (!old_mesh_ptr) // add
                 {
-                Game::get_instance()->render_database.add(renderable_ptr);
+                Game::get_instance()->renderer_.register_object(renderable_ptr);
                 }
             else if (!new_mesh_ptr) // remove
                 {
-                    Game::get_instance()->render_database.remove(renderable_ptr);
+                    Game::get_instance()->renderer_.unregister_object(renderable_ptr);
                 }
             else
             {

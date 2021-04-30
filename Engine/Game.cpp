@@ -12,6 +12,7 @@
 #include "DemoMeshEntity.h"
 #include "linmath.h"
 #include "Path.h"
+#include "Renderer.h"
 #include "Shader.h"
 #include "World.h"
 
@@ -210,30 +211,7 @@ void Game::render_loop()
 
 			glm::mat4 vp = proj * view;
 			
-			for (const auto& shader_meshes : render_database)
-            {
-            	glUseProgram(shader_meshes.value.gl_shader_id);
-            	glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.value.gl_vertex_buffer_id);
-				shader_meshes.key->map_params();
-
-            	for (const auto& mesh_objects : shader_meshes.value)
-            	{
-            		const uint mvp_array_size = std::min(mesh_objects.value.Length(), render_list::objects_count_limit);
-            		glm::mat4* mvp_array = new glm::mat4[mvp_array_size];
-            		{
-            			uint i = 0;
-            			for (const auto& object : mesh_objects.value)
-            			{
-            				mvp_array[i++] = vp * get_model_matrix(object);
-            				if (i == mvp_array_size) break;
-            			}
-            		}
-            		glUniformMatrix4fv(0, mvp_array_size, GL_FALSE, glm::value_ptr(mvp_array[0]));
-            		delete mvp_array;
-            		
-            		glDrawArraysInstanced(GL_TRIANGLES, mesh_objects.value.vertex_buffer_offset, mesh_objects.value.size_in_vertex_buffer, mesh_objects.value.Length());
-            	}
-            }
+			renderer_.render(vp);
 		}
  
 		glfwSwapBuffers(window_);

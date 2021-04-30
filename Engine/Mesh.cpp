@@ -76,7 +76,7 @@ Mesh* Mesh::load_obj(const Path& path)
             });
         }
 
-        Game::instance_->meshes.Add(Shared<Mesh>(result));
+        Game::instance_->meshes_.Add(Shared<Mesh>(result));
 
         return result;
     }

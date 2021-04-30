@@ -10,7 +10,7 @@
 #include "LogStream.h"
 #include "Mesh.h"
 #include "Path.h"
-#include "RenderDatabase.h"
+#include "Renderer.h"
 #include "Shader.h"
 #include "String.h"
 
@@ -88,14 +88,14 @@ private:
     GLFWwindow* window_;
     Shared<Shader> basic_shader_;
 
-    List<Shared<Shader>> shaders;
-    List<Shared<Mesh>> meshes;
-    
-    render_database render_database;
+    List<Shared<Shader>> shaders_;
+    List<Shared<Mesh>> meshes_;
 
     Shared<Camera> current_camera_;
     Shared<IControllable> current_controllable_;
     Shared<World> world_;
+
+    Renderer renderer_;
 };
 
 template<typename... Args>

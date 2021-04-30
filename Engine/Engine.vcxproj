@@ -214,7 +214,7 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="Regex.h" />
     <ClInclude Include="Renderable.h" />
-    <ClInclude Include="RenderDatabase.h" />
+    <ClInclude Include="Renderer.h" />
     <ClInclude Include="Set.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="String.h" />
@@ -253,6 +253,7 @@
     </ClCompile>
     <ClCompile Include="Regex.cpp" />
     <ClCompile Include="Renderable.cpp" />
+    <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Set.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="String.cpp" />

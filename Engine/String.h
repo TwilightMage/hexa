@@ -146,15 +146,15 @@ static String StringJoin(List<String> items, const String& glue)
 {
 	if (items.Length() == 0) return "";
 
-	std::stringstream str;
+	String result;
 
 	for (uint i = 0; i < items.Length(); i++)
 	{
-		if (i > 0) str << glue.std();
-		str << items[i].c();
+		if (i > 0) result += glue;
+		result += items[i];
 	}
 
-	return str.str();
+	return result;
 }
 
 template<typename T>

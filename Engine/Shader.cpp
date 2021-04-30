@@ -1,38 +1,41 @@
 ﻿#include "Shader.h"
 
-#include <glad/glad.h>
-
 #include "File.h"
 #include "Game.h"
 
 uint Shader::get_program() const
 {
-    return program;
+    return program_;
 }
 
 const struct Shader::meta& Shader::get_meta() const
 {
-    return shader_meta;
+    return shader_meta_;
+}
+
+const String& Shader::get_name() const
+{
+    return name;
 }
 
 void Shader::map_params()
 {
-    glLinkProgram(program);
-    for (auto& vertex_param : shader_meta.vertex_params)
+    glLinkProgram(program_);
+    for (auto& vertex_param : shader_meta_.vertex_params)
     {
-        vertex_param.id = glGetAttribLocation(program, vertex_param.name.c());
+        vertex_param.id = glGetAttribLocation(program_, vertex_param.name.c());
         if (vertex_param.id != GL_INVALID_INDEX || true)
         {
             glEnableVertexAttribArray(vertex_param.id);
-            glVertexAttribPointer(vertex_param.id, vertex_param.size, vertex_param.type, GL_FALSE, shader_meta.vertex_param_size, reinterpret_cast<void*>(static_cast<uint64>(vertex_param.offset)));
+            glVertexAttribPointer(vertex_param.id, vertex_param.size, vertex_param.type, GL_FALSE, shader_meta_.vertex_param_size, reinterpret_cast<void*>(static_cast<uint64>(vertex_param.offset)));
         }
     }
 
-    for (auto& uniform_param : shader_meta.uniform_params)
+    for (auto& uniform_param : shader_meta_.uniform_params)
     {
         if (!uniform_param.name.IsEmpty())
         {
-            uniform_param.id = glGetUniformLocation(program, uniform_param.name.c());
+            uniform_param.id = glGetUniformLocation(program_, uniform_param.name.c());
         }
         else
         {
@@ -41,69 +44,115 @@ void Shader::map_params()
     }
 }
 
-Shared<Shader> Shader::compile(const Path& frag, const Path& vert, const meta& shader_meta)
-{    
-    if (frag.Exists() && vert.Exists())
+void Shader::cleanup()
+{
+    glLinkProgram(program_);
+
+    for (auto& kvp : shaders_)
+    {
+        glDetachShader(program_, kvp.second);
+        glDeleteShader(kvp.second);
+    }
+
+    glDeleteProgram(program_);
+}
+
+Shared<Shader> Shader::compile(const Path& path, const meta& shader_meta, int type_flags)
+{
+    if (type_flags != 0)
     {
         const auto result = MakeShared<Shader>();
-
-        // Fragment shader
-        const auto fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
-        auto fragment_shader_code = File::ReadFile(frag).Trim().c_copy();
-        glShaderSource(fragment_shader, 1, &fragment_shader_code, nullptr);
-        delete fragment_shader_code;
-        glCompileShader(fragment_shader);
-
-        GLint is_compiled_fragment = 0;
-        glGetShaderiv(fragment_shader, GL_COMPILE_STATUS, &is_compiled_fragment);
-        if(is_compiled_fragment == GL_FALSE)
+        result->program_ = glCreateProgram();
+        
+        if (type_flags & VERTEX)
         {
-            GLint max_length = 0;
-            glGetShaderiv(fragment_shader, GL_INFO_LOG_LENGTH, &max_length);
-
-            std::vector<GLchar> error_log(max_length);
-            glGetShaderInfoLog(fragment_shader, max_length, &max_length, error_log.data());
-
-            print_error("OpenGL", "Failed to compile fragment shader %s:\n%s", frag.get_absolute().ToString(), error_log.data());
-
-            glDeleteShader(fragment_shader);
-            return nullptr;
+            result->shaders_[VERTEX] = compile_shader(path, VERTEX);
         }
 
-        // Vertex shader
-        const auto vertex_shader = glCreateShader(GL_VERTEX_SHADER);
-        auto vert_shader_code = File::ReadFile(vert).Trim().c_copy();
-        glShaderSource(vertex_shader, 1, &vert_shader_code, nullptr);
-        delete vert_shader_code;
-        glCompileShader(vertex_shader);
-
-        GLint is_compiled_vertex = 0;
-        glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &is_compiled_vertex);
-        if(is_compiled_vertex == GL_FALSE)
+        if (type_flags & FRAGMENT)
         {
-            GLint max_length = 0;
-            glGetShaderiv(vertex_shader, GL_INFO_LOG_LENGTH, &max_length);
-
-            std::vector<GLchar> error_log(max_length);
-            glGetShaderInfoLog(vertex_shader, max_length, &max_length, error_log.data());
-
-            print_error("OpenGL", "Failed to compile vertex shader %s:\n%s", vert.get_absolute().ToString(), error_log.data());
-
-            glDeleteShader(vertex_shader);
-            return nullptr;
+            result->shaders_[FRAGMENT] = compile_shader(path, FRAGMENT);
         }
 
-        // Shader program
-        result->program = glCreateProgram();
-        glAttachShader(result->program, vertex_shader);
-        glAttachShader(result->program, fragment_shader);
+        if (type_flags & GEOMETRY)
+        {
+            result->shaders_[GEOMETRY] = compile_shader(path, GEOMETRY);
+        }
 
-        result->shader_meta = shader_meta;
+        if (type_flags & COMPUTE)
+        {
+            result->shaders_[COMPUTE] = compile_shader(path, COMPUTE);
+        }
+
+        List<String> problem_shaders;
+        for (auto& kvp : result->shaders_)
+        {
+            if (kvp.second == -1)
+            {
+                problem_shaders.Add(shader_type_meta.at(kvp.first).name);
+            }
+        }
         
-        Game::instance_->shaders_.Add(result);
-        
-        return result;
+        if (problem_shaders.Length() > 0)
+        {
+            for (auto& kvp : result->shaders_)
+            {
+                glDeleteShader(kvp.second);
+            }
+            print_error("Shader", "Unable to compile shader program %s because of problems with shaders: %s", path.get_absolute().ToString().c(), StringJoin(problem_shaders, ", "));
+        }
+        else
+        {
+            result->shader_meta_ = shader_meta;
+
+            result->program_ = glCreateProgram();
+            glLinkProgram(result->program_);
+            for (auto& kvp : result->shaders_)
+            {
+                glAttachShader(result->program_, kvp.second);
+            }
+
+            return result;
+        }
     }
     
     return nullptr;
+}
+
+uint Shader::compile_shader(const Path& path, type shader_type)
+{
+    Path filepath = path.ToString() + shader_type_meta.at(shader_type).format;
+
+    if (filepath.Exists())
+    {
+        const auto shader = glCreateShader(shader_type_meta.at(shader_type).gl_type);
+        auto shader_code = File::ReadFile(filepath).Trim().c_copy();
+        glShaderSource(shader, 1, &shader_code, nullptr);
+        delete shader_code;
+        glCompileShader(shader);
+
+        GLint is_compiled = 0;
+        glGetShaderiv(shader, GL_COMPILE_STATUS, &is_compiled);
+        if(is_compiled == GL_FALSE)
+        {
+            GLint max_length = 0;
+            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &max_length);
+
+            std::vector<GLchar> error_log(max_length);
+            glGetShaderInfoLog(shader, max_length, &max_length, error_log.data());
+
+            print_error("Shader", "Failed to compile shader %s:\n%s", filepath.get_absolute().ToString().c(), error_log.data());
+
+            glDeleteShader(shader);
+            return -1;
+        }
+    
+        return shader;  
+    }
+    else
+    {
+        print_error("Shader", "Failed to compile %s shader %s: file does not exist", shader_type_meta.at(shader_type).name.c(), filepath.get_absolute().ToString().c());
+    }
+
+    return -1;
 }

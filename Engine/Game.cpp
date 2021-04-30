@@ -153,15 +153,15 @@ void Game::render_loop()
 	basic_shader_meta.uniform_params = {
 		{"MVPs"}
 	};
-	basic_shader_ = Shader::compile(Path("resources/engine/shaders/basic.frag"), Path("resources/engine/shaders/basic.vert"), basic_shader_meta);
+	basic_shader_ = Shader::compile(Path("resources/engine/shaders/basic"), basic_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
 
 	world_ = MakeShared<World>();
 	world_->start();
 
 	auto a = world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
-	auto b = world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(90.0f))));
-	auto c = world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(180.0f))));
-	auto d = world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(270.0f))));
+	auto b = world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, -1.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(90.0f))));
+	auto c = world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, -2.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(180.0f))));
+	auto d = world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, -3.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(270.0f))));
 
 	//a->destroy();
 	//b->destroy();
@@ -183,7 +183,7 @@ void Game::render_loop()
 		glfwGetFramebufferSize(window_, &width, &height);
 		
 		glViewport(0, 0, width, height);
-		glClear(GL_COLOR_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		
 		if (current_camera_ && current_camera_->owner)
 		{
@@ -207,7 +207,7 @@ void Game::render_loop()
 				    0.0, 0.0, 0.0, 1.0
 			    );
 
-			glm::mat4 proj = glm::perspective(current_camera_->fov, (float) width / (float) height, 0.0f, 10.0f);
+			glm::mat4 proj = glm::perspective(current_camera_->fov, (float) width / (float) height, 0.01f, 1000.0f);
 
 			glm::mat4 vp = proj * view;
 			

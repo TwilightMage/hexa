@@ -132,7 +132,7 @@ void Renderer::register_object(const Weak<IRenderable>& renderable)
 
                     if (mesh_objects.Length() >= render_list::objects_count_limit)
                     {
-                        print_warning("Renderer", "Objects count exceeded for mesh %i for shader %i", mesh_ptr.get(), shader_ptr.get());
+                        print_warning("Renderer", "Objects count exceeded for mesh %p for shader %s", mesh_ptr.get(), shader_ptr->get_name().c());
                     }
                 }
             }
@@ -184,6 +184,9 @@ void Renderer::unregister_object(const Weak<IRenderable>& renderable)
 
 void Renderer::render(const glm::mat4& view_projection_matrix)
 {
+    glEnable(GL_DEPTH_TEST);
+    glDepthFunc(GL_LESS);
+    
     for (const auto& shader_meshes : database)
     {
         glUseProgram(shader_meshes.value.gl_shader_id);

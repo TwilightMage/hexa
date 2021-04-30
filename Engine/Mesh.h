@@ -16,6 +16,8 @@ public:
     
     static Shared<Mesh> load_obj(const Path& path);
 
+    void optimize();
+    
     uint get_usage_count() const;
 
     List<vertex> vertices; // TODO: Make private

@@ -38,10 +38,34 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
         result->indices = List(loader->LoadedIndices);
         loader->LoadedIndices.clear();
 
+        result->optimize();
+
         return result;
     }
 
     return nullptr;
+}
+
+void Mesh::optimize()
+{
+    for (uint i = 0; i < vertices.Length() - 1; i++)
+    {
+        for (uint j = i + 1; j < vertices.Length(); j++)
+        {
+            if (memcmp(&vertices[i], &vertices[j], sizeof(vertex)) == 0)
+            {
+                for (uint k = 0; k < indices.Length(); k++)
+                {
+                    if (indices[k] == j)
+                    {
+                        indices[k] = i;
+                    }
+                }
+
+                vertices.RemoveAt(j--);
+            }
+        }
+    }
 }
 
 uint Mesh::get_usage_count() const

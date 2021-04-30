@@ -18,11 +18,11 @@ struct Vec2
     float x, y;
 };
 
-Mesh* Mesh::load_obj(const Path& path)
+Shared<Mesh> Mesh::load_obj(const Path& path)
 {
     if (path.Exists())
     {
-        Mesh* result = new Mesh();
+        Shared<Mesh> result = MakeShared<Mesh>();
 
         List<Vec3> positions;
         List<Vec2> uvs;
@@ -33,30 +33,33 @@ Mesh* Mesh::load_obj(const Path& path)
         while (!reader->IsEndOfFile())
         {
             auto line = reader->ReadLine();
-            auto parts = line.Split(' ');
-            if (parts[0] == "o")
+            if (!line.IsEmpty())
             {
-                if (gotObject)
+                auto parts = line.Split(' ');
+                if (parts[0] == "o")
                 {
-                    print_error("Mesh", "Unable to load mesh %s, cannot load more than 1 object", path.get_absolute().ToString());
-                    return nullptr;
+                    if (gotObject)
+                    {
+                        print_error("Mesh", "Unable to load mesh %s, cannot load more than 1 object", path.get_absolute().ToString());
+                        return nullptr;
+                    }
+                    gotObject = true;
                 }
-                gotObject = true;
-            }
-            else if (parts[0] == "v")
-            {
-                positions.Add(Vec3 { StringParse<float>(parts[1]), StringParse<float>(parts[2]), StringParse<float>(parts[3]) });
-            }
-            else if (parts[0] == "vt")
-            {
-                uvs.Add(Vec2 { StringParse<float>(parts[1]), StringParse<float>(parts[2]) });
-            }
-            else if (parts[0] == "f")
-            {
-                for (const auto part : parts)
+                else if (parts[0] == "v")
                 {
-                    auto triangle_strings = part.Split('/');
-                    triangles.Add(Triangle { StringParse<int>(triangle_strings[0]), StringParse<int>(triangle_strings[1]), StringParse<int>(triangle_strings[2]) });
+                    positions.Add(Vec3 { StringParse<float>(parts[1]), StringParse<float>(parts[2]), StringParse<float>(parts[3]) });
+                }
+                else if (parts[0] == "vt")
+                {
+                    uvs.Add(Vec2 { StringParse<float>(parts[1]), StringParse<float>(parts[2]) });
+                }
+                else if (parts[0] == "f")
+                {
+                    for (uint j = 1; j < parts.Length(); j++)
+                    {
+                        auto triangle_strings = parts[j].Split('/');
+                        triangles.Add(Triangle { StringParse<int>(triangle_strings[0]), StringParse<int>(triangle_strings[1]), StringParse<int>(triangle_strings[2]) });
+                    }
                 }
             }
         }

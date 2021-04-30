@@ -14,7 +14,7 @@ public:
         vec3 col;
     };
     
-    static Mesh* load_obj(const Path& path);
+    static Shared<Mesh> load_obj(const Path& path);
 
     uint get_usage_count() const;
 

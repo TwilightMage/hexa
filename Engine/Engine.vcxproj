@@ -267,9 +267,8 @@
     <Natvis Include="Engine.natvis" />
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="resources\engine" />
-  </ItemGroup>
-  <ItemGroup>
+    <Content Include="resources\engine\meshes\sphere.obj" />
+    <Content Include="resources\engine\meshes\square.obj" />
     <Content Include="resources\engine\shaders\basic.frag" />
     <Content Include="resources\engine\shaders\basic.vert" />
   </ItemGroup>

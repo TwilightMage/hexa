@@ -1,16 +1,18 @@
 ﻿#pragma once
+
 #include <glm/vec3.hpp>
 #include <glm/ext/quaternion_float.hpp>
 
 #include "BasicTypes.h"
+#include "framework.h"
 #include "IRenderable.h"
 
-class Entity : public IRenderable, std::enable_shared_from_this<Entity>
+EXTERN class EXPORT Entity : public IRenderable, std::enable_shared_from_this<Entity>
 {
     friend class World;
 
 public:
-    class World* get_world() const;
+    Weak<World> get_world() const;
     
     virtual void start();
     virtual void on_destroy();
@@ -30,7 +32,7 @@ public:
     glm::quat rotation;
 
 private:
-    class World* world_;
+    Shared<World> world_;
     Shared<class Mesh> mesh_;
     bool pending_kill_;
     bool started_;

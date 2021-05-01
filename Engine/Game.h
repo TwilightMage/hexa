@@ -5,6 +5,8 @@
 #include <optional>
 
 
+
+#include "EventBus.h"
 #include "GameInfo.h"
 #include "List.h"
 #include "LogStream.h"
@@ -41,6 +43,9 @@ public:
 
     void possess(const Weak<IControllable>& controllable);
     void use_camera(const Weak<Camera>& camera);
+    
+    void open_world(const Weak<World>& world);
+    void close_world();
 
     const List<String>& get_args() const;
 
@@ -60,7 +65,9 @@ public:
 
 protected:
     virtual void init_game_info(GameInfo& out_info) = 0;
-
+    virtual void start();
+    virtual void tick(float delta_time);
+    
 private:
     void setup_window();
     void prepare();
@@ -87,6 +94,7 @@ private:
 
     GLFWwindow* window_;
     Shared<Shader> basic_shader_;
+    Unique<EventBus> event_bus_;
 
     List<Shared<Shader>> shaders_;
     List<Shared<Mesh>> meshes_;
@@ -95,7 +103,7 @@ private:
     Shared<IControllable> current_controllable_;
     Shared<World> world_;
 
-    Renderer renderer_;
+    Unique<Renderer> renderer_;
 };
 
 template<typename... Args>

@@ -4,7 +4,7 @@
 
 #include "Entity.h"
 
-class Camera
+EXTERN class EXPORT Camera
 {
 public:
     class Entity* owner;

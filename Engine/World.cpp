@@ -6,11 +6,13 @@
 #include "Mesh.h"
 #include "Renderer.h"
 
-void World::setup_spawn(const Weak<Entity>& entity)
+void World::spawn_entity(const Weak<Entity>& entity, glm::vec3 pos, glm::quat rot)
 {
     if (auto entity_ptr = entity.lock())
     {
-        entity_ptr->world_ = this;
+        entity_ptr->position = pos;
+        entity_ptr->rotation = rot;
+        entity_ptr->world_ = weak_from_this().lock();
         entities_.Add(entity_ptr);
         entity_ptr->start();
         if (!entity_ptr->get_mesh().expired() && !entity_ptr->get_shader().expired())
@@ -68,12 +70,12 @@ const List<Shared<Entity>>& World::get_entities() const
 
 void World::notify_renderable_added(const Weak<IRenderable>& renderable)
 {
-    Game::get_instance()->renderer_.register_object(renderable);
+    Game::get_instance()->renderer_->register_object(renderable);
 }
 
 void World::notify_renderable_deleted(const Weak<IRenderable>& renderable)
 {
-    Game::get_instance()->renderer_.unregister_object(renderable);
+    Game::get_instance()->renderer_->unregister_object(renderable);
 }
 
 void World::notify_renderable_updated(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh)
@@ -89,11 +91,11 @@ void World::notify_renderable_updated(const Weak<IRenderable>& renderable, const
         {
             if (!old_mesh_ptr) // add
                 {
-                Game::get_instance()->renderer_.register_object(renderable_ptr);
+                Game::get_instance()->renderer_->register_object(renderable_ptr);
                 }
             else if (!new_mesh_ptr) // remove
                 {
-                    Game::get_instance()->renderer_.unregister_object(renderable_ptr);
+                    Game::get_instance()->renderer_->unregister_object(renderable_ptr);
                 }
             else
             {
@@ -108,5 +110,9 @@ void World::on_start()
 }
 
 void World::on_tick()
+{
+}
+
+void World::on_close()
 {
 }

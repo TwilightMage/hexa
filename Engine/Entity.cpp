@@ -5,7 +5,7 @@
 #include "Mesh.h"
 #include "World.h"
 
-World* Entity::get_world() const
+Weak<World> Entity::get_world() const
 {
     return world_;
 }

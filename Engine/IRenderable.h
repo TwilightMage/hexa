@@ -3,8 +3,9 @@
 #include <glm/ext/quaternion_float.hpp>
 
 #include "BasicTypes.h"
+#include "framework.h"
 
-class IRenderable
+EXTERN class EXPORT IRenderable
 {
 public:
     virtual void use_mesh(const Weak<class Mesh>& new_mesh) = 0;

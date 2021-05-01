@@ -1,17 +1,17 @@
 ﻿#pragma once
-#include "linmath.h"
+
 #include "Path.h"
 
-class Mesh
+EXTERN class EXPORT Mesh
 {
     friend class Entity;
 
 public:
     struct vertex
     {
-        vec3 pos;
-        vec2 uv;
-        vec3 col;
+        float pos[3];
+        float uv[2];
+        float col[3];
     };
     
     static Shared<Mesh> load_obj(const Path& path);

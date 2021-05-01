@@ -1,8 +1,7 @@
 #include <iostream>
 
-#include "pch.h"
 #include "ExampleMod.h"
-#include "Engine/framework.h"
+#include "framework.h"
 #include "Engine/Mod.h"
 
 BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReserved)
@@ -18,7 +17,7 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
     return TRUE;
 }
 
-EXTERN Mod EXPORT *GetMod()
+EXTERN Mod EXPORT *get_mod()
 {
     return new ExampleMod();
 }

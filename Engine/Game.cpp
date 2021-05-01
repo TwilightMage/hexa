@@ -8,9 +8,8 @@
 
 
 #include "Camera.h"
-#include "DebugPlayer.h"
-#include "DemoMeshEntity.h"
-#include "linmath.h"
+#include "IControllable.h"
+#include "Mod.h"
 #include "Path.h"
 #include "Renderer.h"
 #include "Shader.h"
@@ -22,6 +21,8 @@ bool Game::app_path_set_ = false;
 
 Game::Game(int argc, char* argv[])
     : log_stream_(DateTime::Now(), argv[0])
+	, event_bus_(new EventBus())
+	, renderer_(new Renderer)
 {
 	if (instance_)
 	{
@@ -57,12 +58,41 @@ void Game::launch()
 
 void Game::possess(const Weak<IControllable>& controllable)
 {
+	if (current_controllable_)
+	{
+		current_controllable_->on_unpossess();
+	}
 	current_controllable_ = controllable.lock();
+	current_controllable_->on_possess();
 }
 
 void Game::use_camera(const Weak<Camera>& camera)
 {
 	current_camera_ = camera.lock();
+}
+
+void Game::open_world(const Weak<World>& world)
+{
+	close_world();
+
+	if (const auto world_ptr = world.lock())
+	{
+		world_ = world_ptr;
+		world_->start();
+
+		event_bus_->world_opened.call(world);
+	}
+}
+
+void Game::close_world()
+{
+	if (world_)
+	{
+		world_->on_close();
+		world_ = nullptr;
+
+		event_bus_->world_closed.call(world_);
+	}
 }
 
 const List<String>& Game::get_args() const
@@ -115,6 +145,14 @@ uint Game::get_screen_height()
 	return GetSystemMetrics(SM_CYSCREEN);
 }
 
+void Game::start()
+{
+}
+
+void Game::tick(float delta_time)
+{
+}
+
 void Game::setup_window()
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
@@ -143,6 +181,11 @@ void Game::render_loop()
 {
 	String opengl_version(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 	
+	if (auto mod = Mod::load("mods/ExampleMod/ExampleMod.dll"))
+	{
+		mod->init(event_bus_.get());
+	}
+	
 	Shader::meta basic_shader_meta;
 	basic_shader_meta.vertex_param_size = sizeof(Mesh::vertex);
 	basic_shader_meta.vertex_params = {
@@ -154,23 +197,8 @@ void Game::render_loop()
 		{"MVPs"}
 	};
 	basic_shader_ = Shader::compile(Path("resources/engine/shaders/basic"), basic_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
-
-	world_ = MakeShared<World>();
-	world_->start();
-
-	auto a = world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
-	auto b = world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, -1.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(90.0f))));
-	auto c = world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, -2.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(180.0f))));
-	auto d = world_->spawn<DemoMeshEntity>(glm::vec3(0.0f, 0.0f, -3.0f), glm::quat(glm::vec3(0.0f, 0.0f, glm::radians(270.0f))));
-
-	//a->destroy();
-	//b->destroy();
-	//c->destroy();
-	//d->destroy();
 	
-	auto player = world_->spawn<DebugPlayer>(glm::vec3(-5.0f, 0.0f, 2.0f), glm::quat(glm::vec3(0.0f, glm::radians(30.0f), 0.0f)));
-	possess(player);
-	use_camera(player->camera);
+	start();
 
 	float last_delta_time = 0.0f;
 	
@@ -189,6 +217,7 @@ void Game::render_loop()
 		{
 			if (last_delta_time > 0.0f)
 			{
+				tick(last_delta_time);
 				world_->tick(last_delta_time);
 			}
 
@@ -211,13 +240,13 @@ void Game::render_loop()
 
 			glm::mat4 vp = proj * view;
 			
-			renderer_.render(vp);
+			renderer_->render(vp);
 		}
  
 		glfwSwapBuffers(window_);
 		glfwPollEvents();
 
-		last_delta_time = glfwGetTime() - tick_start;
+		last_delta_time = static_cast<float>(glfwGetTime() - tick_start);
 	}
 }
 

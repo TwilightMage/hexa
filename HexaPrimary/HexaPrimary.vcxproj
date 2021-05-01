@@ -170,6 +170,10 @@
     <ProjectReference Include="..\Engine\Engine.vcxproj">
       <Project>{ded37cb0-287c-4f64-9544-176c69e40636}</Project>
     </ProjectReference>
+    <ProjectReference Include="..\ExampleMod\ExampleMod.vcxproj">
+      <Project>{a5a3b5a2-68ad-49b0-b5f9-ed86b57c637b}</Project>
+      <Name>ExampleMod</Name>
+    </ProjectReference>
     <ProjectReference Include="..\HexaGame\HexaGame.vcxproj">
       <Project>{4e4e4cbd-81e7-4c41-b179-49a473d0151d}</Project>
     </ProjectReference>

@@ -1,9 +1,11 @@
 ﻿#include "DebugPlayer.h"
 
+#define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
 
-#include "Camera.h"
+#include "Engine/Camera.h"
+#include "Engine/Game.h"
 
 void DebugPlayer::start()
 {
@@ -30,6 +32,11 @@ void DebugPlayer::key_up(int key)
     else if (key == GLFW_KEY_A) move_right += 1;
     if (key == GLFW_KEY_SPACE) move_up -= 1;
     else if (key == GLFW_KEY_LEFT_SHIFT) move_up += 1;
+}
+
+void DebugPlayer::on_possess()
+{
+    Game::get_instance()->use_camera(camera);
 }
 
 void DebugPlayer::tick(float delta_time)

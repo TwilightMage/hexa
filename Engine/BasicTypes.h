@@ -16,6 +16,8 @@ using Unique = std::unique_ptr<T>;
 template<typename T>
 using Weak = std::weak_ptr<T>;
 
+#define null_weak(Type) (std::weak_ptr<Type>())
+
 template<typename T>
 using Shared = std::shared_ptr<T>;
 

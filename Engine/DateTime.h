@@ -2,7 +2,7 @@
 
 #include "String.h"
 
-struct DateTime
+EXTERN struct EXPORT DateTime
 {
 	struct Interval
 	{

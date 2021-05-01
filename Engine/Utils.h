@@ -3,7 +3,7 @@
 #include "String.h"
 //#include <glad/glad.h>
 
-class Utils
+EXTERN class EXPORT Utils
 {
 public:
     static String get_gl_error_message(uint code);

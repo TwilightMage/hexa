@@ -2,19 +2,27 @@
 
 #include <string>
 
-#include "pch.h"
 #include "ModInfo.h"
 #include "Path.h"
 
+class EventBus;
 EXTERN class EXPORT Mod
 {
 public:
-    void Init(const ModInfo& newInfo);
+    void init(EventBus* event_bus);
 
-    const ModInfo& GetModInfo() const;
+    const ModInfo& get_mod_info() const;
 
-    static bool VerifySignature(const Path& path);
+    static bool verify_signature(const Path& path);
+
+    static Shared<Mod> load(const Path& path);
+
+protected:
+    virtual void on_init(EventBus* event_bus);
 
 private:
-    ModInfo info;
+    static ModInfo load_mod_info();
+    
+    ModInfo info_;
+    HINSTANCE dll;
 };

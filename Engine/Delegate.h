@@ -10,23 +10,23 @@ class Delegate
 public:
 	// Add member function binding to execution list
 	template<typename T>
-	void Bind(T* obj, void(T::* func)(InTypes...))
+	void bind(T* obj, void(T::* func)(InTypes...))
 	{
-		bindings[{obj, func}] = std::bind(func, obj);
+		bindings_[obj_func(obj, func_id::construct(func))] = [obj, func](InTypes... args)->void { return (obj->*func)(args...); };
 	}
 
 	// Add static or non-member function to execution list
-	void Bind(void(* func)(InTypes...))
+	void bind(void(* func)(InTypes...))
 	{
-		bindings[{nullptr, func}] = std::bind(func);
+		bindings_[obj_func(nullptr, func_id::construct(func))] = [func](InTypes... args)->void { return (*func)(args...); };
 	}
 
 	// Execute all bindings
-	void Call(InTypes... args)
+	void call(InTypes... args)
 	{
-		auto bindingsCopy = bindings;
+		auto bindings_copy = bindings_;
 
-		for (auto& binding : bindingsCopy)
+		for (auto& binding : bindings_copy)
 		{
 			binding.second(std::forward<InTypes>(args)...);
 		}
@@ -35,38 +35,105 @@ public:
 	// Execute all bindings
 	void operator()(InTypes... args)
 	{
-		Call(std::forward<InTypes>(args)...);
+		call(std::forward<InTypes>(args)...);
 	}
 
 	template<typename T>
-	void Unbind(T* obj, void(T::* func)(InTypes...))
+	void unbind(T* obj, void(T::* func)(InTypes...))
 	{
-		bindings.erase({ obj, func });
+		bindings_.erase(obj_func(obj, func_id::construct(func)));
 	}
 
-	void Unbind(void(* func)(InTypes...))
+	void unbind(void(* func)(InTypes...))
 	{
-		bindings.erase({ nullptr, func });
+		bindings_.erase(obj_func(nullptr, func_id::construct(func)));
 	}
 
 private:
-	struct ObjFunc
+	struct func_id
 	{
-		void* obj = nullptr;
-		void* func = nullptr;
+		byte* data = nullptr;
+		uint size = 0;
 
-		bool operator==(const ObjFunc& rhs) const
+		func_id(byte* data, uint size)
+			: data(data)
+			, size(size)
+		{
+		}
+
+		func_id(const func_id& rhs)
+			: data(new byte[rhs.size])
+			, size(rhs.size)
+		{
+			memcpy(data, rhs.data, size);
+		}
+
+		~func_id()
+		{
+			delete[] data;
+		}
+
+		func_id& operator=(const func_id& rhs)
+		{
+			if (this == &rhs) return *this;
+			
+			delete[] data;
+
+			data = new byte[rhs.size];
+			memcpy(data, rhs,data, rhs.size);
+			size = rhs.size;
+
+			return *this;
+		}
+
+		bool operator==(const func_id& rhs) const
+		{
+			return size == rhs.size && memcmp(data, rhs.data, size) == 0;
+		}
+		
+		bool operator<(const func_id& rhs) const
+		{
+			if (size < rhs.size) return true;
+			for (uint i = 0; i < size; i++)
+			{
+				if (data[i] < rhs.data[i]) return true;
+			}
+			return false;
+		}
+
+		template<typename FSIG>
+		static func_id construct(FSIG func)
+		{
+			uint size = sizeof(FSIG);
+			byte* data = new byte[size];
+			memcpy(data, &func, size);
+			return func_id(data, size);
+		}
+	};
+	
+	struct obj_func
+	{
+		void* obj;
+		func_id func;
+
+		obj_func(void* obj, const func_id& func)
+			: obj(obj)
+			, func(func)
+		{
+		}
+		
+		bool operator==(const obj_func& rhs) const
 		{
 			return obj == rhs.obj && func == rhs.func;
 		}
 
-		bool operator<(const ObjFunc& rhs) const
+		bool operator<(const obj_func& rhs) const
 		{
 			return obj < rhs.obj || func < rhs.func;
 		}
 	};
 
-	std::map<ObjFunc, std::function<void(InTypes...)>> bindings;
+	std::map<obj_func, std::function<void(InTypes...)>> bindings_;
 };
 
 template<typename... ArgTypes>

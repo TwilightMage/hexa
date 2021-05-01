@@ -151,7 +151,7 @@
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
       <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
@@ -193,9 +193,8 @@
     <ClInclude Include="BasicTypes.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="DateTime.h" />
-    <ClInclude Include="DebugPlayer.h" />
     <ClInclude Include="Delegate.h" />
-    <ClInclude Include="DemoMeshEntity.h" />
+    <ClInclude Include="EventBus.h" />
     <ClInclude Include="File.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
@@ -203,7 +202,6 @@
     <ClInclude Include="IControllable.h" />
     <ClInclude Include="IRenderable.h" />
     <ClInclude Include="ITickable.h" />
-    <ClInclude Include="linmath.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="LogStream.h" />
     <ClInclude Include="Math.h" />
@@ -213,7 +211,6 @@
     <ClInclude Include="Path.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Regex.h" />
-    <ClInclude Include="Renderable.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Set.h" />
     <ClInclude Include="Shader.h" />
@@ -228,16 +225,12 @@
     <ClCompile Include="Array.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DateTime.cpp" />
-    <ClCompile Include="DebugPlayer.cpp" />
-    <ClCompile Include="DemoMeshEntity.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="EventBus.cpp" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameInfo.cpp" />
     <ClCompile Include="glad.c" />
-    <ClCompile Include="IControllable.cpp" />
-    <ClCompile Include="IRenderable.cpp" />
-    <ClCompile Include="ITickable.cpp" />
     <ClCompile Include="List.cpp" />
     <ClCompile Include="LogStream.cpp" />
     <ClCompile Include="Math.cpp" />
@@ -252,7 +245,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="Regex.cpp" />
-    <ClCompile Include="Renderable.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Set.cpp" />
     <ClCompile Include="Shader.cpp" />

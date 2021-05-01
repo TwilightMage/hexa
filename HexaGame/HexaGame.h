@@ -8,8 +8,9 @@ public:
     HexaGame(int argc, char* argv[]);
 
 protected:
-    void init_game_info(GameInfo& outInfo) override;
-
+    virtual void init_game_info(GameInfo& outInfo) override;
+    virtual void start() override;
+    
 private:
     
 };

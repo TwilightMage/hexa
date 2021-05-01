@@ -2,20 +2,14 @@
 #include "List.h"
 #include "Entity.h"
 
-class World
-{
-public:
-    template<typename T>
-    Shared<T> spawn(glm::vec3 pos, glm::quat rot)
-    {
-        Shared<T> entity = MakeShared<T>();
-        entity->position = pos;
-        entity->rotation = rot;
-        setup_spawn(entity);
-        return entity;
-    }
+class Game;
 
-    void setup_spawn(const Weak<Entity>& entity);
+EXTERN class EXPORT World : std::enable_shared_from_this<World>
+{
+    friend Game;
+    
+public:
+    void spawn_entity(const Weak<Entity>& entity, glm::vec3 pos, glm::quat rot);
 
     void start();
     void tick(float delta_time);
@@ -29,6 +23,7 @@ public:
 protected:
     virtual void on_start();
     virtual void on_tick();
+    virtual void on_close();
 
 private:
     List<Shared<Entity>> entities_;

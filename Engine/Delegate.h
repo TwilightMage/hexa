@@ -12,13 +12,19 @@ public:
 	template<typename T>
 	void bind(T* obj, void(T::* func)(InTypes...))
 	{
-		bindings_[obj_func(obj, func_id::construct(func))] = [obj, func](InTypes... args)->void { return (obj->*func)(args...); };
+		bindings_[obj_func(obj, func_id::construct(func))] = [obj, func](InTypes... args) -> void
+		{
+			(obj->*func)(args...);
+		};
 	}
 
 	// Add static or non-member function to execution list
 	void bind(void(* func)(InTypes...))
 	{
-		bindings_[obj_func(nullptr, func_id::construct(func))] = [func](InTypes... args)->void { return (*func)(args...); };
+		bindings_[obj_func(nullptr, func_id::construct(func))] = [func](InTypes... args) -> void
+		{
+			(*func)(args...);
+		};
 	}
 
 	// Execute all bindings
@@ -42,6 +48,22 @@ public:
 	void unbind(T* obj, void(T::* func)(InTypes...))
 	{
 		bindings_.erase(obj_func(obj, func_id::construct(func)));
+	}
+
+	template<typename T>
+	void unbind_object(T* obj)
+	{
+		for(typename std::map<obj_func, std::function<void(InTypes...)>>::const_iterator iter = bindings_.begin(); iter != bindings_.end(); )
+		{
+			if (iter->first.obj == obj)
+			{
+				iter = bindings_.erase(iter);
+			}
+			else
+			{
+				++iter;
+			}
+		}
 	}
 
 	void unbind(void(* func)(InTypes...))

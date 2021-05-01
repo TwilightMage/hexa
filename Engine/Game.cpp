@@ -80,7 +80,7 @@ void Game::open_world(const Weak<World>& world)
 		world_ = world_ptr;
 		world_->start();
 
-		event_bus_->world_opened.call(world);
+		event_bus_->world_opened(world);
 	}
 }
 
@@ -91,7 +91,7 @@ void Game::close_world()
 		world_->on_close();
 		world_ = nullptr;
 
-		event_bus_->world_closed.call(world_);
+		event_bus_->world_closed(world_);
 	}
 }
 

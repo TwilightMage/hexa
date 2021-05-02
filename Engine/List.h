@@ -173,14 +173,17 @@ public:
             Reallocate(GetAllocateSize(length + 1));
         }
 
+        ++length;
+        
         if (indexAt < length)
         {
-            memcpy_b(inner + (indexAt + 1), inner + indexAt, sizeof(T) * (length - indexAt));
+            for (uint i = 0; i < length - indexAt - 1; i++)
+            {
+                inner[length - i - 1] = std::move(inner[length - i - 2]);
+            }
         }
 
         inner[indexAt] = std::move(item);
-
-        length++;
     }
 
 private:

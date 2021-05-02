@@ -20,9 +20,9 @@ const ModInfo& Mod::get_mod_info() const
 
 bool Mod::verify_signature(const Path& path)
 {
-    if (!path.Exists()) return false;
-    if (!path.GetChild(path.filename + ".dll").Exists()) return false;
-    if (!path.GetChild(path.filename + ".meta").Exists()) return false;
+    if (!path.exists()) return false;
+    if (!path.get_child(path.filename + ".dll").exists()) return false;
+    if (!path.get_child(path.filename + ".meta").exists()) return false;
 
     return true;
 }
@@ -31,7 +31,7 @@ Shared<Mod> Mod::load(const Path& path)
 {
     try
     {
-        if (HINSTANCE dll = LoadLibrary(path.get_absolute().ToString().wc()))
+        if (HINSTANCE dll = LoadLibrary(path.get_absolute().to_string().wc()))
         {
             if (f_get_mod get_mod = (f_get_mod)GetProcAddress(dll, "get_mod"))
             {

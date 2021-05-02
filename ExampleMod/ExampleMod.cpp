@@ -15,6 +15,7 @@ void ExampleMod::on_world_opened(const Weak<World>& world)
 {
     if (auto world_ptr = world.lock())
     {
-        world_ptr->spawn_entity(MakeShared<DemoMeshEntity>(), glm::vec3(0.0f, 2.0f, 0.0f), glm::quat(glm::vec3(0.0f, 0.0f, 0.0f)));
+        auto entity = MakeShared<DemoMeshEntity>();
+        world_ptr->spawn_entity(entity, Vector3(0.0f, 2.0f, 0.0f));
     }
 }

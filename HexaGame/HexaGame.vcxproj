@@ -179,6 +179,7 @@
     <ClInclude Include="DemoMeshEntity.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="HexaGame.h" />
+    <ClInclude Include="MeshEntity.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
@@ -186,6 +187,7 @@
     <ClCompile Include="DemoMeshEntity.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="HexaGame.cpp" />
+    <ClCompile Include="MeshEntity.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

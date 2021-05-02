@@ -28,21 +28,3 @@ Shared<T> MakeShared(Types&&... Args)
 }
 
 #define MakeSharedInternal(T, ...)		(Shared<T>(new T(__VA_ARGS__)))
-
-template<typename To, typename From>
-To* Cast(From* obj)
-{
-	return dynamic_cast<To*>(obj);
-}
-
-template<typename To, typename From>
-To* Cast(Shared<From>& obj)
-{
-	return dynamic_cast<To*>(obj.get());
-}
-
-template<typename To, typename From>
-To* Cast(Unique<From>& obj)
-{
-	return dynamic_cast<To*>(obj.get());
-}

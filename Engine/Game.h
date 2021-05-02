@@ -15,6 +15,7 @@
 #include "Renderer.h"
 #include "Shader.h"
 #include "String.h"
+#include "Vector2.h"
 
 
 class Camera;
@@ -41,27 +42,34 @@ public:
 
     void launch();
 
-    void possess(const Weak<IControllable>& controllable);
-    void use_camera(const Weak<Camera>& camera);
+    static void possess(const Weak<IControllable>& controllable);
+    static void use_camera(const Weak<Camera>& camera);
     
-    void open_world(const Weak<World>& world);
-    void close_world();
+    static void open_world(const Weak<World>& world);
+    static void close_world();
 
-    const List<String>& get_args() const;
+    static const List<String>& get_args();
 
     static Game* get_instance();
 
-    const GameInfo& get_info() const;
+    static const GameInfo& get_info();
 
-    void new_log_record(ELogLevel level, const String& category, const String& message);
+    static void new_log_record(ELogLevel level, const String& category, const String& message);
 
     static bool is_app_path_set();
     static const Path& get_app_path();
 
-    Weak<Shader> get_basic_shader() const;
+    static Weak<Shader> get_basic_shader();
 
     static uint get_screen_width();
     static uint get_screen_height();
+
+    static const Vector2& get_mouse_pos();
+    static const Vector2& get_mouse_delta();
+    static void lock_mouse();
+    static void unlock_mouse();
+    static void hide_mouse();
+    static void show_mouse();
 
 protected:
     virtual void init_game_info(GameInfo& out_info) = 0;
@@ -75,10 +83,11 @@ private:
 
     void init_game();
 
-    static void set_app_path(const Path& new_app_path);
+    void set_app_path(const Path& new_app_path);
 
     static void error_callback(int error, const char* description);
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+    static void cursor_position_callback(GLFWwindow* window, double x_pos, double y_pos);
 
     static Game* instance_;
 
@@ -86,23 +95,34 @@ private:
 
     GameInfo info_;
 
+    // Logging
     LogStream log_stream_;
     std::mutex log_stream_mutex_;
-    
-    static Path app_path_;
-    static bool app_path_set_;
 
+    // Common
+    Path app_path_;
+    bool app_path_set_;
+    bool has_mouse_pos_;
+    Vector2 mouse_pos_;
+    Vector2 last_mouse_pos_;
+    Vector2 mouse_delta_;
+    bool lock_mouse_;
+    
+    // GLFW
     GLFWwindow* window_;
     Shared<Shader> basic_shader_;
     Unique<EventBus> event_bus_;
 
+    // Assets
     List<Shared<Shader>> shaders_;
     List<Shared<Mesh>> meshes_;
 
+    // Game
     Shared<Camera> current_camera_;
     Shared<IControllable> current_controllable_;
     Shared<World> world_;
 
+    // Rnder
     Unique<Renderer> renderer_;
 };
 
@@ -113,7 +133,7 @@ static void print_debug(const String& category, const String& format, Args... ar
 	char* buffer = new char[size + 1];
 	sprintf_s(buffer, size + 1, format.c(), std::forward<Args>(args)...);
 
-	Game::get_instance()->new_log_record(ELogLevel::Debug, category, buffer);
+	Game::new_log_record(ELogLevel::Debug, category, buffer);
 }
 
 template<typename... Args>
@@ -123,7 +143,7 @@ static void print_warning(const String& category, const String& format, Args... 
 	char* buffer = new char[size + 1];
 	sprintf_s(buffer, size + 1, format.c(), std::forward<Args>(args)...);
 
-    Game::get_instance()->new_log_record(ELogLevel::Warning, category, buffer);
+    Game::new_log_record(ELogLevel::Warning, category, buffer);
 }
 
 template<typename... Args>
@@ -133,7 +153,7 @@ static void print_error(const String& category, const String& format, Args... ar
 	char* buffer = new char[size + 1];
 	sprintf_s(buffer, size + 1, format.c(), std::forward<Args>(args)...);
 
-    Game::get_instance()->new_log_record(ELogLevel::Error, category, buffer);
+    Game::new_log_record(ELogLevel::Error, category, buffer);
 }
 
 template<typename... Args>
@@ -143,5 +163,5 @@ static void verbose(const String& category, const String& format, Args... args)
 	char* buffer = new char[size + 1];
 	sprintf_s(buffer, size + 1, format.c(), std::forward<Args>(args)...);
 
-    Game::get_instance()->new_log_record(ELogLevel::Verbose, category, buffer);
+    Game::new_log_record(ELogLevel::Verbose, category, buffer);
 }

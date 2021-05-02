@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "MeshEntity.h"
 #include "Engine/Entity.h"
 #include "Engine/IControllable.h"
 #include "Engine/ITickable.h"
@@ -21,7 +22,9 @@ public:
     Shared<Camera> camera;
 
 private:
-    float move_forward;
-    float move_right;
-    float move_up;
+    float move_forward_ = 0;
+    float move_right_ = 0;
+    float move_up_ = 0;
+
+    Shared<MeshEntity> arrows_;
 };

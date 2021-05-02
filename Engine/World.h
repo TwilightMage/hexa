@@ -1,15 +1,17 @@
 ﻿#pragma once
 #include "List.h"
 #include "Entity.h"
+#include "Quaternion.h"
+#include "Vector3.h"
 
 class Game;
 
-EXTERN class EXPORT World : std::enable_shared_from_this<World>
+EXTERN class EXPORT World : public std::enable_shared_from_this<World>
 {
     friend Game;
     
 public:
-    void spawn_entity(const Weak<Entity>& entity, glm::vec3 pos, glm::quat rot);
+    void spawn_entity(const Weak<Entity>& entity, const Vector3& pos, const Quaternion& rot = Quaternion());
 
     void start();
     void tick(float delta_time);

@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Path.h"
+#include "Vector3.h"
 
 EXTERN class EXPORT Mesh
 {
@@ -9,14 +10,17 @@ EXTERN class EXPORT Mesh
 public:
     struct vertex
     {
-        float pos[3];
-        float uv[2];
-        float col[3];
+        Vector3 pos;
+        Vector2 uv;
+        Vector3 col;
     };
     
     static Shared<Mesh> load_obj(const Path& path);
 
     void optimize();
+    void set_color(const Vector3& rhs);
+    void invert();
+    Shared<Mesh> remove_indices() const;
     
     uint get_usage_count() const;
 

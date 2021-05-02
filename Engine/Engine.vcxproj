@@ -210,6 +210,7 @@
     <ClInclude Include="ModInfo.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="Quaternion.h" />
     <ClInclude Include="Regex.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="Set.h" />
@@ -217,12 +218,13 @@
     <ClInclude Include="String.h" />
     <ClInclude Include="TeeBuf.h" />
     <ClInclude Include="Utils.h" />
+    <ClInclude Include="Vector2.h" />
+    <ClInclude Include="Vector3.h" />
     <ClInclude Include="Version.h" />
     <ClInclude Include="World.h" />
     <ClInclude Include="Entity.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Array.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="DateTime.cpp" />
     <ClCompile Include="dllmain.cpp" />
@@ -231,7 +233,6 @@
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameInfo.cpp" />
     <ClCompile Include="glad.c" />
-    <ClCompile Include="List.cpp" />
     <ClCompile Include="LogStream.cpp" />
     <ClCompile Include="Math.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -244,13 +245,15 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="Regex.cpp" />
     <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="Set.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="String.cpp" />
     <ClCompile Include="TeeBuf.cpp" />
     <ClCompile Include="Utils.cpp" />
+    <ClCompile Include="Vector2.cpp" />
+    <ClCompile Include="Vector3.cpp" />
     <ClCompile Include="Version.cpp" />
     <ClCompile Include="World.cpp" />
     <ClCompile Include="Entity.cpp" />
@@ -259,6 +262,8 @@
     <Natvis Include="Engine.natvis" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="resources\engine\meshes\axis_arrows.obj" />
+    <Content Include="resources\engine\meshes\icosphere.obj" />
     <Content Include="resources\engine\meshes\sphere.obj" />
     <Content Include="resources\engine\meshes\square.obj" />
     <Content Include="resources\engine\shaders\basic.frag" />

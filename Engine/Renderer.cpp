@@ -8,23 +8,20 @@
 #include "Mesh.h"
 #include "Shader.h"
 
-__forceinline glm::mat4 get_model_matrix(const Shared<IRenderable>& renderable)
+FORCEINLINE glm::mat4 get_model_matrix(const Shared<IRenderable>& renderable)
 {
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, renderable->get_position());
+    model = glm::translate(model, copy_as<glm::vec3>(renderable->get_position()));
 
-    const auto& rot = renderable->get_rotation();
-    const auto rot_angle = 2 * acos(rot.w);
-    const auto rot_axis = rot.w == 1.0f ? glm::vec3(0.0f, 0.0f, 1.0f) : glm::vec3(rot.x / sqrt(1 - rot.w * rot.w), rot.y / sqrt(1 - rot.w * rot.w), rot.z / sqrt(1 - rot.w * rot.w));
-    model = rotate(model, rot_angle, rot_axis);
+    model = rotate(model, renderable->get_rotation().axis_angle(), copy_as<glm::vec3>(renderable->get_rotation().axis()));
             				
-    model = scale(model, renderable->get_scale());
+    model = scale(model, copy_as<glm::vec3>(renderable->get_scale()));
 
     return model;
 }
 
 template<typename T>
-__forceinline T* extract_gl_buffer(uint buffer, uint buffer_type, int& buffer_size, int add_size = 0)
+FORCEINLINE T* extract_gl_buffer(uint buffer, uint buffer_type, int& buffer_size, int add_size = 0)
 {
     glBindBuffer(buffer_type, buffer);
     
@@ -45,7 +42,7 @@ __forceinline T* extract_gl_buffer(uint buffer, uint buffer_type, int& buffer_si
 }
 
 template<typename T>
-__forceinline void update_gl_buffer(uint buffer, uint buffer_type, T* buffer_data, int buffer_size)
+FORCEINLINE void update_gl_buffer(uint buffer, uint buffer_type, T* buffer_data, int buffer_size)
 {
     void* buf_ptr = glMapBuffer(buffer_type, GL_WRITE_ONLY);
     memcpy(buf_ptr, buffer_data, sizeof(T) * buffer_size);
@@ -186,6 +183,7 @@ void Renderer::render(const glm::mat4& view_projection_matrix)
 {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+    glEnable(GL_CULL_FACE);
     
     for (const auto& shader_meshes : database)
     {

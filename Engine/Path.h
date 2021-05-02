@@ -20,28 +20,28 @@ EXTERN class EXPORT Path
 {
 public:
 	Path();
-	Path(const String& pathStr);
+	Path(const String& path_str);
 	Path(const char* str);
 
-    bool Exists() const;
-	bool IsGlobal() const;
-	void Create();
-	Path Up(uint levels = 1) const;
-	Path GetChild(const String& child) const;
+    bool exists() const;
+	bool is_global() const;
+	void create();
+	Path up(uint levels = 1) const;
+	Path get_child(const String& child) const;
 	Path get_absolute() const;
-	List<Path> List() const;
-	String GetFileExt() const;
+	List<Path> list() const;
+	String get_extension() const;
 
 	Path operator+(const Path& rhs) const;
 
-	String ToString() const;
-
+	String to_string() const;
+	String get_absolute_string() const;
+	
 	String parent;
 	String filename;
 	String extension;
 	EPathType type;
 
 private:
-	bool isGlobal;
-	String get_absolute_string() const;
+	bool is_global_;
 };

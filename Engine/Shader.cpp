@@ -99,7 +99,7 @@ Shared<Shader> Shader::compile(const Path& path, const meta& shader_meta, int ty
             {
                 glDeleteShader(kvp.second);
             }
-            print_error("Shader", "Unable to compile shader program %s because of problems with shaders: %s", path.get_absolute().ToString().c(), StringJoin(problem_shaders, ", "));
+            print_error("Shader", "Unable to compile shader program %s because of problems with shaders: %s", path.get_absolute().to_string().c(), StringJoin(problem_shaders, ", "));
         }
         else
         {
@@ -121,9 +121,9 @@ Shared<Shader> Shader::compile(const Path& path, const meta& shader_meta, int ty
 
 uint Shader::compile_shader(const Path& path, type shader_type)
 {
-    Path filepath = path.ToString() + shader_type_meta.at(shader_type).format;
+    Path filepath = path.to_string() + shader_type_meta.at(shader_type).format;
 
-    if (filepath.Exists())
+    if (filepath.exists())
     {
         const auto shader = glCreateShader(shader_type_meta.at(shader_type).gl_type);
         auto shader_code = File::ReadFile(filepath).Trim().c_copy();
@@ -141,7 +141,7 @@ uint Shader::compile_shader(const Path& path, type shader_type)
             std::vector<GLchar> error_log(max_length);
             glGetShaderInfoLog(shader, max_length, &max_length, error_log.data());
 
-            print_error("Shader", "Failed to compile shader %s:\n%s", filepath.get_absolute().ToString().c(), error_log.data());
+            print_error("Shader", "Failed to compile shader %s:\n%s", filepath.get_absolute().to_string().c(), error_log.data());
 
             glDeleteShader(shader);
             return -1;
@@ -151,7 +151,7 @@ uint Shader::compile_shader(const Path& path, type shader_type)
     }
     else
     {
-        print_error("Shader", "Failed to compile %s shader %s: file does not exist", shader_type_meta.at(shader_type).name.c(), filepath.get_absolute().ToString().c());
+        print_error("Shader", "Failed to compile %s shader %s: file does not exist", shader_type_meta.at(shader_type).name.c(), filepath.get_absolute().to_string().c());
     }
 
     return -1;

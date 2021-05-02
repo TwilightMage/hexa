@@ -9,15 +9,15 @@
 
 #include "Camera.h"
 #include "IControllable.h"
+#include "Math.h"
 #include "Mod.h"
 #include "Path.h"
+#include "Quaternion.h"
 #include "Renderer.h"
 #include "Shader.h"
 #include "World.h"
 
 Game* Game::instance_ = nullptr;
-Path Game::app_path_ = Path();
-bool Game::app_path_set_ = false;
 
 Game::Game(int argc, char* argv[])
     : log_stream_(DateTime::Now(), argv[0])
@@ -58,17 +58,17 @@ void Game::launch()
 
 void Game::possess(const Weak<IControllable>& controllable)
 {
-	if (current_controllable_)
+	if (instance_->current_controllable_)
 	{
-		current_controllable_->on_unpossess();
+		instance_->current_controllable_->on_unpossess();
 	}
-	current_controllable_ = controllable.lock();
-	current_controllable_->on_possess();
+	instance_->current_controllable_ = controllable.lock();
+	instance_->current_controllable_->on_possess();
 }
 
 void Game::use_camera(const Weak<Camera>& camera)
 {
-	current_camera_ = camera.lock();
+	instance_->current_camera_ = camera.lock();
 }
 
 void Game::open_world(const Weak<World>& world)
@@ -77,27 +77,25 @@ void Game::open_world(const Weak<World>& world)
 
 	if (const auto world_ptr = world.lock())
 	{
-		world_ = world_ptr;
-		world_->start();
-
-		event_bus_->world_opened(world);
+		instance_->world_ = world_ptr;
+		instance_->world_->start();
+		instance_->event_bus_->world_opened(world);
 	}
 }
 
 void Game::close_world()
 {
-	if (world_)
+	if (instance_->world_)
 	{
-		world_->on_close();
-		world_ = nullptr;
-
-		event_bus_->world_closed(world_);
+		instance_->world_->on_close();
+		instance_->event_bus_->world_closed(instance_->world_);
+		instance_->world_ = nullptr;
 	}
 }
 
-const List<String>& Game::get_args() const
+const List<String>& Game::get_args()
 {
-	return args_;
+	return instance_->args_;
 }
 
 Game* Game::get_instance()
@@ -105,9 +103,9 @@ Game* Game::get_instance()
 	return instance_;
 }
 
-const GameInfo& Game::get_info() const
+const GameInfo& Game::get_info()
 {
-	return info_;
+	return instance_->info_;
 }
 
 void Game::new_log_record(ELogLevel level, const String& category, const String& message)
@@ -115,24 +113,24 @@ void Game::new_log_record(ELogLevel level, const String& category, const String&
 	static const char* levelNames[4] = { "Verbose", "Debug", "Warning", "Error" };
 	static const char* levelColors[4] = { CONSOLE_WHITE, CONSOLE_CYAN, CONSOLE_YELLOW, CONSOLE_RED };
 
-	log_stream_mutex_.lock();
-	log_stream_ << levelColors[static_cast<int>(level)] << "[" << DateTime::Now().ToString().c() << "] [" << levelNames[static_cast<int>(level)] << "] [" << category.c() << "] " << message.c() << CONSOLE_RESET << "\n";
-	log_stream_mutex_.unlock();
+	instance_->log_stream_mutex_.lock();
+	instance_->log_stream_ << levelColors[static_cast<int>(level)] << "[" << DateTime::Now().ToString().c() << "] [" << levelNames[static_cast<int>(level)] << "] [" << category.c() << "] " << message.c() << CONSOLE_RESET << "\n";
+	instance_->log_stream_mutex_.unlock();
 }
 
 bool Game::is_app_path_set()
 {
-	return app_path_set_;
+	return instance_->app_path_set_;
 }
 
 const Path& Game::get_app_path()
 {
-	return app_path_;
+	return instance_->app_path_;
 }
 
-Weak<Shader> Game::get_basic_shader() const
+Weak<Shader> Game::get_basic_shader()
 {
-	return basic_shader_;
+	return instance_->basic_shader_;
 }
 
 uint Game::get_screen_width()
@@ -143,6 +141,36 @@ uint Game::get_screen_width()
 uint Game::get_screen_height()
 {
 	return GetSystemMetrics(SM_CYSCREEN);
+}
+
+const Vector2& Game::get_mouse_pos()
+{
+	return instance_->mouse_pos_;
+}
+
+const Vector2& Game::get_mouse_delta()
+{
+	return instance_->mouse_delta_;
+}
+
+void Game::lock_mouse()
+{
+	instance_->lock_mouse_ = true;
+}
+
+void Game::unlock_mouse()
+{
+	instance_->lock_mouse_ = false;
+}
+
+void Game::hide_mouse()
+{
+	glfwSetInputMode(instance_->window_, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+}
+
+void Game::show_mouse()
+{
+	glfwSetInputMode(instance_->window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
 void Game::start()
@@ -175,6 +203,7 @@ void Game::prepare()
 	
 	glfwSetErrorCallback(error_callback);
 	glfwSetKeyCallback(window_, key_callback);
+	glfwSetCursorPosCallback(window_, cursor_position_callback);
 }
 
 void Game::render_loop()
@@ -212,6 +241,17 @@ void Game::render_loop()
 		
 		glViewport(0, 0, width, height);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+		mouse_delta_ = mouse_pos_ - last_mouse_pos_;
+		if (lock_mouse_)
+		{
+			last_mouse_pos_ = mouse_pos_ = Vector2(static_cast<float>(width / 2), static_cast<float>(height / 2));
+			glfwSetCursorPos(window_, width / 2, height / 2);
+		}
+		else
+		{
+			last_mouse_pos_ = mouse_pos_;
+		}
 		
 		if (current_camera_ && current_camera_->owner)
 		{
@@ -221,8 +261,8 @@ void Game::render_loop()
 				world_->tick(last_delta_time);
 			}
 
-			glm::vec3 cam_from = current_camera_->owner->position;
-			glm::vec3 cam_to = current_camera_->owner->position + current_camera_->owner->rotation * glm::vec3(1.0f, 0.0f, 0.0f);
+			glm::vec3 cam_from = copy_as<glm::vec3>(current_camera_->owner->position);
+			glm::vec3 cam_to = copy_as<glm::vec3>(current_camera_->owner->position + current_camera_->owner->rotation.forward());
 			cam_from.y *= -1;
 			cam_to.y *= -1;
 			glm::mat4 view = glm::lookAt(
@@ -287,5 +327,15 @@ void Game::key_callback(GLFWwindow* window, int key, int scancode, int action, i
 				instance_->current_controllable_->key_up(key);
 			}
 		}
+	}
+}
+
+void Game::cursor_position_callback(class GLFWwindow* window, double x_pos, double y_pos)
+{
+	instance_->mouse_pos_ = { static_cast<float>(x_pos), static_cast<float>(y_pos) };
+	if (!instance_->has_mouse_pos_)
+	{
+		instance_->last_mouse_pos_ = instance_->mouse_pos_;
+		instance_->has_mouse_pos_ = true;
 	}
 }

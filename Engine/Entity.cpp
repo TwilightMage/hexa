@@ -47,7 +47,10 @@ void Entity::use_mesh(const Weak<Mesh>& new_mesh)
 
     if (started_ && !get_shader().expired())
     {
-        world_->notify_renderable_updated(weak_from_this(), old_mesh);
+        if (auto world_ptr = world_.lock())
+        {
+            world_ptr->notify_renderable_updated(weak_from_this(), old_mesh);
+        }
     }
 }
 
@@ -63,7 +66,10 @@ void Entity::clear_mesh()
 
     if (started_ && get_shader().expired())
     {
-        world_->notify_renderable_updated(weak_from_this(), old_mesh);
+        if (auto world_ptr = world_.lock())
+        {
+            world_ptr->notify_renderable_updated(weak_from_this(), old_mesh);
+        }
     }
 }
 
@@ -74,15 +80,20 @@ Weak<Mesh> Entity::get_mesh() const
 
 Weak<Shader> Entity::get_shader() const
 {
-    return Game::get_instance()->get_basic_shader();
+    return Game::get_basic_shader();
 }
 
-glm::vec3 Entity::get_position()
+Vector3 Entity::get_position() const
 {
     return position;
 }
 
-glm::quat Entity::get_rotation()
+Quaternion Entity::get_rotation() const
 {
     return rotation;
+}
+
+Vector3 Entity::get_scale() const
+{
+    return scale;
 }

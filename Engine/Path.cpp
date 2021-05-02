@@ -7,7 +7,7 @@
 #include "Regex.h"
 
 Path::Path()
-    : isGlobal(false)
+    : is_global_(false)
     , parent("")
     , filename(".")
     , extension("")
@@ -15,9 +15,9 @@ Path::Path()
 {
 }
 
-Path::Path(const String& pathStr)
+Path::Path(const String& path_str)
 {
-	std::filesystem::path path(pathStr.Replace('\\', '/').c());
+	std::filesystem::path path(path_str.Replace('\\', '/').c());
 
 	parent = path.parent_path().string();
 	filename = path.stem().string();
@@ -28,7 +28,7 @@ Path::Path(const String& pathStr)
 		filename = ".";
 	}
 
-	isGlobal = Regex("^([A-Z]:/|/).*").Check(parent);
+	is_global_ = Regex("^([A-Z]:/|/).*").Check(parent);
 
 	path = std::filesystem::path(get_absolute_string().c());
 
@@ -47,28 +47,28 @@ Path::Path(const char* str)
 {
 }
 
-bool Path::Exists() const
+bool Path::exists() const
 {
 	return std::filesystem::exists(get_absolute_string().c());
 }
 
-bool Path::IsGlobal() const
+bool Path::is_global() const
 {
-	return isGlobal;
+	return is_global_;
 }
 
-void Path::Create()
+void Path::create()
 {
 	std::filesystem::create_directories(get_absolute_string().c());
 }
 
-Path Path::Up(uint levels) const
+Path Path::up(uint levels) const
 {
-	const auto separators = ToString().Find('/');
+	const auto separators = to_string().Find('/');
 
 	if (levels >= separators.Length())
 	{
-		if (isGlobal)
+		if (is_global_)
 		{
 			return Path(parent.Substring(0, separators[0] + 1));
 		}
@@ -83,9 +83,9 @@ Path Path::Up(uint levels) const
 	}
 }
 
-Path Path::GetChild(const String& child) const
+Path Path::get_child(const String& child) const
 {
-	return Path(ToString() + '/' + child);
+	return Path(to_string() + '/' + child);
 }
 
 Path Path::get_absolute() const
@@ -93,11 +93,11 @@ Path Path::get_absolute() const
 	return Path(get_absolute_string());
 }
 
-List<Path> Path::List() const
+List<Path> Path::list() const
 {
 	std::vector<Path> result;
 
-	if (Exists())
+	if (exists())
 	{
 		for (const auto& entry : std::filesystem::directory_iterator(get_absolute_string().c()))
 		{
@@ -108,17 +108,17 @@ List<Path> Path::List() const
 	return result;
 }
 
-String Path::GetFileExt() const
+String Path::get_extension() const
 {
 	return filename + extension;
 }
 
 Path Path::operator+(const Path& rhs) const
 {
-	return Path(ToString() + '/' + rhs.ToString());
+	return Path(to_string() + '/' + rhs.to_string());
 }
 
-String Path::ToString() const
+String Path::to_string() const
 {
 	if (parent.IsEmpty())
 	{
@@ -132,5 +132,5 @@ String Path::ToString() const
 
 String Path::get_absolute_string() const
 {
-	return !isGlobal && Game::is_app_path_set() ? (Game::get_app_path().parent + "/" + ToString()).std() : ToString().std();
+	return !is_global_ && Game::is_app_path_set() ? (Game::get_app_path().parent + "/" + to_string()).std() : to_string().std();
 }

@@ -4,15 +4,16 @@
 #include "Game.h"
 #include "ITickable.h"
 #include "Mesh.h"
+#include "Quaternion.h"
 #include "Renderer.h"
 
-void World::spawn_entity(const Weak<Entity>& entity, glm::vec3 pos, glm::quat rot)
+void World::spawn_entity(const Weak<Entity>& entity, const Vector3& pos, const Quaternion& rot)
 {
     if (auto entity_ptr = entity.lock())
     {
         entity_ptr->position = pos;
         entity_ptr->rotation = rot;
-        entity_ptr->world_ = weak_from_this().lock();
+        entity_ptr->world_ = weak_from_this();
         entities_.Add(entity_ptr);
         entity_ptr->start();
         if (!entity_ptr->get_mesh().expired() && !entity_ptr->get_shader().expired())
@@ -51,7 +52,7 @@ void World::tick(float delta_time)
             entities_[i]->pending_kill_ = false;
             to_delete.Add(i);
         }
-        else if (auto tickable = Cast<ITickable>(entities_[i]))
+        else if (auto tickable = cast<ITickable>(entities_[i]))
         {
             tickable->tick(delta_time);
         }

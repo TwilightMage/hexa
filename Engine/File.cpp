@@ -2,7 +2,7 @@
 
 String File::ReadFile(const Path& path)
 {
-	std::ifstream file(path.get_absolute().ToString().std(), std::ios::ate | std::ios::binary);
+	std::ifstream file(path.get_absolute().to_string().std(), std::ios::ate | std::ios::binary);
 
 	if (!file.is_open())
 	{
@@ -22,7 +22,7 @@ String File::ReadFile(const Path& path)
 
 void File::WriteFile(const Path& path, const String& data)
 {
-	std::ofstream file(path.get_absolute().ToString().std());
+	std::ofstream file(path.get_absolute().to_string().std());
 
 	if (!file.is_open())
 	{
@@ -36,7 +36,7 @@ void File::WriteFile(const Path& path, const String& data)
 
 void File::AppendFile(const Path& path, const String& data)
 {
-	std::ofstream file(path.get_absolute().ToString().std(), std::ios::app);
+	std::ofstream file(path.get_absolute().to_string().std(), std::ios::app);
 
 	if (!file.is_open())
 	{
@@ -58,7 +58,7 @@ Shared<File::Reader> File::Reader::Open(const Path& path)
 {
 	Shared<File::Reader> result = MakeSharedInternal(File::Reader);
 
-	result->stream = std::ifstream(path.get_absolute().ToString().std(), std::ios::ate);
+	result->stream = std::ifstream(path.get_absolute().to_string().std(), std::ios::ate);
 
 	if (!result->stream.is_open())
 	{
@@ -109,7 +109,7 @@ Shared<File::Writer> File::Writer::Open(const Path& path)
 {
 	Shared<File::Writer> result = MakeSharedInternal(File::Writer);
 
-	result->stream = std::ofstream(path.get_absolute().ToString().std());
+	result->stream = std::ofstream(path.get_absolute().to_string().std());
 
 	if (!result->stream.is_open())
 	{

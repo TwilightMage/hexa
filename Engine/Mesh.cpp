@@ -45,6 +45,12 @@ Mesh::Mesh(const List<vertex>& vertices, const List<uint>& indices)
 
 Shared<Mesh> Mesh::load_obj(const Path& path)
 {
+    const auto found = Game::instance_->meshes_.find(path.get_absolute_string());
+    if (found != Game::instance_->meshes_.end())
+    {
+        return found->second;
+    }
+    
     Shared<objl::Loader> loader = MakeShared<objl::Loader>();
     if (loader->LoadFile(path.get_absolute().to_string().std()))
     {
@@ -62,9 +68,10 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
         loader->LoadedIndices.clear();
 
         GeometryEditor::remove_indices(result->vertices_, result->indices_);
-        GeometryEditor::invert_vertices(result->vertices_);
+        GeometryEditor::rotate(result->vertices_, Quaternion(Vector3(90.0f, 0.0f, 90.0f)));
+        GeometryEditor::mirror_y(result->vertices_);
 
-        Game::instance_->meshes_.Add(result);
+        Game::instance_->meshes_[path.get_absolute_string()] = result;
 
         return result;
     }

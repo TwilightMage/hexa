@@ -266,6 +266,7 @@
   <ItemGroup>
     <Content Include="resources\engine\meshes\axis_arrows.obj" />
     <Content Include="resources\engine\meshes\icosphere.obj" />
+    <Content Include="resources\engine\meshes\monkey.obj" />
     <Content Include="resources\engine\meshes\sphere.obj" />
     <Content Include="resources\engine\meshes\square.obj" />
     <Content Include="resources\engine\shaders\basic.frag" />

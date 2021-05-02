@@ -8,14 +8,133 @@
 #include "Mesh.h"
 #include "Shader.h"
 
+template<typename K, typename V>
+struct simple_map
+{
+    struct entry
+    {
+        K key;
+        V value;
+
+        bool operator==(const entry& rhs) const
+        {
+            return key == rhs.key = value == rhs.value;
+        }
+    };
+    List<entry> entries;
+
+    V& operator[](const K& key)
+    {
+        for (auto& entry : entries)
+        {
+            if (entry.key == key) return entry.value;
+        }
+        entries.Add({ key, V() });
+        return entries[entries.Length() - 1].value;
+    }
+
+    void clear()
+    {
+        entries.Clear();
+    }
+
+    entry* begin()
+    {
+        return entries.begin();
+    }
+
+    entry* end()
+    {
+        return entries.end();
+    }
+
+    const entry* begin() const
+    {
+        return entries.begin();
+    }
+
+    const entry* end() const
+    {
+        return entries.end();
+    }
+
+    uint size()
+    {
+        return entries.Length();
+    }
+
+    void remove_key(const K& key)
+    {
+        for (uint i = 0; i < entries.Length(); i++)
+        {
+            if (entries[i].key == key)
+            {
+                entries.RemoveAt(i);
+                return;
+            }
+        }
+    }
+
+    bool have_key(const K& key)
+    {
+        for (auto& kvp : entries)
+        {
+            if (kvp.key == key) return true;
+        }
+
+        return false;
+    }
+
+    entry& get_entry(const K& key)
+    {
+        for (auto& entry : entries)
+        {
+            if (entry.key == key) return entry;
+        }
+        entries.Add({ key, V() });
+        return entries[entries.Length() - 1];
+    }
+
+    entry& last()
+    {
+        return entries[entries.Length() - 1];
+    }
+};
+
+struct render_list : List<Shared<IRenderable>> // objects
+{
+    render_list();
+    render_list(Mesh* mesh, uint vertex_offset);
+
+    inline static const uint objects_count_limit = 256;
+    
+    uint vertex_buffer_offset;
+    uint size_in_vertex_buffer;
+};
+
+struct shader_render_data : simple_map<Shared<Mesh>, render_list> // objects for mesh
+{
+    shader_render_data();
+    explicit shader_render_data(Shader* shader);
+
+    void cleanup() const;
+    
+    uint gl_shader_id;
+    uint gl_vertex_buffer_id;
+};
+
+struct render_database : simple_map<Shared<Shader>, shader_render_data> // meshes for shader
+{
+};
+
 FORCEINLINE glm::mat4 get_model_matrix(const Shared<IRenderable>& renderable)
 {
     glm::mat4 model = glm::mat4(1.0f);
-    model = glm::translate(model, copy_as<glm::vec3>(renderable->get_position()));
+    model = glm::translate(model, cast_object<glm::vec3>(renderable->get_position()));
 
-    model = rotate(model, renderable->get_rotation().axis_angle(), copy_as<glm::vec3>(renderable->get_rotation().axis()));
+    model = rotate(model, renderable->get_rotation().axis_angle(), cast_object<glm::vec3>(renderable->get_rotation().axis()));
             				
-    model = scale(model, copy_as<glm::vec3>(renderable->get_scale()));
+    model = scale(model, cast_object<glm::vec3>(renderable->get_scale()));
 
     return model;
 }
@@ -33,7 +152,7 @@ FORCEINLINE T* extract_gl_buffer(uint buffer, uint buffer_type, int& buffer_size
     T* buffer_data = new T[buffer_size];
 
     void* buf_ptr = glMapBuffer(buffer_type, GL_READ_ONLY);
-    memcpy(buffer_data, buf_ptr, sizeof(T) * buffer_size);
+    memcpy(buffer_data, buf_ptr, sizeof(T) * (buffer_size - add_size));
     glUnmapBuffer(buffer_type);
 
     glBindBuffer(buffer_type, 0);
@@ -49,37 +168,48 @@ FORCEINLINE void update_gl_buffer(uint buffer, uint buffer_type, T* buffer_data,
     glUnmapBuffer(buffer_type);
 }
 
-Renderer::render_list::render_list()
+render_list::render_list()
     : vertex_buffer_offset(0)
     , size_in_vertex_buffer(0)
 {
 }
 
-Renderer::render_list::render_list(Mesh* mesh, uint vertex_offset)
+render_list::render_list(Mesh* mesh, uint vertex_offset)
     : vertex_buffer_offset(vertex_offset)
     , size_in_vertex_buffer(mesh->get_vertices().Length())
 {
 }
 
-Renderer::shader_render_data::shader_render_data()
+shader_render_data::shader_render_data()
     : gl_shader_id(-1)
     , gl_vertex_buffer_id(-1)
 {
 }
 
-Renderer::shader_render_data::shader_render_data(Shader* shader)
+shader_render_data::shader_render_data(Shader* shader)
     : gl_shader_id(shader->get_program())
 {
     glGenBuffers(1, &gl_vertex_buffer_id);
 }
 
-void Renderer::shader_render_data::cleanup() const
+void shader_render_data::cleanup() const
 {
     glDeleteBuffers(1, new uint[1] { gl_vertex_buffer_id });
 }
 
-void Renderer::register_object(const Weak<IRenderable>& renderable)
+Renderer::Renderer()
 {
+    database_ = new render_database();
+}
+
+Renderer::~Renderer()
+{
+    delete static_cast<render_database*>(database_);
+}
+
+void Renderer::register_object(const Weak<IRenderable>& renderable) const
+{
+    auto& db = *static_cast<render_database*>(database_);
     if (const auto renderable_ptr = renderable.lock())
     {
         if (const auto shader_ptr = renderable_ptr->get_shader().lock())
@@ -88,11 +218,11 @@ void Renderer::register_object(const Weak<IRenderable>& renderable)
             {
                 if (mesh_ptr->get_vertices().Length() > 0)
                 {
-                    if (!database.have_key(shader_ptr))
+                    if (!db.have_key(shader_ptr))
                     {
-                        database[shader_ptr] = shader_render_data(shader_ptr.get());
+                        db[shader_ptr] = shader_render_data(shader_ptr.get());
                     }
-                    auto& shader_meshes = database[shader_ptr];
+                    auto& shader_meshes = db[shader_ptr];
 
                     if (!shader_meshes.have_key(mesh_ptr)) // if we adding mesh
                     {
@@ -137,17 +267,18 @@ void Renderer::register_object(const Weak<IRenderable>& renderable)
     }
 }
 
-void Renderer::unregister_object(const Weak<IRenderable>& renderable)
+void Renderer::unregister_object(const Weak<IRenderable>& renderable) const
 {
+    auto& db = *static_cast<render_database*>(database_);
     if (const auto renderable_ptr = renderable.lock())
     {
         if (const auto shader_ptr = renderable_ptr->get_shader().lock())
         {
             if (const auto mesh_ptr = renderable_ptr->get_mesh().lock())
             {
-                if (database.have_key(shader_ptr))
+                if (db.have_key(shader_ptr))
                 {
-                    auto& shader_meshes = database[shader_ptr];
+                    auto& shader_meshes = db[shader_ptr];
 
                     auto& entry = shader_meshes.get_entry(mesh_ptr);
                     entry.value.Remove(renderable_ptr);
@@ -171,7 +302,7 @@ void Renderer::unregister_object(const Weak<IRenderable>& renderable)
                     if (shader_meshes.size() == 0)
                     {
                         shader_meshes.cleanup();
-                        database.remove_key(shader_ptr);
+                        db.remove_key(shader_ptr);
                     }
                 }
             }
@@ -179,13 +310,14 @@ void Renderer::unregister_object(const Weak<IRenderable>& renderable)
     }
 }
 
-void Renderer::render(const glm::mat4& view_projection_matrix)
+void Renderer::render(const glm::mat4& view_projection_matrix) const
 {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
-    
-    for (const auto& shader_meshes : database)
+
+    auto& db = *static_cast<render_database*>(database_);
+    for (const auto& shader_meshes : db)
     {
         glUseProgram(shader_meshes.value.gl_shader_id);
         glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.value.gl_vertex_buffer_id);
@@ -209,4 +341,14 @@ void Renderer::render(const glm::mat4& view_projection_matrix)
             glDrawArraysInstanced(GL_TRIANGLES, mesh_objects.value.vertex_buffer_offset, mesh_objects.value.size_in_vertex_buffer, mesh_objects.value.Length());
         }
     }
+}
+
+void Renderer::cleanup() const
+{
+    auto& db = *static_cast<render_database*>(database_);
+    for (auto& shader_meshes : db)
+    {
+        shader_meshes.value.cleanup();
+    }
+    db.clear();
 }

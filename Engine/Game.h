@@ -39,6 +39,7 @@ EXTERN class EXPORT Game
     
 public:
     Game(int argc, char* argv[]);
+    ~Game();
 
     void launch();
 
@@ -80,6 +81,7 @@ private:
     void setup_window();
     void prepare();
     void render_loop();
+    void cleanup();
 
     void init_game();
 
@@ -116,7 +118,7 @@ private:
 
     // Assets
     List<Shared<Shader>> shaders_;
-    List<Shared<Mesh>> meshes_;
+    std::map<String, Shared<Mesh>> meshes_;
 
     // Game
     Shared<Camera> current_camera_;

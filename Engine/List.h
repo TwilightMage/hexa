@@ -22,34 +22,34 @@ public:
     }
 
     List(const List& rhs)
-        : List(rhs.inner, rhs.Length())
+        : List(rhs.inner_, rhs.Length())
     {
     }
 
-    List(T* inner, uint length)
+    List(T* inner_, uint length_)
     {
-        allocatedLength = GetAllocateSize(length);
-        this->length = length;
-        if (length > 0)
+        allocated_length_ = GetAllocateSize(length_);
+        this->length_ = length_;
+        if (length_ > 0)
         {
-            this->inner = new T[allocatedLength];
-            for (uint i = 0; i < length; i++)
+            this->inner_ = new T[allocated_length_];
+            for (uint i = 0; i < length_; i++)
             {
-                this->inner[i] = std::move(inner[i]);
+                this->inner_[i] = std::move(inner_[i]);
             }
         }
     }
 
-    List(const T* inner, uint length)
+    List(const T* inner_, uint length_)
     {
-        allocatedLength = GetAllocateSize(length);
-        this->length = length;
-        if (length > 0)
+        allocated_length_ = GetAllocateSize(length_);
+        this->length_ = length_;
+        if (length_ > 0)
         {
-            this->inner = new T[allocatedLength];
-            for (uint i = 0; i < length; i++)
+            this->inner_ = new T[allocated_length_];
+            for (uint i = 0; i < length_; i++)
             {
-                this->inner[i] = std::move(inner[i]);
+                this->inner_[i] = std::move(inner_[i]);
             }
         }
     }
@@ -68,17 +68,17 @@ public:
     {
         if (this == &rhs) return *this;
 
-        delete[] inner;
+        delete[] inner_;
 
-        length = rhs.length;
-        allocatedLength = rhs.allocatedLength;
+        length_ = rhs.length_;
+        allocated_length_ = rhs.allocated_length_;
 
-        if (length > 0)
+        if (length_ > 0)
         {
-            inner = new T[allocatedLength];
-            for (uint i = 0; i < length; i++)
+            inner_ = new T[allocated_length_];
+            for (uint i = 0; i < length_; i++)
             {
-                inner[i] = std::move(rhs.inner[i]);
+                inner_[i] = std::move(rhs.inner_[i]);
             }
         }
 
@@ -87,41 +87,41 @@ public:
 
     void Add(const T& item)
     {
-        if (length == allocatedLength)
+        if (length_ == allocated_length_)
         {
-            Reallocate(GetAllocateSize(length + 1));
+            Reallocate(GetAllocateSize(length_ + 1));
         }
 
-        inner[length] = std::move(item);
-        length++;
+        inner_[length_] = std::move(item);
+        length_++;
     }
 
     void RemoveAt(uint index)
     {
-        if (index >= length)
+        if (index >= length_)
         {
             throw new std::out_of_range("Parameter \"index\" is greater than last item index");
         }
 
-        if (index < length - 1)
+        if (index < length_ - 1)
         {
-            for (uint i = index; i < length - 1; i++)
+            for (uint i = index; i < length_ - 1; i++)
             {
-                inner[i] = inner[i + 1];
+                inner_[i] = inner_[i + 1];
             }
         }
         
-        length--;
+        length_--;
     }
 
     void Remove(const T& item)
     {
         uint entriesAmount = 0;
-        uint* entries = new uint[length];
+        uint* entries = new uint[length_];
 
-        for (uint i = 0; i < length; i++)
+        for (uint i = 0; i < length_; i++)
         {
-            if (inner[i] == item)
+            if (inner_[i] == item)
             {
                 entries[entriesAmount++] = i;
             }
@@ -130,61 +130,67 @@ public:
         // TODO: Remove memcpy or start using malloc and free
         for (uint i = 0; i < entriesAmount - 1; i++)
         {
-            memcpy(inner + entries[i] - i, inner + entries[i] + 1, sizeof(T) * (entries[i + 1] - entries[i] - 1));
+            memcpy(inner_ + entries[i] - i, inner_ + entries[i] + 1, sizeof(T) * (entries[i + 1] - entries[i] - 1));
         }
 
         // Don't try to understand, I was drunk
-        memcpy(inner + entries[entriesAmount - 1] - entriesAmount + 1, inner + entries[entriesAmount - 1] + 1, sizeof(T) * (length - entries[entriesAmount - 1] - 1));
+        memcpy(inner_ + entries[entriesAmount - 1] - entriesAmount + 1, inner_ + entries[entriesAmount - 1] + 1, sizeof(T) * (length_ - entries[entriesAmount - 1] - 1));
 
-        length -= entriesAmount;
+        length_ -= entriesAmount;
 
         delete[] entries;
     }
 
     T& operator[](uint index)
     {
-        if (index >= length)
+        if (index >= length_)
         {
             throw new std::out_of_range("Parameter \"index\" is greater than last item index");
         }
 
-        return inner[index];
+        return inner_[index];
     }
 
     const T& operator[](uint index) const
     {
-        if (index >= length)
+        if (index >= length_)
         {
             throw new std::out_of_range("Parameter \"index\" is greater than last item index");
         }
 
-        return inner[index];
+        return inner_[index];
     }
 
     void Insert(const T& item, uint indexAt)
     {
-        if (indexAt > length)
+        if (indexAt > length_)
         {
             throw new std::out_of_range("Parameter \"indexAt\" is greater than last available index");
         }
 
         T item_copy = item;
-        if (length == allocatedLength)
+        if (length_ == allocated_length_)
         {
-            Reallocate(GetAllocateSize(length + 1));
+            Reallocate(GetAllocateSize(length_ + 1));
         }
 
-        ++length;
+        ++length_;
         
-        if (indexAt < length)
+        if (indexAt < length_)
         {
-            for (uint i = 0; i < length - indexAt - 1; i++)
+            for (uint i = 0; i < length_ - indexAt - 1; i++)
             {
-                inner[length - i - 1] = std::move(inner[length - i - 2]);
+                inner_[length_ - i - 1] = std::move(inner_[length_ - i - 2]);
             }
         }
 
-        inner[indexAt] = std::move(item_copy);
+        inner_[indexAt] = std::move(item_copy);
+    }
+
+    void Clear()
+    {
+        Reallocate(0);
+        length_ = 0;
     }
 
 private:
@@ -192,7 +198,7 @@ private:
     using Array<T>::Reallocate;
     using Array<T>::Slack;
 
-    using Array<T>::inner;
-    using Array<T>::length;
-    using Array<T>::allocatedLength;
+    using Array<T>::inner_;
+    using Array<T>::length_;
+    using Array<T>::allocated_length_;
 };

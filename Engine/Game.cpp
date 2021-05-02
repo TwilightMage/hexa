@@ -41,6 +41,11 @@ Game::Game(int argc, char* argv[])
 	set_app_path(String(argv[0]));
 }
 
+Game::~Game()
+{
+	cleanup();
+}
+
 void Game::launch()
 {
 	verbose("Game", "Launching...");
@@ -54,6 +59,7 @@ void Game::launch()
     setup_window();
     prepare();
     render_loop();
+	cleanup();
 }
 
 void Game::possess(const Weak<IControllable>& controllable)
@@ -262,8 +268,8 @@ void Game::render_loop()
 				world_->tick(last_delta_time);
 			}
 
-			glm::vec3 cam_from = copy_as<glm::vec3>(current_camera_->owner->position);
-			glm::vec3 cam_to = copy_as<glm::vec3>(current_camera_->owner->position + current_camera_->owner->rotation.forward());
+			glm::vec3 cam_from = cast_object<glm::vec3>(current_camera_->owner->position);
+			glm::vec3 cam_to = cast_object<glm::vec3>(current_camera_->owner->position + current_camera_->owner->rotation.forward());
 			cam_from.y *= -1;
 			cam_to.y *= -1;
 			glm::mat4 view = glm::lookAt(
@@ -289,6 +295,19 @@ void Game::render_loop()
 
 		last_delta_time = static_cast<float>(glfwGetTime() - tick_start);
 	}
+
+	close_world();
+}
+
+void Game::cleanup()
+{
+	renderer_->cleanup();
+
+	for (auto& shader : shaders_)
+	{
+		shader->cleanup();
+	}
+	shaders_.Clear();
 }
 
 void Game::init_game()

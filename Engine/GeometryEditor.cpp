@@ -36,16 +36,6 @@ void GeometryEditor::remove_indices(List<Mesh::vertex>& vertices, List<uint>& in
             }
         }
     }
-    
-    /*auto result = MakeShared<Mesh>();
-    
-    for (uint i = 0; i < indices_.Length(); i++)
-    {
-        result->vertices_.Add(vertices_[indices_[i]]);
-        result->indices_.Add(i);
-    }
-    
-    return result;*/
 }
 
 void GeometryEditor::invert_vertices(List<Mesh::vertex>& vertices)
@@ -73,5 +63,53 @@ void GeometryEditor::set_color(List<Mesh::vertex>& vertices, const Vector3& colo
     for (auto& vertex : vertices)
     {
         vertex.col = color;
+    }
+}
+
+void GeometryEditor::mirror_x(List<Mesh::vertex>& vertices)
+{
+    for (auto& vertex : vertices)
+    {
+        vertex.pos.x *= -1;
+    }
+}
+
+void GeometryEditor::mirror_y(List<Mesh::vertex>& vertices)
+{
+    for (auto& vertex : vertices)
+    {
+        vertex.pos.y *= -1;
+    }
+}
+
+void GeometryEditor::mirror_z(List<Mesh::vertex>& vertices)
+{
+    for (auto& vertex : vertices)
+    {
+        vertex.pos.z *= -1;
+    }
+}
+
+void GeometryEditor::translate(List<Mesh::vertex>& vertices, const Vector3& offset)
+{
+    for (auto& vertex : vertices)
+    {
+        vertex.pos += offset;
+    }
+}
+
+void GeometryEditor::rotate(List<Mesh::vertex>& vertices, const Quaternion& quat)
+{
+    for (auto& vertex : vertices)
+    {
+        vertex.pos = quat.rotate_vector3(vertex.pos);
+    }
+}
+
+void GeometryEditor::scale(List<Mesh::vertex>& vertices, const Vector3& factor)
+{
+    for (auto& vertex : vertices)
+    {
+        vertex.pos *= factor;
     }
 }

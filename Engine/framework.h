@@ -99,12 +99,17 @@ FORCEINLINE To* cast(Unique<From>& obj)
 }
 
 template<typename To, typename From>
-FORCEINLINE To copy_as(const From& rhs)
+FORCEINLINE To& cast_object(From& rhs)
 {
 	static_assert(sizeof(To) == sizeof(From));
-	To result;
-	memcpy(&result, &rhs, sizeof(From));
-	return result;
+	return *reinterpret_cast<To*>(&rhs);
+}
+
+template<typename To, typename From>
+FORCEINLINE const To& cast_object(const From& rhs)
+{
+	static_assert(sizeof(To) == sizeof(From));
+	return *reinterpret_cast<const To*>(&rhs);
 }
 
 

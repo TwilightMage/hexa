@@ -2,7 +2,6 @@
 
 
 #include "DebugPlayer.h"
-#include "DemoMeshEntity.h"
 #include "MeshEntity.h"
 
 HexaGame::HexaGame(int argc, char* argv[])
@@ -31,7 +30,7 @@ void HexaGame::start()
     possess(player);
 
     auto mesh = Mesh::load_obj("resources/engine/meshes/icosphere.obj");
-    for (auto& vertex : mesh->vertices)
+    for (auto& vertex : mesh->vertices_)
     {
         vertex.col.x = rand() % 100 / 100.0f;
         vertex.col.y = rand() % 100 / 100.0f;

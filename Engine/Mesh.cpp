@@ -4,6 +4,7 @@
 
 #include "File.h"
 #include "Game.h"
+#include "GeometryEditor.h"
 
 struct Triangle
 {
@@ -20,6 +21,28 @@ struct Vec2
     float x, y;
 };
 
+Mesh::Mesh()
+    : usage_count_(0)
+{
+}
+
+Mesh::Mesh(const List<vertex>& vertices)
+    : vertices_(vertices)
+    , usage_count_(0)
+{
+    for (uint i = 0; i < vertices.Length(); i++)
+    {
+        indices_.Add(i);
+    }
+}
+
+Mesh::Mesh(const List<vertex>& vertices, const List<uint>& indices)
+    : vertices_(vertices)
+    , indices_(indices)
+    , usage_count_(0)
+{
+}
+
 Shared<Mesh> Mesh::load_obj(const Path& path)
 {
     Shared<objl::Loader> loader = MakeShared<objl::Loader>();
@@ -31,16 +54,15 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
 
         for (auto& vert : loader->LoadedVertices)
         {
-            result->vertices.Add({{vert.Position.X, vert.Position.Y, vert.Position.Z}, {vert.TextureCoordinate.X, vert.TextureCoordinate.Y}, {1.0f, 1.0f, 1.0f}});
+            result->vertices_.Add({{vert.Position.X, vert.Position.Y, vert.Position.Z}, {vert.TextureCoordinate.X, vert.TextureCoordinate.Y}, {1.0f, 1.0f, 1.0f}});
         }
         loader->LoadedVertices.clear();
 
-        result->indices = List(loader->LoadedIndices);
+        result->indices_ = List(loader->LoadedIndices);
         loader->LoadedIndices.clear();
 
-        //result->optimize();
-        result = result->remove_indices();
-        result->invert();
+        GeometryEditor::remove_indices(result->vertices_, result->indices_);
+        GeometryEditor::invert_vertices(result->vertices_);
 
         Game::instance_->meshes_.Add(result);
 
@@ -50,55 +72,14 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
     return nullptr;
 }
 
-void Mesh::optimize()
+const List<Mesh::vertex>& Mesh::get_vertices() const
 {
-    for (uint i = 0; i < vertices.Length() - 1; i++)
-    {
-        for (uint j = i + 1; j < vertices.Length(); j++)
-        {
-            if (memcmp(&vertices[i], &vertices[j], sizeof(vertex)) == 0)
-            {
-                for (uint k = 0; k < indices.Length(); k++)
-                {
-                    if (indices[k] == j)
-                    {
-                        indices[k] = i;
-                    }
-                }
-
-                vertices.RemoveAt(j--);
-            }
-        }
-    }
+    return vertices_;
 }
 
-void Mesh::set_color(const Vector3& rhs)
+const List<uint>& Mesh::get_indices() const
 {
-    for (auto& vertex : vertices)
-    {
-        vertex.col = rhs;
-    }
-}
-
-void Mesh::invert()
-{
-    for (uint i = 0; i < vertices.Length(); i += 3)
-    {
-        std::swap(vertices[i], vertices[i + 2]);
-    }
-}
-
-Shared<Mesh> Mesh::remove_indices() const
-{
-    auto result = MakeShared<Mesh>();
-    
-    for (uint i = 0; i < indices.Length(); i++)
-    {
-        result->vertices.Add(vertices[indices[i]]);
-        result->indices.Add(i);
-    }
-    
-    return result;
+    return indices_;
 }
 
 uint Mesh::get_usage_count() const

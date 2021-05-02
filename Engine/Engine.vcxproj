@@ -199,6 +199,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameInfo.h" />
+    <ClInclude Include="GeometryEditor.h" />
     <ClInclude Include="IControllable.h" />
     <ClInclude Include="IRenderable.h" />
     <ClInclude Include="ITickable.h" />
@@ -232,6 +233,7 @@
     <ClCompile Include="File.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GameInfo.cpp" />
+    <ClCompile Include="GeometryEditor.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="LogStream.cpp" />
     <ClCompile Include="Math.cpp" />

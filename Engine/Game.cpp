@@ -203,6 +203,7 @@ void Game::prepare()
 	
 	glfwSetErrorCallback(error_callback);
 	glfwSetKeyCallback(window_, key_callback);
+	glfwSetMouseButtonCallback(window_, mouse_button_callback);
 	glfwSetCursorPosCallback(window_, cursor_position_callback);
 }
 
@@ -326,6 +327,21 @@ void Game::key_callback(GLFWwindow* window, int key, int scancode, int action, i
 			{
 				instance_->current_controllable_->key_up(key);
 			}
+		}
+	}
+}
+
+void Game::mouse_button_callback(class GLFWwindow* window, int button, int action, int mods)
+{
+	if (instance_->current_controllable_)
+	{
+		if (action == GLFW_PRESS)
+		{
+			instance_->current_controllable_->mouse_button_down(button);
+		}
+		else if (action == GLFW_RELEASE)
+		{
+			instance_->current_controllable_->mouse_button_up(button);
 		}
 	}
 }

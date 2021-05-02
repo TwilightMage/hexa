@@ -57,7 +57,7 @@ Renderer::render_list::render_list()
 
 Renderer::render_list::render_list(Mesh* mesh, uint vertex_offset)
     : vertex_buffer_offset(vertex_offset)
-    , size_in_vertex_buffer(mesh->vertices.Length())
+    , size_in_vertex_buffer(mesh->get_vertices().Length())
 {
 }
 
@@ -86,7 +86,7 @@ void Renderer::register_object(const Weak<IRenderable>& renderable)
         {
             if (const auto mesh_ptr = renderable_ptr->get_mesh().lock())
             {
-                if (mesh_ptr->vertices.Length() > 0)
+                if (mesh_ptr->get_vertices().Length() > 0)
                 {
                     if (!database.have_key(shader_ptr))
                     {
@@ -102,17 +102,17 @@ void Renderer::register_object(const Weak<IRenderable>& renderable)
                         if (shader_meshes.size() > 0) // if new mesh will be first
                         {
                             // extract existing vertex buffer
-                            vertex_buffer = extract_gl_buffer<Mesh::vertex>(shader_meshes.gl_vertex_buffer_id, GL_ARRAY_BUFFER, vertex_buffer_size, mesh_ptr->vertices.Length());
+                            vertex_buffer = extract_gl_buffer<Mesh::vertex>(shader_meshes.gl_vertex_buffer_id, GL_ARRAY_BUFFER, vertex_buffer_size, mesh_ptr->get_vertices().Length());
                         }
                         else
                         {
-                            vertex_buffer_size = mesh_ptr->vertices.Length();
+                            vertex_buffer_size = mesh_ptr->get_vertices().Length();
                             // initialize new empty buffer
                             vertex_buffer = new Mesh::vertex[vertex_buffer_size];
                         }
 
                         // modify copy of current buffer
-                        memcpy(vertex_buffer + vertex_buffer_size - mesh_ptr->vertices.Length(), mesh_ptr->vertices.GetData(), sizeof(Mesh::vertex) * mesh_ptr->vertices.Length());
+                        memcpy(vertex_buffer + vertex_buffer_size - mesh_ptr->get_vertices().Length(), mesh_ptr->get_vertices().GetData(), sizeof(Mesh::vertex) * mesh_ptr->get_vertices().Length());
 
                         glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.gl_vertex_buffer_id);
                         // save updated buffer
@@ -121,7 +121,7 @@ void Renderer::register_object(const Weak<IRenderable>& renderable)
                 
                         delete vertex_buffer;
                 
-                        shader_meshes[mesh_ptr] = render_list(mesh_ptr.get(), vertex_buffer_size - mesh_ptr->vertices.Length());
+                        shader_meshes[mesh_ptr] = render_list(mesh_ptr.get(), vertex_buffer_size - mesh_ptr->get_vertices().Length());
                     }
 
                     auto& mesh_objects = shader_meshes[mesh_ptr];

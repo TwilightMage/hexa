@@ -14,17 +14,20 @@ public:
         Vector2 uv;
         Vector3 col;
     };
+
+    Mesh();
+    Mesh(const List<vertex>& vertices);
+    Mesh(const List<vertex>& vertices, const List<uint>& indices);
     
     static Shared<Mesh> load_obj(const Path& path);
 
-    void optimize();
-    void set_color(const Vector3& rhs);
-    void invert();
-    Shared<Mesh> remove_indices() const;
+    const List<vertex>& get_vertices() const;
+    const List<uint>& get_indices() const;
     
     uint get_usage_count() const;
 
-    List<vertex> vertices; // TODO: Make private
-    List<uint> indices;
+//private:
+    List<vertex> vertices_;
+    List<uint> indices_;
     uint usage_count_;
 };

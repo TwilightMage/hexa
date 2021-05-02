@@ -168,6 +168,7 @@ public:
             throw new std::out_of_range("Parameter \"indexAt\" is greater than last available index");
         }
 
+        T item_copy = item;
         if (length == allocatedLength)
         {
             Reallocate(GetAllocateSize(length + 1));
@@ -183,7 +184,7 @@ public:
             }
         }
 
-        inner[indexAt] = std::move(item);
+        inner[indexAt] = std::move(item_copy);
     }
 
 private:

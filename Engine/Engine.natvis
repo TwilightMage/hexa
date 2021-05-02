@@ -61,7 +61,7 @@
         <DisplayString>Quaternion {{ x={x}, y={y}, z={z}, w={w} }}</DisplayString>
     </Type>
 
-    <Type Name="Mesh::Vertex">
+    <Type Name="Mesh::vertex">
         <DisplayString>Vertex {{ pos={pos}, uv={uv}, col={col} }}</DisplayString>
     </Type>
 </AutoVisualizer>

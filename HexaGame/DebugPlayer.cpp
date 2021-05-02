@@ -15,8 +15,8 @@ void DebugPlayer::start()
 
     if (auto world_ptr = get_world().lock())
     {
-        auto arrows_mesh = Mesh::load_obj("resources/engine/meshes/axis_arrows.obj")->remove_indices();
-        for (auto& vertex : arrows_mesh->vertices)
+        auto arrows_mesh = Mesh::load_obj("resources/engine/meshes/axis_arrows.obj");
+        for (auto& vertex : arrows_mesh->vertices_)
         {
             vertex.col = vertex.pos;
         }

@@ -92,7 +92,7 @@ uint TextureAtlas::put(const Path& path)
                     if (found) break;
                 }
                 if (desired_size * 2 > max_size_) throw std::runtime_error("Unable to put image " + path.get_absolute_string().std() + " into atlas due to size excess");
-                desired_size *= 4;
+                desired_size *= 2;
             }
 
             if (found)

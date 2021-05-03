@@ -14,17 +14,18 @@ public:
 	public:
 		static Shared<Reader> Open(const Path& path);
 
+		String Read(uint lenght);
 		String ReadAll();
 		String ReadLine();
 		bool IsEndOfFile() const;
-		int GetSize() const;
-		int GetPosition();
+		uint GetSize() const;
+		uint GetPosition();
 
 	private:
 		Reader() {};
 
 		std::ifstream stream;
-		size_t size;
+		uint64 size;
 	};
 
 	class Writer

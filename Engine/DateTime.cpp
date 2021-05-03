@@ -44,6 +44,16 @@ int DateTime::Interval::GetTotalMilliseconds() const
 	return millisecond + (second + (minute + (hour * day * 24) * 60) * 60) * 1000;
 }
 
+String DateTime::Interval::ToString() const
+{
+	String result = StringMake(millisecond) + "ms";
+	if (day > 0 || hour > 0 || minute > 0 || second > 0) result = StringMake(second) + "s, " + result;
+	if (day > 0 || hour > 0 || minute > 0) result = StringMake(second) + "m, " + result;
+	if (day > 0 || hour > 0) result = StringMake(second) + "h, " + result;
+	if (day > 0) result = StringMake(second) + "d, " + result;
+	return result;
+}
+
 DateTime::DateTime(int year, int month, int day, int hour, int minute, int second, int millisecond)
 	: year(year)
 	, month(month)

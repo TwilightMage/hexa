@@ -16,6 +16,8 @@ EXTERN struct EXPORT DateTime
 		[[nodiscard]] float GetTotalMinutes() const;
 		[[nodiscard]] float GetTotalSeconds() const;
 		[[nodiscard]] int GetTotalMilliseconds() const;
+
+		[[nodiscard]] String ToString() const;
 	};
 
 	DateTime(int year, int month, int day, int hour, int minute, int second, int millisecond = 0);

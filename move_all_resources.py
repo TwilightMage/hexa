@@ -1,6 +1,6 @@
 import os
 
-sources = ["Engine"]
+sources = ["Engine", "HexaGame"]
 dir_path = os.path.dirname(os.path.realpath(__file__))
 
 for source in sources:

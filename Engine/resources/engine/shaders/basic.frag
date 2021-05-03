@@ -1,8 +1,11 @@
 #version 450
 
-varying vec3 color;
+uniform sampler2D sampler;
+
+in vec3 color;
+in vec2 uv;
 
 void main()
 {
-    gl_FragColor = vec4(color, 1.0);
+    gl_FragColor = texture(sampler, uv) * vec4(color, 1.0);
 }

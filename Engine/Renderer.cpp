@@ -7,6 +7,7 @@
 #include "IRenderable.h"
 #include "Mesh.h"
 #include "Shader.h"
+#include "TextureAtlas.h"
 
 template<typename K, typename V>
 struct simple_map
@@ -204,12 +205,12 @@ Renderer::Renderer()
 
 Renderer::~Renderer()
 {
-    delete static_cast<render_database*>(database_);
+    delete database_;
 }
 
 void Renderer::register_object(const Weak<IRenderable>& renderable) const
 {
-    auto& db = *static_cast<render_database*>(database_);
+    auto& db = *database_;
     if (const auto renderable_ptr = renderable.lock())
     {
         if (const auto shader_ptr = renderable_ptr->get_shader().lock())
@@ -256,11 +257,6 @@ void Renderer::register_object(const Weak<IRenderable>& renderable) const
 
                     auto& mesh_objects = shader_meshes[mesh_ptr];
                     mesh_objects.Add(renderable_ptr);
-
-                    if (mesh_objects.Length() >= render_list::objects_count_limit)
-                    {
-                        print_warning("Renderer", "Objects count exceeded for mesh %p for shader %s", mesh_ptr.get(), shader_ptr->get_name().c());
-                    }
                 }
             }
         }
@@ -269,7 +265,7 @@ void Renderer::register_object(const Weak<IRenderable>& renderable) const
 
 void Renderer::unregister_object(const Weak<IRenderable>& renderable) const
 {
-    auto& db = *static_cast<render_database*>(database_);
+    auto& db = *database_;
     if (const auto renderable_ptr = renderable.lock())
     {
         if (const auto shader_ptr = renderable_ptr->get_shader().lock())
@@ -310,33 +306,40 @@ void Renderer::unregister_object(const Weak<IRenderable>& renderable) const
     }
 }
 
-void Renderer::render(const glm::mat4& view_projection_matrix) const
+void Renderer::render(const glm::mat4& view_projection_matrix, class TextureAtlas* atlas) const
 {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
 
-    auto& db = *static_cast<render_database*>(database_);
+    auto& db = *database_;
     for (const auto& shader_meshes : db)
     {
         glUseProgram(shader_meshes.value.gl_shader_id);
         glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.value.gl_vertex_buffer_id);
         shader_meshes.key->map_params();
 
+        glUniform4fv(460, atlas->get_num_entries(), reinterpret_cast<float*>(atlas->get_cached_mods().GetData()));
+
         for (const auto& mesh_objects : shader_meshes.value)
         {
-            const uint mvp_array_size = std::min(mesh_objects.value.Length(), render_list::objects_count_limit);
-            glm::mat4* mvp_array = new glm::mat4[mvp_array_size];
+            const uint instance_count = std::min(mesh_objects.value.Length(), render_list::objects_count_limit);
+            glm::mat4* mvp_array = new glm::mat4[instance_count];
+            int* atlas_entry_id_array = new int[instance_count];
             {
                 uint i = 0;
                 for (const auto& object : mesh_objects.value)
                 {
-                    mvp_array[i++] = view_projection_matrix * get_model_matrix(object);
-                    if (i == mvp_array_size) break;
+                    mvp_array[i] = view_projection_matrix * get_model_matrix(object);
+                    atlas_entry_id_array[i] = 5;
+                    
+                    if (++i == instance_count) break;
                 }
             }
-            glUniformMatrix4fv(0, mvp_array_size, GL_FALSE, reinterpret_cast<float*>(mvp_array));
-            delete mvp_array;
+            glUniformMatrix4fv(0, instance_count, GL_FALSE, reinterpret_cast<float*>(mvp_array));
+            glUniform1iv(230, instance_count, atlas_entry_id_array);
+            delete[] mvp_array;
+            delete[] atlas_entry_id_array;
             		
             glDrawArraysInstanced(GL_TRIANGLES, mesh_objects.value.vertex_buffer_offset, mesh_objects.value.size_in_vertex_buffer, mesh_objects.value.Length());
         }
@@ -345,7 +348,7 @@ void Renderer::render(const glm::mat4& view_projection_matrix) const
 
 void Renderer::cleanup() const
 {
-    auto& db = *static_cast<render_database*>(database_);
+    auto& db = *database_;
     for (auto& shader_meshes : db)
     {
         shader_meshes.value.cleanup();

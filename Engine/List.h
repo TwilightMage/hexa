@@ -26,30 +26,30 @@ public:
     {
     }
 
-    List(T* inner_, uint length_)
+    List(T* inner, uint length)
     {
-        allocated_length_ = GetAllocateSize(length_);
-        this->length_ = length_;
-        if (length_ > 0)
+        allocated_length_ = GetAllocateSize(length);
+        this->length_ = length;
+        if (length > 0)
         {
             this->inner_ = new T[allocated_length_];
-            for (uint i = 0; i < length_; i++)
+            for (uint i = 0; i < length; i++)
             {
-                this->inner_[i] = std::move(inner_[i]);
+                this->inner_[i] = std::move(inner[i]);
             }
         }
     }
 
-    List(const T* inner_, uint length_)
+    List(const T* inner, uint length)
     {
-        allocated_length_ = GetAllocateSize(length_);
-        this->length_ = length_;
-        if (length_ > 0)
+        allocated_length_ = GetAllocateSize(length);
+        this->length_ = length;
+        if (length > 0)
         {
             this->inner_ = new T[allocated_length_];
-            for (uint i = 0; i < length_; i++)
+            for (uint i = 0; i < length; i++)
             {
-                this->inner_[i] = std::move(inner_[i]);
+                this->inner_[i] = std::move(inner[i]);
             }
         }
     }
@@ -62,6 +62,20 @@ public:
     List(const std::initializer_list<T>& il)
         : List(static_cast<const T*>(il.begin()), static_cast<uint>(il.size()))
     {
+    }
+
+    List(uint length)
+    {
+        allocated_length_ = GetAllocateSize(length);
+        this->length_ = length;
+        if (length > 0)
+        {
+            this->inner_ = new T[allocated_length_];
+            for (uint i = 0; i < length; i++)
+            {
+                this->inner_[i] = T();
+            }
+        }
     }
 
     List& operator=(const List& rhs)
@@ -94,6 +108,28 @@ public:
 
         inner_[length_] = std::move(item);
         length_++;
+    }
+
+    bool Contains(const T& item)
+    {
+        if (length_ == 0) return false;
+        
+        for (uint i = 0; i < length_; i++)
+        {
+            if (inner_[i] == item) return true;
+        }
+        return false;
+    }
+
+    int IndexOf(const T& item)
+    {
+        if (length_ == 0) return -1;
+        
+        for (uint i = 0; i < length_; i++)
+        {
+            if (inner_[i] == item) return i;
+        }
+        return -1;
     }
 
     void RemoveAt(uint index)

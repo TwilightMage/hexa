@@ -15,7 +15,10 @@
 #include "Quaternion.h"
 #include "Renderer.h"
 #include "Shader.h"
+#include "Texture.h"
+#include "TextureAtlas.h"
 #include "World.h"
+#include "TextureAtlas.h"
 
 Game* Game::instance_ = nullptr;
 
@@ -216,6 +219,19 @@ void Game::prepare()
 void Game::render_loop()
 {
 	String opengl_version(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &TextureAtlas::max_size_);
+
+	TextureAtlas ta = TextureAtlas(60, 45);
+	const auto tile_atlas_packing_start_time = DateTime::Now();
+	ta.put("resources/hexagame/textures/tiles/dirt.png");
+	ta.put("resources/hexagame/textures/tiles/grass.png");
+	ta.put("resources/hexagame/textures/tiles/iron_ore.png");
+	ta.put("resources/hexagame/textures/tiles/sand.png");
+	ta.put("resources/hexagame/textures/tiles/stone.png");
+	ta.put("resources/hexagame/textures/tiles/stone_bricks.png");
+	const auto tile_atlas_packing_end_time = DateTime::Now();
+	verbose("Tile Atlas", "Packed %i tiles in %s", ta.get_num_entries(), (tile_atlas_packing_end_time - tile_atlas_packing_start_time).ToString().c());
+	auto t = ta.to_texture();
 	
 	if (auto mod = Mod::load("mods/ExampleMod/ExampleMod.dll"))
 	{
@@ -230,11 +246,19 @@ void Game::render_loop()
 		{"vCol", sizeof(float) * 5, 3, GL_FLOAT}
 	};
 	basic_shader_meta.uniform_params = {
-		{"MVPs"}
+		{"MVPs"},
+		{"atlasIDs"},
+		{"atlasOffsets"},
+		{"atlasScales"}
 	};
 	basic_shader_ = Shader::compile(Path("resources/engine/shaders/basic"), basic_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
 	
 	start();
+
+	auto tex = Texture::load_png("resources/engine/textures/pixels.png");
+	t->usage_count_++;
+	t->usage_count_changed();
+	glBindTexture(GL_TEXTURE_2D, t->gl_binding_);
 
 	float last_delta_time = 0.0f;
 	
@@ -287,7 +311,7 @@ void Game::render_loop()
 
 			glm::mat4 vp = proj * view;
 			
-			renderer_->render(vp);
+			renderer_->render(vp, &ta);
 		}
  
 		glfwSwapBuffers(window_);
@@ -297,6 +321,7 @@ void Game::render_loop()
 	}
 
 	close_world();
+	tex->cleanup();
 }
 
 void Game::cleanup()

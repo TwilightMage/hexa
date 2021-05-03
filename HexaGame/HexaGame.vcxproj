@@ -175,6 +175,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="AxisArrows.h" />
     <ClInclude Include="DebugPlayer.h" />
     <ClInclude Include="DemoMeshEntity.h" />
     <ClInclude Include="framework.h" />
@@ -183,6 +184,7 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AxisArrows.cpp" />
     <ClCompile Include="DebugPlayer.cpp" />
     <ClCompile Include="DemoMeshEntity.cpp" />
     <ClCompile Include="dllmain.cpp" />

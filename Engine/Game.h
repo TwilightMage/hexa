@@ -22,6 +22,7 @@ class Camera;
 class GLFWwindow;
 class IControllable;
 class World;
+class Texture;
 
 enum class ELogLevel
 {
@@ -36,6 +37,7 @@ EXTERN class EXPORT Game
     friend World;
     friend Shader;
     friend Mesh;
+    friend Texture;
     
 public:
     Game(int argc, char* argv[]);
@@ -113,12 +115,14 @@ private:
     
     // GLFW
     GLFWwindow* window_;
-    Shared<Shader> basic_shader_;
     Unique<EventBus> event_bus_;
+    Shared<Shader> basic_shader_;
+    Shared<Texture> white_pixel_;
 
     // Assets
     List<Shared<Shader>> shaders_;
     std::map<String, Shared<Mesh>> meshes_;
+    std::map<String, Shared<Texture>> textures_;
 
     // Game
     Shared<Camera> current_camera_;

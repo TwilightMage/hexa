@@ -8,6 +8,8 @@ class Mesh;
 class Shader;
 class IRenderable;
 
+struct render_database;
+
 /* STRUCTURE EXAMPLE
 *
 * Game
@@ -44,9 +46,9 @@ public:
     void register_object(const Weak<IRenderable>& renderable) const;
     void unregister_object(const Weak<IRenderable>& renderable) const;
 
-    void render(const glm::mat4& view_projection_matrix) const;
+    void render(const glm::mat4& view_projection_matrix, class TextureAtlas* atlas) const;
     void cleanup() const;
 
 private:
-    void* database_ = nullptr;
+    render_database* database_ = nullptr;
 };

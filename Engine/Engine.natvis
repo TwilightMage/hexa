@@ -48,6 +48,10 @@
             </ArrayItems>
         </Expand>
     </Type>
+
+    <Type Name="DateTime::Interval">
+        <DisplayString>{{ {day}d, {hour}h, {minute}m, {second}s, {millisecond}ms }}</DisplayString>
+    </Type>
     
     <Type Name="Vector3">
         <DisplayString>Vector3 {{ x={x}, y={y}, z={z} }}</DisplayString>

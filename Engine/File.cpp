@@ -1,5 +1,7 @@
 #include "File.h"
 
+#include <glm/ext/quaternion_geometric.hpp>
+
 String File::ReadFile(const Path& path)
 {
 	std::ifstream file(path.get_absolute().to_string().std(), std::ios::ate | std::ios::binary);
@@ -71,12 +73,20 @@ Shared<File::Reader> File::Reader::Open(const Path& path)
 	return result;
 }
 
+String File::Reader::Read(uint lenght)
+{
+	const auto buff_size = std::min(size - stream.tellg(), static_cast<uint64>(lenght));
+	const auto buff = new char[buff_size];
+	stream.read(buff, buff_size);
+	return String(buff, static_cast<uint>(buff_size));
+}
+
 String File::Reader::ReadAll()
 {
-	size_t buffSize = size - stream.tellg();
-	char* buff = new char[buffSize];
-	stream.read(buff, buffSize);
-	return String(buff, static_cast<uint>(buffSize));
+	const auto buff_size = size - stream.tellg();
+	const auto buff = new char[buff_size];
+	stream.read(buff, buff_size);
+	return String(buff, static_cast<uint>(buff_size));
 }
 
 String File::Reader::ReadLine()
@@ -95,19 +105,19 @@ bool File::Reader::IsEndOfFile() const
 	return stream.eof();
 }
 
-int File::Reader::GetSize() const
+uint File::Reader::GetSize() const
 {
-	return static_cast<int>(size);
+	return static_cast<uint>(size);
 }
 
-int File::Reader::GetPosition()
+uint File::Reader::GetPosition()
 {
-	return static_cast<int>(stream.tellg());
+	return static_cast<uint>(stream.tellg());
 }
 
 Shared<File::Writer> File::Writer::Open(const Path& path)
 {
-	Shared<File::Writer> result = MakeSharedInternal(File::Writer);
+	auto result = MakeSharedInternal(File::Writer);
 
 	result->stream = std::ofstream(path.get_absolute().to_string().std());
 

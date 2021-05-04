@@ -31,7 +31,7 @@ struct simple_map
             if (entry.key == key) return entry.value;
         }
         entries.Add({ key, V() });
-        return entries[entries.Length() - 1].value;
+        return entries[entries.length() - 1].value;
     }
 
     void clear()
@@ -61,12 +61,12 @@ struct simple_map
 
     uint size()
     {
-        return entries.Length();
+        return entries.length();
     }
 
     void remove_key(const K& key)
     {
-        for (uint i = 0; i < entries.Length(); i++)
+        for (uint i = 0; i < entries.length(); i++)
         {
             if (entries[i].key == key)
             {
@@ -93,12 +93,12 @@ struct simple_map
             if (entry.key == key) return entry;
         }
         entries.Add({ key, V() });
-        return entries[entries.Length() - 1];
+        return entries[entries.length() - 1];
     }
 
     entry& last()
     {
-        return entries[entries.Length() - 1];
+        return entries[entries.length() - 1];
     }
 };
 
@@ -177,7 +177,7 @@ render_list::render_list()
 
 render_list::render_list(Mesh* mesh, uint vertex_offset)
     : vertex_buffer_offset(vertex_offset)
-    , size_in_vertex_buffer(mesh->get_vertices().Length())
+    , size_in_vertex_buffer(mesh->get_vertices().length())
 {
 }
 
@@ -217,7 +217,7 @@ void Renderer::register_object(const Weak<IRenderable>& renderable) const
         {
             if (const auto mesh_ptr = renderable_ptr->get_mesh().lock())
             {
-                if (mesh_ptr->get_vertices().Length() > 0)
+                if (mesh_ptr->get_vertices().length() > 0)
                 {
                     if (!db.have_key(shader_ptr))
                     {
@@ -233,17 +233,17 @@ void Renderer::register_object(const Weak<IRenderable>& renderable) const
                         if (shader_meshes.size() > 0) // if new mesh will be first
                         {
                             // extract existing vertex buffer
-                            vertex_buffer = extract_gl_buffer<Mesh::vertex>(shader_meshes.gl_vertex_buffer_id, GL_ARRAY_BUFFER, vertex_buffer_size, mesh_ptr->get_vertices().Length());
+                            vertex_buffer = extract_gl_buffer<Mesh::vertex>(shader_meshes.gl_vertex_buffer_id, GL_ARRAY_BUFFER, vertex_buffer_size, mesh_ptr->get_vertices().length());
                         }
                         else
                         {
-                            vertex_buffer_size = mesh_ptr->get_vertices().Length();
+                            vertex_buffer_size = mesh_ptr->get_vertices().length();
                             // initialize new empty buffer
                             vertex_buffer = new Mesh::vertex[vertex_buffer_size];
                         }
 
                         // modify copy of current buffer
-                        memcpy(vertex_buffer + vertex_buffer_size - mesh_ptr->get_vertices().Length(), mesh_ptr->get_vertices().GetData(), sizeof(Mesh::vertex) * mesh_ptr->get_vertices().Length());
+                        memcpy(vertex_buffer + vertex_buffer_size - mesh_ptr->get_vertices().length(), mesh_ptr->get_vertices().get_data(), sizeof(Mesh::vertex) * mesh_ptr->get_vertices().length());
 
                         glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.gl_vertex_buffer_id);
                         // save updated buffer
@@ -252,7 +252,7 @@ void Renderer::register_object(const Weak<IRenderable>& renderable) const
                 
                         delete vertex_buffer;
                 
-                        shader_meshes[mesh_ptr] = render_list(mesh_ptr.get(), vertex_buffer_size - mesh_ptr->get_vertices().Length());
+                        shader_meshes[mesh_ptr] = render_list(mesh_ptr.get(), vertex_buffer_size - mesh_ptr->get_vertices().length());
                     }
 
                     auto& mesh_objects = shader_meshes[mesh_ptr];
@@ -278,7 +278,7 @@ void Renderer::unregister_object(const Weak<IRenderable>& renderable) const
 
                     auto& entry = shader_meshes.get_entry(mesh_ptr);
                     entry.value.Remove(renderable_ptr);
-                    if (entry.value.Length() == 0)
+                    if (entry.value.length() == 0)
                     {
                         int vertex_buffer_size;
                         Mesh::vertex* vertex_buffer = extract_gl_buffer<Mesh::vertex>(shader_meshes.gl_vertex_buffer_id, GL_ARRAY_BUFFER, vertex_buffer_size);
@@ -323,7 +323,7 @@ void Renderer::render(const glm::mat4& view_projection_matrix, class TextureAtla
 
         for (const auto& mesh_objects : shader_meshes.value)
         {
-            const uint instance_count = std::min(mesh_objects.value.Length(), render_list::objects_count_limit);
+            const uint instance_count = std::min(mesh_objects.value.length(), render_list::objects_count_limit);
             glm::mat4* mvp_array = new glm::mat4[instance_count];
             int* atlas_entry_id_array = new int[instance_count];
             {
@@ -341,7 +341,7 @@ void Renderer::render(const glm::mat4& view_projection_matrix, class TextureAtla
             delete[] mvp_array;
             delete[] atlas_entry_id_array;
             		
-            glDrawArraysInstanced(GL_TRIANGLES, mesh_objects.value.vertex_buffer_offset, mesh_objects.value.size_in_vertex_buffer, mesh_objects.value.Length());
+            glDrawArraysInstanced(GL_TRIANGLES, mesh_objects.value.vertex_buffer_offset, mesh_objects.value.size_in_vertex_buffer, mesh_objects.value.length());
         }
     }
 }

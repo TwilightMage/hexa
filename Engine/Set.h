@@ -13,72 +13,72 @@ public:
     using Array<T>::begin;
     using Array<T>::end;
 
-    using Array<T>::GetData;
+    using Array<T>::get_data;
     using Array<T>::operator==;
     using Array<T>::operator!=;
 
     Set()
     {
-        inner = nullptr;
-        length = 0;
-        allocatedLength = 0;
+        inner_ = nullptr;
+        length_ = 0;
+        allocated_length_ = 0;
     }
 
     Set(const Set& rhs)
     {
-        inner = new T[rhs.allocatedLength];
-        length = rhs.length;
-        allocatedLength = rhs.allocatedLength;
+        inner_ = new T[rhs.allocated_length_];
+        length_ = rhs.length_;
+        allocated_length_ = rhs.allocated_length_;
 
-        memcpy(inner, rhs.inner, sizeof(T) * length);
+        memcpy(inner_, rhs.inner_, sizeof(T) * length_);
     }
 
-    Set(T* inner, uint length)
+    Set(T* inner_, uint length_)
     {
-        allocatedLength = GetAllocateSize(length);
-        this->inner = new T[allocatedLength];
+        allocated_length_ = get_allocated_size(length_);
+        this->inner_ = new T[allocated_length_];
 
-        for (uint i = 0; i < length; i++)
+        for (uint i = 0; i < length_; i++)
         {
-            Add(inner[i]);
+            Add(inner_[i]);
         }
 
-        Slack();
+        slack();
     }
 
     Set(const std::set<T, Compare>& set)
     {
-        inner = new T[set.size()];
-        length = static_cast<uint>(set.size());
-        allocatedLength = GetAllocateSize(length);
+        inner_ = new T[set.size()];
+        length_ = static_cast<uint>(set.size());
+        allocated_length_ = get_allocated_size(length_);
 
-        memcpy(inner, set.data(), sizeof(T) * set.size());
+        memcpy(inner_, set.data(), sizeof(T) * set.size());
     }
 
     Set(const std::initializer_list<T>& il)
     {
-        allocatedLength = GetAllocateSize(il.size());
-        inner = new T[allocatedLength];
+        allocated_length_ = get_allocated_size(il.size());
+        inner_ = new T[allocated_length_];
 
         for (uint i = 0; i < il.size(); i++)
         {
             Add(il[i]);
         }
 
-        Slack();
+        slack();
     }
 
     Set& operator=(const Set& rhs)
     {
         if (this == &rhs) return *this;
 
-        delete[] inner;
+        delete[] inner_;
 
-        length = rhs.length;
-        allocatedLength = rhs.allocatedLength;
+        length_ = rhs.length_;
+        allocated_length_ = rhs.allocated_length_;
 
-        inner = new T[allocatedLength];
-        memcpy(inner, rhs.inner, sizeof(T) * length);
+        inner_ = new T[allocated_length_];
+        memcpy(inner_, rhs.inner_, sizeof(T) * length_);
 
         return *this;
     }
@@ -87,25 +87,25 @@ public:
     {
         Compare compare;
 
-        if (length == allocatedLength)
+        if (length_ == allocated_length_)
         {
-            Reallocate(GetAllocateSize(length + 1));
+            reallocate(get_allocated_size(length_ + 1));
         }
 
         bool inserted = false;
-        for (uint i = 0; i < length; i++)
+        for (uint i = 0; i < length_; i++)
         {
-            if (compare(item, inner[i]))
+            if (compare(item, inner_[i]))
             {
-                memcpy_b(inner + (i + 1), inner + i, sizeof(T) * (length - i));
+                memcpy_b(inner_ + (i + 1), inner_ + i, sizeof(T) * (length_ - i));
 
-                inner[i] = std::move(item);
+                inner_[i] = std::move(item);
 
                 inserted = true;
 
                 break;
             }
-            else if (!compare(inner[i], item))
+            else if (!compare(inner_[i], item))
             {
                 return;
             }
@@ -113,21 +113,21 @@ public:
 
         if (!inserted)
         {
-            inner[length] = std::move(item);
+            inner_[length_] = std::move(item);
         }
 
-        length++;
+        length_++;
     }
 
     void Remove(const T& item)
     {
-        for (uint i = 0; i < length; i++)
+        for (uint i = 0; i < length_; i++)
         {
-            if (inner[i] == item)
+            if (inner_[i] == item)
             {
-                memcpy(inner + (i + 1), inner + i, sizeof(T) * (length - i - 1));
+                memcpy(inner_ + (i + 1), inner_ + i, sizeof(T) * (length_ - i - 1));
 
-                length--;
+                length_--;
 
                 break;
             }
@@ -136,30 +136,30 @@ public:
 
     T& operator[](uint index)
     {
-        if (index >= length)
+        if (index >= length_)
         {
             throw new std::out_of_range("Parameter \"index\" is greater than last item index");
         }
 
-        return inner[index];
+        return inner_[index];
     }
 
     const T& operator[](uint index) const
     {
-        if (index >= length)
+        if (index >= length_)
         {
             throw new std::out_of_range("Parameter \"index\" is greater than last item index");
         }
 
-        return inner[index];
+        return inner_[index];
     }
 
 private:
-    using Array<T>::GetAllocateSize;
-    using Array<T>::Reallocate;
-    using Array<T>::Slack;
+    using Array<T>::get_allocated_size;
+    using Array<T>::reallocate;
+    using Array<T>::slack;
 
-    using Array<T>::inner;
-    using Array<T>::length;
-    using Array<T>::allocatedLength;
+    using Array<T>::inner_;
+    using Array<T>::length_;
+    using Array<T>::allocated_length_;
 };

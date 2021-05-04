@@ -115,7 +115,7 @@
       <EnableUAC>false</EnableUAC>
     </Link>
     <PostBuildEvent>
-      <Command>python "$(SolutionDir)move_resources.py" "$(SolutionDir)\." Engine "$(OutDir)\."</Command>
+      <Command></Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -140,7 +140,7 @@
       <EnableUAC>false</EnableUAC>
     </Link>
     <PostBuildEvent>
-      <Command>python "$(SolutionDir)move_resources.py" "$(SolutionDir)\." Engine "$(OutDir)\."</Command>
+      <Command></Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
@@ -160,7 +160,7 @@
       <EnableUAC>false</EnableUAC>
     </Link>
     <PostBuildEvent>
-      <Command>python "$(SolutionDir)move_resources.py" "$(SolutionDir)\." Engine "$(OutDir)\."</Command>
+      <Command></Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -185,7 +185,7 @@
       <EnableUAC>false</EnableUAC>
     </Link>
     <PostBuildEvent>
-      <Command>python "$(SolutionDir)move_resources.py" "$(SolutionDir)\." Engine "$(OutDir)\."</Command>
+      <Command></Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -211,7 +211,6 @@
     <ClInclude Include="Math.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Mod.h" />
-    <ClInclude Include="ModInfo.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="pch.h" />
@@ -251,7 +250,6 @@
     <ClCompile Include="Math.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Mod.cpp" />
-    <ClCompile Include="ModInfo.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Path.cpp" />
     <ClCompile Include="pch.cpp">

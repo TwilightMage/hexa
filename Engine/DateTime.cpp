@@ -2,49 +2,49 @@
 #include <chrono>
 #include <time.h>
 
-tm ToTm(const DateTime& inTime)
+tm to_tm(const DateTime& in_time)
 {
-	tm t;
-	t.tm_year = inTime.year - 1900;
-	t.tm_mon = inTime.month - 1;
-	t.tm_mday = inTime.day;
-	t.tm_hour = inTime.hour;
-	t.tm_min = inTime.minute;
-	t.tm_sec = inTime.second;
+	auto t = tm();
+	t.tm_year = in_time.year - 1900;
+	t.tm_mon = in_time.month - 1;
+	t.tm_mday = in_time.day;
+	t.tm_hour = in_time.hour;
+	t.tm_min = in_time.minute;
+	t.tm_sec = in_time.second;
 
 	return t;
 }
 
-std::chrono::system_clock::time_point ToTimePoint(const DateTime& inTime)
+std::chrono::system_clock::time_point to_time_point(const DateTime& in_time)
 {
-	auto tm = ToTm(inTime);
+	auto tm = to_tm(in_time);
 	auto result = std::chrono::system_clock::from_time_t(mktime(&tm));
-	result += std::chrono::milliseconds(inTime.millisecond);
+	result += std::chrono::milliseconds(in_time.millisecond);
 
 	return result;
 }
 
-float DateTime::Interval::GetTotalHours() const
+float DateTime::Interval::get_total_hours() const
 {
-	return GetTotalMinutes() / 60.0f;
+	return get_total_minutes() / 60.0f;
 }
 
-float DateTime::Interval::GetTotalMinutes() const
+float DateTime::Interval::get_total_minutes() const
 {
-	return GetTotalSeconds() / 60.0f;
+	return get_total_seconds() / 60.0f;
 }
 
-float DateTime::Interval::GetTotalSeconds() const
+float DateTime::Interval::get_total_seconds() const
 {
-	return GetTotalMilliseconds() / 1000.0f;
+	return get_total_milliseconds() / 1000.0f;
 }
 
-int DateTime::Interval::GetTotalMilliseconds() const
+int DateTime::Interval::get_total_milliseconds() const
 {
 	return millisecond + (second + (minute + (hour * day * 24) * 60) * 60) * 1000;
 }
 
-String DateTime::Interval::ToString() const
+String DateTime::Interval::to_string() const
 {
 	String result = StringMake(millisecond) + "ms";
 	if (day > 0 || hour > 0 || minute > 0 || second > 0) result = StringMake(second) + "s, " + result;
@@ -76,61 +76,59 @@ DateTime::DateTime()
 {
 }
 
-String DateTime::ToString(String format) const
+String DateTime::to_string(String format) const
 {
-    auto t = ToTm(*this);
+    auto t = to_tm(*this);
 
-	char timeStrBuf[26];
-    const uint timeStrBufSize = static_cast<uint>(strftime(timeStrBuf, sizeof(timeStrBuf), format.c(), &t));
-	return String(timeStrBuf, timeStrBufSize);
+	char time_str_buf[26];
+    const uint time_str_buf_size = static_cast<uint>(strftime(time_str_buf, sizeof(time_str_buf), format.c(), &t));
+	return String(time_str_buf, time_str_buf_size);
 }
 
-DateTime DateTime::Now()
+DateTime DateTime::now()
 {
-	time_t timeNow = time(0);
-	tm* localTimeNow = new tm();
-	localtime_s(localTimeNow, &timeNow);
-
-	auto a = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch());
+	time_t time_now = time(0);
+	tm* local_time_now = new tm();
+	localtime_s(local_time_now, &time_now);
 
 	return {
-		localTimeNow->tm_year + 1900,
-		localTimeNow->tm_mon + 1,
-		localTimeNow->tm_mday,
-		localTimeNow->tm_hour,
-		localTimeNow->tm_min,
-		localTimeNow->tm_sec,
+		local_time_now->tm_year + 1900,
+		local_time_now->tm_mon + 1,
+		local_time_now->tm_mday,
+		local_time_now->tm_hour,
+		local_time_now->tm_min,
+		local_time_now->tm_sec,
 		std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() % 1000
 	};
 }
 
-DateTime::Interval DateTime::EpochTime()
+DateTime::Interval DateTime::epoch_time()
 {
-	return Now() - DateTime{ 1970, 1, 1, 0, 0, 0, 0 };
+	return now() - DateTime{ 1970, 1, 1, 0, 0, 0, 0 };
 }
 
 DateTime::operator String() const
 {
-	return ToString();
+	return to_string();
 }
 
 DateTime::Interval DateTime::operator-(const DateTime& rhs) const
 {
-	auto myPoint = ToTimePoint(*this);
-	auto rhsPoint = ToTimePoint(rhs);
+	const auto my_point = to_time_point(*this);
+	const auto rhs_point = to_time_point(rhs);
 
-	auto interval = std::chrono::duration_cast<std::chrono::milliseconds>(myPoint - rhsPoint).count();
+	const auto interval = std::chrono::duration_cast<std::chrono::milliseconds>(my_point - rhs_point).count();
 
-	const long long sDiv = 1000;
-	const long long mDiv = sDiv * 60;
-	const long long hDiv = mDiv * 60;
-	const long long dDiv = hDiv * 24;
+	const long long s_div = 1000;
+	const long long m_div = s_div * 60;
+	const long long h_div = m_div * 60;
+	const long long d_div = h_div * 24;
 
-	int day = static_cast<int>((interval) / dDiv);
-	int hour = static_cast<int>((interval - (day * dDiv)) / hDiv);
-	int minute = static_cast<int>((interval - (day * dDiv) - (hour * hDiv)) / mDiv);
-	int second = static_cast<int>((interval - (day * dDiv) - (hour * hDiv) - (minute * mDiv)) / sDiv);
-	int millisecond = static_cast<int>((interval - (day * dDiv) - (hour * hDiv) - (minute * mDiv) - (second * sDiv)));
+	const int day = static_cast<int>((interval) / d_div);
+	const int hour = static_cast<int>((interval - (day * d_div)) / h_div);
+	const int minute = static_cast<int>((interval - (day * d_div) - (hour * h_div)) / m_div);
+	const int second = static_cast<int>((interval - (day * d_div) - (hour * h_div) - (minute * m_div)) / s_div);
+	const int millisecond = static_cast<int>((interval - (day * d_div) - (hour * h_div) - (minute * m_div) - (second * s_div)));
 
 	return { day, hour, minute, second, millisecond };
 }

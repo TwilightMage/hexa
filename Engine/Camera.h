@@ -1,6 +1,4 @@
 ﻿#pragma once
-#include <glm/vec3.hpp>
-#include <glm/ext/quaternion_float.hpp>
 
 #include "Entity.h"
 

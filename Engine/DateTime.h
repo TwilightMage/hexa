@@ -12,21 +12,21 @@ EXTERN struct EXPORT DateTime
 		int second;
 		int millisecond;
 
-        [[nodiscard]] float GetTotalHours() const;
-		[[nodiscard]] float GetTotalMinutes() const;
-		[[nodiscard]] float GetTotalSeconds() const;
-		[[nodiscard]] int GetTotalMilliseconds() const;
+        [[nodiscard]] float get_total_hours() const;
+		[[nodiscard]] float get_total_minutes() const;
+		[[nodiscard]] float get_total_seconds() const;
+		[[nodiscard]] int get_total_milliseconds() const;
 
-		[[nodiscard]] String ToString() const;
+		[[nodiscard]] String to_string() const;
 	};
 
 	DateTime(int year, int month, int day, int hour, int minute, int second, int millisecond = 0);
 	DateTime();
 
-	[[nodiscard]] String ToString(String format = "%Y.%m.%d %H:%M:%S") const;
+	[[nodiscard]] String to_string(String format = "%Y.%m.%d %H:%M:%S") const;
 
-	static DateTime Now();
-	static Interval EpochTime();
+	static DateTime now();
+	static Interval epoch_time();
 
 	operator String() const;
 	Interval operator-(const DateTime& rhs) const;

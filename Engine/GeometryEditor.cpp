@@ -2,13 +2,13 @@
 
 void GeometryEditor::optimize(List<Mesh::vertex>& vertices, List<uint>& indices)
 {
-    for (uint i = 0; i < vertices.Length() - 1; i++)
+    for (uint i = 0; i < vertices.length() - 1; i++)
     {
-        for (uint j = i + 1; j < vertices.Length(); j++)
+        for (uint j = i + 1; j < vertices.length(); j++)
         {
             if (memcmp(&vertices[i], &vertices[j], sizeof(Mesh::vertex)) == 0)
             {
-                for (uint k = 0; k < indices.Length(); k++)
+                for (uint k = 0; k < indices.length(); k++)
                 {
                     if (indices[k] == j)
                     {
@@ -24,13 +24,13 @@ void GeometryEditor::optimize(List<Mesh::vertex>& vertices, List<uint>& indices)
 
 void GeometryEditor::remove_indices(List<Mesh::vertex>& vertices, List<uint>& indices)
 {
-    for (uint i = 0; i < indices.Length() - 1; i++)
+    for (uint i = 0; i < indices.length() - 1; i++)
     {
         if (indices[i] != i)
         {
             vertices.Insert(vertices[indices[i]], i);
             indices[i] = i;
-            for (uint j = i + 1; j < indices.Length(); j++)
+            for (uint j = i + 1; j < indices.length(); j++)
             {
                 if (indices[j] >= i) indices[j]++;
             }
@@ -40,7 +40,7 @@ void GeometryEditor::remove_indices(List<Mesh::vertex>& vertices, List<uint>& in
 
 void GeometryEditor::invert_vertices(List<Mesh::vertex>& vertices)
 {
-    for (uint i = 0; i < vertices.Length(); i += 3)
+    for (uint i = 0; i < vertices.length(); i += 3)
     {
         std::swap(vertices[i], vertices[i + 2]);
     }
@@ -48,7 +48,7 @@ void GeometryEditor::invert_vertices(List<Mesh::vertex>& vertices)
 
 void GeometryEditor::invert_indices(List<uint>& indices)
 {
-    for (uint i = 0; i < indices.Length(); i += 3)
+    for (uint i = 0; i < indices.length(); i += 3)
     {
         std::swap(indices[i], indices[i + 2]);
     }

@@ -7,7 +7,7 @@
 
 typedef Mod* (__stdcall *f_get_mod)();
 
-const ModInfo& Mod::get_mod_info() const
+const Mod::Info& Mod::get_mod_info() const
 {
     return info_;
 }
@@ -21,9 +21,9 @@ bool Mod::verify_signature(const Path& path)
     return true;
 }
 
-Path Mod::mod_path(const String& subPath) const
+Path Mod::mod_path(const String& sub_path) const
 {
-    return "./mods/" + info_.name + "/" + subPath;
+    return "./mods/" + info_.name + "/" + sub_path;
 }
 
 void Mod::loading_stage()
@@ -38,12 +38,12 @@ Shared<Mod> Mod::load(const Path& path)
 {
     try
     {
-        if (HINSTANCE dll = LoadLibrary(path.get_absolute().to_string().wc()))
+        if (const auto dll = LoadLibrary(path.get_absolute().to_string().wc()))
         {
             if (f_get_mod get_mod = (f_get_mod)GetProcAddress(dll, "get_mod"))
             {
                 Shared<Mod> mod = Shared<Mod>(get_mod());
-                mod->dll = dll;
+                mod->dll_ = dll;
                 return mod;
             }
             else
@@ -65,10 +65,17 @@ Shared<Mod> Mod::load(const Path& path)
     return nullptr;
 }
 
-ModInfo Mod::load_mod_info(const Path& path)
+Mod::Info Mod::load_mod_info(const Path& path)
 {
-    ModInfo result;
+    Info result;
     result.name = path.filename;
+    if (auto reader = File::Reader::open(path))
+    {
+        result.display_name = reader->read_line();
+        result.mod_version = reader->read_line();
+        result.target_game_version = reader->read_line();
+    }
+    if (result.display_name.is_empty()) result.display_name = result.name;
 
     return result;
 }

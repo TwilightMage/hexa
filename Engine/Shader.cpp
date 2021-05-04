@@ -33,7 +33,7 @@ void Shader::map_params()
 
     for (auto& uniform_param : shader_meta_.uniform_params)
     {
-        if (!uniform_param.name.IsEmpty())
+        if (!uniform_param.name.is_empty())
         {
             uniform_param.id = glGetUniformLocation(program_, uniform_param.name.c());
         }
@@ -93,7 +93,7 @@ Shared<Shader> Shader::compile(const Path& path, const meta& shader_meta, int ty
             }
         }
         
-        if (problem_shaders.Length() > 0)
+        if (problem_shaders.length() > 0)
         {
             for (auto& kvp : result->shaders_)
             {
@@ -126,7 +126,7 @@ uint Shader::compile_shader(const Path& path, type shader_type)
     if (filepath.exists())
     {
         const auto shader = glCreateShader(shader_type_meta.at(shader_type).gl_type);
-        auto shader_code = File::ReadFile(filepath).Trim().c_copy();
+        auto shader_code = File::read_file(filepath).trim().c_copy();
         glShaderSource(shader, 1, &shader_code, nullptr);
         delete shader_code;
         glCompileShader(shader);

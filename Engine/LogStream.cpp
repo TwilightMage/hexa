@@ -4,26 +4,26 @@
 
 #include "Path.h"
 
-LogStream::LogStream(const DateTime& LogStartTime, const char* root)
-	: std::ostream(&tbuf)
+LogStream::LogStream(const DateTime& log_start_time, const char* root)
+	: std::ostream(&tbuf_)
 {
-	Path logs = Path(root).up().get_child("logs");
+	auto logs = Path(root).up().get_child("logs");
 
 	logs.create();
-	timedLogFile = std::ofstream(logs.get_child(LogStartTime.ToString("%Y_%m_%d_%H_%M_%S") + ".log").to_string().c());
-	latestLogFile = std::ofstream(logs.get_child("latest.log").to_string().c());
+	timed_log_file_ = std::ofstream(logs.get_child(log_start_time.to_string("%Y_%m_%d_%H_%M_%S") + ".log").to_string().c());
+	latest_log_file_ = std::ofstream(logs.get_child("latest.log").to_string().c());
 
-	auto a = timedLogFile.is_open();
-	auto b = latestLogFile.is_open();
+	auto a = timed_log_file_.is_open();
+	auto b = latest_log_file_.is_open();
 
-	tbuf = TeeBuf({ std::cout.rdbuf(), timedLogFile.rdbuf(), latestLogFile.rdbuf() });
+	tbuf_ = TeeBuf({ std::cout.rdbuf(), timed_log_file_.rdbuf(), latest_log_file_.rdbuf() });
 }
 
 LogStream::~LogStream()
 {
-	timedLogFile << "\n";
-	timedLogFile.close();
+	timed_log_file_ << "\n";
+	timed_log_file_.close();
 
-	latestLogFile << "\n";
-	latestLogFile.close();
+	latest_log_file_ << "\n";
+	latest_log_file_.close();
 }

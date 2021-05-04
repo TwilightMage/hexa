@@ -10,5 +10,5 @@ public:
     const String& get_name() const;
 
 private:
-    String name;
+    String name_;
 };

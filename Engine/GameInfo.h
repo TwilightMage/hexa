@@ -5,6 +5,5 @@
 
 EXTERN struct EXPORT GameInfo
 {
-public:
     String title;
 };

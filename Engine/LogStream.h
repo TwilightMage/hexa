@@ -26,11 +26,11 @@
 EXTERN class EXPORT LogStream : public std::ostream
 {
 public:
-    explicit LogStream(const DateTime& LogStartTime, const char* root);
+    explicit LogStream(const DateTime& log_start_time, const char* root);
 	~LogStream();
 
 private:
-	std::ofstream latestLogFile;
-	std::ofstream timedLogFile;
-	TeeBuf tbuf;
+	std::ofstream latest_log_file_;
+	std::ofstream timed_log_file_;
+	TeeBuf tbuf_;
 };

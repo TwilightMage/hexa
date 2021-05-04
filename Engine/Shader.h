@@ -69,8 +69,8 @@ private:
 
     static uint compile_shader(const Path& path, type shader_type);
 
-    uint program_;
-    meta shader_meta_;
+    uint program_ = 0;
+    meta shader_meta_ = {};
     std::map<type, uint> shaders_;
     String name;
 };

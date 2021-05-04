@@ -112,6 +112,14 @@ FORCEINLINE const To& cast_object(const From& rhs)
 	return *reinterpret_cast<const To*>(&rhs);
 }
 
+// just for fun :)
+// access class members on object, even private
+template<typename MemberType, typename ObjectType>
+FORCEINLINE MemberType* hack_member(ObjectType* obj, uint byte_offset)
+{
+	return reinterpret_cast<MemberType*>(reinterpret_cast<byte*>(obj) + byte_offset);
+}
+
 
 
 // --------------------- Enum macros -----------------------

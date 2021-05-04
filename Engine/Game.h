@@ -16,8 +16,10 @@
 #include "Shader.h"
 #include "String.h"
 #include "Vector2.h"
+#include "Version.h"
 
 
+class Mod;
 class Camera;
 class GLFWwindow;
 class IControllable;
@@ -41,7 +43,6 @@ EXTERN class EXPORT Game
     
 public:
     Game(int argc, char* argv[]);
-    ~Game();
 
     void launch();
 
@@ -115,9 +116,6 @@ private:
     
     // GLFW
     GLFWwindow* window_;
-    Unique<EventBus> event_bus_;
-    Shared<Shader> basic_shader_;
-    Shared<Texture> white_pixel_;
 
     // Assets
     List<Shared<Shader>> shaders_;
@@ -125,6 +123,13 @@ private:
     std::map<String, Shared<Texture>> textures_;
 
     // Game
+    Version game_version_ = {0, 1, 0};
+    Unique<EventBus> event_bus_;
+    Shared<Shader> basic_shader_;
+    Shared<Texture> white_pixel_;
+    List<Shared<Mod>> mods_;
+    
+    // Game Play
     Shared<Camera> current_camera_;
     Shared<IControllable> current_controllable_;
     Shared<World> world_;

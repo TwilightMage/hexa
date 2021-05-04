@@ -13,7 +13,7 @@ public:
     using Array<T>::begin;
     using Array<T>::end;
 
-    using Array<T>::GetData;
+    using Array<T>::get_data;
     using Array<T>::operator==;
     using Array<T>::operator!=;
 
@@ -22,13 +22,13 @@ public:
     }
 
     List(const List& rhs)
-        : List(rhs.inner_, rhs.Length())
+        : List(rhs.inner_, rhs.length())
     {
     }
 
     List(T* inner, uint length)
     {
-        allocated_length_ = GetAllocateSize(length);
+        allocated_length_ = get_allocate_size(length);
         this->length_ = length;
         if (length > 0)
         {
@@ -42,7 +42,7 @@ public:
 
     List(const T* inner, uint length)
     {
-        allocated_length_ = GetAllocateSize(length);
+        allocated_length_ = get_allocate_size(length);
         this->length_ = length;
         if (length > 0)
         {
@@ -66,7 +66,7 @@ public:
 
     List(uint length)
     {
-        allocated_length_ = GetAllocateSize(length);
+        allocated_length_ = get_allocate_size(length);
         this->length_ = length;
         if (length > 0)
         {
@@ -103,7 +103,7 @@ public:
     {
         if (length_ == allocated_length_)
         {
-            Reallocate(GetAllocateSize(length_ + 1));
+            reallocate(get_allocate_size(length_ + 1));
         }
 
         inner_[length_] = std::move(item);
@@ -207,7 +207,7 @@ public:
         T item_copy = item;
         if (length_ == allocated_length_)
         {
-            Reallocate(GetAllocateSize(length_ + 1));
+            reallocate(get_allocate_size(length_ + 1));
         }
 
         ++length_;
@@ -225,14 +225,14 @@ public:
 
     void Clear()
     {
-        Reallocate(0);
+        reallocate(0);
         length_ = 0;
     }
 
 private:
-    using Array<T>::GetAllocateSize;
-    using Array<T>::Reallocate;
-    using Array<T>::Slack;
+    using Array<T>::get_allocate_size;
+    using Array<T>::reallocate;
+    using Array<T>::slack;
 
     using Array<T>::inner_;
     using Array<T>::length_;

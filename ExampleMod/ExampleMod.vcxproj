@@ -109,6 +109,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>python.exe "$(SolutionDir)\generate_mod_meta.py" "$(SolutionDir)Build\$(Platform)_$(Configuration)\mods\$(ProjectName)\$(ProjectName).meta"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
@@ -130,6 +133,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>python.exe "$(SolutionDir)\generate_mod_meta.py" "$(SolutionDir)Build\$(Platform)_$(Configuration)\mods\$(ProjectName)\$(ProjectName).meta"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -146,6 +152,12 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PreLinkEvent>
+      <Command></Command>
+    </PreLinkEvent>
+    <PostBuildEvent>
+      <Command>python.exe "$(SolutionDir)\generate_mod_meta.py" "$(SolutionDir)Build\$(Platform)_$(Configuration)\mods\$(ProjectName)\$(ProjectName).meta"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -167,6 +179,9 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
+    <PostBuildEvent>
+      <Command>python.exe "$(SolutionDir)\generate_mod_meta.py" "$(SolutionDir)Build\$(Platform)_$(Configuration)\mods\$(ProjectName)\$(ProjectName).meta"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="ExampleMod.h" />

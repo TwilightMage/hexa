@@ -20,7 +20,5 @@ bool value_in_range(int value, int min, int max) { return (value >= min) && (val
 
 bool Rect::intersects(const Rect& rhs) const
 {
-    auto a = value_in_range(x, rhs.x, rhs.x + rhs.w) || value_in_range(rhs.x, x, x + w);
-    auto b = value_in_range(y, rhs.y, rhs.y + rhs.h) || value_in_range(rhs.y, y, y + h);
-    return a && b;
+    return (value_in_range(x, rhs.x, rhs.x + rhs.w) || value_in_range(rhs.x, x, x + w)) && (value_in_range(y, rhs.y, rhs.y + rhs.h) || value_in_range(rhs.y, y, y + h));
 }

@@ -38,7 +38,7 @@ Shared<Texture> Texture::load_png(const Path& path)
             const uint size = tex_width * tex_height * 4;
             auto result = MakeShared<Texture>();
             result->pixels_ = List(new Color[size], size);
-            memcpy(result->pixels_.GetData(), pixels, size);
+            memcpy(result->pixels_.get_data(), pixels, size);
             stbi_image_free(pixels);
             result->width_ = tex_width;
             result->height_ = tex_height;
@@ -68,7 +68,7 @@ void Texture::usage_count_changed()
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels_.GetData());
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels_.get_data());
         glGenerateMipmap(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
     }

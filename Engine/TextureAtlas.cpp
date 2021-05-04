@@ -72,7 +72,7 @@ uint TextureAtlas::put(const Path& path)
                     {
                         for (; image_rect.x < desired_size - image_rect.w; image_rect.x += cell_width_)
                         {
-                            if (entries_.Length() > 0)
+                            if (entries_.length() > 0)
                             {
                                 auto any_intersection = false;
                                 for (auto& entry : entries_)
@@ -110,7 +110,7 @@ uint TextureAtlas::put(const Path& path)
                 if (desired_size > size_)
                 {
                     auto new_pixels = List<Color>(desired_size * desired_size);
-                    ImageEditor::copy_rect(pixels_.GetData(), 0, 0, size_, new_pixels.GetData(), 0, 0, desired_size, size_, size_);
+                    ImageEditor::copy_rect(pixels_.get_data(), 0, 0, size_, new_pixels.get_data(), 0, 0, desired_size, size_, size_);
                     pixels_ = new_pixels;
                     size_ = desired_size;
 
@@ -121,13 +121,13 @@ uint TextureAtlas::put(const Path& path)
                     }
                 }
 
-                ImageEditor::copy_rect(reinterpret_cast<Color*>(pixels), 0, 0, tex_width, pixels_.GetData(), image_rect.x, image_rect.y, size_, image_rect.w, image_rect.h);
+                ImageEditor::copy_rect(reinterpret_cast<Color*>(pixels), 0, 0, tex_width, pixels_.get_data(), image_rect.x, image_rect.y, size_, image_rect.w, image_rect.h);
                 stbi_image_free(pixels);
 
                 const entry new_entry = {image_rect, this};
                 entries_.Add(new_entry);
                 cached_uv_mods_.Add({new_entry.get_scale(), new_entry.get_offset()});
-                return entries_.Length() - 1;
+                return entries_.length() - 1;
             }            
         }
         stbi_image_free(pixels);
@@ -138,7 +138,7 @@ uint TextureAtlas::put(const Path& path)
 
 uint TextureAtlas::get_num_entries() const
 {
-    return entries_.Length();
+    return entries_.length();
 }
 
 List<TextureAtlas::uv_mod> TextureAtlas::get_cached_mods() const
@@ -153,7 +153,7 @@ const TextureAtlas::entry* TextureAtlas::get_entry(uint index) const
 
 void TextureAtlas::dump(const Path& path)
 {
-    stbi_write_bmp(path.get_absolute_string().c(), size_, size_, 4, pixels_.GetData());
+    stbi_write_bmp(path.get_absolute_string().c(), size_, size_, 4, pixels_.get_data());
 }
 
 Shared<Texture> TextureAtlas::to_texture() const
@@ -190,13 +190,13 @@ void TextureAtlas::generate_buffers()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_, size_, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels_.GetData());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_, size_, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels_.get_data());
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 
     glGenBuffers(1, &gl_mods_storage_binding_);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, gl_mods_storage_binding_);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(uv_mod) * cached_uv_mods_.Length(), cached_uv_mods_.GetData(), GL_STATIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(uv_mod) * cached_uv_mods_.length(), cached_uv_mods_.get_data(), GL_STATIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 

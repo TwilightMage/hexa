@@ -31,17 +31,17 @@ public:
         return inner_ + length_;
     }
 
-    [[nodiscard]] uint Length() const
+    [[nodiscard]] uint length() const
     {
         return length_;
     }
 
-    T* GetData()
+    T* get_data()
     {
         return inner_;
     }
 
-    const T* GetData() const
+    const T* get_data() const
     {
         return inner_;
     }
@@ -64,7 +64,7 @@ public:
     }
 
 protected:
-    static uint GetAllocateSize(uint len)
+    static uint get_allocate_size(uint len)
     {
         if (len == 0) return 0;
 
@@ -77,28 +77,28 @@ protected:
         return result;
     }
 
-    void Reallocate(uint newLength)
+    void reallocate(uint newLength)
     {
-        T* newInner = newLength > 0 ? new T[newLength] : nullptr;
+        T* new_inner = newLength > 0 ? new T[newLength] : nullptr;
 
         for (uint i = 0; i < (length_ < newLength ? length_ : newLength); i++)
         {
-            newInner[i] = std::move(inner_[i]);
+            new_inner[i] = std::move(inner_[i]);
         }
 
         delete[] inner_;
-        inner_ = newInner;
+        inner_ = new_inner;
 
         allocated_length_ = newLength;
     }
 
-    void Slack()
+    void slack()
     {
-        const uint desiredSize = GetAllocateSize(length_);
+        const uint desired_size = get_allocate_size(length_);
 
-        if (desiredSize != allocated_length_)
+        if (desired_size != allocated_length_)
         {
-            Reallocate(desiredSize);
+            reallocate(desired_size);
         }
     }
 

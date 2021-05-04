@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "ModInfo.h"
 #include "Path.h"
+#include "Version.h"
 
 class Game;
 class EventBus;
@@ -12,11 +12,21 @@ EXTERN class EXPORT Mod
     friend Game;
     
 public:
-    const ModInfo& get_mod_info() const;
+    struct Info
+    {
+        void ReadFrom(const String& path);
+
+        String name;
+        String display_name;
+        Version mod_version;
+        Version target_game_version;
+    };
+    
+    const Info& get_mod_info() const;
 
     static bool verify_signature(const Path& path);
 
-    Path mod_path(const String& subPath) const;
+    Path mod_path(const String& sub_path) const;
     
 protected:
     virtual void loading_stage();
@@ -24,8 +34,8 @@ protected:
 
 private:
     static Shared<Mod> load(const Path& path);
-    static ModInfo load_mod_info(const Path& path);
+    static Info load_mod_info(const Path& path);
     
-    ModInfo info_;
-    HINSTANCE dll;
+    Info info_;
+    HINSTANCE dll_;
 };

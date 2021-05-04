@@ -39,7 +39,7 @@ void World::tick(float delta_time)
     
     on_tick();
     
-    for (uint i = 0; i < entities_.Length(); i++)
+    for (uint i = 0; i < entities_.length(); i++)
     {
         if (entities_[i]->pending_kill_)
         {
@@ -58,9 +58,9 @@ void World::tick(float delta_time)
         }
     }
 
-    for (uint i = 0; i < to_delete.Length(); i++)
+    for (uint i = 0; i < to_delete.length(); i++)
     {
-        entities_.RemoveAt(to_delete[to_delete.Length() - 1 - i]);
+        entities_.RemoveAt(to_delete[to_delete.length() - 1 - i]);
     }
 }
 

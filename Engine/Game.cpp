@@ -23,7 +23,7 @@
 Game* Game::instance_ = nullptr;
 
 Game::Game(int argc, char* argv[])
-    : log_stream_(DateTime::Now(), argv[0])
+    : log_stream_(DateTime::now(), argv[0])
 	, event_bus_(new EventBus())
 	, renderer_(new Renderer)
 {
@@ -42,11 +42,6 @@ Game::Game(int argc, char* argv[])
 	}
 
 	set_app_path(String(argv[0]));
-}
-
-Game::~Game()
-{
-	cleanup();
 }
 
 void Game::launch()
@@ -123,7 +118,7 @@ void Game::new_log_record(ELogLevel level, const String& category, const String&
 	static const char* levelColors[4] = { CONSOLE_WHITE, CONSOLE_CYAN, CONSOLE_YELLOW, CONSOLE_RED };
 
 	instance_->log_stream_mutex_.lock();
-	instance_->log_stream_ << levelColors[static_cast<int>(level)] << "[" << DateTime::Now().ToString().c() << "] [" << levelNames[static_cast<int>(level)] << "] [" << category.c() << "] " << message.c() << CONSOLE_RESET << "\n";
+	instance_->log_stream_ << levelColors[static_cast<int>(level)] << "[" << DateTime::now().to_string().c() << "] [" << levelNames[static_cast<int>(level)] << "] [" << category.c() << "] " << message.c() << CONSOLE_RESET << "\n";
 	instance_->log_stream_mutex_.unlock();
 }
 
@@ -221,28 +216,45 @@ void Game::render_loop()
 	String opengl_version(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &TextureAtlas::max_size_);
 
-	// loading stage
+	verbose("Mod Loader", "Searching for mods in %s...", Path("mods").get_absolute_string().c());
+	for (auto& path : Path("mods").list())
+	{
+		if (path.type == EPathType::Directory && Mod::verify_signature(path))
+		{
+			if (auto mod = Mod::load(path.get_child(path.filename + ".dll")))
+			{
+				mod->info_ = mod->load_mod_info(path.get_child(path.filename + ".meta"));
+				if (mod->info_.target_game_version != game_version_)
+				{
+					print_error("Mod Loader", "Mod %s target game version is %s, but current game version is %s. This mod will be skipped", mod->info_.display_name.c(), mod->info_.target_game_version.to_string().c(), game_version_.to_string().c());
+					continue;
+				}
+				mods_.Add(mod);
+				verbose("Mod Loader", "Pre-loaded mod %s", mod->info_.display_name.c());
+			}
+			else
+			{
+				print_warning("Mod Loader", "Failed to pre-load mod %s", path.get_absolute_string().c());
+			}
+		}
+	}
+
+	// LOADING STAGE
+	verbose("Game", "Loading stage...");
 	TextureAtlas::is_loading_stage_ = true;
+	
+	// Load tile atlas
 	TextureAtlas ta = TextureAtlas("TileAtlas", 60, 45);
-	const auto tile_atlas_packing_start_time = DateTime::Now();
 	ta.put("resources/hexagame/textures/tiles/dirt.png");
 	ta.put("resources/hexagame/textures/tiles/grass.png");
 	ta.put("resources/hexagame/textures/tiles/iron_ore.png");
 	ta.put("resources/hexagame/textures/tiles/sand.png");
 	ta.put("resources/hexagame/textures/tiles/stone.png");
 	ta.put("resources/hexagame/textures/tiles/stone_bricks.png");
-	const auto tile_atlas_packing_end_time = DateTime::Now();
-	verbose("Tile Atlas", "Packed %i tiles in %s", ta.get_num_entries(), (tile_atlas_packing_end_time - tile_atlas_packing_start_time).ToString().c());
+	
 	ta.generate_buffers();
-	
-	if (auto mod = Mod::load("mods/ExampleMod/ExampleMod.dll"))
-	{
-		mod->info_ = mod->load_mod_info("mods/ExampleMod/ExampleMod.meta");
-		mod->loading_stage();
-		mod->on_loaded(event_bus_.get());
-	}
-	TextureAtlas::is_loading_stage_ = false;
-	
+
+	// Load shaders
 	Shader::meta basic_shader_meta;
 	basic_shader_meta.vertex_param_size = sizeof(Mesh::vertex);
 	basic_shader_meta.vertex_params = {
@@ -257,11 +269,46 @@ void Game::render_loop()
 		{"atlasScales"}
 	};
 	basic_shader_ = Shader::compile(Path("resources/engine/shaders/basic"), basic_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
+
+	// Call load stage in mods
+	for (auto& mod : mods_)
+	{
+		try
+		{
+			mod->loading_stage();
+			verbose("Mod Loader", "Loaded mod %s", mod->info_.name.c());
+		}
+		catch (std::runtime_error err)
+		{
+			print_error("Mod Loader", "Failed to load mod %s: %s", mod->info_.name.c(), err.what());
+			return;
+		}
+	}
 	
+	TextureAtlas::is_loading_stage_ = false;
+
+	// Call load stage in mods
+	verbose("Game", "Post-loading stage...");
+	for (auto& mod : mods_)
+	{
+		try
+		{
+			mod->on_loaded(event_bus_.get());
+			verbose("Mod Loader", "Post-loaded mod %s", mod->info_.name.c());
+		}
+		catch (std::runtime_error err)
+		{
+			print_error("Mod Loader", "Failed to post-load mod %s: %s", mod->info_.name.c(), err.what());
+			return;
+		}
+	}
+
+	verbose("Game", "Starting...");
 	start();
 
 	float last_delta_time = 0.0f;
-	
+
+	verbose("Game", "Entering game-loop...");
 	while (!glfwWindowShouldClose(window_))
 	{
 		const auto tick_start = glfwGetTime();
@@ -327,6 +374,8 @@ void Game::render_loop()
 
 void Game::cleanup()
 {
+	verbose("Game", "Cleaning up...");
+	
 	renderer_->cleanup();
 
 	for (auto& shader : shaders_)

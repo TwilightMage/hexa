@@ -30,7 +30,7 @@ Mesh::Mesh(const List<vertex>& vertices)
     : vertices_(vertices)
     , usage_count_(0)
 {
-    for (uint i = 0; i < vertices.Length(); i++)
+    for (uint i = 0; i < vertices.length(); i++)
     {
         indices_.Add(i);
     }

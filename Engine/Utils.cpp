@@ -31,7 +31,7 @@ bool Utils::check_gl_error()
     {
         errors.Add(get_gl_error_message(err));
     }
-    if (errors.Length() > 0)
+    if (errors.length() > 0)
     {
         print_error("OpenGL", StringJoin(errors, ", ") + "\n" + get_callstack_string(1));
         return false;
@@ -138,7 +138,7 @@ List<String> Utils::get_callstack(uint offset)
             if (frame >= offset)
             {
                 String filename = line->FileName;
-                result.Add(StringFormat("\tat %s in %s:%lu", pSymbol->Name, filename.Substring(filename.IndexOf("Hexa")).c(), line->LineNumber));
+                result.Add(StringFormat("\tat %s in %s:%lu", pSymbol->Name, filename.substring(filename.index_of("Hexa")).c(), line->LineNumber));
                 if (strcmp(pSymbol->Name, "main") == 0) break;
             }
         }     

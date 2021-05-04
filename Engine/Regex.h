@@ -7,8 +7,8 @@ EXTERN class EXPORT Regex
 public:
     Regex(const String& expression);
 
-    bool Check(const String& subject) const;
+    bool check(const String& subject) const;
 
 private:
-    const char* expression;
+    const char* expression_;
 };

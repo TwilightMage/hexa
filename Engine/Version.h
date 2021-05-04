@@ -2,18 +2,22 @@
 
 #include "BasicTypes.h"
 #include "framework.h"
+#include "String.h"
 
 EXTERN struct EXPORT Version
 {
     Version();
     Version(uint version_number, uint patch_number, uint fix_number);
+    Version(const String& version_string);
 
-    bool operator <(const Version& rhs) const;
-    bool operator >(const Version& rhs) const;
-    bool operator <=(const Version& rhs) const;
-    bool operator >=(const Version& rhs) const;
-    bool operator ==(const Version& rhs) const;
-    bool operator !=(const Version& rhs) const;
+    String to_string() const;
+
+    bool operator<(const Version& rhs) const;
+    bool operator>(const Version& rhs) const;
+    bool operator<=(const Version& rhs) const;
+    bool operator>=(const Version& rhs) const;
+    bool operator==(const Version& rhs) const;
+    bool operator!=(const Version& rhs) const;
 
     uint version_number;
     uint patch_number;

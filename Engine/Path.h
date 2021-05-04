@@ -25,7 +25,7 @@ public:
 
     bool exists() const;
 	bool is_global() const;
-	void create();
+	void create() const;
 	Path up(uint levels = 1) const;
 	Path get_child(const String& child) const;
 	Path get_absolute() const;

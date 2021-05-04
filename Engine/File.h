@@ -12,42 +12,42 @@ public:
 	class Reader
 	{
 	public:
-		static Shared<Reader> Open(const Path& path);
+		static Shared<Reader> open(const Path& path);
 
-		String Read(uint lenght);
-		String ReadAll();
-		String ReadLine();
-		bool IsEndOfFile() const;
-		uint GetSize() const;
-		uint GetPosition();
+		String read(uint lenght);
+		String read_all();
+		String read_line();
+		bool is_end_of_file() const;
+		uint get_size() const;
+		uint get_position();
 
 	private:
 		Reader() {};
 
-		std::ifstream stream;
-		uint64 size;
+		std::ifstream stream_;
+		uint64 size_;
 	};
 
 	class Writer
 	{
 	public:
-		static Shared<Writer> Open(const Path& path);
+		static Shared<Writer> open(const Path& path);
 
-		void Write(const String& data);
+		void write(const String& data);
 
-		void Close();
+		void close();
 
 	private:
 		Writer() {};
 
-		std::ofstream stream;
+		std::ofstream stream_;
 	};
 
 	virtual ~File() = delete;
 
-	static String ReadFile(const Path& path);
-	static void WriteFile(const Path& path, const String& data = "");
-	static void AppendFile(const Path& path, const String& data = "");
+	static String read_file(const Path& path);
+	static void write_file(const Path& path, const String& data = "");
+	static void append_file(const Path& path, const String& data);
 
-	static bool Exists(const String& path);
+	static bool exists(const String& path);
 };

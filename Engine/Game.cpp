@@ -221,7 +221,9 @@ void Game::render_loop()
 	String opengl_version(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &TextureAtlas::max_size_);
 
-	TextureAtlas ta = TextureAtlas(60, 45);
+	// loading stage
+	TextureAtlas::is_loading_stage_ = true;
+	TextureAtlas ta = TextureAtlas("TileAtlas", 60, 45);
 	const auto tile_atlas_packing_start_time = DateTime::Now();
 	ta.put("resources/hexagame/textures/tiles/dirt.png");
 	ta.put("resources/hexagame/textures/tiles/grass.png");
@@ -231,12 +233,15 @@ void Game::render_loop()
 	ta.put("resources/hexagame/textures/tiles/stone_bricks.png");
 	const auto tile_atlas_packing_end_time = DateTime::Now();
 	verbose("Tile Atlas", "Packed %i tiles in %s", ta.get_num_entries(), (tile_atlas_packing_end_time - tile_atlas_packing_start_time).ToString().c());
-	auto t = ta.to_texture();
+	ta.generate_buffers();
 	
 	if (auto mod = Mod::load("mods/ExampleMod/ExampleMod.dll"))
 	{
-		mod->init(event_bus_.get());
+		mod->info_ = mod->load_mod_info("mods/ExampleMod/ExampleMod.meta");
+		mod->loading_stage();
+		mod->on_loaded(event_bus_.get());
 	}
+	TextureAtlas::is_loading_stage_ = false;
 	
 	Shader::meta basic_shader_meta;
 	basic_shader_meta.vertex_param_size = sizeof(Mesh::vertex);
@@ -254,11 +259,6 @@ void Game::render_loop()
 	basic_shader_ = Shader::compile(Path("resources/engine/shaders/basic"), basic_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
 	
 	start();
-
-	auto tex = Texture::load_png("resources/engine/textures/pixels.png");
-	t->usage_count_++;
-	t->usage_count_changed();
-	glBindTexture(GL_TEXTURE_2D, t->gl_binding_);
 
 	float last_delta_time = 0.0f;
 	
@@ -310,8 +310,10 @@ void Game::render_loop()
 			glm::mat4 proj = glm::perspective(current_camera_->fov, (float) width / (float) height, 0.01f, 1000.0f);
 
 			glm::mat4 vp = proj * view;
-			
+
+			TextureAtlas::is_render_stage_ = true;
 			renderer_->render(vp, &ta);
+			TextureAtlas::is_render_stage_ = false;
 		}
  
 		glfwSwapBuffers(window_);
@@ -321,7 +323,6 @@ void Game::render_loop()
 	}
 
 	close_world();
-	tex->cleanup();
 }
 
 void Game::cleanup()

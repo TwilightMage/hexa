@@ -6,7 +6,7 @@
 #include "Engine/EventBus.h"
 #include "HexaGame/DemoMeshEntity.h"
 
-void ExampleMod::on_init(EventBus* event_bus)
+void ExampleMod::on_loaded(EventBus* event_bus)
 {
     event_bus->world_opened.bind(this, &ExampleMod::on_world_opened);
 }

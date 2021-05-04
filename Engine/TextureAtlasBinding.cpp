@@ -8,7 +8,7 @@ TextureAtlasBinding::TextureAtlasBinding(const Shared<TextureAtlas>& texture_atl
 
 uint TextureAtlasBinding::get_gl_id()
 {
-    return texture_atlas_->get_gl_id();
+    return texture_atlas_->get_gl_texture_id();
 }
 
 Vector2 TextureAtlasBinding::modify_uv(const Vector2& uv)

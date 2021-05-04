@@ -17,7 +17,7 @@ public:
     
     static Shared<Texture> load_png(const Path& path);
 
-    virtual uint get_gl_id() override;
+    virtual uint get_gl_texture_id() override;
     
 private:
     void usage_count_changed();
@@ -27,5 +27,5 @@ private:
     uint width_ = 0;
     uint height_ = 0;
     uint usage_count_ = 0;
-    uint gl_binding_ = 0;
+    uint gl_texture_binding_ = 0;
 };

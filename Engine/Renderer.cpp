@@ -319,7 +319,7 @@ void Renderer::render(const glm::mat4& view_projection_matrix, class TextureAtla
         glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.value.gl_vertex_buffer_id);
         shader_meshes.key->map_params();
 
-        glUniform4fv(460, atlas->get_num_entries(), reinterpret_cast<float*>(atlas->get_cached_mods().GetData()));
+        atlas->bind(0);
 
         for (const auto& mesh_objects : shader_meshes.value)
         {

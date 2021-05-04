@@ -7,12 +7,6 @@
 
 typedef Mod* (__stdcall *f_get_mod)();
 
-void Mod::init(EventBus* event_bus)
-{
-    info_ = load_mod_info();
-    on_init(event_bus);
-}
-
 const ModInfo& Mod::get_mod_info() const
 {
     return info_;
@@ -25,6 +19,19 @@ bool Mod::verify_signature(const Path& path)
     if (!path.get_child(path.filename + ".meta").exists()) return false;
 
     return true;
+}
+
+Path Mod::mod_path(const String& subPath) const
+{
+    return "./mods/" + info_.name + "/" + subPath;
+}
+
+void Mod::loading_stage()
+{
+}
+
+void Mod::on_loaded(EventBus* event_bus)
+{
 }
 
 Shared<Mod> Mod::load(const Path& path)
@@ -58,13 +65,10 @@ Shared<Mod> Mod::load(const Path& path)
     return nullptr;
 }
 
-void Mod::on_init(EventBus* event_bus)
-{
-}
-
-ModInfo Mod::load_mod_info()
+ModInfo Mod::load_mod_info(const Path& path)
 {
     ModInfo result;
+    result.name = path.filename;
 
     return result;
 }

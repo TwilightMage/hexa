@@ -106,9 +106,9 @@ inline List<uint> String::Find(const String& substr) const
 	return result;
 }
 
-inline std::string operator+(const char* const l, const String& r)
+inline String operator+(const char* const l, const String& r)
 {
-	return std::string(l) + r.std();
+	return String(l) + r.std();
 }
 
 inline std::string operator+(const std::string& l, const String& r)
@@ -119,7 +119,7 @@ inline std::string operator+(const std::string& l, const String& r)
 template<class Elem, class Traits>
 inline std::basic_ostream<Elem, Traits>& operator<<(std::basic_ostream<Elem, Traits>& Ostr, const String& Str)
 {
-	Ostr << "\"" << Str.c() << "\"";
+	Ostr << Str.c();
 	return (Ostr);
 }
 

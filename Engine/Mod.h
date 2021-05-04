@@ -5,23 +5,26 @@
 #include "ModInfo.h"
 #include "Path.h"
 
+class Game;
 class EventBus;
 EXTERN class EXPORT Mod
 {
+    friend Game;
+    
 public:
-    void init(EventBus* event_bus);
-
     const ModInfo& get_mod_info() const;
 
     static bool verify_signature(const Path& path);
 
-    static Shared<Mod> load(const Path& path);
-
+    Path mod_path(const String& subPath) const;
+    
 protected:
-    virtual void on_init(EventBus* event_bus);
+    virtual void loading_stage();
+    virtual void on_loaded(EventBus* event_bus);
 
 private:
-    static ModInfo load_mod_info();
+    static Shared<Mod> load(const Path& path);
+    static ModInfo load_mod_info(const Path& path);
     
     ModInfo info_;
     HINSTANCE dll;

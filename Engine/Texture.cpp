@@ -53,17 +53,17 @@ Shared<Texture> Texture::load_png(const Path& path)
     return nullptr;
 }
 
-uint Texture::get_gl_id()
+uint Texture::get_gl_texture_id()
 {
-    return gl_binding_;
+    return gl_texture_binding_;
 }
 
 void Texture::usage_count_changed()
 {
-    if (usage_count_ > 0 && gl_binding_ == 0)
+    if (usage_count_ > 0 && gl_texture_binding_ == 0)
     {
-        glGenTextures(1, &gl_binding_);
-        glBindTexture(GL_TEXTURE_2D, gl_binding_);
+        glGenTextures(1, &gl_texture_binding_);
+        glBindTexture(GL_TEXTURE_2D, gl_texture_binding_);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
         glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -72,10 +72,10 @@ void Texture::usage_count_changed()
         glGenerateMipmap(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
     }
-    else if (usage_count_ == 0 && gl_binding_ != 0)
+    else if (usage_count_ == 0 && gl_texture_binding_ != 0)
     {
-        glDeleteTextures(1, &gl_binding_);
-        gl_binding_ = 0;
+        glDeleteTextures(1, &gl_texture_binding_);
+        gl_texture_binding_ = 0;
     }
 }
 

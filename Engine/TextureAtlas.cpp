@@ -7,18 +7,24 @@
 #include <glad/glad.h>
 #include <stb/stb_image_write.h>
 
+
+#include "Game.h"
 #include "ImageEditor.h"
 
 int TextureAtlas::max_size_ = 0;
+bool TextureAtlas::is_loading_stage_ = false;
+bool TextureAtlas::is_render_stage_ = false;
 
-TextureAtlas::TextureAtlas()
-    : cell_width_(1)
+TextureAtlas::TextureAtlas(const String& name)
+    : Object(name)
+    , cell_width_(1)
     , cell_height_(1)
 {
 }
 
-TextureAtlas::TextureAtlas(int cell_width, int cell_height)
-    : cell_width_(cell_width)
+TextureAtlas::TextureAtlas(const String& name, int cell_width, int cell_height)
+    : Object(name)
+    , cell_width_(cell_width)
     , cell_height_(cell_height)
 {
 }
@@ -35,14 +41,18 @@ Vector2 TextureAtlas::entry::get_offset() const
 
 uint TextureAtlas::put(const Path& path)
 {
+    if (!is_loading_stage_)
+    {
+        print_warning("texture atlas", "attempt to register texture %s in atlas %s outside of loading stage", path.get_absolute_string().c(), get_name().c());
+        return -1;
+    }
+    
     if (path.exists())
     {
         int tex_width, tex_height, tex_channels;
         const auto pixels = stbi_load(path.get_absolute_string().c(), &tex_width, &tex_height, &tex_channels, STBI_rgb_alpha);
         if (pixels)
         {
-            const uint tex_size = tex_width * tex_height * 4;
-
             auto image_rect = Rect(0, 0, tex_width, tex_height);
 
             /*if (entries_.Length() > 0)
@@ -104,10 +114,10 @@ uint TextureAtlas::put(const Path& path)
                     pixels_ = new_pixels;
                     size_ = desired_size;
 
-                    cached_uv_mods.Clear();
+                    cached_uv_mods_.Clear();
                     for (const auto& entry : entries_)
                     {
-                        cached_uv_mods.Add({entry.get_scale(), entry.get_offset()});
+                        cached_uv_mods_.Add({entry.get_scale(), entry.get_offset()});
                     }
                 }
 
@@ -116,7 +126,7 @@ uint TextureAtlas::put(const Path& path)
 
                 const entry new_entry = {image_rect, this};
                 entries_.Add(new_entry);
-                cached_uv_mods.Add({new_entry.get_scale(), new_entry.get_offset()});
+                cached_uv_mods_.Add({new_entry.get_scale(), new_entry.get_offset()});
                 return entries_.Length() - 1;
             }            
         }
@@ -133,7 +143,7 @@ uint TextureAtlas::get_num_entries() const
 
 List<TextureAtlas::uv_mod> TextureAtlas::get_cached_mods() const
 {
-    return cached_uv_mods;
+    return cached_uv_mods_;
 }
 
 const TextureAtlas::entry* TextureAtlas::get_entry(uint index) const
@@ -151,33 +161,56 @@ Shared<Texture> TextureAtlas::to_texture() const
     return MakeShared<Texture>(size_, size_, pixels_);
 }
 
-uint TextureAtlas::get_gl_id()
+void TextureAtlas::bind(uint storage_slot) const
 {
-    return gl_binding_;
+    if (is_render_stage_)
+    {
+        glBindTexture(GL_TEXTURE_2D, gl_texture_binding_);
+        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, storage_slot, gl_mods_storage_binding_);
+    }
 }
 
-void TextureAtlas::usage_count_changed()
+uint TextureAtlas::get_gl_texture_id()
 {
-    if (usage_count_ > 0 && gl_binding_ == 0)
+    return gl_texture_binding_;
+}
+
+void TextureAtlas::generate_buffers()
+{
+    if (gl_texture_binding_ || gl_mods_storage_binding_)
     {
-        glGenTextures(1, &gl_binding_);
-        glBindTexture(GL_TEXTURE_2D, gl_binding_);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_, size_, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels_.GetData());
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
+        print_warning("Texture Atlas", "Attempt to generate buffers while texture buffer is %s and storage buffer is %s", gl_texture_binding_ ? "active" : "inactive", gl_mods_storage_binding_ ? "active" : "inactive");
     }
-    else if (usage_count_ == 0 && gl_binding_ != 0)
-    {
-        glDeleteTextures(1, &gl_binding_);
-        gl_binding_ = 0;
-    }
+    
+    cleanup();
+    
+    glGenTextures(1, &gl_texture_binding_);
+    glBindTexture(GL_TEXTURE_2D, gl_texture_binding_);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size_, size_, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels_.GetData());
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    glGenBuffers(1, &gl_mods_storage_binding_);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, gl_mods_storage_binding_);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(uv_mod) * cached_uv_mods_.Length(), cached_uv_mods_.GetData(), GL_STATIC_DRAW);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 
 void TextureAtlas::cleanup()
 {
-    usage_count_changed();
+    if (gl_texture_binding_)
+    {
+        glDeleteTextures(1, &gl_texture_binding_);
+        gl_texture_binding_ = 0;
+    }
+
+    if (gl_mods_storage_binding_)
+    {
+        glDeleteBuffers(1, &gl_mods_storage_binding_);
+        gl_mods_storage_binding_ = 0;
+    }
 }

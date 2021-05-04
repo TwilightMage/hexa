@@ -5,5 +5,5 @@
 class ITexture
 {
 public:
-    virtual uint get_gl_id() = 0;
+    virtual uint get_gl_texture_id() = 0;
 };

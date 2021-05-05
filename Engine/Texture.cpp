@@ -29,12 +29,14 @@ Shared<Texture> Texture::load_png(const Path& path)
     {
         return found->second;
     }
+
+    assert_error(path.exists(), nullptr, "Texture Loader", "Texture does not exist %s", path.get_absolute_string().c())
     
-    if (path.exists())
+    int tex_width, tex_height, tex_channels;
+    const auto pixels = stbi_load(path.get_absolute_string().c(), &tex_width, &tex_height, &tex_channels, STBI_rgb_alpha);
+    if (pixels)
     {
-        int tex_width, tex_height, tex_channels;
-        const auto pixels = stbi_load(path.get_absolute_string().c(), &tex_width, &tex_height, &tex_channels, STBI_rgb_alpha);
-        if (pixels)
+        if (tex_width * tex_height > 0)
         {
             const uint size = tex_width * tex_height;
             auto result = MakeShared<Texture>();
@@ -45,12 +47,20 @@ Shared<Texture> Texture::load_png(const Path& path)
             result->height_ = tex_height;
 
             Game::instance_->textures_[path.get_absolute_string()] = result;
+            verbose("Texture Loader", "Loaded texture %ix%i %s", tex_width, tex_height, path.get_absolute_string().c());
             
             return result;
         }
-        stbi_image_free(pixels);
+        else
+        {
+            print_error("Texture Loader", "Texture size is invalid: %ix%i %s", tex_width, tex_height, path.get_absolute_string().c());
+        }
     }
-
+    else
+    {
+        print_error("Texture Loader", "Unknown error on loading texture %s", path.get_absolute_string().c());
+    }
+    stbi_image_free(pixels);
     return nullptr;
 }
 

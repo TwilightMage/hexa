@@ -3,6 +3,7 @@
 
 #include "Engine/GeometryEditor.h"
 #include "Engine/Mesh.h"
+#include "Engine/Texture.h"
 
 DemoMeshEntity::DemoMeshEntity()
     : Entity()
@@ -26,4 +27,6 @@ void DemoMeshEntity::on_start()
     });*/
 
     use_mesh(mesh);
+
+    use_texture(Texture::load_png("resources/hexagame/textures/tiles/stone_bricks.png"));
 }

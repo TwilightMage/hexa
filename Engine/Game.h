@@ -76,6 +76,8 @@ public:
     static void hide_mouse();
     static void show_mouse();
 
+    static void dump_texture_usage();
+
 protected:
     virtual void init_game_info(GameInfo& out_info) = 0;
     virtual void start();

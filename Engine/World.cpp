@@ -6,6 +6,7 @@
 #include "Mesh.h"
 #include "Quaternion.h"
 #include "Renderer.h"
+#include "Texture.h"
 
 void World::spawn_entity(const Weak<Entity>& entity, const Vector3& pos, const Quaternion& rot)
 {
@@ -40,6 +41,17 @@ void World::spawn_entity(const Weak<Entity>& entity)
     if (auto entity_ptr = entity.lock())
     {
         entity_ptr->world_ = weak_from_this();
+        if (const auto mesh = entity_ptr->get_mesh())
+        {
+            mesh->usage_count_++;
+        }
+        if (entity_ptr->should_use_texture())
+        {
+            if (const auto tex = entity_ptr->get_texture())
+            {
+                tex->usage_count_increase();
+            }
+        }
         entities_.Add(entity_ptr);
         entity_ptr->on_start();
         if (entity_ptr->get_mesh() && entity_ptr->get_shader())
@@ -69,6 +81,14 @@ void World::tick(float delta_time)
     {
         if (entities_[i]->pending_kill_)
         {
+            if (const auto mesh = entities_[i]->get_mesh())
+            {
+                mesh->usage_count_--;
+            }
+            if (const auto tex = entities_[i]->get_texture())
+            {
+                tex->usage_count_decrease();
+            }
             if (entities_[i]->get_mesh() && entities_[i]->get_shader())
             {
                 notify_renderable_deleted(entities_[i]);
@@ -149,4 +169,16 @@ void World::on_tick()
 
 void World::on_close()
 {
+}
+
+void World::close()
+{
+    for (const auto& entity : entities_)
+    {
+        if (entity->should_use_texture())
+        {
+            entity->get_texture()->usage_count_decrease();
+        }
+    }
+    on_close();
 }

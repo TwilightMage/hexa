@@ -8,15 +8,19 @@
 
 #include "Game.h"
 
-Texture::Texture()
-    : pixels_(0)
+std::map<Texture*, uint> Texture::usage_counter_ = std::map<Texture*, uint>();
+
+Texture::Texture(const String& name)
+    : Object(name)
+    , pixels_(0)
     , width_(0)
     , height_(0)
 {
 }
 
-Texture::Texture(uint width, uint height, List<Color> pixels)
-    : pixels_(pixels)
+Texture::Texture(const String& name, uint width, uint height, List<Color> pixels)
+    : Object(name)
+    , pixels_(pixels)
     , width_(width)
     , height_(height)
 {
@@ -30,7 +34,7 @@ Shared<Texture> Texture::load_png(const Path& path)
         return found->second;
     }
 
-    assert_error(path.exists(), nullptr, "Texture Loader", "Texture does not exist %s", path.get_absolute_string().c())
+    assert_error(path.exists(), nullptr, "Texture", "Texture does not exist %s", path.get_absolute_string().c())
     
     int tex_width, tex_height, tex_channels;
     const auto pixels = stbi_load(path.get_absolute_string().c(), &tex_width, &tex_height, &tex_channels, STBI_rgb_alpha);
@@ -39,7 +43,7 @@ Shared<Texture> Texture::load_png(const Path& path)
         if (tex_width * tex_height > 0)
         {
             const uint size = tex_width * tex_height;
-            auto result = MakeShared<Texture>();
+            auto result = MakeShared<Texture>(path.get_absolute_string());
             result->pixels_ = List(new Color[size], size);
             memcpy(result->pixels_.get_data(), pixels, sizeof(Color) * size);
             stbi_image_free(pixels);
@@ -47,18 +51,18 @@ Shared<Texture> Texture::load_png(const Path& path)
             result->height_ = tex_height;
 
             Game::instance_->textures_[path.get_absolute_string()] = result;
-            verbose("Texture Loader", "Loaded texture %ix%i %s", tex_width, tex_height, path.get_absolute_string().c());
+            verbose("Texture", "Loaded texture %ix%i %s", tex_width, tex_height, path.get_absolute_string().c());
             
             return result;
         }
         else
         {
-            print_error("Texture Loader", "Texture size is invalid: %ix%i %s", tex_width, tex_height, path.get_absolute_string().c());
+            print_error("Texture", "Texture size is invalid: %ix%i %s", tex_width, tex_height, path.get_absolute_string().c());
         }
     }
     else
     {
-        print_error("Texture Loader", "Unknown error on loading texture %s", path.get_absolute_string().c());
+        print_error("Texture", "Unknown error on loading texture %s", path.get_absolute_string().c());
     }
     stbi_image_free(pixels);
     return nullptr;
@@ -69,9 +73,32 @@ uint Texture::get_gl_texture_id()
     return gl_texture_binding_;
 }
 
+uint64 Texture::get_handle_arb() const
+{
+    return handle_arb_;
+}
+
+void Texture::usage_count_increase()
+{
+    usage_counter_[this]++;
+    usage_count_changed();
+}
+
+void Texture::usage_count_decrease()
+{
+    auto& usage_count = usage_counter_[this];
+    usage_count--;
+    usage_count_changed();
+    if (usage_count == 0)
+    {
+        usage_counter_.erase(this);
+    }
+}
+
 void Texture::usage_count_changed()
 {
-    if (usage_count_ > 0 && gl_texture_binding_ == 0)
+    const auto usage_count = usage_counter_[this];
+    if (usage_count > 0 && gl_texture_binding_ == 0)
     {
         glGenTextures(1, &gl_texture_binding_);
         glBindTexture(GL_TEXTURE_2D, gl_texture_binding_);
@@ -86,7 +113,7 @@ void Texture::usage_count_changed()
         handle_arb_ = glGetTextureHandleARB(gl_texture_binding_);
         glMakeTextureHandleResidentARB(handle_arb_);
     }
-    else if (usage_count_ == 0 && gl_texture_binding_ != 0)
+    else if (usage_count == 0 && gl_texture_binding_ != 0)
     {
         glMakeTextureHandleNonResidentARB(handle_arb_);
         handle_arb_ = 0;

@@ -4,6 +4,8 @@
 #include <GLFW/glfw3.h>
 
 
+
+#include "Arrow.h"
 #include "Engine/Camera.h"
 #include "Engine/Game.h"
 
@@ -50,6 +52,18 @@ void DebugPlayer::key_up(int key)
     else if (key == GLFW_KEY_A) move_right_ += 1;
     if (key == GLFW_KEY_SPACE) move_up_ -= 1;
     else if (key == GLFW_KEY_LEFT_SHIFT) move_up_ += 1;
+}
+
+void DebugPlayer::mouse_button_down(int button)
+{
+    if (button == 1)
+    {
+        if (auto world_ptr = get_world().lock())
+        {
+            const auto arrow = MakeShared<Arrow>();
+            world_ptr->spawn_entity(arrow, position + rotation.forward(), rotation);
+        }
+    }
 }
 
 void DebugPlayer::on_possess()

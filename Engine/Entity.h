@@ -3,8 +3,10 @@
 #include "BasicTypes.h"
 #include "framework.h"
 #include "IRenderable.h"
+#include "Object.h"
+#include "String.h"
 
-EXTERN class EXPORT Entity : public IRenderable, public std::enable_shared_from_this<Entity>
+EXTERN class EXPORT Entity : public Object, public IRenderable, public std::enable_shared_from_this<Entity>
 {
     friend class World;
 
@@ -26,18 +28,21 @@ public:
     void clear_shader();
     void use_texture(const Weak<Texture>& new_texture);
     void clear_texture();
-    virtual Shared<Mesh> get_mesh() const override;
-    virtual Shared<Shader> get_shader() const override;
-    virtual Shared<Texture> get_texture() const override;
-    virtual Vector3 get_position() const override;
-    virtual Quaternion get_rotation() const override;
-    virtual Vector3 get_scale() const override;
+    Shared<Mesh> get_mesh() const override;
+    Shared<Shader> get_shader() const override;
+    Shared<Texture> get_texture() const override;
+    Vector3 get_position() const override;
+    Quaternion get_rotation() const override;
+    Vector3 get_scale() const override;
     
     Vector3 position;
     Quaternion rotation;
     Vector3 scale = Vector3::one();
 
 private:
+    void start();
+    bool should_use_texture() const;
+    
     Weak<World> world_;
     Shared<Mesh> mesh_;
     Shared<Shader> shader_;

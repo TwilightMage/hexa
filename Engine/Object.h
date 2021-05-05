@@ -9,6 +9,5 @@ public:
 
     const String& get_name() const;
 
-private:
-    String name_;
+    String name;
 };

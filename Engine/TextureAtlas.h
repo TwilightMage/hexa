@@ -44,7 +44,7 @@ public:
 
     void bind(uint storage_slot) const;
 
-    virtual uint get_gl_texture_id() override;
+    uint get_gl_texture_id() override;
     
 private:
     void generate_buffers();

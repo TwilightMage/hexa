@@ -1,9 +1,11 @@
 ﻿#pragma once
+#include <map>
 #include <glm/fwd.hpp>
 
 
 #include "List.h"
 
+class Texture;
 class Mesh;
 class Shader;
 class IRenderable;
@@ -47,6 +49,8 @@ public:
     void unregister_object(const Weak<IRenderable>& renderable) const;
     void change_object_mesh(const Shared<IRenderable>& renderable, const Weak<Mesh>& old_mesh);
     void change_object_shader(const Shared<IRenderable>& renderable, const Weak<Shader>& old_shader);
+
+    std::map<Texture*, uint> dump_texture_usage() const;
     
     void render(const glm::mat4& view_projection_matrix, class TextureAtlas* atlas) const;
     void cleanup() const;

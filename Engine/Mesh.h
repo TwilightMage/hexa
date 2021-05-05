@@ -1,9 +1,10 @@
 ﻿#pragma once
 
+#include "Object.h"
 #include "Path.h"
 #include "Vector3.h"
 
-EXTERN class EXPORT Mesh
+EXTERN class EXPORT Mesh : public Object
 {
     friend class Entity;
 
@@ -15,9 +16,9 @@ public:
         Vector3 col;
     };
 
-    Mesh();
-    Mesh(const List<vertex>& vertices);
-    Mesh(const List<vertex>& vertices, const List<uint>& indices);
+    Mesh(const String& name);
+    Mesh(const String& name, const List<vertex>& vertices);
+    Mesh(const String& name, const List<vertex>& vertices, const List<uint>& indices);
     
     static Shared<Mesh> load_obj(const Path& path);
 

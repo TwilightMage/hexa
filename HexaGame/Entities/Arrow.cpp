@@ -14,3 +14,10 @@ void Arrow::on_start()
     use_texture(Texture::load_png("resources/hexagame/textures/arrow.png"));
     scale = Vector3::one() * 0.75f;
 }
+
+void Arrow::tick(float delta_time)
+{
+    const auto rot_axis = rotation.forward().cross_product(Vector3::up());
+    rotation = rotation.rotate_around(rot_axis, delta_time * -10);
+    position += rotation.forward() * delta_time * 10;
+}

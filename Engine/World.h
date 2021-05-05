@@ -32,5 +32,7 @@ protected:
     virtual void on_close();
 
 private:
+    void close();
+
     List<Shared<Entity>> entities_;
 };

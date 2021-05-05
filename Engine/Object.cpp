@@ -1,11 +1,11 @@
 ﻿#include "Object.h"
 
 Object::Object(const String& name)
-    : name_(name)
+    : name(name)
 {
 }
 
 const String& Object::get_name() const
 {
-    return name_;
+    return name;
 }

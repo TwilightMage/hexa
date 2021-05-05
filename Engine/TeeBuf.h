@@ -14,9 +14,9 @@ public:
 	void RemoveBuff(std::streambuf* buff);
 
 private:
-    virtual int overflow(int c) override;
+    int overflow(int c) override;
 
-    virtual int sync() override;
+    int sync() override;
 
 private:
 	List<std::streambuf*> buffs;

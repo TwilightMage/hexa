@@ -7,7 +7,8 @@
 #include "World.h"
 
 Entity::Entity()
-    : shader_(Game::get_basic_shader())
+    : Object(typeid(this).name() + String(" entity"))
+    , shader_(Game::get_basic_shader())
     , texture_(Game::get_white_pixel())
     , pending_kill_(false)
     , started_(false)
@@ -21,12 +22,10 @@ Weak<World> Entity::get_world() const
 
 void Entity::on_start()
 {
-    started_ = true;
 }
 
 void Entity::on_destroy()
 {
-    
 }
 
 void Entity::destroy()
@@ -41,14 +40,17 @@ bool Entity::is_started() const
 
 void Entity::use_mesh(const Weak<Mesh>& new_mesh)
 {
-    if (mesh_)
+    if (!world_.expired())
     {
-        mesh_->usage_count_--;
-    }
+        if (mesh_)
+        {
+            mesh_->usage_count_--;
+        }
 
-    if (const auto new_mesh_ptr = new_mesh.lock())
-    {
-        new_mesh_ptr->usage_count_++;
+        if (const auto new_mesh_ptr = new_mesh.lock())
+        {
+            new_mesh_ptr->usage_count_++;
+        }
     }
 
     const auto old= mesh_;
@@ -56,6 +58,21 @@ void Entity::use_mesh(const Weak<Mesh>& new_mesh)
 
     if (mesh_ != old)
     {
+        if (!old)
+        {
+            if (should_use_texture())
+            {
+                texture_->usage_count_increase();
+            }
+        }
+        else
+        {
+            if (should_use_texture())
+            {
+                texture_->usage_count_decrease();
+            }
+        }
+        
         if (started_)
         {
             if (auto world_ptr = world_.lock())
@@ -68,7 +85,7 @@ void Entity::use_mesh(const Weak<Mesh>& new_mesh)
 
 void Entity::clear_mesh()
 {
-    if (mesh_)
+    if (mesh_ && !world_.expired())
     {
         mesh_->usage_count_--;
     }
@@ -76,12 +93,14 @@ void Entity::clear_mesh()
     const auto old_mesh = mesh_;
     mesh_ = nullptr;
 
-    if (started_)
+    if (should_use_texture())
     {
-        if (auto world_ptr = world_.lock())
-        {
-            world_ptr->notify_renderable_mesh_updated(weak_from_this(), old_mesh);
-        }
+        texture_->usage_count_decrease();
+    }
+
+    if (auto world_ptr = world_.lock())
+    {
+        world_ptr->notify_renderable_mesh_updated(weak_from_this(), old_mesh);
     }
 }
 
@@ -99,12 +118,9 @@ void Entity::use_shader(const Weak<Shader>& new_shader)
 
     if (shader_ != old)
     {
-        if (started_)
+        if (auto world_ptr = world_.lock())
         {
-            if (auto world_ptr = world_.lock())
-            {
-                world_ptr->notify_renderable_shader_updated(weak_from_this(), old);
-            }
+            world_ptr->notify_renderable_shader_updated(weak_from_this(), old);
         }
     }
 }
@@ -116,12 +132,9 @@ void Entity::clear_shader()
 
     if (shader_ != old)
     {
-        if (started_)
+        if (auto world_ptr = world_.lock())
         {
-            if (auto world_ptr = world_.lock())
-            {
-                world_ptr->notify_renderable_shader_updated(weak_from_this(), old);
-            }
+            world_ptr->notify_renderable_shader_updated(weak_from_this(), old);
         }
     }
 }
@@ -130,13 +143,17 @@ void Entity::use_texture(const Weak<Texture>& new_texture)
 {
     if (const auto texture_ptr = new_texture.lock())
     {
-        texture_->usage_count_--;
-        texture_->usage_count_changed();
+        if (should_use_texture())
+        {
+            texture_->usage_count_decrease();
+        }
         
         texture_ = texture_ptr;
 
-        texture_->usage_count_++;
-        texture_->usage_count_changed();
+        if (should_use_texture())
+        {
+            texture_->usage_count_increase();
+        }
     }
     else
     {
@@ -148,13 +165,17 @@ void Entity::clear_texture()
 {
     if (texture_ != Game::get_white_pixel())
     {
-        texture_->usage_count_--;
-        texture_->usage_count_changed();
+        if (should_use_texture())
+        {
+            texture_->usage_count_decrease();
+        }
         
         texture_ = Game::get_white_pixel();
 
-        texture_->usage_count_++;
-        texture_->usage_count_changed();
+        if (should_use_texture())
+        {
+            texture_->usage_count_increase();
+        }
     }
 }
 
@@ -186,4 +207,15 @@ Quaternion Entity::get_rotation() const
 Vector3 Entity::get_scale() const
 {
     return scale;
+}
+
+void Entity::start()
+{
+    started_ = true;
+    on_start();
+}
+
+bool Entity::should_use_texture() const
+{
+    return !world_.expired() && get_mesh();
 }

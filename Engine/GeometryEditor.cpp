@@ -138,7 +138,7 @@ Shared<Mesh> GeometryEditor::get_unit_cube()
 
         translate(vertices, Vector3::one() * -0.5f);
         
-        result = MakeShared<Mesh>(vertices);
+        result = MakeShared<Mesh>("Unit Cube", vertices);
     }
     
     return result;

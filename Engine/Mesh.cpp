@@ -21,13 +21,15 @@ struct Vec2
     float x, y;
 };
 
-Mesh::Mesh()
-    : usage_count_(0)
+Mesh::Mesh(const String& name)
+    : Object(name)
+    , usage_count_(0)
 {
 }
 
-Mesh::Mesh(const List<vertex>& vertices)
-    : vertices_(vertices)
+Mesh::Mesh(const String& name, const List<vertex>& vertices)
+    : Object(name)
+    , vertices_(vertices)
     , usage_count_(0)
 {
     for (uint i = 0; i < vertices.length(); i++)
@@ -36,8 +38,9 @@ Mesh::Mesh(const List<vertex>& vertices)
     }
 }
 
-Mesh::Mesh(const List<vertex>& vertices, const List<uint>& indices)
-    : vertices_(vertices)
+Mesh::Mesh(const String& name, const List<vertex>& vertices, const List<uint>& indices)
+    : Object(name)
+    , vertices_(vertices)
     , indices_(indices)
     , usage_count_(0)
 {
@@ -51,16 +54,16 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
         return found->second;
     }
 
-    assert_error(path.exists(), nullptr, "Mesh Loader", "Mesh does not exists %s", path.get_absolute_string().c());
+    assert_error(path.exists(), nullptr, "Mesh", "Mesh does not exists %s", path.get_absolute_string().c());
     
     Shared<objl::Loader> loader = MakeShared<objl::Loader>();
-    assert_error(loader->LoadFile(path.get_absolute().to_string().std()), nullptr, "Mesh Loader", "Unknown error on loading mesh %s", path.get_absolute_string().c())
-    assert_error(loader->LoadedVertices.size() > 0, nullptr, "Mesh Loader", "Number of vertices is 0 in mesh %s", path.get_absolute_string().c());
-    assert_error(loader->LoadedIndices.size() > 0, nullptr, "Mesh Loader", "Number of indices is 0 in mesh %s", path.get_absolute_string().c());
+    assert_error(loader->LoadFile(path.get_absolute().to_string().std()), nullptr, "Mesh", "Unknown error on loading mesh %s", path.get_absolute_string().c())
+    assert_error(loader->LoadedVertices.size() > 0, nullptr, "Mesh", "Number of vertices is 0 in mesh %s", path.get_absolute_string().c());
+    assert_error(loader->LoadedIndices.size() > 0, nullptr, "Mesh", "Number of indices is 0 in mesh %s", path.get_absolute_string().c());
         
     loader->LoadedMeshes.clear();
         
-    Shared<Mesh> result = MakeShared<Mesh>();
+    Shared<Mesh> result = MakeShared<Mesh>(path.get_absolute_string());
         
     for (auto& vert : loader->LoadedVertices)
     {
@@ -72,11 +75,11 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
     loader->LoadedIndices.clear();
 
     GeometryEditor::remove_indices(result->vertices_, result->indices_);
-    GeometryEditor::rotate(result->vertices_, Quaternion(Vector3(90.0f, 0.0f, 90.0f)));
+    GeometryEditor::rotate(result->vertices_, Quaternion(Vector3(90.0f, 0.0f, 180.0f)));
     GeometryEditor::mirror_y(result->vertices_);
 
     Game::instance_->meshes_[path.get_absolute_string()] = result;
-    verbose("Mesh Loader", "Loaded mesh v%i i%i %s", result->vertices_.length(), result->indices_.length(), path.get_absolute_string().c());
+    verbose("Mesh", "Loaded mesh v%i i%i %s", result->vertices_.length(), result->indices_.length(), path.get_absolute_string().c());
 
     return result;
 }

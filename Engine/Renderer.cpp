@@ -107,7 +107,7 @@ struct render_list : List<Shared<IRenderable>> // objects
     render_list();
     render_list(Mesh* mesh, uint vertex_offset);
 
-    inline static const uint objects_count_limit = 256;
+    inline static const uint objects_count_limit = 230;
     
     uint vertex_buffer_offset;
     uint size_in_vertex_buffer;
@@ -333,6 +333,25 @@ void Renderer::change_object_shader(const Shared<IRenderable>& renderable, const
     }
 }
 
+std::map<Texture*, uint> Renderer::dump_texture_usage() const
+{
+    std::map<Texture*, uint> result;
+
+    auto& db = *database_;
+    for (const auto& shader_mesh : db)
+    {
+        for (const auto& mesh_objects : shader_mesh.value)
+        {
+            for (const auto& object : mesh_objects.value)
+            {
+                result[object->get_texture().get()]++;
+            }
+        }
+    }
+
+    return result;
+}
+
 void Renderer::render(const glm::mat4& view_projection_matrix, class TextureAtlas* atlas) const
 {
     glEnable(GL_DEPTH_TEST);
@@ -346,29 +365,30 @@ void Renderer::render(const glm::mat4& view_projection_matrix, class TextureAtla
         glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.value.gl_vertex_buffer_id);
         shader_meshes.key->map_params();
 
-        atlas->bind(0);
+        //atlas->bind(0);
 
         for (const auto& mesh_objects : shader_meshes.value)
         {
-            const uint instance_count = std::min(mesh_objects.value.length(), render_list::objects_count_limit);
-            glm::mat4* mvp_array = new glm::mat4[instance_count];
-            int* atlas_entry_id_array = new int[instance_count];
+            uint rendered_instance_count = 0;
+            while (rendered_instance_count < mesh_objects.value.length())
             {
-                uint i = 0;
-                for (const auto& object : mesh_objects.value)
+                const uint instance_count = std::min(mesh_objects.value.length() - rendered_instance_count, render_list::objects_count_limit);
+                glm::mat4* mvp_array = new glm::mat4[instance_count];
+                uint64* texture_handle_array = new uint64[instance_count];
+                for (uint i = 0; i < instance_count; i++)
                 {
+                    const auto& object = mesh_objects.value[i + rendered_instance_count];
                     mvp_array[i] = view_projection_matrix * get_model_matrix(object);
-                    atlas_entry_id_array[i] = 5;
-                    
-                    if (++i == instance_count) break;
+                    texture_handle_array[i] = object->get_texture()->get_handle_arb();
                 }
-            }
-            glUniformMatrix4fv(0, instance_count, GL_FALSE, reinterpret_cast<float*>(mvp_array));
-            glUniform1iv(230, instance_count, atlas_entry_id_array);
-            delete[] mvp_array;
-            delete[] atlas_entry_id_array;
+                glUniformMatrix4fv(0, instance_count, GL_FALSE, reinterpret_cast<float*>(mvp_array));
+                glUniformHandleui64vARB(230, instance_count, texture_handle_array);
+                delete[] mvp_array;
+                delete[] texture_handle_array;
             		
-            glDrawArraysInstanced(GL_TRIANGLES, mesh_objects.value.vertex_buffer_offset, mesh_objects.value.size_in_vertex_buffer, mesh_objects.value.length());
+                glDrawArraysInstanced(GL_TRIANGLES, mesh_objects.value.vertex_buffer_offset, mesh_objects.value.size_in_vertex_buffer, instance_count);
+                rendered_instance_count += instance_count;
+            }
         }
     }
 }

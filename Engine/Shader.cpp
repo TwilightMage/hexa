@@ -99,7 +99,7 @@ Shared<Shader> Shader::compile(const Path& path, const meta& shader_meta, int ty
             {
                 glDeleteShader(kvp.second);
             }
-            print_error("Shader", "Unable to compile shader program %s because of problems with shaders: %s", path.get_absolute().to_string().c(), StringJoin(problem_shaders, ", "));
+            print_error("Shader", "Unable to compile shader program %s because of problems with shaders: %s", path.get_absolute().to_string().c(), StringJoin(problem_shaders, ", ").c());
         }
         else
         {

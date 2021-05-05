@@ -158,7 +158,7 @@ void TextureAtlas::dump(const Path& path)
 
 Shared<Texture> TextureAtlas::to_texture() const
 {
-    return MakeShared<Texture>(size_, size_, pixels_);
+    return MakeShared<Texture>(get_name(), size_, size_, pixels_);
 }
 
 void TextureAtlas::bind(uint storage_slot) const

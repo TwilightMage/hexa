@@ -13,10 +13,11 @@ EXTERN class EXPORT DebugPlayer : public Entity, public IControllable, public IT
 public:
     DebugPlayer();
     
-    virtual void on_start() override;
+    void on_start() override;
     
     void key_down(int key) override;
     void key_up(int key) override;
+    void mouse_button_down(int button) override;
 
     void on_possess() override;
 

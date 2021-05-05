@@ -89,7 +89,7 @@ void Game::close_world()
 {
 	if (instance_->world_)
 	{
-		instance_->world_->on_close();
+		instance_->world_->close();
 		instance_->event_bus_->world_closed(instance_->world_);
 		instance_->world_ = nullptr;
 	}
@@ -180,6 +180,17 @@ void Game::show_mouse()
 	glfwSetInputMode(instance_->window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
+void Game::dump_texture_usage()
+{
+	const auto counter = Texture::usage_counter_;
+	List<String> result;
+	for (const auto& kvp : counter)
+	{
+		result.Add(StringFormat("[%s]: %i", kvp.first->get_name().c(), kvp.second));
+	}
+	print_debug("Texture", "Usage dump:\n%s", StringJoin(result, '\n').c());
+}
+
 void Game::start()
 {
 }
@@ -216,6 +227,11 @@ void Game::prepare()
 
 void Game::render_loop()
 {
+	const String renderer(reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+	verbose("Game", "Active GPU: %s", renderer.c());
+
+	glfwSetWindowTitle(window_, (get_info().title + " - " + renderer).c());
+	
 	const String opengl_version_string(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 	verbose("Game", "Detected OpenGL version: %s", opengl_version_string.c());
 	const Version opengl_version = opengl_version_string.substring(0, opengl_version_string.index_of(' '));
@@ -255,7 +271,7 @@ void Game::render_loop()
 	TextureAtlas::is_loading_stage_ = true;
 	
 	// Load tile atlas
-	TextureAtlas ta = TextureAtlas("TileAtlas", 60, 45);
+	TextureAtlas ta = TextureAtlas("Tile Atlas", 60, 45);
 	ta.put("resources/hexagame/textures/tiles/dirt.png");
 	ta.put("resources/hexagame/textures/tiles/grass.png");
 	ta.put("resources/hexagame/textures/tiles/iron_ore.png");
@@ -281,7 +297,7 @@ void Game::render_loop()
 	};
 	basic_shader_ = Shader::compile(Path("resources/engine/shaders/basic"), basic_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
 
-	white_pixel_ = MakeShared<Texture>(1, 1, List<Color>::of(Color::white));
+	white_pixel_ = MakeShared<Texture>("White Pixel", 1, 1, List<Color>::of(Color::white));
 	
 	// Call load stage in mods
 	for (auto& mod : mods_)

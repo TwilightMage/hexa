@@ -50,17 +50,22 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
     {
         return found->second;
     }
+
+    assert_error(path.exists(), nullptr, "Mesh Loader", "Mesh does not exists %s", path.get_absolute_string().c());
     
     Shared<objl::Loader> loader = MakeShared<objl::Loader>();
     if (loader->LoadFile(path.get_absolute().to_string().std()))
     {
+        assert_error(loader->LoadedVertices.size() > 0, nullptr, "Mesh Loader", "Number of vertices is 0 in mesh %s", path.get_absolute_string().c());
+        assert_error(loader->LoadedIndices.size() > 0, nullptr, "Mesh Loader", "Number of indices is 0 in mesh %s", path.get_absolute_string().c());
+        
         loader->LoadedMeshes.clear();
         
         Shared<Mesh> result = MakeShared<Mesh>();
-
+        
         for (auto& vert : loader->LoadedVertices)
         {
-            result->vertices_.Add({{vert.Position.X, vert.Position.Y, vert.Position.Z}, {vert.TextureCoordinate.X, vert.TextureCoordinate.Y}, {1.0f, 1.0f, 1.0f}});
+            result->vertices_.Add({{vert.Position.X, vert.Position.Y, vert.Position.Z}, {vert.TextureCoordinate.X, 1 - vert.TextureCoordinate.Y}, {1.0f, 1.0f, 1.0f}});
         }
         loader->LoadedVertices.clear();
 
@@ -92,4 +97,10 @@ const List<uint>& Mesh::get_indices() const
 uint Mesh::get_usage_count() const
 {
     return usage_count_;
+}
+
+bool Mesh::is_empty() const
+{
+    // TODO: Update after implementing index buffers
+    return vertices_.length() == 0;// || indices_.length() == 0;
 }

@@ -4,6 +4,7 @@
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb/stb_image.h>
+#include <glad/glad.h>
 
 #include "Game.h"
 
@@ -35,10 +36,10 @@ Shared<Texture> Texture::load_png(const Path& path)
         const auto pixels = stbi_load(path.get_absolute_string().c(), &tex_width, &tex_height, &tex_channels, STBI_rgb_alpha);
         if (pixels)
         {
-            const uint size = tex_width * tex_height * 4;
+            const uint size = tex_width * tex_height;
             auto result = MakeShared<Texture>();
             result->pixels_ = List(new Color[size], size);
-            memcpy(result->pixels_.get_data(), pixels, size);
+            memcpy(result->pixels_.get_data(), pixels, sizeof(Color) * size);
             stbi_image_free(pixels);
             result->width_ = tex_width;
             result->height_ = tex_height;
@@ -71,9 +72,14 @@ void Texture::usage_count_changed()
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels_.get_data());
         glGenerateMipmap(GL_TEXTURE_2D);
         glBindTexture(GL_TEXTURE_2D, 0);
+
+        handle_arb_ = glGetTextureHandleARB(gl_texture_binding_);
+        glMakeTextureHandleResidentARB(handle_arb_);
     }
     else if (usage_count_ == 0 && gl_texture_binding_ != 0)
     {
+        glMakeTextureHandleNonResidentARB(handle_arb_);
+        handle_arb_ = 0;
         glDeleteTextures(1, &gl_texture_binding_);
         gl_texture_binding_ = 0;
     }

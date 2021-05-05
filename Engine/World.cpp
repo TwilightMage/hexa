@@ -13,10 +13,36 @@ void World::spawn_entity(const Weak<Entity>& entity, const Vector3& pos, const Q
     {
         entity_ptr->position = pos;
         entity_ptr->rotation = rot;
+        spawn_entity(entity);
+    }
+}
+
+void World::spawn_entity(const Weak<Entity>& entity, const Vector3& pos)
+{
+    if (auto entity_ptr = entity.lock())
+    {
+        entity_ptr->position = pos;
+        spawn_entity(entity);
+    }
+}
+
+void World::spawn_entity(const Weak<Entity>& entity, const Quaternion& rot)
+{
+    if (auto entity_ptr = entity.lock())
+    {
+        entity_ptr->rotation = rot;
+        spawn_entity(entity);
+    }
+}
+
+void World::spawn_entity(const Weak<Entity>& entity)
+{
+    if (auto entity_ptr = entity.lock())
+    {
         entity_ptr->world_ = weak_from_this();
         entities_.Add(entity_ptr);
-        entity_ptr->start();
-        if (!entity_ptr->get_mesh().expired() && !entity_ptr->get_shader().expired())
+        entity_ptr->on_start();
+        if (entity_ptr->get_mesh() && entity_ptr->get_shader())
         {
             notify_renderable_added(entity_ptr);
         }
@@ -43,7 +69,7 @@ void World::tick(float delta_time)
     {
         if (entities_[i]->pending_kill_)
         {
-            if (!entities_[i]->get_mesh().expired() && !entities_[i]->get_shader().expired())
+            if (entities_[i]->get_mesh() && entities_[i]->get_shader())
             {
                 notify_renderable_deleted(entities_[i]);
             }
@@ -79,30 +105,37 @@ void World::notify_renderable_deleted(const Weak<IRenderable>& renderable)
     Game::get_instance()->renderer_->unregister_object(renderable);
 }
 
-void World::notify_renderable_updated(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh)
+void World::notify_renderable_mesh_updated(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh)
 {
     if (auto renderable_ptr = renderable.lock())
     {
-        // TODO: Rework so we will have render_database.add, render_database.remove, render_database.transfer_mesh, render_database.transfer_shader
-        const auto new_mesh_ptr = renderable_ptr->get_mesh().lock();
+        const auto new_mesh_ptr = renderable_ptr->get_mesh();
         const auto old_mesh_ptr = old_mesh.lock();
 
 
         if (new_mesh_ptr != old_mesh_ptr)
         {
             if (!old_mesh_ptr) // add
-                {
-                Game::get_instance()->renderer_->register_object(renderable_ptr);
-                }
-            else if (!new_mesh_ptr) // remove
-                {
-                    Game::get_instance()->renderer_->unregister_object(renderable_ptr);
-                }
-            else
             {
-                //Game::get_instance()->render_database.transfer_mesh(renderable_ptr, old_mesh);
+                Game::get_instance()->renderer_->register_object(renderable_ptr);
+            }
+            else if (!new_mesh_ptr) // remove
+            {
+                Game::get_instance()->renderer_->unregister_object(renderable_ptr);
+            }
+            else // change
+            {
+                Game::get_instance()->renderer_->change_object_mesh(renderable_ptr, old_mesh);
             }
         }
+    }
+}
+
+void World::notify_renderable_shader_updated(const Weak<IRenderable>& renderable, const Weak<Shader>& old_shader)
+{
+    if (auto renderable_ptr = renderable.lock())
+    {
+        Game::get_instance()->renderer_->change_object_shader(renderable_ptr, old_shader);
     }
 }
 

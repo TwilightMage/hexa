@@ -15,10 +15,8 @@
 #include "Quaternion.h"
 #include "Renderer.h"
 #include "Shader.h"
-#include "Texture.h"
 #include "TextureAtlas.h"
 #include "World.h"
-#include "TextureAtlas.h"
 
 Game* Game::instance_ = nullptr;
 
@@ -132,9 +130,14 @@ const Path& Game::get_app_path()
 	return instance_->app_path_;
 }
 
-Weak<Shader> Game::get_basic_shader()
+Shared<Shader> Game::get_basic_shader()
 {
 	return instance_->basic_shader_;
+}
+
+Shared<Texture> Game::get_white_pixel()
+{
+	return instance_->white_pixel_;
 }
 
 uint Game::get_screen_width()
@@ -213,10 +216,18 @@ void Game::prepare()
 
 void Game::render_loop()
 {
-	String opengl_version(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+	const String opengl_version_string(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
+	verbose("Game", "Detected OpenGL version: %s", opengl_version_string.c());
+	const Version opengl_version = opengl_version_string.substring(0, opengl_version_string.index_of(' '));
+	if (opengl_version < Version(3, 0, 0))
+	{
+		print_error("Game", "Unsupported OpenGL version");
+		return;
+	}
+	
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &TextureAtlas::max_size_);
 
-	verbose("Mod Loader", "Searching for mods in %s...", Path("mods").get_absolute_string().c());
+	verbose("Mod Loader", "Searching for mods in %s/...", Path("mods").get_absolute_string().c());
 	for (auto& path : Path("mods").list())
 	{
 		if (path.type == EPathType::Directory && Mod::verify_signature(path))
@@ -270,6 +281,8 @@ void Game::render_loop()
 	};
 	basic_shader_ = Shader::compile(Path("resources/engine/shaders/basic"), basic_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
 
+	white_pixel_ = MakeShared<Texture>(1, 1, List<Color>::of(Color::white));
+	
 	// Call load stage in mods
 	for (auto& mod : mods_)
 	{

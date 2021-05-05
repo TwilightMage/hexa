@@ -4,7 +4,6 @@
 
 
 #include "Engine/EventBus.h"
-#include "HexaGame/DemoMeshEntity.h"
 
 void ExampleMod::on_loaded(EventBus* event_bus)
 {
@@ -15,7 +14,6 @@ void ExampleMod::on_world_opened(const Weak<World>& world)
 {
     if (auto world_ptr = world.lock())
     {
-        const auto entity = MakeShared<DemoMeshEntity>();
-        world_ptr->spawn_entity(entity, Vector3(0.0f, 0.0f, 0.0f));
+        
     }
 }

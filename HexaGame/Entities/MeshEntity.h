@@ -9,7 +9,7 @@ EXTERN class EXPORT MeshEntity : public Entity
 public:
     MeshEntity(const Weak<Mesh>& mesh);
 
-    virtual void start() override;
+    virtual void on_start() override;
 
 private:
     Shared<Mesh> mesh_;

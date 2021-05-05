@@ -5,5 +5,7 @@
 EXTERN class EXPORT DemoMeshEntity : public Entity
 {
 public:
-    virtual void start() override;
+    DemoMeshEntity();
+    
+    virtual void on_start() override;
 };

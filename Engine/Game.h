@@ -63,7 +63,8 @@ public:
     static bool is_app_path_set();
     static const Path& get_app_path();
 
-    static Weak<Shader> get_basic_shader();
+    static Shared<Shader> get_basic_shader();
+    static Shared<Texture> get_white_pixel();
 
     static uint get_screen_width();
     static uint get_screen_height();

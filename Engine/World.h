@@ -11,7 +11,10 @@ EXTERN class EXPORT World : public std::enable_shared_from_this<World>
     friend Game;
     
 public:
-    void spawn_entity(const Weak<Entity>& entity, const Vector3& pos, const Quaternion& rot = Quaternion());
+    void spawn_entity(const Weak<Entity>& entity, const Vector3& pos, const Quaternion& rot);
+    void spawn_entity(const Weak<Entity>& entity, const Vector3& pos);
+    void spawn_entity(const Weak<Entity>& entity, const Quaternion& rot);
+    void spawn_entity(const Weak<Entity>& entity);
 
     void start();
     void tick(float delta_time);
@@ -20,7 +23,8 @@ public:
 
     static void notify_renderable_added(const Weak<IRenderable>& renderable);
     static void notify_renderable_deleted(const Weak<IRenderable>& renderable);
-    static void notify_renderable_updated(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh);
+    static void notify_renderable_mesh_updated(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh);
+    static void notify_renderable_shader_updated(const Weak<IRenderable>& renderable, const Weak<Shader>& old_shader);
 
 protected:
     virtual void on_start();

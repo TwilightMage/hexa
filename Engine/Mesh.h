@@ -25,6 +25,7 @@ public:
     const List<uint>& get_indices() const;
     
     uint get_usage_count() const;
+    bool is_empty() const;
 
 //private:
     List<vertex> vertices_;

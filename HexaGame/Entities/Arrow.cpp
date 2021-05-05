@@ -1,0 +1,16 @@
+﻿#include "Arrow.h"
+
+#include "Engine/Mesh.h"
+#include "Engine/Texture.h"
+
+Arrow::Arrow()
+    : Entity()
+{
+}
+
+void Arrow::on_start()
+{
+    use_mesh(Mesh::load_obj("resources/hexagame/meshes/arrow.obj"));
+    use_texture(Texture::load_png("resources/hexagame/textures/arrow.png"));
+    scale = Vector3::one() * 0.75f;
+}

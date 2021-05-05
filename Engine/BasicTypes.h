@@ -24,7 +24,7 @@ using Shared = std::shared_ptr<T>;
 template<class T, class... Types>
 Shared<T> MakeShared(Types&&... Args)
 {
-	return std::make_shared<T, Types...>(std::forward<Types>(Args)...);
+	return Shared<T>(new T(std::forward<Types>(Args)...));
 }
 
 #define MakeSharedInternal(T, ...)		(Shared<T>(new T(__VA_ARGS__)))

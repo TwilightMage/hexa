@@ -29,12 +29,12 @@ TextureAtlas::TextureAtlas(const String& name, int cell_width, int cell_height)
 {
 }
 
-Vector2 TextureAtlas::entry::get_scale() const
+Vector2 TextureAtlas::Entry::get_scale() const
 {
     return Vector2(static_cast<float>(rect.w) / owner->size_, static_cast<float>(rect.h) / owner->size_);
 }
 
-Vector2 TextureAtlas::entry::get_offset() const
+Vector2 TextureAtlas::Entry::get_offset() const
 {
     return Vector2(static_cast<float>(rect.x) / owner->size_, static_cast<float>(rect.y) / owner->size_);
 }
@@ -124,7 +124,7 @@ uint TextureAtlas::put(const Path& path)
                 ImageEditor::copy_rect(reinterpret_cast<Color*>(pixels), 0, 0, tex_width, pixels_.get_data(), image_rect.x, image_rect.y, size_, image_rect.w, image_rect.h);
                 stbi_image_free(pixels);
 
-                const entry new_entry = {image_rect, this};
+                const Entry new_entry = {image_rect, this};
                 entries_.Add(new_entry);
                 cached_uv_mods_.Add({new_entry.get_scale(), new_entry.get_offset()});
                 return entries_.length() - 1;
@@ -141,12 +141,12 @@ uint TextureAtlas::get_num_entries() const
     return entries_.length();
 }
 
-List<TextureAtlas::uv_mod> TextureAtlas::get_cached_mods() const
+List<TextureAtlas::UVMod> TextureAtlas::get_cached_mods() const
 {
     return cached_uv_mods_;
 }
 
-const TextureAtlas::entry* TextureAtlas::get_entry(uint index) const
+const TextureAtlas::Entry* TextureAtlas::get_entry(uint index) const
 {
     return &entries_[index];
 }
@@ -196,7 +196,7 @@ void TextureAtlas::generate_buffers()
 
     glGenBuffers(1, &gl_mods_storage_binding_);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, gl_mods_storage_binding_);
-    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(uv_mod) * cached_uv_mods_.length(), cached_uv_mods_.get_data(), GL_STATIC_DRAW);
+    glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(UVMod) * cached_uv_mods_.length(), cached_uv_mods_.get_data(), GL_STATIC_DRAW);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 }
 

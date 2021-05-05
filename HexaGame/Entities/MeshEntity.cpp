@@ -6,7 +6,7 @@ MeshEntity::MeshEntity(const Weak<Mesh>& mesh)
 {
 }
 
-void MeshEntity::start()
+void MeshEntity::on_start()
 {
     use_mesh(mesh_);
 }

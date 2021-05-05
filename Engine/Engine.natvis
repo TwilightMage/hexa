@@ -1,50 +1,50 @@
 <?xml version="1.0" encoding="utf-8"?> 
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
     <Type Name="String">
-        <DisplayString Condition="length > 0">{inner,na}</DisplayString>
-        <DisplayString Condition="length == 0">empty</DisplayString>
-        <StringView Condition="length > 0">inner</StringView>
+        <DisplayString Condition="length_ > 0">{inner_,na}</DisplayString>
+        <DisplayString Condition="length_ == 0">empty</DisplayString>
+        <StringView Condition="length_ > 0">inner</StringView>
         <Expand>
-            <Item Name="[allocated length]" ExcludeView="simple">allocatedLength</Item>
+            <Item Name="[allocated length]" ExcludeView="simple">allocated_length_</Item>
             <ArrayItems>
-                <Size>length</Size>
-                <ValuePointer>inner</ValuePointer>
+                <Size>length_</Size>
+                <ValuePointer>inner_</ValuePointer>
             </ArrayItems>
         </Expand>
     </Type>
 
     <Type Name="Array&lt;*&gt;">
-        <DisplayString Condition="length > 0">{{ length={length} }}</DisplayString>
-        <DisplayString Condition="length == 0">{{ empty }}</DisplayString>
+        <DisplayString Condition="length_ > 0">{{ length={length_} }}</DisplayString>
+        <DisplayString Condition="length_ == 0">{{ empty }}</DisplayString>
         <Expand>
-            <Item Name="[allocated length]" ExcludeView="simple">allocatedLength</Item>
+            <Item Name="[allocated length]" ExcludeView="simple">allocated_length_</Item>
             <ArrayItems>
-                <Size>length</Size>
-                <ValuePointer>inner</ValuePointer>
+                <Size>length_</Size>
+                <ValuePointer>inner_</ValuePointer>
             </ArrayItems>
         </Expand>
     </Type>
 
     <Type Name="List&lt;*&gt;">
-        <DisplayString Condition="length > 0">{{ length={length} }}</DisplayString>
-        <DisplayString Condition="length == 0">{{ empty }}</DisplayString>
+        <DisplayString Condition="length_ > 0">{{ length={length_} }}</DisplayString>
+        <DisplayString Condition="length_ == 0">{{ empty }}</DisplayString>
         <Expand>
-            <Item Name="[allocated length]" ExcludeView="simple">allocatedLength</Item>
+            <Item Name="[allocated length]" ExcludeView="simple">allocated_length_</Item>
             <ArrayItems>
-                <Size>length</Size>
-                <ValuePointer>inner</ValuePointer>
+                <Size>length_</Size>
+                <ValuePointer>inner_</ValuePointer>
             </ArrayItems>
         </Expand>
     </Type>
 
     <Type Name="Set&lt;*&gt;">
-        <DisplayString Condition="length > 0">{{ length={length} }}</DisplayString>
-        <DisplayString Condition="length == 0">{{ empty }}</DisplayString>
+        <DisplayString Condition="length_ > 0">{{ length={length_} }}</DisplayString>
+        <DisplayString Condition="length_ == 0">{{ empty }}</DisplayString>
         <Expand>
-            <Item Name="[allocated length]" ExcludeView="simple">allocatedLength</Item>
+            <Item Name="[allocated length]" ExcludeView="simple">allocated_length_</Item>
             <ArrayItems>
-                <Size>length</Size>
-                <ValuePointer>inner</ValuePointer>
+                <Size>length_</Size>
+                <ValuePointer>inner_</ValuePointer>
             </ArrayItems>
         </Expand>
     </Type>

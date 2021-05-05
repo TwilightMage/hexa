@@ -45,7 +45,9 @@ public:
     
     void register_object(const Weak<IRenderable>& renderable) const;
     void unregister_object(const Weak<IRenderable>& renderable) const;
-
+    void change_object_mesh(const Shared<IRenderable>& renderable, const Weak<Mesh>& old_mesh);
+    void change_object_shader(const Shared<IRenderable>& renderable, const Weak<Shader>& old_shader);
+    
     void render(const glm::mat4& view_projection_matrix, class TextureAtlas* atlas) const;
     void cleanup() const;
 

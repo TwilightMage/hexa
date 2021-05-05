@@ -7,7 +7,12 @@
 #include "Engine/Camera.h"
 #include "Engine/Game.h"
 
-void DebugPlayer::start()
+DebugPlayer::DebugPlayer()
+    : Entity()
+{
+}
+
+void DebugPlayer::on_start()
 {
     camera = MakeShared<Camera>();
     camera->owner = this;
@@ -23,7 +28,7 @@ void DebugPlayer::start()
         
         arrows_ = MakeShared<MeshEntity>(arrows_mesh);
         arrows_->scale = Vector3(0.1f);
-        world_ptr->spawn_entity(arrows_, Vector3::zero());
+        world_ptr->spawn_entity(arrows_);
     }
 }
 

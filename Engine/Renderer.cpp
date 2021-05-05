@@ -213,9 +213,9 @@ void Renderer::register_object(const Weak<IRenderable>& renderable) const
     auto& db = *database_;
     if (const auto renderable_ptr = renderable.lock())
     {
-        if (const auto shader_ptr = renderable_ptr->get_shader().lock())
+        if (const auto& shader_ptr = renderable_ptr->get_shader())
         {
-            if (const auto mesh_ptr = renderable_ptr->get_mesh().lock())
+            if (const auto& mesh_ptr = renderable_ptr->get_mesh())
             {
                 if (mesh_ptr->get_vertices().length() > 0)
                 {
@@ -268,9 +268,9 @@ void Renderer::unregister_object(const Weak<IRenderable>& renderable) const
     auto& db = *database_;
     if (const auto renderable_ptr = renderable.lock())
     {
-        if (const auto shader_ptr = renderable_ptr->get_shader().lock())
+        if (const auto shader_ptr = renderable_ptr->get_shader())
         {
-            if (const auto mesh_ptr = renderable_ptr->get_mesh().lock())
+            if (const auto mesh_ptr = renderable_ptr->get_mesh())
             {
                 if (db.have_key(shader_ptr))
                 {
@@ -303,6 +303,33 @@ void Renderer::unregister_object(const Weak<IRenderable>& renderable) const
                 }
             }
         }
+    }
+}
+
+void Renderer::change_object_mesh(const Shared<IRenderable>& renderable, const Weak<Mesh>& old_mesh)
+{
+    auto& db = *database_;
+    if (const auto renderable_ptr = renderable)
+    {
+        if (const auto shader_ptr = renderable_ptr->get_shader())
+        {
+            if (const auto mesh_ptr = renderable_ptr->get_mesh())
+            {
+                if (db.have_key(shader_ptr))
+                {
+                    
+                }
+            }
+        }
+    }
+}
+
+void Renderer::change_object_shader(const Shared<IRenderable>& renderable, const Weak<Shader>& old_shader)
+{
+    auto& db = *database_;
+    if (const auto renderable_ptr = renderable)
+    {
+        
     }
 }
 

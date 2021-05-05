@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Color.h"
+#include "Entity.h"
 #include "ITexture.h"
 #include "List.h"
 #include "Path.h"
@@ -10,6 +11,7 @@ class Game;
 EXTERN class EXPORT Texture : public ITexture
 {
     friend Game;
+    friend Entity;
     
 public:
     Texture();
@@ -28,4 +30,5 @@ private:
     uint height_ = 0;
     uint usage_count_ = 0;
     uint gl_texture_binding_ = 0;
+    uint64 handle_arb_ = 0;
 };

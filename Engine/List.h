@@ -78,6 +78,22 @@ public:
         }
     }
 
+    template<typename ...Items>
+    static List of(Items... items)
+    {
+        return {{items...}};
+    }
+
+    static List generate(uint size, T(*generator)(uint index))
+    {
+        auto result = List(size);
+        for (uint i = 0; i < size; i++)
+        {
+            result[i] = generator(i);
+        }
+        return result;
+    }
+
     List& operator=(const List& rhs)
     {
         if (this == &rhs) return *this;

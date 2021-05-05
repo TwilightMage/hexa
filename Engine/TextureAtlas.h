@@ -20,7 +20,7 @@ public:
     TextureAtlas(const String& name);
     TextureAtlas(const String& name, int cell_width, int cell_height);
     
-    struct entry
+    struct Entry
     {
         Vector2 get_scale() const;
         Vector2 get_offset() const;
@@ -29,7 +29,7 @@ public:
         TextureAtlas* owner;
     };
 
-    struct uv_mod
+    struct UVMod
     {
         Vector2 scale;
         Vector2 offset;
@@ -37,8 +37,8 @@ public:
 
     uint put(const Path& path);
     uint get_num_entries() const;
-    List<uv_mod> get_cached_mods() const;
-    const entry* get_entry(uint index) const;
+    List<UVMod> get_cached_mods() const;
+    const Entry* get_entry(uint index) const;
     void dump(const Path& path);
     Shared<Texture> to_texture() const;
 
@@ -53,8 +53,8 @@ private:
     int size_ = 1;
     uint gl_texture_binding_ = 0;
     List<Color> pixels_ = List<Color>(1);
-    List<entry> entries_;
-    List<uv_mod> cached_uv_mods_;
+    List<Entry> entries_;
+    List<UVMod> cached_uv_mods_;
     uint gl_mods_storage_binding_ = 0;
     int cell_width_;
     int cell_height_;

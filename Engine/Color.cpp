@@ -1,5 +1,7 @@
 ﻿#include "Color.h"
 
+Color Color::white = Color(255, 255, 255, 255);
+
 Color::Color()
     : r(0)
     , g(0)
@@ -30,4 +32,9 @@ Color::Color(byte r, byte g, byte b, byte a)
     , b(b)
     , a(a)
 {
+}
+
+Vector3 Color::to_vector3() const
+{
+    return Vector3(r / 255.0f, g / 255.0f, b / 255.0f);
 }

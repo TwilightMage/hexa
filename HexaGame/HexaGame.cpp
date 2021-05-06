@@ -2,6 +2,7 @@
 
 
 
+#include "CollisionEditor/CollisionEditorWorld.h"
 #include "Engine/Texture.h"
 #include "Entities/Arrow.h"
 #include "Entities/DebugPlayer.h"
@@ -19,16 +20,13 @@ void HexaGame::init_game_info(GameInfo& outInfo)
 
 void HexaGame::start()
 {
-    List<uint> l = {1, 2, 3, 4};
-    l.Insert(10, 2);
+    //lock_mouse();
+    //hide_mouse();
     
-    lock_mouse();
-    hide_mouse();
-    
-    auto world = MakeShared<World>();
+    auto world = MakeShared<CollisionEditorWorld>();
     open_world(world);
 
-    const auto player = MakeShared<DebugPlayer>();
+    /*const auto player = MakeShared<DebugPlayer>();
     world->spawn_entity(player, Vector3(-3.0f, 0.0f, 0.0f), Quaternion(Vector3(0.0f, 0.0f, 0.0f)));
     possess(player);
 
@@ -56,5 +54,5 @@ void HexaGame::start()
     world->spawn_entity(entity5, Vector3(0.0f, 0.86602540378444f * 8, 0.0f));
     entity5->use_texture(Texture::load_png("resources/hexagame/textures/tiles/dirt.png"));
 
-    dump_texture_usage();
+    dump_texture_usage();*/
 }

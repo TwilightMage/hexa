@@ -1,5 +1,9 @@
 ﻿#include "Entity.h"
 
+#include <reactphysics3d/body/RigidBody.h>
+#include <reactphysics3d/engine/PhysicsCommon.h>
+
+
 
 #include "Game.h"
 #include "Mesh.h"
@@ -196,17 +200,82 @@ Shared<Texture> Entity::get_texture() const
 
 Vector3 Entity::get_position() const
 {
-    return position;
+    if (rigid_body_)
+    {
+        const auto pos = rigid_body_->getTransform().getPosition();
+        return Vector3(pos.x, pos.y, pos.z);
+    }
+    else
+    {
+        return position_;
+    }
+}
+
+void Entity::set_position(const Vector3& pos)
+{
+    if (rigid_body_)
+    {
+        auto trans = rigid_body_->getTransform();
+        trans.setPosition(reactphysics3d::Vector3(pos.x, pos.y, pos.z));
+        rigid_body_->setTransform(trans);
+    }
+    else
+    {
+        position_ = pos;
+    }
 }
 
 Quaternion Entity::get_rotation() const
 {
-    return rotation;
+    if (rigid_body_)
+    {
+        const auto rot = rigid_body_->getTransform().getOrientation();
+        return Quaternion(rot.x, rot.y, rot.z, rot.w);
+    }
+    else
+    {
+        return rotation_;
+    }
+}
+
+void Entity::set_rotation(const Quaternion& rot)
+{
+    if (rigid_body_)
+    {
+        auto trans = rigid_body_->getTransform();
+        trans.setOrientation(reactphysics3d::Quaternion(rot.x, rot.y, rot.z, rot.w));
+        rigid_body_->setTransform(trans);
+    }
+    else
+    {
+        rotation_ = rot;
+    }
 }
 
 Vector3 Entity::get_scale() const
 {
-    return scale;
+    return scale_;
+}
+
+void Entity::use_sphere_collision(float radius, const Vector3& offset)
+{
+    remove_collision();
+
+    collider_ = rigid_body_->addCollider(Game::instance_->physics_->createSphereShape(radius), reactphysics3d::Transform(reactphysics3d::Vector3(offset.x, offset.y, offset.z), reactphysics3d::Quaternion::identity()));
+}
+
+void Entity::remove_collision()
+{
+    if (collider_)
+    {
+        rigid_body_->removeCollider(collider_);
+        collider_ = nullptr;
+    }
+}
+
+bool Entity::is_rigid_body()
+{
+    return false;
 }
 
 void Entity::start()

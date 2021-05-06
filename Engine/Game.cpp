@@ -5,6 +5,8 @@
 #include <glad/glad.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
+#include <reactphysics3d/reactphysics3d.h>
+
 
 
 #include "Camera.h"
@@ -24,6 +26,7 @@ Game::Game(int argc, char* argv[])
     : log_stream_(DateTime::now(), argv[0])
 	, event_bus_(new EventBus())
 	, renderer_(new Renderer)
+	, physics_(new reactphysics3d::PhysicsCommon())
 {
 	if (instance_)
 	{
@@ -368,8 +371,8 @@ void Game::render_loop()
 				world_->tick(last_delta_time);
 			}
 
-			glm::vec3 cam_from = cast_object<glm::vec3>(current_camera_->owner->position);
-			glm::vec3 cam_to = cast_object<glm::vec3>(current_camera_->owner->position + current_camera_->owner->rotation.forward());
+			glm::vec3 cam_from = cast_object<glm::vec3>(current_camera_->owner->get_position());
+			glm::vec3 cam_to = cast_object<glm::vec3>(current_camera_->owner->get_position() + current_camera_->owner->get_rotation().forward());
 			cam_from.y *= -1;
 			cam_to.y *= -1;
 			glm::mat4 view = glm::lookAt(
@@ -419,6 +422,7 @@ void Game::init_game()
 	info_ = GameInfo();
 
 	info_.title = "Untitled Game";
+	info_.physics_tick = 1.0f / 60.0f;
 
 	init_game_info(info_);
 }

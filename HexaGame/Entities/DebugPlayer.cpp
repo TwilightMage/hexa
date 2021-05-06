@@ -16,9 +16,9 @@ DebugPlayer::DebugPlayer()
 
 void DebugPlayer::on_start()
 {
-    camera = MakeShared<Camera>();
-    camera->owner = this;
-    camera->fov = 45.0f;
+    camera_ = MakeShared<Camera>();
+    camera_->owner = this;
+    camera_->fov = 45.0f;
 
     if (auto world_ptr = get_world().lock())
     {
@@ -29,7 +29,7 @@ void DebugPlayer::on_start()
         }
         
         arrows_ = MakeShared<MeshEntity>(arrows_mesh);
-        arrows_->scale = Vector3(0.1f);
+        arrows_->scale_ = Vector3(0.1f);
         world_ptr->spawn_entity(arrows_);
     }
 }
@@ -61,24 +61,28 @@ void DebugPlayer::mouse_button_down(int button)
         if (auto world_ptr = get_world().lock())
         {
             const auto arrow = MakeShared<Arrow>();
-            world_ptr->spawn_entity(arrow, position + rotation.forward(), rotation);
+            world_ptr->spawn_entity(arrow, get_position() + get_rotation().forward(), get_rotation());
         }
     }
 }
 
 void DebugPlayer::on_possess()
 {
-    Game::use_camera(camera);
+    Game::use_camera(camera_);
 }
 
 void DebugPlayer::tick(float delta_time)
-{   
-    position += rotation.forward() * delta_time * move_forward_;
-    position += rotation.right() * delta_time * move_right_;
-    position.z += delta_time * move_up_;
+{
+    auto pos = get_position();
+    pos += get_rotation().forward() * delta_time * move_forward_;
+    pos += get_rotation().right() * delta_time * move_right_;
+    pos.z += delta_time * move_up_;
+    set_position(pos);
 
-    rotation = rotation.rotate_around_z(Game::get_mouse_delta().x / 10.0f).normalized();
-    rotation = rotation.rotate_around(rotation.right(), Game::get_mouse_delta().y / 10.0f).normalized();
-
-    arrows_->position = position + rotation.forward();
+    auto rot = get_rotation();
+    rot = rot.rotate_around_z(Game::get_mouse_delta().x / 10.0f).normalized();
+    rot = rot.rotate_around(rot.right(), Game::get_mouse_delta().y / 10.0f).normalized();
+    set_rotation(rot);
+    
+    arrows_->set_position(get_position() + get_rotation().forward());
 }

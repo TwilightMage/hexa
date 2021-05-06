@@ -22,12 +22,12 @@ public:
     void on_possess() override;
 
     void tick(float delta_time) override;
-    Shared<Camera> camera;
 
 private:
     float move_forward_ = 0;
     float move_right_ = 0;
     float move_up_ = 0;
 
+    Shared<Camera> camera_;
     Shared<MeshEntity> arrows_;
 };

@@ -6,6 +6,11 @@
 
 class Game;
 
+namespace reactphysics3d
+{
+    class PhysicsWorld;
+}
+
 EXTERN class EXPORT World : public std::enable_shared_from_this<World>
 {
     friend Game;
@@ -26,6 +31,12 @@ public:
     static void notify_renderable_mesh_updated(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh);
     static void notify_renderable_shader_updated(const Weak<IRenderable>& renderable, const Weak<Shader>& old_shader);
 
+    float get_time_scale() const;
+    void set_time_scale(float val);
+
+    Vector3 get_gravity() const;
+    void set_gravity(const Vector3& val) const;
+
 protected:
     virtual void on_start();
     virtual void on_tick();
@@ -35,4 +46,7 @@ private:
     void close();
 
     List<Shared<Entity>> entities_;
+    reactphysics3d::PhysicsWorld* physics_world_;
+    float physics_tick_accum_;
+    float time_scale_ = 1.0f;
 };

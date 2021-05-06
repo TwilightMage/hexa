@@ -26,6 +26,11 @@ class IControllable;
 class World;
 class Texture;
 
+namespace reactphysics3d
+{
+    class PhysicsCommon;
+}
+
 enum class ELogLevel
 {
     Verbose,
@@ -40,6 +45,7 @@ EXTERN class EXPORT Game
     friend Shader;
     friend Mesh;
     friend Texture;
+    friend Entity;
     
 public:
     Game(int argc, char* argv[]);
@@ -137,8 +143,9 @@ private:
     Shared<IControllable> current_controllable_;
     Shared<World> world_;
 
-    // Rnder
+    // Core
     Unique<Renderer> renderer_;
+    Shared<reactphysics3d::PhysicsCommon> physics_;
 };
 
 template<typename... Args>

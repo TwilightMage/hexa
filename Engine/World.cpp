@@ -8,12 +8,14 @@
 #include "Renderer.h"
 #include "Texture.h"
 
+#include <reactphysics3d/reactphysics3d.h>
+
 void World::spawn_entity(const Weak<Entity>& entity, const Vector3& pos, const Quaternion& rot)
 {
     if (auto entity_ptr = entity.lock())
     {
-        entity_ptr->position = pos;
-        entity_ptr->rotation = rot;
+        entity_ptr->position_ = pos;
+        entity_ptr->rotation_ = rot;
         spawn_entity(entity);
     }
 }
@@ -22,7 +24,7 @@ void World::spawn_entity(const Weak<Entity>& entity, const Vector3& pos)
 {
     if (auto entity_ptr = entity.lock())
     {
-        entity_ptr->position = pos;
+        entity_ptr->position_ = pos;
         spawn_entity(entity);
     }
 }
@@ -31,7 +33,7 @@ void World::spawn_entity(const Weak<Entity>& entity, const Quaternion& rot)
 {
     if (auto entity_ptr = entity.lock())
     {
-        entity_ptr->rotation = rot;
+        entity_ptr->rotation_ = rot;
         spawn_entity(entity);
     }
 }
@@ -41,6 +43,16 @@ void World::spawn_entity(const Weak<Entity>& entity)
     if (auto entity_ptr = entity.lock())
     {
         entity_ptr->world_ = weak_from_this();
+        if (entity_ptr->is_rigid_body())
+        {
+            entity_ptr->rigid_body_ = physics_world_->createRigidBody(
+                reactphysics3d::Transform(
+                    reactphysics3d::Vector3(entity_ptr->position_.x, entity_ptr->position_.y, entity_ptr->position_.z),
+                    reactphysics3d::Quaternion(entity_ptr->rotation_.x, entity_ptr->rotation_.y, entity_ptr->rotation_.z, entity_ptr->rotation_.w)
+                )
+            );
+        }
+        
         if (const auto mesh = entity_ptr->get_mesh())
         {
             mesh->usage_count_++;
@@ -52,8 +64,10 @@ void World::spawn_entity(const Weak<Entity>& entity)
                 tex->usage_count_increase();
             }
         }
+        
         entities_.Add(entity_ptr);
         entity_ptr->on_start();
+
         if (entity_ptr->get_mesh() && entity_ptr->get_shader())
         {
             notify_renderable_added(entity_ptr);
@@ -63,6 +77,9 @@ void World::spawn_entity(const Weak<Entity>& entity)
 
 void World::start()
 {
+    physics_world_ = Game::instance_->physics_->createPhysicsWorld();
+    physics_world_->setGravity(reactphysics3d::Vector3(0.0f, 0.0f, -9.81f));
+    
     on_start();
 
     for (auto entity : entities_)
@@ -73,6 +90,19 @@ void World::start()
 
 void World::tick(float delta_time)
 {
+    delta_time *= time_scale_;
+
+    if (delta_time != 0.0f)
+    {
+        physics_tick_accum_ += delta_time;
+        const auto interval = Game::get_info().physics_tick;
+        while (physics_tick_accum_ > interval)
+        {
+            physics_tick_accum_ -= interval;
+            physics_world_->update(interval);
+        }
+    }
+
     List<uint> to_delete;
     
     on_tick();
@@ -98,9 +128,12 @@ void World::tick(float delta_time)
             entities_[i]->pending_kill_ = false;
             to_delete.Add(i);
         }
-        else if (auto tickable = cast<ITickable>(entities_[i]))
+        else if (time_scale_ != 0.0f)
         {
-            tickable->tick(delta_time);
+            if (auto tickable = cast<ITickable>(entities_[i]))
+            {
+                tickable->tick(delta_time);
+            }
         }
     }
 
@@ -159,6 +192,27 @@ void World::notify_renderable_shader_updated(const Weak<IRenderable>& renderable
     }
 }
 
+float World::get_time_scale() const
+{
+    return time_scale_;
+}
+
+void World::set_time_scale(float val)
+{
+    time_scale_ = val;
+}
+
+Vector3 World::get_gravity() const
+{
+    const auto gravity = physics_world_->getGravity();
+    return Vector3(gravity.x, gravity.y, gravity.z);
+}
+
+void World::set_gravity(const Vector3& val) const
+{
+    physics_world_->setGravity(reactphysics3d::Vector3(val.x, val.y, val.z));
+}
+
 void World::on_start()
 {
 }
@@ -173,6 +227,7 @@ void World::on_close()
 
 void World::close()
 {
+    on_close();
     for (const auto& entity : entities_)
     {
         if (entity->should_use_texture())
@@ -180,5 +235,6 @@ void World::close()
             entity->get_texture()->usage_count_decrease();
         }
     }
-    on_close();
+    Game::instance_->physics_->destroyPhysicsWorld(physics_world_);
+    physics_world_ = nullptr;
 }

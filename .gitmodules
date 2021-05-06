@@ -1,3 +1,6 @@
 [submodule "ThirdParty/include/OBJ-Loader"]
 	path = ThirdParty/include/OBJ-Loader
 	url = git@github.com:Bly7/OBJ-Loader.git
+[submodule "ThirdParty/include/reactphysics3d"]
+	path = ThirdParty/include/reactphysics3d
+	url = git@github.com:DanielChappuis/reactphysics3d.git

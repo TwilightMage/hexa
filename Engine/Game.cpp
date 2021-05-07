@@ -215,6 +215,11 @@ void Game::show_mouse()
 	glfwSetInputMode(instance_->window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
+void Game::add_ui(const Weak<UIElement>& ui)
+{
+	instance_->ui_root_->add_child(ui);
+}
+
 void Game::dump_texture_usage()
 {
 	const auto counter = Texture::usage_counter_;
@@ -278,6 +283,7 @@ void Game::prepare()
 	glfwSetKeyCallback(window_, key_callback);
 	glfwSetMouseButtonCallback(window_, mouse_button_callback);
 	glfwSetCursorPosCallback(window_, cursor_position_callback);
+	glfwSetWindowSizeCallback(window_, window_size_callback);
 }
 
 void Game::render_loop()
@@ -380,67 +386,11 @@ void Game::render_loop()
 	start();
 
 	float last_delta_time = 0.0f;
-
-	/*auto image1 = MakeShared<Image>();
-	image1->get_texture()->usage_count_increase();
-	image1->use_texture(Texture::load_png("resources/hexagame/textures/ui/panel.png"));
-	image1->set_position(Vector2(0.0f, 0.0f));
-	image1->set_size(Vector2(32.0f, 32.0f));
-	image1->set_rect(Rect(0, 0, 8, 8));
-	ui_root_->add_child(image1);
-
-	auto image2 = MakeShared<Image>();
-	image2->get_texture()->usage_count_increase();
-	image2->use_texture(Texture::load_png("resources/hexagame/textures/ui/panel.png"));
-	image2->set_position(Vector2(32.0f, 0.0f));
-	image2->set_size(Vector2(32.0f * 3, 32.0f));
-	image2->set_rect(Rect(8, 0, 8, 8));
-	ui_root_->add_child(image2);
 	
-	auto image3 = MakeShared<Image>();
-	image3->get_texture()->usage_count_increase();
-	image3->use_texture(Texture::load_png("resources/hexagame/textures/ui/panel.png"));
-	image3->set_position(Vector2(32.0f * 4, 0.0f));
-	image3->set_size(Vector2(32.0f, 32.0f));
-	image3->set_rect(Rect(16, 0, 8, 8));
-	ui_root_->add_child(image3);
-
-	auto image4 = MakeShared<Image>();
-	image4->get_texture()->usage_count_increase();
-	image4->use_texture(Texture::load_png("resources/hexagame/textures/ui/panel.png"));
-	image4->set_position(Vector2(0.0f, 32.0f));
-	image4->set_size(Vector2(32.0f, 32.0f));
-	image4->set_rect(Rect(0, 16, 8, 8));
-	ui_root_->add_child(image4);
-
-	auto image5 = MakeShared<Image>();
-	image5->get_texture()->usage_count_increase();
-	image5->use_texture(Texture::load_png("resources/hexagame/textures/ui/panel.png"));
-	image5->set_position(Vector2(32.0f, 32.0f));
-	image5->set_size(Vector2(32.0f * 3, 32.0f));
-	image5->set_rect(Rect(8, 16, 8, 8));
-	ui_root_->add_child(image5);
-
-	auto image6 = MakeShared<Image>();
-	image6->get_texture()->usage_count_increase();
-	image6->use_texture(Texture::load_png("resources/hexagame/textures/ui/panel.png"));
-	image6->set_position(Vector2(32.0f * 4, 32.0f));
-	image6->set_size(Vector2(32.0f, 32.0f));
-	image6->set_rect(Rect(16, 16, 8, 8));
-	ui_root_->add_child(image6);*/
-
-	dump_texture_usage();
-	
-	auto panel = MakeShared<Panel>(Margins(16, 16, 16, 16));
-	panel->set_size(Vector2(300.0f, 400.0f));
+	auto panel = MakeShared<Panel>(Texture::load_png("resources/hexagame/textures/ui/panel.png"), Margins(16, 16, 16, 16));
+	panel->set_size(Vector2(780.0f, 190.0f));
+	panel->set_position(Vector2(10.0f, 400.0f));
 	ui_root_->add_child(panel);
-
-	auto p2 = MakeShared<Panel>(Margins(16, 16, 16, 16));
-	p2->set_size(Vector2(100.0f, 100.0f));
-	p2->set_position(Vector3(20.0f, 20.0f, 0.1f));
-	panel->add_child(p2);
-
-	dump_texture_usage();
 	
 	verbose("Game", "Entering game-loop...");
 	while (!glfwWindowShouldClose(window_))
@@ -471,8 +421,6 @@ void Game::render_loop()
 			{
 				tick(last_delta_time);
 				world_->tick(last_delta_time);
-
-				panel->set_position(mouse_pos_);
 			}
 
 			// 3d matrix
@@ -600,4 +548,9 @@ void Game::cursor_position_callback(class GLFWwindow* window, double x_pos, doub
 		instance_->last_mouse_pos_ = instance_->mouse_pos_;
 		instance_->has_mouse_pos_ = true;
 	}
+}
+
+void Game::window_size_callback(class GLFWwindow* window, int width, int height)
+{
+	instance_->ui_root_->on_size_changed();
 }

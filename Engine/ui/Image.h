@@ -12,9 +12,7 @@ public:
     Shared<Mesh> get_mesh() const override;
     Shared<Shader> get_shader() const override;
     Shared<Texture> get_texture() const override;
-    Vector3 get_position() const override;
-    Quaternion get_rotation() const override;
-    Vector3 get_scale() const override;
+    glm::mat4 get_matrix() const override;
     Quaternion get_uv_rect() const;
     const Rect& get_rect() const;
     void set_rect(const Rect& rect);

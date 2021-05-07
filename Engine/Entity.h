@@ -4,7 +4,9 @@
 #include "framework.h"
 #include "IRenderable.h"
 #include "Object.h"
+#include "Quaternion.h"
 #include "String.h"
+#include "Vector3.h"
 
 namespace reactphysics3d
 {
@@ -35,26 +37,30 @@ public:
     Shared<Mesh> get_mesh() const override;
     Shared<Shader> get_shader() const override;
     Shared<Texture> get_texture() const override;
-    Vector3 get_position() const override;
+    glm::mat4 get_matrix() const override;
+    Vector3 get_position() const;
     void set_position(const Vector3& pos);
-    Quaternion get_rotation() const override;
+    Quaternion get_rotation() const;
     void set_rotation(const Quaternion& rot);
-    Vector3 get_scale() const override;
+    Vector3 get_scale() const;
+    void set_scale(const Vector3& scale);
 
     void use_sphere_collision(float radius, const Vector3& offset = Vector3::zero());
     void remove_collision();
 
-    Vector3 scale_ = Vector3::one();
 protected:
     virtual bool is_rigid_body();
     
 private:
+    void cache_matrix();
+    
     void start();
     bool should_use_texture() const;
 
     Vector3 position_;
     Quaternion rotation_;
-    
+    Vector3 scale_ = Vector3::one();
+    glm::mat4 cached_matrix_;
     
     Weak<World> world_;
     Shared<Mesh> mesh_;

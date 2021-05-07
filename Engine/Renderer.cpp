@@ -16,24 +16,24 @@ Renderer::~Renderer()
     delete database_;
 }
 
-void Renderer::register_object(const Weak<IRenderable>& renderable) const
+bool Renderer::register_object(const Weak<IRenderable>& renderable) const
 {
-    database_->register_object(renderable);
+    return database_->register_object(renderable);
 }
 
-void Renderer::unregister_object(const Weak<IRenderable>& renderable) const
+bool Renderer::unregister_object(const Weak<IRenderable>& renderable) const
 {
-    database_->unregister_object(renderable);
+    return database_->unregister_object(renderable);
 }
 
-void Renderer::change_object_mesh(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh)
+bool Renderer::change_object_mesh(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh)
 {
-    database_->change_object_mesh(renderable, old_mesh);
+    return database_->change_object_mesh(renderable, old_mesh);
 }
 
-void Renderer::change_object_shader(const Weak<IRenderable>& renderable, const Weak<Shader>& old_shader)
+bool Renderer::change_object_shader(const Weak<IRenderable>& renderable, const Weak<Shader>& old_shader)
 {
-    database_->change_object_shader(renderable, old_shader);
+    return database_->change_object_shader(renderable, old_shader);
 }
 
 std::map<Texture*, uint> Renderer::dump_texture_usage() const
@@ -93,7 +93,7 @@ void Renderer::put_params_for_intances(const glm::mat4& view_projection_matrix, 
     for (uint i = 0; i < instance_count; i++)
     {
         const auto& object = objects[i];
-        mvp_array[i] = view_projection_matrix * get_model_matrix(*object);
+        mvp_array[i] = view_projection_matrix * object->get_matrix();
         texture_handle_array[i] = object->get_texture()->get_handle_arb();
     }
 

@@ -18,36 +18,44 @@ UIRenderer::~UIRenderer()
     delete database_;
 }
 
-void UIRenderer::register_object(const Weak<IRenderable>& renderable) const
+bool UIRenderer::register_object(const Weak<IRenderable>& renderable) const
 {
     if (const auto image = cast<Image>(renderable))
     {
-        database_->register_object(image);
+        return database_->register_object(image);
     }
+
+    return false;
 }
 
-void UIRenderer::unregister_object(const Weak<IRenderable>& renderable) const
+bool UIRenderer::unregister_object(const Weak<IRenderable>& renderable) const
 {
     if (const auto image = cast<Image>(renderable))
     {
-        database_->unregister_object(image);
+        return database_->unregister_object(image);
     }
+
+    return false;
 }
 
-void UIRenderer::change_object_mesh(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh)
+bool UIRenderer::change_object_mesh(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh)
 {
     if (const auto image = cast<Image>(renderable))
     {
-        database_->change_object_mesh(image, old_mesh);
+        return database_->change_object_mesh(image, old_mesh);
     }
+
+    return false;
 }
 
-void UIRenderer::change_object_shader(const Weak<IRenderable>& renderable, const Weak<Shader>& old_shader)
+bool UIRenderer::change_object_shader(const Weak<IRenderable>& renderable, const Weak<Shader>& old_shader)
 {
     if (const auto image = cast<Image>(renderable))
     {
-        database_->change_object_shader(image, old_shader);
+        return database_->change_object_shader(image, old_shader);
     }
+
+    return false;
 }
 
 std::map<Texture*, uint> UIRenderer::dump_texture_usage() const
@@ -101,9 +109,9 @@ void UIRenderer::render(const glm::mat4& view_projection_matrix) const
 
                 // put local buffers into uniform arrays
                 glUniformMatrix4fv(0, instance_count, GL_FALSE, reinterpret_cast<float*>(mvp_array));
-                glUniform4fv(100, instance_count, reinterpret_cast<float*>(uv_array));
-                glUniform4fv(200, instance_count, reinterpret_cast<float*>(color_array));
-                glUniformHandleui64vARB(300, instance_count, texture_handle_array);
+                glUniform4fv(146, instance_count, reinterpret_cast<float*>(uv_array));
+                glUniform4fv(292, instance_count, reinterpret_cast<float*>(color_array));
+                glUniformHandleui64vARB(438, instance_count, texture_handle_array);
 
                 // clear local buffers
                 delete[] mvp_array;

@@ -3,22 +3,17 @@
 #include "Engine/Texture.h"
 
 UIElement::UIElement()
-    : scale_(Vector3::one())
+    : size_(Vector3::one())
     , trans_rot_matrix_(glm::mat4(1.0f))
     , trans_rot_matrix_stacked_(glm::mat4(1.0f))
     , trans_rot_size_matrix_(glm::mat4(1.0f))
 {
 }
 
-Vector3 UIElement::get_render_position() const
+void UIElement::set_position(const Vector2& vec2_pos)
 {
-    return position_;
-}
-
-void UIElement::set_position(const Vector2& vec2pos)
-{
-    position_.x = vec2pos.x;
-    position_.y = -vec2pos.y;
+    position_.x = vec2_pos.x;
+    position_.y = -vec2_pos.y;
 
     update_matrix();
 }
@@ -30,18 +25,13 @@ void UIElement::set_z(float z)
     update_matrix();
 }
 
-void UIElement::set_position(const Vector3& vec3pos)
+void UIElement::set_position(const Vector3& vec3_pos)
 {
-    position_.x = vec3pos.x;
-    position_.y = -vec3pos.y;
-    position_.z = vec3pos.z;
+    position_.x = vec3_pos.x;
+    position_.y = -vec3_pos.y;
+    position_.z = vec3_pos.z;
 
     update_matrix();
-}
-
-Quaternion UIElement::get_render_rotation() const
-{
-    return rotation_;
 }
 
 float UIElement::get_rotation_angle() const
@@ -56,23 +46,23 @@ void UIElement::set_rotation(float angle)
     update_matrix();
 }
 
-Vector3 UIElement::get_render_scale() const
-{
-    return scale_;
-}
-
 Vector2 UIElement::get_size() const
 {
-    return scale_;
+    return size_;
 }
 
-void UIElement::set_size(const Vector2& vec2size)
+void UIElement::set_size(const Vector2& vec2_size)
 {
-    scale_ = vec2size;
+    size_ = vec2_size;
 
     update_matrix();
 
     on_size_changed();
+}
+
+const glm::mat4& UIElement::get_ui_matrix() const
+{
+    return trans_rot_size_matrix_;
 }
 
 void UIElement::add_child(const Weak<UIElement>& child)
@@ -109,14 +99,14 @@ void UIElement::remove_from_parent()
     }
 }
 
-const glm::mat4& UIElement::get_matrix() const
-{
-    return trans_rot_size_matrix_;
-}
-
 bool UIElement::should_render() const
 {
     return should_render_;
+}
+
+bool UIElement::is_constructed() const
+{
+    return constructed_;
 }
 
 void UIElement::register_render()
@@ -159,9 +149,9 @@ void UIElement::update_matrix()
 {
     trans_rot_matrix_ = glm::mat4(1.0f);
     
-    trans_rot_matrix_ = translate(trans_rot_matrix_, cast_object<glm::vec3>(get_render_position()));
+    trans_rot_matrix_ = translate(trans_rot_matrix_, cast_object<glm::vec3>(position_));
 
-    trans_rot_matrix_ = rotate(trans_rot_matrix_, get_render_rotation().axis_angle(), cast_object<glm::vec3>(get_render_rotation().axis()));
+    trans_rot_matrix_ = rotate(trans_rot_matrix_, rotation_.axis_angle(), cast_object<glm::vec3>(rotation_.axis()));
 
     glm::mat4 parent_matrix(1.0f);
     if (const auto& parent = parent_.lock())
@@ -180,5 +170,5 @@ void UIElement::update_matrix_child(const glm::mat4& parent_matrix)
         child->update_matrix_child(trans_rot_matrix_stacked_);
     }
 
-    trans_rot_size_matrix_ = scale(trans_rot_matrix_stacked_, cast_object<glm::vec3>(get_render_scale()));
+    trans_rot_size_matrix_ = scale(trans_rot_matrix_stacked_, cast_object<glm::vec3>(size_));
 }

@@ -1,8 +1,8 @@
 #version 450
 
-layout(location=000) uniform mat4 instance_MVP[100];
-layout(location=100) uniform vec4 instance_uv[100];
-layout(location=200) uniform vec4 instance_color[100];
+layout(location=000) uniform mat4 instance_MVP[146];
+layout(location=146) uniform vec4 instance_uv[146];
+layout(location=292) uniform vec4 instance_color[146];
 
 const struct Vertex {
     vec2 pos;

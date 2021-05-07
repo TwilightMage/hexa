@@ -9,15 +9,17 @@ class Image;
 class Panel : public UIElement
 {
 public:
-    Panel(const Margins& texture_offsets = Margins());
-    
+    Panel(const Shared<Texture>& texture, const Margins& texture_offsets = Margins());
+
+    void use_texture(const Shared<Texture>& texture);
+
 protected:
     void on_construct() override;
     void on_size_changed() override;
 
 private:
-    void update_local_geometry() const;
-    void update_texture(const Shared<Texture>& texture);
+    void update_geometry() const;
+    void update_texture() const;
     
     Margins margins_;
 

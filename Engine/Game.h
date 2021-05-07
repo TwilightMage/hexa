@@ -47,7 +47,6 @@ EXTERN class EXPORT Game
     friend Mesh;
     friend Texture;
     friend Entity;
-    friend Image;
     
 public:
     Game(int argc, char* argv[]);
@@ -87,6 +86,7 @@ public:
     static void unlock_mouse();
     static void hide_mouse();
     static void show_mouse();
+    static void add_ui(const Weak<UIElement>& ui);
 
     static void dump_texture_usage();
 
@@ -115,6 +115,7 @@ private:
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
     static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
     static void cursor_position_callback(GLFWwindow* window, double x_pos, double y_pos);
+    static void window_size_callback(GLFWwindow* window, int width, int height);
 
     static Game* instance_;
 

@@ -27,19 +27,9 @@ Shared<Texture> Image::get_texture() const
     return texture_;
 }
 
-Vector3 Image::get_position() const
+glm::mat4 Image::get_matrix() const
 {
-    return get_render_position();
-}
-
-Quaternion Image::get_rotation() const
-{
-    return get_render_rotation();
-}
-
-Vector3 Image::get_scale() const
-{
-    return get_render_scale();
+    return get_ui_matrix();
 }
 
 Quaternion Image::get_uv_rect() const

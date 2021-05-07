@@ -157,6 +157,11 @@ Shared<Texture> Entity::get_texture() const
     return texture_;
 }
 
+glm::mat4 Entity::get_matrix() const
+{
+    return cached_matrix_;
+}
+
 Vector3 Entity::get_position() const
 {
     if (rigid_body_)
@@ -182,6 +187,8 @@ void Entity::set_position(const Vector3& pos)
     {
         position_ = pos;
     }
+
+    cache_matrix();
 }
 
 Quaternion Entity::get_rotation() const
@@ -209,11 +216,20 @@ void Entity::set_rotation(const Quaternion& rot)
     {
         rotation_ = rot;
     }
+
+    cache_matrix();
 }
 
 Vector3 Entity::get_scale() const
 {
     return scale_;
+}
+
+void Entity::set_scale(const Vector3& scale)
+{
+    scale_ = scale;
+
+    cache_matrix();
 }
 
 void Entity::use_sphere_collision(float radius, const Vector3& offset)
@@ -237,9 +253,19 @@ bool Entity::is_rigid_body()
     return false;
 }
 
+void Entity::cache_matrix()
+{
+    cached_matrix_ = glm::mat4(1.0f);
+    
+    cached_matrix_ = translate(cached_matrix_, cast_object<glm::vec3>(position_));
+    cached_matrix_ = rotate(cached_matrix_, rotation_.axis_angle(), cast_object<glm::vec3>(rotation_.axis()));
+    cached_matrix_ = scale(cached_matrix_, cast_object<glm::vec3>(scale_));
+}
+
 void Entity::start()
 {
     started_ = true;
+    cache_matrix();
     on_start();
 }
 

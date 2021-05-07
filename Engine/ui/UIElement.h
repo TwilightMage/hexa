@@ -6,28 +6,29 @@
 #include "Engine/Quaternion.h"
 #include "Engine/Vector3.h"
 
+class Game;
+
 EXTERN class EXPORT UIElement : public std::enable_shared_from_this<UIElement>
 {
+    friend Game;
+    
 public:
     UIElement();
     
-    Vector3 get_render_position() const; // for derived IRenderable
-    void set_position(const Vector2& vec2pos);
+    void set_position(const Vector2& vec2_pos);
     void set_z(float z);
-    void set_position(const Vector3& vec3pos);
-    Quaternion get_render_rotation() const; // for derived IRenderable
+    void set_position(const Vector3& vec3_pos);
     float get_rotation_angle() const;
     void set_rotation(float angle);
-    Vector3 get_render_scale() const; // for derived IRenderable
     Vector2 get_size() const;
-    void set_size(const Vector2& vec2size);
+    void set_size(const Vector2& vec2_size);
+    const glm::mat4& get_ui_matrix() const;
 
     void add_child(const Weak<UIElement>& child);
     void remove_from_parent();
 
-    const glm::mat4& get_matrix() const;
-
     bool should_render() const;
+    bool is_constructed() const;
 
 protected:
     virtual void on_register_render();
@@ -43,7 +44,7 @@ private:
     
     Vector3 position_;
     Quaternion rotation_;
-    Vector3 scale_;
+    Vector3 size_;
     List<Shared<UIElement>> children_;
     Weak<UIElement> parent_;
     glm::mat4 trans_rot_matrix_;

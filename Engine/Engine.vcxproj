@@ -491,6 +491,8 @@
     <Content Include="resources\engine\meshes\monkey.obj" />
     <Content Include="resources\engine\meshes\sphere.obj" />
     <Content Include="resources\engine\meshes\square.obj" />
+    <Content Include="resources\engine\shaders\basic_font.frag" />
+    <Content Include="resources\engine\shaders\basic_font.vert" />
     <Content Include="resources\engine\shaders\basic_ui.frag" />
     <Content Include="resources\engine\shaders\basic_ui.vert" />
     <Content Include="resources\engine\shaders\basic.frag" />

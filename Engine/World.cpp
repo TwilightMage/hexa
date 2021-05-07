@@ -66,7 +66,7 @@ void World::spawn_entity(const Weak<Entity>& entity)
         }
         
         entities_.Add(entity_ptr);
-        entity_ptr->on_start();
+        entity_ptr->start();
 
         if (entity_ptr->get_mesh() && entity_ptr->get_shader())
         {

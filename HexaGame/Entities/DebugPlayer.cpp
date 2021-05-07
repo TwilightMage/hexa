@@ -29,7 +29,7 @@ void DebugPlayer::on_start()
         }
         
         arrows_ = MakeShared<MeshEntity>(arrows_mesh);
-        arrows_->scale_ = Vector3(0.1f);
+        arrows_->set_scale(Vector3(0.1f));
         world_ptr->spawn_entity(arrows_);
     }
 }

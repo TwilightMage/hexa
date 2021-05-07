@@ -10,10 +10,10 @@ public:
     Renderer();
     ~Renderer();
     
-    void register_object(const Weak<IRenderable>& renderable) const override;
-    void unregister_object(const Weak<IRenderable>& renderable) const override;
-    void change_object_mesh(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh) override;
-    void change_object_shader(const Weak<IRenderable>& renderable, const Weak<Shader>& old_shader) override;
+    bool register_object(const Weak<IRenderable>& renderable) const override;
+    bool unregister_object(const Weak<IRenderable>& renderable) const override;
+    bool change_object_mesh(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh) override;
+    bool change_object_shader(const Weak<IRenderable>& renderable, const Weak<Shader>& old_shader) override;
 
     std::map<Texture*, uint> dump_texture_usage() const override;
     

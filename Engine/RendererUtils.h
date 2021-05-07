@@ -34,19 +34,6 @@
 *       +--bottle_1
 */
 
-FORCEINLINE glm::mat4 get_model_matrix(const IRenderable& renderable)
-{
-    glm::mat4 model = glm::mat4(1.0f);
-    
-    model = translate(model, cast_object<glm::vec3>(renderable.get_position()));
-
-    model = rotate(model, renderable.get_rotation().axis_angle(), cast_object<glm::vec3>(renderable.get_rotation().axis()));
-            				
-    model = scale(model, cast_object<glm::vec3>(renderable.get_scale()));
-
-    return model;
-}
-
 template<typename T>
 FORCEINLINE T* extract_gl_buffer(uint buffer, uint buffer_type, int& buffer_size, int add_size = 0)
 {
@@ -163,6 +150,15 @@ struct simple_map
         return entries[entries.length() - 1];
     }
 
+    entry* try_get_entry(const K& key)
+    {
+        for (auto& entry : entries)
+        {
+            if (entry.key == key) return &entry;
+        }
+        return nullptr;
+    }
+
     entry& last()
     {
         return entries[entries.length() - 1];
@@ -220,7 +216,7 @@ struct render_database : simple_map<Shared<Shader>, shader_render_data<T>> // me
     using simple_map<Shared<Shader>, shader_render_data<T>>::have_key;
     using simple_map<Shared<Shader>, shader_render_data<T>>::remove_key;
     
-    void register_object(const Weak<T>& renderable)
+    bool register_object(const Weak<T>& renderable)
     {
         if (const auto renderable_ptr = renderable.lock())
         {
@@ -233,13 +229,15 @@ struct render_database : simple_map<Shared<Shader>, shader_render_data<T>> // me
                         operator[](shader_ptr) = shader_render_data<T>(shader_ptr.get());
                     }
 
-                    register_object_to_mesh(renderable_ptr, shader_ptr, mesh_ptr);
+                    return register_object_to_mesh(renderable_ptr, shader_ptr, mesh_ptr);
                 }
             }
         }
+
+        return false;
     }
 
-    void unregister_object(const Weak<T>& renderable)
+    bool unregister_object(const Weak<T>& renderable)
     {
         if (const auto renderable_ptr = renderable.lock())
         {
@@ -249,18 +247,23 @@ struct render_database : simple_map<Shared<Shader>, shader_render_data<T>> // me
                 {
                     if (have_key(shader_ptr))
                     {
-                        unregister_object_from_mesh(renderable_ptr, shader_ptr, mesh_ptr);
-                        
-                        auto& shader_meshes = operator[](shader_ptr);
-                        if (shader_meshes.size() == 0)
+                        if (unregister_object_from_mesh(renderable_ptr, shader_ptr, mesh_ptr))
                         {
-                            shader_meshes.cleanup();
-                            remove_key(shader_ptr);
+                            auto& shader_meshes = operator[](shader_ptr);
+                            if (shader_meshes.size() == 0)
+                            {
+                                shader_meshes.cleanup();
+                                remove_key(shader_ptr);
+                            }
+
+                            return true;
                         }
                     }
                 }
             }
         }
+
+        return false;
     }
 
     std::map<Texture*, uint> dump_texture_usage() const
@@ -290,7 +293,7 @@ struct render_database : simple_map<Shared<Shader>, shader_render_data<T>> // me
         clear();
     }
 
-    void change_object_mesh(const Weak<T> renderable, const Weak<Mesh>& old_mesh)
+    bool change_object_mesh(const Weak<T> renderable, const Weak<Mesh>& old_mesh)
     {
         if (const auto renderable_ptr = renderable.lock())
         {
@@ -304,17 +307,18 @@ struct render_database : simple_map<Shared<Shader>, shader_render_data<T>> // me
                         {
                             if (mesh_ptr != old_mesh_ptr)
                             {
-                                unregister_object_from_mesh(renderable_ptr, shader_ptr, old_mesh_ptr);
-                                register_object_to_mesh(renderable_ptr, shader_ptr, mesh_ptr);
+                                return unregister_object_from_mesh(renderable_ptr, shader_ptr, old_mesh_ptr) && register_object_to_mesh(renderable_ptr, shader_ptr, mesh_ptr);
                             }
                         }
                     }
                 }
             }
         }
+
+        return false;
     }
 
-    void change_object_shader(const Weak<T> renderable, const Weak<Shader> old_shader)
+    bool change_object_shader(const Weak<T> renderable, const Weak<Shader> old_shader)
     {
         if (const auto renderable_ptr = renderable.lock())
         {
@@ -339,14 +343,16 @@ struct render_database : simple_map<Shared<Shader>, shader_render_data<T>> // me
                         operator[](shader_ptr) = shader_render_data<T>(shader_ptr.get());
                     }
 
-                    register_object_to_mesh(renderable_ptr, shader_ptr, mesh_ptr);
+                    return register_object_to_mesh(renderable_ptr, shader_ptr, mesh_ptr);
                 }
             }
         }
+
+        return false;
     }
 
 private:
-    void register_object_to_mesh(const Shared<T>& renderable_ptr, const Shared<Shader>& shader_ptr, const Shared<Mesh>& mesh_ptr)
+    bool register_object_to_mesh(const Shared<T>& renderable_ptr, const Shared<Shader>& shader_ptr, const Shared<Mesh>& mesh_ptr)
     {
         auto& shader_meshes = operator[](shader_ptr);
         
@@ -381,30 +387,44 @@ private:
         }
 
         auto& mesh_objects = shader_meshes[mesh_ptr];
+
+        if (mesh_objects.Contains(renderable_ptr)) return false;
+
         mesh_objects.Add(renderable_ptr);
+        return true;
     }
 
-    void unregister_object_from_mesh(const Shared<T>& renderable_ptr, const Shared<Shader>& shader_ptr, const Shared<Mesh>& mesh_ptr)
+    bool unregister_object_from_mesh(const Shared<T>& renderable_ptr, const Shared<Shader>& shader_ptr, const Shared<Mesh>& mesh_ptr)
     {
         auto& shader_meshes = operator[](shader_ptr);
 
-        auto& mesh_objects = shader_meshes[mesh_ptr];
-        mesh_objects.Remove(renderable_ptr);
-        if (mesh_objects.length() == 0)
+        if (auto mesh_objects = shader_meshes.try_get_entry(mesh_ptr))
         {
-            int vertex_buffer_size;
-            Mesh::vertex* vertex_buffer = extract_gl_buffer<Mesh::vertex>(shader_meshes.gl_vertex_buffer_id, GL_ARRAY_BUFFER, vertex_buffer_size);
+            const auto index = mesh_objects->value.IndexOf(renderable_ptr);
+            if (index > -1)
+            {
+                mesh_objects->value.RemoveAt(index);
+                if (mesh_objects->value.length() == 0)
+                {
+                    int vertex_buffer_size;
+                    Mesh::vertex* vertex_buffer = extract_gl_buffer<Mesh::vertex>(shader_meshes.gl_vertex_buffer_id, GL_ARRAY_BUFFER, vertex_buffer_size);
 
-            memcpy(vertex_buffer + mesh_objects.vertex_buffer_offset, vertex_buffer + mesh_objects.vertex_buffer_offset + mesh_objects.size_in_vertex_buffer, sizeof(Mesh::vertex) * (vertex_buffer_size - mesh_objects.vertex_buffer_offset - mesh_objects.size_in_vertex_buffer));
+                    memcpy(vertex_buffer + mesh_objects->value.vertex_buffer_offset, vertex_buffer + mesh_objects->value.vertex_buffer_offset + mesh_objects->value.size_in_vertex_buffer, sizeof(Mesh::vertex) * (vertex_buffer_size - mesh_objects->value.vertex_buffer_offset - mesh_objects->value.size_in_vertex_buffer));
 
-            glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.gl_vertex_buffer_id);
-            // save updated buffer
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Mesh::vertex) * vertex_buffer_size - mesh_objects.size_in_vertex_buffer, vertex_buffer, GL_STATIC_DRAW);
-            glBindBuffer(GL_ARRAY_BUFFER, 0);
+                    glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.gl_vertex_buffer_id);
+                    // save updated buffer
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(Mesh::vertex) * vertex_buffer_size - mesh_objects->value.size_in_vertex_buffer, vertex_buffer, GL_STATIC_DRAW);
+                    glBindBuffer(GL_ARRAY_BUFFER, 0);
 
-            delete vertex_buffer;
+                    delete vertex_buffer;
 
-            shader_meshes.remove_key(mesh_ptr);
+                    shader_meshes.remove_key(mesh_ptr);
+                }
+
+                return true;
+            }
         }
+
+        return false;
     }
 };

@@ -18,7 +18,8 @@
 #include "Vector2.h"
 #include "Version.h"
 
-
+class UIElement;
+class Image;
 class Mod;
 class Camera;
 class GLFWwindow;
@@ -46,6 +47,7 @@ EXTERN class EXPORT Game
     friend Mesh;
     friend Texture;
     friend Entity;
+    friend Image;
     
 public:
     Game(int argc, char* argv[]);
@@ -69,7 +71,11 @@ public:
     static bool is_app_path_set();
     static const Path& get_app_path();
 
+    static void use_renderer(const Weak<Renderer>& renderer);
+    static void use_ui_renderer(const Weak<Renderer>& ui_renderer);
+
     static Shared<Shader> get_basic_shader();
+    static Shared<Shader> get_basic_ui_shader();
     static Shared<Texture> get_white_pixel();
 
     static uint get_screen_width();
@@ -84,6 +90,12 @@ public:
 
     static void dump_texture_usage();
 
+    static bool is_loading_stage();
+    static bool is_render_stage();
+
+    static void register_ui_element(const Weak<UIElement>& element);
+    static void unregister_ui_element(const Weak<UIElement>& element);
+    
 protected:
     virtual void init_game_info(GameInfo& out_info) = 0;
     virtual void start();
@@ -135,6 +147,7 @@ private:
     Version game_version_ = {0, 1, 0};
     Unique<EventBus> event_bus_;
     Shared<Shader> basic_shader_;
+    Shared<Shader> basic_ui_shader_;
     Shared<Texture> white_pixel_;
     List<Shared<Mod>> mods_;
     
@@ -144,8 +157,13 @@ private:
     Shared<World> world_;
 
     // Core
-    Unique<Renderer> renderer_;
+    Unique<IRenderer> renderer_;
+    Unique<IRenderer> ui_renderer_;
     Shared<reactphysics3d::PhysicsCommon> physics_;
+    Shared<UIElement> ui_root_;
+
+    bool is_loading_stage_;
+    bool is_render_stage_;
 };
 
 template<typename... Args>

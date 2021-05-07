@@ -31,9 +31,7 @@ public:
     void use_mesh(const Weak<class Mesh>& new_mesh);
     void clear_mesh();
     void use_shader(const Weak<Shader>& new_shader);
-    void clear_shader();
     void use_texture(const Weak<Texture>& new_texture);
-    void clear_texture();
     Shared<Mesh> get_mesh() const override;
     Shared<Shader> get_shader() const override;
     Shared<Texture> get_texture() const override;

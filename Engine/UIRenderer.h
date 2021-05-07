@@ -4,25 +4,22 @@
 #include "IRenderer.h"
 #include "RendererUtils.h"
 
-EXTERN class EXPORT Renderer : public IRenderer
+class Image;
+
+EXTERN class EXPORT UIRenderer : public IRenderer
 {
 public:
-    Renderer();
-    ~Renderer();
+    UIRenderer();
+    ~UIRenderer();
     
     void register_object(const Weak<IRenderable>& renderable) const override;
     void unregister_object(const Weak<IRenderable>& renderable) const override;
     void change_object_mesh(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh) override;
     void change_object_shader(const Weak<IRenderable>& renderable, const Weak<Shader>& old_shader) override;
-
     std::map<Texture*, uint> dump_texture_usage() const override;
-    
     void render(const glm::mat4& view_projection_matrix) const override;
     void cleanup() const override;
 
-protected:
-    virtual void put_params_for_intances(const glm::mat4& view_projection_matrix, const Shared<IRenderable>* objects, uint instance_count) const;
-
 private:
-    render_database<IRenderable>* database_ = nullptr;
+    render_database<Image>* database_ = nullptr;
 };

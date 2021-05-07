@@ -110,32 +110,12 @@ void Entity::clear_mesh()
 
 void Entity::use_shader(const Weak<Shader>& new_shader)
 {
-    const auto old = shader_;
-    if (const auto shader_ptr = new_shader.lock())
+    const auto shader_to_set = new_shader.expired() ? Game::get_basic_shader() : new_shader.lock();
+    if (shader_ != shader_to_set)
     {
-        shader_ = shader_ptr;
-    }
-    else
-    {
-        shader_ = Game::get_basic_shader();
-    }
-
-    if (shader_ != old)
-    {
-        if (auto world_ptr = world_.lock())
-        {
-            world_ptr->notify_renderable_shader_updated(weak_from_this(), old);
-        }
-    }
-}
-
-void Entity::clear_shader()
-{
-    const auto old = shader_;
-    shader_ = Game::get_basic_shader();
-
-    if (shader_ != old)
-    {
+        const auto old = shader_;
+        shader_ = shader_to_set;
+        
         if (auto world_ptr = world_.lock())
         {
             world_ptr->notify_renderable_shader_updated(weak_from_this(), old);
@@ -145,37 +125,16 @@ void Entity::clear_shader()
 
 void Entity::use_texture(const Weak<Texture>& new_texture)
 {
-    if (const auto texture_ptr = new_texture.lock())
+    const auto texture_to_set = new_texture.expired() ? Game::get_white_pixel() : new_texture.lock();
+    if (texture_ != texture_to_set)
     {
         if (should_use_texture())
         {
             texture_->usage_count_decrease();
         }
         
-        texture_ = texture_ptr;
-
-        if (should_use_texture())
-        {
-            texture_->usage_count_increase();
-        }
-    }
-    else
-    {
-        clear_texture();
-    }
-}
-
-void Entity::clear_texture()
-{
-    if (texture_ != Game::get_white_pixel())
-    {
-        if (should_use_texture())
-        {
-            texture_->usage_count_decrease();
-        }
+        texture_ = texture_to_set;
         
-        texture_ = Game::get_white_pixel();
-
         if (should_use_texture())
         {
             texture_->usage_count_increase();

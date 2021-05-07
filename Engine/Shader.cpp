@@ -8,7 +8,7 @@ uint Shader::get_program() const
     return program_;
 }
 
-const struct Shader::meta& Shader::get_meta() const
+const struct Shader::Meta& Shader::get_meta() const
 {
     return shader_meta_;
 }
@@ -57,7 +57,7 @@ void Shader::cleanup()
     glDeleteProgram(program_);
 }
 
-Shared<Shader> Shader::compile(const Path& path, const meta& shader_meta, int type_flags)
+Shared<Shader> Shader::compile(const Path& path, const Meta& shader_meta, int type_flags)
 {
     if (type_flags != 0)
     {
@@ -99,7 +99,7 @@ Shared<Shader> Shader::compile(const Path& path, const meta& shader_meta, int ty
             {
                 glDeleteShader(kvp.second);
             }
-            print_error("Shader", "Unable to compile shader program %s because of problems with shaders: %s", path.get_absolute().to_string().c(), StringJoin(problem_shaders, ", ").c());
+            print_error("Shader", "Unable to compile shader program %s because of problems with shaders: %s", path.get_absolute_string().c(), StringJoin(problem_shaders, ", ").c());
         }
         else
         {
@@ -112,6 +112,8 @@ Shared<Shader> Shader::compile(const Path& path, const meta& shader_meta, int ty
                 glAttachShader(result->program_, kvp.second);
             }
 
+            verbose("Shader", "Compiled shader %s", path.get_absolute_string().c());
+            
             return result;
         }
     }

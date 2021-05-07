@@ -78,6 +78,16 @@ uint64 Texture::get_handle_arb() const
     return handle_arb_;
 }
 
+uint Texture::get_width() const
+{
+    return width_;
+}
+
+uint Texture::get_height() const
+{
+    return height_;
+}
+
 void Texture::usage_count_increase()
 {
     usage_counter_[this]++;

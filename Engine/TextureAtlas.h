@@ -60,6 +60,4 @@ private:
     int cell_height_;
 
     static int max_size_;
-    static bool is_loading_stage_;
-    static bool is_render_stage_;
 };

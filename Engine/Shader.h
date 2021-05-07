@@ -10,9 +10,9 @@
 EXTERN class EXPORT Shader
 {
 public:
-    struct meta
+    struct Meta
     {
-        struct vertex_param
+        struct VertexParam
         {
             String name;
             uint offset;
@@ -21,16 +21,20 @@ public:
             uint id;
         };
 
-        struct uniform_param
+        struct UniformParam
         {
             String name;
             uint id;
         };
 
         uint vertex_param_size;
-        List<vertex_param> vertex_params;
+        List<VertexParam> vertex_params;
 
-        List<uniform_param> uniform_params;
+        List<UniformParam> uniform_params;
+
+        uint instance_count = 1;
+
+        bool transparency = false;
     };
 
     enum type
@@ -43,7 +47,7 @@ public:
     };
 
     uint get_program() const;
-    const meta& get_meta() const;
+    const Meta& get_meta() const;
 
     const String& get_name() const;
 
@@ -51,7 +55,7 @@ public:
 
     void cleanup();
     
-    static Shared<Shader> compile(const Path& path, const meta& shader_meta, int type_flags);
+    static Shared<Shader> compile(const Path& path, const Meta& shader_meta, int type_flags);
 
 private:
     struct type_meta
@@ -70,7 +74,7 @@ private:
     static uint compile_shader(const Path& path, type shader_type);
 
     uint program_ = 0;
-    meta shader_meta_ = {};
+    Meta shader_meta_ = {};
     std::map<type, uint> shaders_;
     String name;
 };

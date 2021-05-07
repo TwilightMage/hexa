@@ -6,20 +6,7 @@
 #include "Game.h"
 #include "GeometryEditor.h"
 
-struct Triangle
-{
-    int a, b, c;
-};
-
-struct Vec3
-{
-    float x, y, z;
-};
-
-struct Vec2
-{
-    float x, y;
-};
+Shared<Mesh> Mesh::empty = MakeShared<Mesh>("Empty Mesh");
 
 Mesh::Mesh(const String& name)
     : Object(name)

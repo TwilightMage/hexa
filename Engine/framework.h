@@ -88,15 +88,15 @@ FORCEINLINE To* cast(From* obj)
 }
 
 template<typename To, typename From>
-FORCEINLINE To* cast(Shared<From>& obj)
+FORCEINLINE Shared<To> cast(const Shared<From>& obj)
 {
-	return dynamic_cast<To*>(obj.get());
+	return std::dynamic_pointer_cast<To>(obj);
 }
 
 template<typename To, typename From>
-FORCEINLINE To* cast(Unique<From>& obj)
+FORCEINLINE Shared<To> cast(const Weak<From>& obj)
 {
-	return dynamic_cast<To*>(obj.get());
+	return std::dynamic_pointer_cast<To>(obj.lock());
 }
 
 template<typename To, typename From>

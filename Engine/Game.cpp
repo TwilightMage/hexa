@@ -1,8 +1,8 @@
 ﻿#include "Game.h"
 
 #define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
 #include <glm/gtc/type_ptr.hpp>
 #include <glm/gtx/quaternion.hpp>
 #include <reactphysics3d/reactphysics3d.h>
@@ -18,7 +18,10 @@
 #include "Renderer.h"
 #include "Shader.h"
 #include "TextureAtlas.h"
+#include "UIRenderer.h"
 #include "World.h"
+#include "ui/Image.h"
+#include "ui/Panel.h"
 
 Game* Game::instance_ = nullptr;
 
@@ -26,7 +29,9 @@ Game::Game(int argc, char* argv[])
     : log_stream_(DateTime::now(), argv[0])
 	, event_bus_(new EventBus())
 	, renderer_(new Renderer)
-	, physics_(new reactphysics3d::PhysicsCommon())
+	, ui_renderer_(new UIRenderer)
+	, physics_(new reactphysics3d::PhysicsCommon)
+	, ui_root_(new UIElement)
 {
 	if (instance_)
 	{
@@ -133,9 +138,36 @@ const Path& Game::get_app_path()
 	return instance_->app_path_;
 }
 
+void Game::use_renderer(const Weak<Renderer>& renderer)
+{
+	if (instance_->is_loading_stage_)
+	{
+		if (const auto& renderer_ptr = renderer.lock())
+		{
+			instance_->renderer_.reset(renderer_ptr.get());
+		}
+	}
+}
+
+void Game::use_ui_renderer(const Weak<Renderer>& ui_renderer)
+{
+	if (instance_->is_loading_stage_)
+	{
+		if (const auto& ui_renderer_ptr = ui_renderer.lock())
+		{
+			instance_->ui_renderer_.reset(ui_renderer_ptr.get());
+		}
+	}
+}
+
 Shared<Shader> Game::get_basic_shader()
 {
 	return instance_->basic_shader_;
+}
+
+Shared<Shader> Game::get_basic_ui_shader()
+{
+	return instance_->basic_ui_shader_;
 }
 
 Shared<Texture> Game::get_white_pixel()
@@ -192,6 +224,26 @@ void Game::dump_texture_usage()
 		result.Add(StringFormat("[%s]: %i", kvp.first->get_name().c(), kvp.second));
 	}
 	print_debug("Texture", "Usage dump:\n%s", StringJoin(result, '\n').c());
+}
+
+bool Game::is_loading_stage()
+{
+	return instance_->is_loading_stage_;
+}
+
+bool Game::is_render_stage()
+{
+	return instance_->is_render_stage_;
+}
+
+void Game::register_ui_element(const Weak<UIElement>& element)
+{
+	instance_->ui_renderer_->register_object(cast<IRenderable>(element));
+}
+
+void Game::unregister_ui_element(const Weak<UIElement>& element)
+{
+	instance_->ui_renderer_->unregister_object(cast<IRenderable>(element));
 }
 
 void Game::start()
@@ -271,34 +323,23 @@ void Game::render_loop()
 
 	// LOADING STAGE
 	verbose("Game", "Loading stage...");
-	TextureAtlas::is_loading_stage_ = true;
-	
-	// Load tile atlas
-	TextureAtlas ta = TextureAtlas("Tile Atlas", 60, 45);
-	ta.put("resources/hexagame/textures/tiles/dirt.png");
-	ta.put("resources/hexagame/textures/tiles/grass.png");
-	ta.put("resources/hexagame/textures/tiles/iron_ore.png");
-	ta.put("resources/hexagame/textures/tiles/sand.png");
-	ta.put("resources/hexagame/textures/tiles/stone.png");
-	ta.put("resources/hexagame/textures/tiles/stone_bricks.png");
-	
-	ta.generate_buffers();
+	is_loading_stage_ = true;
 
 	// Load shaders
-	Shader::meta basic_shader_meta;
+	Shader::Meta basic_shader_meta;
 	basic_shader_meta.vertex_param_size = sizeof(Mesh::vertex);
 	basic_shader_meta.vertex_params = {
 		{"vPos", 0, 3, GL_FLOAT},
 		{"vUV", sizeof(float) * 3, 2, GL_FLOAT},
 		{"vCol", sizeof(float) * 5, 3, GL_FLOAT}
 	};
-	basic_shader_meta.uniform_params = {
-		{"MVPs"},
-		{"atlasIDs"},
-		{"atlasOffsets"},
-		{"atlasScales"}
-	};
-	basic_shader_ = Shader::compile(Path("resources/engine/shaders/basic"), basic_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
+	basic_shader_meta.instance_count = 230;
+	basic_shader_ = Shader::compile("resources/engine/shaders/basic", basic_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
+
+	Shader::Meta basic_ui_shader_meta;
+	basic_shader_meta.instance_count = 146;
+	basic_ui_shader_meta.transparency = true;
+	basic_ui_shader_ = Shader::compile("resources/engine/shaders/basic_ui", basic_ui_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
 
 	white_pixel_ = MakeShared<Texture>("White Pixel", 1, 1, List<Color>::of(Color::white));
 	
@@ -317,7 +358,7 @@ void Game::render_loop()
 		}
 	}
 	
-	TextureAtlas::is_loading_stage_ = false;
+	is_loading_stage_ = false;
 
 	// Call load stage in mods
 	verbose("Game", "Post-loading stage...");
@@ -340,6 +381,67 @@ void Game::render_loop()
 
 	float last_delta_time = 0.0f;
 
+	/*auto image1 = MakeShared<Image>();
+	image1->get_texture()->usage_count_increase();
+	image1->use_texture(Texture::load_png("resources/hexagame/textures/ui/panel.png"));
+	image1->set_position(Vector2(0.0f, 0.0f));
+	image1->set_size(Vector2(32.0f, 32.0f));
+	image1->set_rect(Rect(0, 0, 8, 8));
+	ui_root_->add_child(image1);
+
+	auto image2 = MakeShared<Image>();
+	image2->get_texture()->usage_count_increase();
+	image2->use_texture(Texture::load_png("resources/hexagame/textures/ui/panel.png"));
+	image2->set_position(Vector2(32.0f, 0.0f));
+	image2->set_size(Vector2(32.0f * 3, 32.0f));
+	image2->set_rect(Rect(8, 0, 8, 8));
+	ui_root_->add_child(image2);
+	
+	auto image3 = MakeShared<Image>();
+	image3->get_texture()->usage_count_increase();
+	image3->use_texture(Texture::load_png("resources/hexagame/textures/ui/panel.png"));
+	image3->set_position(Vector2(32.0f * 4, 0.0f));
+	image3->set_size(Vector2(32.0f, 32.0f));
+	image3->set_rect(Rect(16, 0, 8, 8));
+	ui_root_->add_child(image3);
+
+	auto image4 = MakeShared<Image>();
+	image4->get_texture()->usage_count_increase();
+	image4->use_texture(Texture::load_png("resources/hexagame/textures/ui/panel.png"));
+	image4->set_position(Vector2(0.0f, 32.0f));
+	image4->set_size(Vector2(32.0f, 32.0f));
+	image4->set_rect(Rect(0, 16, 8, 8));
+	ui_root_->add_child(image4);
+
+	auto image5 = MakeShared<Image>();
+	image5->get_texture()->usage_count_increase();
+	image5->use_texture(Texture::load_png("resources/hexagame/textures/ui/panel.png"));
+	image5->set_position(Vector2(32.0f, 32.0f));
+	image5->set_size(Vector2(32.0f * 3, 32.0f));
+	image5->set_rect(Rect(8, 16, 8, 8));
+	ui_root_->add_child(image5);
+
+	auto image6 = MakeShared<Image>();
+	image6->get_texture()->usage_count_increase();
+	image6->use_texture(Texture::load_png("resources/hexagame/textures/ui/panel.png"));
+	image6->set_position(Vector2(32.0f * 4, 32.0f));
+	image6->set_size(Vector2(32.0f, 32.0f));
+	image6->set_rect(Rect(16, 16, 8, 8));
+	ui_root_->add_child(image6);*/
+
+	dump_texture_usage();
+	
+	auto panel = MakeShared<Panel>(Margins(16, 16, 16, 16));
+	panel->set_size(Vector2(300.0f, 400.0f));
+	ui_root_->add_child(panel);
+
+	auto p2 = MakeShared<Panel>(Margins(16, 16, 16, 16));
+	p2->set_size(Vector2(100.0f, 100.0f));
+	p2->set_position(Vector3(20.0f, 20.0f, 0.1f));
+	panel->add_child(p2);
+
+	dump_texture_usage();
+	
 	verbose("Game", "Entering game-loop...");
 	while (!glfwWindowShouldClose(window_))
 	{
@@ -369,8 +471,11 @@ void Game::render_loop()
 			{
 				tick(last_delta_time);
 				world_->tick(last_delta_time);
+
+				panel->set_position(mouse_pos_);
 			}
 
+			// 3d matrix
 			glm::vec3 cam_from = cast_object<glm::vec3>(current_camera_->owner->get_position());
 			glm::vec3 cam_to = cast_object<glm::vec3>(current_camera_->owner->get_position() + current_camera_->owner->get_rotation().forward());
 			cam_from.y *= -1;
@@ -390,9 +495,13 @@ void Game::render_loop()
 
 			glm::mat4 vp = proj * view;
 
-			TextureAtlas::is_render_stage_ = true;
-			renderer_->render(vp, &ta);
-			TextureAtlas::is_render_stage_ = false;
+			// UI matrix
+			glm::mat4 ui_vp = glm::ortho(0.0f, (float)width, (float)-height, 0.0f, -1000.0f, 0.0001f);
+			
+			is_render_stage_ = true;
+			renderer_->render(vp);
+			ui_renderer_->render(ui_vp);
+			is_render_stage_ = false;
 		}
  
 		glfwSwapBuffers(window_);
@@ -409,6 +518,7 @@ void Game::cleanup()
 	verbose("Game", "Cleaning up...");
 	
 	renderer_->cleanup();
+	ui_renderer_->cleanup();
 
 	for (auto& shader : shaders_)
 	{

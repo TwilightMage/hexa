@@ -28,6 +28,8 @@ public:
     uint get_usage_count() const;
     bool is_empty() const;
 
+    static Shared<Mesh> empty;
+
 //private:
     List<vertex> vertices_;
     List<uint> indices_;

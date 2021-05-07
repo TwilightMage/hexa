@@ -139,7 +139,7 @@ private:
     GLFWwindow* window_;
 
     // Assets
-    List<Shared<Shader>> shaders_;
+    std::map<String, Shared<Shader>> shaders_;
     std::map<String, Shared<Mesh>> meshes_;
     std::map<String, Shared<Texture>> textures_;
 

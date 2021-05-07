@@ -59,6 +59,12 @@ void Shader::cleanup()
 
 Shared<Shader> Shader::compile(const Path& path, const Meta& shader_meta, int type_flags)
 {
+    const auto found = Game::instance_->shaders_.find(path.get_absolute_string());
+    if (found != Game::instance_->shaders_.end())
+    {
+        return found->second;
+    }
+    
     if (type_flags != 0)
     {
         const auto result = MakeShared<Shader>();
@@ -113,6 +119,8 @@ Shared<Shader> Shader::compile(const Path& path, const Meta& shader_meta, int ty
             }
 
             verbose("Shader", "Compiled shader %s", path.get_absolute_string().c());
+
+            Game::instance_->shaders_[path.get_absolute_string()] = result;
             
             return result;
         }

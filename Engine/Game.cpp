@@ -520,11 +520,20 @@ void Game::cleanup()
 	renderer_->cleanup();
 	ui_renderer_->cleanup();
 
-	for (auto& shader : shaders_)
+	for (auto& kvp : shaders_)
 	{
-		shader->cleanup();
+		kvp.second->cleanup();
 	}
-	shaders_.Clear();
+	
+	shaders_.clear();
+
+	for (auto& kvp : textures_)
+	{
+		kvp.second->cleanup();
+	}
+	textures_.clear();
+
+	meshes_.clear();
 }
 
 void Game::init_game()

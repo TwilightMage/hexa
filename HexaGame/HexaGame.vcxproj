@@ -599,6 +599,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="resources\hexagame\fonts\harrington.fnt" />
+    <Content Include="resources\hexagame\fonts\harrington_0.png" />
     <Content Include="resources\hexagame\meshes\arrow.obj" />
     <Content Include="resources\hexagame\meshes\hexagon_tile.obj" />
     <Content Include="resources\hexagame\textures\arrow.png" />

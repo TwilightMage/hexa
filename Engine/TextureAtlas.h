@@ -36,6 +36,7 @@ public:
     };
 
     uint put(const Path& path);
+    uint claim_rect(const Rect& rect);
     uint get_num_entries() const;
     List<UVMod> get_cached_mods() const;
     const Entry* get_entry(uint index) const;
@@ -45,6 +46,8 @@ public:
     void bind(uint storage_slot) const;
 
     uint get_gl_texture_id() override;
+
+    static Shared<TextureAtlas> load_png(const Path& path);
     
 private:
     void generate_buffers();

@@ -34,6 +34,11 @@ public:
 	std::vector<char> vec() const;
 	List<char> list() const;
 
+	char* begin();
+	char* end();
+	const char* begin() const;
+	const char* end() const;
+
 	uint length() const;
 	uint allocated_length() const;
 	int index_of(const String& substr) const;

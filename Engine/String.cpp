@@ -149,6 +149,26 @@ List<char> String::list() const
 	return List<char>(inner_, length_);
 }
 
+char* String::begin()
+{
+	return inner_;
+}
+
+char* String::end()
+{
+	return inner_ + length_;
+}
+
+const char* String::begin() const
+{
+	return inner_;
+}
+
+const char* String::end() const
+{
+	return inner_ + length_;
+}
+
 uint String::length() const
 {
 	return length_;

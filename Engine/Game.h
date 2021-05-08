@@ -18,6 +18,7 @@
 #include "Vector2.h"
 #include "Version.h"
 
+class SpriteFont;
 class UIElement;
 class Image;
 class Mod;
@@ -47,6 +48,7 @@ EXTERN class EXPORT Game
     friend Mesh;
     friend Texture;
     friend Entity;
+    friend UIElement;
     
 public:
     Game(int argc, char* argv[]);
@@ -76,6 +78,7 @@ public:
     static Shared<Shader> get_basic_shader();
     static Shared<Shader> get_basic_ui_shader();
     static Shared<Texture> get_white_pixel();
+    static Shared<SpriteFont> get_font_harrington();
 
     static uint get_screen_width();
     static uint get_screen_height();
@@ -92,9 +95,6 @@ public:
 
     static bool is_loading_stage();
     static bool is_render_stage();
-
-    static void register_ui_element(const Weak<UIElement>& element);
-    static void unregister_ui_element(const Weak<UIElement>& element);
     
 protected:
     virtual void init_game_info(GameInfo& out_info) = 0;
@@ -150,6 +150,7 @@ private:
     Shared<Shader> basic_shader_;
     Shared<Shader> basic_ui_shader_;
     Shared<Texture> white_pixel_;
+    Shared<SpriteFont> font_harrington_;
     List<Shared<Mod>> mods_;
     
     // Game Play

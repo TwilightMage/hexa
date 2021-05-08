@@ -1,10 +1,11 @@
 ﻿#pragma once
 
 #include "BasicTypes.h"
+#include "framework.h"
 
 class Texture;
 
-class TextureSlot
+EXTERN class EXPORT TextureSlot
 {
 public:
     TextureSlot();

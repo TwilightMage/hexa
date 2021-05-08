@@ -17,12 +17,14 @@
 #include "Quaternion.h"
 #include "Renderer.h"
 #include "Shader.h"
+#include "SpriteFont.h"
 #include "TextureAtlas.h"
 #include "TextureSlot.h"
 #include "UIRenderer.h"
 #include "World.h"
 #include "ui/Image.h"
 #include "ui/Panel.h"
+#include "ui/TextBlock.h"
 
 Game* Game::instance_ = nullptr;
 
@@ -176,6 +178,11 @@ Shared<Texture> Game::get_white_pixel()
 	return instance_->white_pixel_;
 }
 
+Shared<SpriteFont> Game::get_font_harrington()
+{
+	return instance_->font_harrington_;
+}
+
 uint Game::get_screen_width()
 {
 	return GetSystemMetrics(SM_CXSCREEN);
@@ -240,16 +247,6 @@ bool Game::is_loading_stage()
 bool Game::is_render_stage()
 {
 	return instance_->is_render_stage_;
-}
-
-void Game::register_ui_element(const Weak<UIElement>& element)
-{
-	instance_->ui_renderer_->register_object(cast<IRenderable>(element));
-}
-
-void Game::unregister_ui_element(const Weak<UIElement>& element)
-{
-	instance_->ui_renderer_->unregister_object(cast<IRenderable>(element));
 }
 
 void Game::start()
@@ -349,6 +346,8 @@ void Game::render_loop()
 	basic_ui_shader_ = Shader::compile("resources/engine/shaders/basic_ui", basic_ui_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
 
 	white_pixel_ = MakeShared<Texture>("White Pixel", 1, 1, List<Color>::of(Color::white));
+
+	font_harrington_ = SpriteFont::load_fnt("resources/hexagame/fonts/harrington.fnt");
 	
 	// Call load stage in mods
 	for (auto& mod : mods_)
@@ -391,7 +390,31 @@ void Game::render_loop()
 	auto panel = MakeShared<Panel>(Texture::load_png("resources/hexagame/textures/ui/panel.png"), Margins(16, 16, 16, 16));
 	panel->set_size(Vector2(780.0f, 190.0f));
 	panel->set_position(Vector2(10.0f, 400.0f));
-	ui_root_->add_child(panel);
+	add_ui(panel);
+
+	auto frame = MakeShared<Image>(Texture::load_png("resources/hexagame/textures/ui/frame.png"));
+	frame->set_z(0.2f);
+	frame->set_position(Vector2(20.0f, 20.0f));
+	frame->set_size(Vector2(76.0f, 76.0f) * 2.0f);
+	panel->add_child(frame);
+
+	auto avatar = MakeShared<Image>(Texture::load_png("resources/hexagame/textures/ui/dragon.png"));
+	avatar->set_z(0.1f);
+	avatar->set_position(Vector2(6.0f, 6.0f) * 2.0f);
+	avatar->set_size(Vector2(64.0f, 64.0f) * 2.0f);
+	frame->add_child(avatar);
+
+	auto text1 = MakeShared<TextBlock>("???");
+	text1->set_z(0.1f);
+	text1->set_size(Vector2(300.0f, 170.0f));
+	text1->set_position(Vector2(200.0f, 25.0f));
+	panel->add_child(text1);
+	
+	auto text2 = MakeShared<TextBlock>("Well, well, well...");
+	text2->set_z(0.1f);
+	text2->set_size(Vector2(300.0f, 170.0f));
+	text2->set_position(Vector2(190.0f, 70.0f));
+	panel->add_child(text2);
 	
 	verbose("Game", "Entering game-loop...");
 	while (!glfwWindowShouldClose(window_))
@@ -478,11 +501,7 @@ void Game::cleanup()
 	
 	shaders_.clear();
 
-	for (auto& kvp : textures_)
-	{
-		kvp.second->cleanup();
-	}
-	textures_.clear();
+	Texture::cleanup();
 
 	meshes_.clear();
 }

@@ -12,6 +12,15 @@ Image::Image()
 {
 }
 
+Image::Image(const Shared<Texture>& texture)
+    : UIElement()
+    , shader_(Game::get_basic_ui_shader())
+    , texture_(texture)
+    , have_rect_(false)
+    , uv_rect_(Quaternion(1.0f, 1.0f, 0.0f, 0.0f))
+{
+}
+
 Shared<Mesh> Image::get_mesh() const
 {
     return Mesh::empty;
@@ -82,13 +91,11 @@ void Image::use_texture(const Weak<Texture>& texture)
 
 void Image::on_register_render()
 {
-    Game::register_ui_element(weak_from_this());
     texture_.activate();
 }
 
 void Image::on_unregister_render()
 {
-    Game::unregister_ui_element(weak_from_this());
     texture_.deactivate();
 }
 

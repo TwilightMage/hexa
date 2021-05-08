@@ -10,11 +10,49 @@
 
 std::map<Texture*, uint> Texture::usage_counter_ = std::map<Texture*, uint>();
 
+Texture::Editor::Editor(const Editor& rhs)
+    : target_(rhs.target_)
+{
+    target_->edit_count_increase();
+}
+
+Texture::Editor& Texture::Editor::operator=(const Editor& rhs)
+{
+    target_ = rhs.target_;
+    target_->edit_count_increase();
+    return *this;
+}
+
+Texture::Editor::~Editor()
+{
+    target_->edit_count_--;
+}
+
+void Texture::Editor::set_pixel(uint x, uint y, const Color& color) const
+{
+    target_->pixels_[y * target_->width_ * x] = color;
+}
+
+void Texture::Editor::process_pixels(Color(* processor)(uint x, uint y, const Color&)) const
+{
+    for (uint i = 0; i < target_->pixels_.length(); i++)
+    {
+        target_->pixels_[i] = processor(i % target_->width_, i / target_->width_, target_->pixels_[i]);
+    }
+}
+
+Texture::Editor::Editor(const Shared<Texture>& target)
+    : target_(target)
+{
+    assert(target_ != nullptr);
+    target_->edit_count_increase();
+}
+
 Texture::Texture(const String& name)
     : Object(name)
     , pixels_(0)
-    , width_(0)
-    , height_(0)
+    , edit_count_(0)
+    , delayed_activation_(false)
 {
 }
 
@@ -23,6 +61,8 @@ Texture::Texture(const String& name, uint width, uint height, List<Color> pixels
     , pixels_(pixels)
     , width_(width)
     , height_(height)
+    , edit_count_(0)
+    , delayed_activation_(false)
 {
 }
 
@@ -88,9 +128,26 @@ uint Texture::get_height() const
     return height_;
 }
 
+Color Texture::get_pixel(uint x, uint y) const
+{
+    return pixels_[y * width_ + x];
+}
+
+Shared<Texture::Editor> Texture::edit()
+{
+    if (usage_count() == 0) return MakeSharedInternal(Editor, shared_from_this());
+    return nullptr;
+}
+
 const std::map<Texture*, uint>& Texture::get_usage_counter()
 {
     return usage_counter_;
+}
+
+uint Texture::usage_count() const
+{
+    const auto ptr = const_cast<Texture*>(this);
+    return usage_counter_.contains(ptr) ? usage_counter_[ptr] : 0;
 }
 
 void Texture::usage_count_increase()
@@ -115,18 +172,15 @@ void Texture::usage_count_changed()
     const auto usage_count = usage_counter_[this];
     if (usage_count > 0 && gl_texture_binding_ == 0)
     {
-        glGenTextures(1, &gl_texture_binding_);
-        glBindTexture(GL_TEXTURE_2D, gl_texture_binding_);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels_.get_data());
-        glGenerateMipmap(GL_TEXTURE_2D);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        handle_arb_ = glGetTextureHandleARB(gl_texture_binding_);
-        glMakeTextureHandleResidentARB(handle_arb_);
+        if (edit_count_ == 0)
+        {
+            activate();
+        }
+        else
+        {
+            delayed_activation_ = true;
+        }
+        
     }
     else if (usage_count == 0 && gl_texture_binding_ != 0)
     {
@@ -137,13 +191,44 @@ void Texture::usage_count_changed()
     }
 }
 
+void Texture::activate()
+{
+    glGenTextures(1, &gl_texture_binding_);
+    glBindTexture(GL_TEXTURE_2D, gl_texture_binding_);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels_.get_data());
+    glGenerateMipmap(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, 0);
+
+    handle_arb_ = glGetTextureHandleARB(gl_texture_binding_);
+    glMakeTextureHandleResidentARB(handle_arb_);
+
+    delayed_activation_ = false;
+}
+
+void Texture::edit_count_increase()
+{
+    edit_count_++;
+}
+
+void Texture::edit_count_decrease()
+{
+    edit_count_--;
+    if (edit_count_ == 0 && delayed_activation_)
+    {
+        activate();
+    }
+}
+
 void Texture::cleanup()
 {
-    auto& usage_count = usage_counter_[this];
-    usage_count = 0;
-    usage_count_changed();
-    if (usage_count == 0)
+    for (auto& usage : usage_counter_)
     {
-        usage_counter_.erase(this);
+        usage.second = 0;
+        usage.first->usage_count_changed();
     }
+    usage_counter_.clear();
 }

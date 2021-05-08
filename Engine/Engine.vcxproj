@@ -207,6 +207,7 @@
     <ClInclude Include="IRenderer.h" />
     <ClInclude Include="ITexture.h" />
     <ClInclude Include="ITickable.h" />
+    <ClInclude Include="IUsageCountable.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="LogStream.h" />
     <ClInclude Include="Margins.h" />
@@ -223,6 +224,7 @@
     <ClInclude Include="RendererUtils.h" />
     <ClInclude Include="Set.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="SpriteFont.h" />
     <ClInclude Include="String.h" />
     <ClInclude Include="TeeBuf.h" />
     <ClInclude Include="Texture.h" />
@@ -234,6 +236,7 @@
     <ClInclude Include="UIRenderer.h" />
     <ClInclude Include="ui\Image.h" />
     <ClInclude Include="ui\Panel.h" />
+    <ClInclude Include="ui\TextBlock.h" />
     <ClInclude Include="ui\UIElement.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vector2.h" />
@@ -271,6 +274,7 @@
     <ClCompile Include="Regex.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="SpriteFont.cpp" />
     <ClCompile Include="String.cpp" />
     <ClCompile Include="TeeBuf.cpp" />
     <ClCompile Include="Texture.cpp" />
@@ -411,6 +415,7 @@
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
     <ClCompile Include="ui\Panel.cpp" />
+    <ClCompile Include="ui\TextBlock.cpp" />
     <ClCompile Include="ui\UIElement.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>

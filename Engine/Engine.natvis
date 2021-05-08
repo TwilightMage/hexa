@@ -68,4 +68,22 @@
     <Type Name="Mesh::vertex">
         <DisplayString>Vertex {{ pos={pos}, uv={uv}, col={col} }}</DisplayString>
     </Type>
+
+    <Type Name="glm::vec&lt;3,float,0&gt;">
+        <DisplayString>vec3 {{ {x}, {y}, {z} }}</DisplayString>
+    </Type>
+
+    <Type Name="glm::vec&lt;4,float,0&gt;">
+        <DisplayString>vec4 {{ {x}, {y}, {z}, {w} }}</DisplayString>
+    </Type>
+
+    <Type Name="glm::mat&lt;4,4,float,0&gt;">
+        <DisplayString>mat4 {{ expand to view }}</DisplayString>
+        <Expand>
+            <Item Name="[0]" ExcludeView="simple">value[0]</Item>
+            <Item Name="[1]" ExcludeView="simple">value[1]</Item>
+            <Item Name="[2]" ExcludeView="simple">value[2]</Item>
+            <Item Name="[3]" ExcludeView="simple">value[3]</Item>
+        </Expand>
+    </Type>
 </AutoVisualizer>

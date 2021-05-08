@@ -1,5 +1,7 @@
 ﻿#include "UIElement.h"
 
+
+#include "Engine/Game.h"
 #include "Engine/Texture.h"
 
 UIElement::UIElement()
@@ -75,11 +77,19 @@ void UIElement::add_child(const Weak<UIElement>& child)
         }
         else
         {
-            child_ptr->register_render();
+            if (auto child_renderable = cast<IRenderable>(child_ptr))
+            {
+                if (Game::instance_->ui_renderer_->register_object(child_renderable))
+                {
+                    child_ptr->register_render();
+                }
+            }
         }
         
         child_ptr->parent_ = weak_from_this();
         children_.Add(child_ptr);
+
+        child_ptr->update_matrix();
 
         if (!child_ptr->constructed_)
         {
@@ -95,7 +105,13 @@ void UIElement::remove_from_parent()
     {
         parent_ptr->children_.Remove(shared_from_this());
 
-        unregister_render();
+        if (auto me_renderable = cast<IRenderable>(shared_from_this()))
+        {
+            if (Game::instance_->ui_renderer_->register_object(me_renderable))
+            {
+                register_render();
+            }
+        }
     }
 }
 
@@ -148,10 +164,11 @@ void UIElement::on_size_changed()
 void UIElement::update_matrix()
 {
     trans_rot_matrix_ = glm::mat4(1.0f);
-    
-    trans_rot_matrix_ = translate(trans_rot_matrix_, cast_object<glm::vec3>(position_));
 
-    trans_rot_matrix_ = rotate(trans_rot_matrix_, rotation_.axis_angle(), cast_object<glm::vec3>(rotation_.axis()));
+    auto a = cast_object<glm::vec3>(position_);
+    trans_rot_matrix_ = glm::translate(trans_rot_matrix_, cast_object<glm::vec3>(position_));
+
+    trans_rot_matrix_ = glm::rotate(trans_rot_matrix_, rotation_.axis_angle(), cast_object<glm::vec3>(rotation_.axis()));
 
     glm::mat4 parent_matrix(1.0f);
     if (const auto& parent = parent_.lock())

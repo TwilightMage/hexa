@@ -8,6 +8,8 @@
 #include <stb/stb_image_write.h>
 
 
+
+#include "File.h"
 #include "Game.h"
 #include "ImageEditor.h"
 
@@ -134,6 +136,20 @@ uint TextureAtlas::put(const Path& path)
     return -1;
 }
 
+uint TextureAtlas::claim_rect(const Rect& rect)
+{
+    for (const auto& entry : entries_)
+    {
+        if (rect.intersects(entry.rect))
+        {
+            return -1;
+        }
+    }
+
+    entries_.Add({rect, this});
+    return entries_.length() - 1;
+}
+
 uint TextureAtlas::get_num_entries() const
 {
     return entries_.length();
@@ -171,6 +187,45 @@ void TextureAtlas::bind(uint storage_slot) const
 uint TextureAtlas::get_gl_texture_id()
 {
     return gl_texture_binding_;
+}
+
+Shared<TextureAtlas> TextureAtlas::load_png(const Path& path)
+{
+    int tex_width, tex_height, tex_channels;
+    const auto pixels = stbi_load(path.get_absolute_string().c(), &tex_width, &tex_height, &tex_channels, STBI_rgb_alpha);
+    if (pixels)
+    {
+        if (tex_width * tex_height > 0)
+        {
+            if (tex_width == tex_height && (tex_width & (tex_width - 1)) == 0)
+            {
+                const uint size = tex_width * tex_height;
+                auto result = MakeShared<TextureAtlas>(path.get_absolute_string());
+                result->pixels_ = List(new Color[size], size);
+                memcpy(result->pixels_.get_data(), pixels, sizeof(Color) * size);
+                stbi_image_free(pixels);
+                result->size_ = tex_width;
+
+                verbose("Texture Atlas", "Loaded texture atlas %i %s", tex_width, path.get_absolute_string().c());
+            
+                return result;
+            }
+            else
+            {
+                print_error("Texture Atlas", "Texture atlas size must be power of 2 %s", path.get_absolute_string().c());
+            }
+        }
+        else
+        {
+            print_error("Texture Atlas", "Texture atlas size is invalid: %ix%i %s", tex_width, tex_height, path.get_absolute_string().c());
+        }
+    }
+    else
+    {
+        print_error("Texture Atlas", "Unknown error on loading texture %s", path.get_absolute_string().c());
+    }
+    stbi_image_free(pixels);
+    return nullptr;
 }
 
 void TextureAtlas::generate_buffers()

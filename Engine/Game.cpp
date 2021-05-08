@@ -18,6 +18,7 @@
 #include "Renderer.h"
 #include "Shader.h"
 #include "TextureAtlas.h"
+#include "TextureSlot.h"
 #include "UIRenderer.h"
 #include "World.h"
 #include "ui/Image.h"
@@ -222,7 +223,7 @@ void Game::add_ui(const Weak<UIElement>& ui)
 
 void Game::dump_texture_usage()
 {
-	const auto counter = Texture::usage_counter_;
+	const auto& counter = Texture::get_usage_counter();
 	List<String> result;
 	for (const auto& kvp : counter)
 	{
@@ -457,6 +458,8 @@ void Game::render_loop()
 
 		last_delta_time = static_cast<float>(glfwGetTime() - tick_start);
 	}
+
+	dump_texture_usage();
 
 	close_world();
 }

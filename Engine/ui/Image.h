@@ -3,6 +3,7 @@
 #include "UIElement.h"
 #include "Engine/IRenderable.h"
 #include "Engine/Rect.h"
+#include "Engine/TextureSlot.h"
 
 EXTERN class EXPORT Image : public UIElement, public IRenderable
 {
@@ -29,7 +30,7 @@ private:
     void update_uv_rect();
 
     Shared<Shader> shader_;
-    Shared<Texture> texture_;
+    TextureSlot texture_;
     Rect rect_;
     bool have_rect_;
     Quaternion uv_rect_;

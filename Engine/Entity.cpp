@@ -12,10 +12,13 @@
 
 Entity::Entity()
     : Object(typeid(this).name() + String(" entity"))
+    , cached_matrix_(glm::mat4(1.0f))
     , shader_(Game::get_basic_shader())
-    , texture_(Game::get_white_pixel())
+    , texture_(Game::get_white_pixel(), false)
     , pending_kill_(false)
     , started_(false)
+    , rigid_body_(nullptr)
+    , collider_(nullptr)
 {
 }
 
@@ -62,19 +65,13 @@ void Entity::use_mesh(const Weak<Mesh>& new_mesh)
 
     if (mesh_ != old)
     {
-        if (!old)
+        if (mesh_)
         {
-            if (should_use_texture())
-            {
-                texture_->usage_count_increase();
-            }
+            texture_.activate();
         }
         else
         {
-            if (should_use_texture())
-            {
-                texture_->usage_count_decrease();
-            }
+            texture_.deactivate();
         }
         
         if (started_)
@@ -97,10 +94,7 @@ void Entity::clear_mesh()
     const auto old_mesh = mesh_;
     mesh_ = nullptr;
 
-    if (should_use_texture())
-    {
-        texture_->usage_count_decrease();
-    }
+    texture_.deactivate();
 
     if (auto world_ptr = world_.lock())
     {
@@ -126,19 +120,9 @@ void Entity::use_shader(const Weak<Shader>& new_shader)
 void Entity::use_texture(const Weak<Texture>& new_texture)
 {
     const auto texture_to_set = new_texture.expired() ? Game::get_white_pixel() : new_texture.lock();
-    if (texture_ != texture_to_set)
+    if (*texture_ != texture_to_set)
     {
-        if (should_use_texture())
-        {
-            texture_->usage_count_decrease();
-        }
-        
         texture_ = texture_to_set;
-        
-        if (should_use_texture())
-        {
-            texture_->usage_count_increase();
-        }
     }
 }
 
@@ -154,7 +138,7 @@ Shared<Shader> Entity::get_shader() const
 
 Shared<Texture> Entity::get_texture() const
 {
-    return texture_;
+    return *texture_;
 }
 
 glm::mat4 Entity::get_matrix() const
@@ -266,10 +250,9 @@ void Entity::start()
 {
     started_ = true;
     cache_matrix();
+    if (mesh_)
+    {
+        texture_.activate();
+    }
     on_start();
-}
-
-bool Entity::should_use_texture() const
-{
-    return !world_.expired() && get_mesh();
 }

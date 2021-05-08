@@ -88,6 +88,11 @@ uint Texture::get_height() const
     return height_;
 }
 
+const std::map<Texture*, uint>& Texture::get_usage_counter()
+{
+    return usage_counter_;
+}
+
 void Texture::usage_count_increase()
 {
     usage_counter_[this]++;
@@ -134,5 +139,11 @@ void Texture::usage_count_changed()
 
 void Texture::cleanup()
 {
+    auto& usage_count = usage_counter_[this];
+    usage_count = 0;
     usage_count_changed();
+    if (usage_count == 0)
+    {
+        usage_counter_.erase(this);
+    }
 }

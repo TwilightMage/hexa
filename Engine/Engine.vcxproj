@@ -230,6 +230,7 @@
     <ClInclude Include="ITextureBinding.h" />
     <ClInclude Include="TextureAtlasBinding.h" />
     <ClInclude Include="TextureBinding.h" />
+    <ClInclude Include="TextureSlot.h" />
     <ClInclude Include="UIRenderer.h" />
     <ClInclude Include="ui\Image.h" />
     <ClInclude Include="ui\Panel.h" />
@@ -341,6 +342,7 @@
     </ClCompile>
     <ClCompile Include="TextureAtlasBinding.cpp" />
     <ClCompile Include="TextureBinding.cpp" />
+    <ClCompile Include="TextureSlot.cpp" />
     <ClCompile Include="UIRenderer.cpp" />
     <ClCompile Include="ui\Image.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>

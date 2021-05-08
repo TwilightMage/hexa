@@ -57,13 +57,6 @@ void World::spawn_entity(const Weak<Entity>& entity)
         {
             mesh->usage_count_++;
         }
-        if (entity_ptr->should_use_texture())
-        {
-            if (const auto tex = entity_ptr->get_texture())
-            {
-                tex->usage_count_increase();
-            }
-        }
         
         entities_.Add(entity_ptr);
         entity_ptr->start();
@@ -114,10 +107,6 @@ void World::tick(float delta_time)
             if (const auto mesh = entities_[i]->get_mesh())
             {
                 mesh->usage_count_--;
-            }
-            if (const auto tex = entities_[i]->get_texture())
-            {
-                tex->usage_count_decrease();
             }
             if (entities_[i]->get_mesh() && entities_[i]->get_shader())
             {
@@ -228,13 +217,6 @@ void World::on_close()
 void World::close()
 {
     on_close();
-    for (const auto& entity : entities_)
-    {
-        if (entity->should_use_texture())
-        {
-            entity->get_texture()->usage_count_decrease();
-        }
-    }
     Game::instance_->physics_->destroyPhysicsWorld(physics_world_);
     physics_world_ = nullptr;
 }

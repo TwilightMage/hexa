@@ -24,7 +24,7 @@ Shared<Shader> Image::get_shader() const
 
 Shared<Texture> Image::get_texture() const
 {
-    return texture_;
+    return *texture_;
 }
 
 glm::mat4 Image::get_matrix() const
@@ -73,17 +73,9 @@ void Image::use_shader(const Weak<Shader>& shader)
 void Image::use_texture(const Weak<Texture>& texture)
 {
     const auto new_texture = texture.expired() ? Game::get_white_pixel() : texture.lock();
-    if (texture_ != new_texture)
+    if (*texture_ != new_texture)
     {
-        if (should_render())
-        {
-            texture_->usage_count_decrease();
-        }
         texture_ = new_texture;
-        if (should_render())
-        {
-            texture_->usage_count_increase();
-        }
         update_uv_rect();
     }
 }
@@ -91,13 +83,13 @@ void Image::use_texture(const Weak<Texture>& texture)
 void Image::on_register_render()
 {
     Game::register_ui_element(weak_from_this());
-    texture_->usage_count_increase();
+    texture_.activate();
 }
 
 void Image::on_unregister_render()
 {
     Game::unregister_ui_element(weak_from_this());
-    texture_->usage_count_decrease();
+    texture_.deactivate();
 }
 
 void Image::update_uv_rect()
@@ -108,6 +100,6 @@ void Image::update_uv_rect()
     }
     else
     {
-        uv_rect_ = Quaternion(rect_.w / (float)texture_->width_, rect_.h / (float)texture_->height_, rect_.x / (float)texture_->width_, rect_.y / (float)texture_->height_);
+        uv_rect_ = Quaternion(rect_.w / static_cast<float>(texture_->get_width()), rect_.h / static_cast<float>(texture_->get_height()), rect_.x / static_cast<float>(texture_->get_width()), rect_.y / static_cast<float>(texture_->get_height()));
     }
 }

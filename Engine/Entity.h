@@ -6,6 +6,7 @@
 #include "Object.h"
 #include "Quaternion.h"
 #include "String.h"
+#include "TextureSlot.h"
 #include "Vector3.h"
 
 namespace reactphysics3d
@@ -55,7 +56,6 @@ private:
     void cache_matrix();
     
     void start();
-    bool should_use_texture() const;
 
     Vector3 position_;
     Quaternion rotation_;
@@ -65,7 +65,7 @@ private:
     Weak<World> world_;
     Shared<Mesh> mesh_;
     Shared<Shader> shader_;
-    Shared<Texture> texture_;
+    TextureSlot texture_;
     bool pending_kill_;
     bool started_;
     reactphysics3d::RigidBody* rigid_body_;

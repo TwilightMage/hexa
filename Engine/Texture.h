@@ -9,6 +9,7 @@
 #include "Object.h"
 #include "Path.h"
 
+class TextureSlot;
 class UIElement;
 class Image;
 class Game;
@@ -16,10 +17,7 @@ class Game;
 EXTERN class EXPORT Texture : public Object, public ITexture
 {
     friend Game;
-    friend Entity;
-    friend World;
-    friend Image;
-    friend UIElement;
+    friend TextureSlot;
     
 public:
     Texture(const String& name);
@@ -31,6 +29,8 @@ public:
     uint64 get_handle_arb() const;
     uint get_width() const;
     uint get_height() const;
+
+    static const std::map<Texture*, uint>& get_usage_counter();
     
 private:
     void usage_count_increase();

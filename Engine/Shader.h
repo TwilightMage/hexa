@@ -2,7 +2,6 @@
 
 #include <map>
 
-
 #include "Path.h"
 
 #include <glad/glad.h>

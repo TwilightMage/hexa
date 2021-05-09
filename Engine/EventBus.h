@@ -1,7 +1,9 @@
 ﻿#pragma once
+
 #include "BasicTypes.h"
 #include "Delegate.h"
-#include "World.h"
+
+class World;
 
 class EventBus
 {

@@ -7,11 +7,8 @@
 #include <glm/gtx/quaternion.hpp>
 #include <reactphysics3d/reactphysics3d.h>
 
-
-
 #include "Camera.h"
 #include "IControllable.h"
-#include "Math.h"
 #include "Mod.h"
 #include "Path.h"
 #include "Quaternion.h"
@@ -19,7 +16,6 @@
 #include "Shader.h"
 #include "SpriteFont.h"
 #include "TextureAtlas.h"
-#include "TextureSlot.h"
 #include "UIRenderer.h"
 #include "World.h"
 #include "ui/Image.h"
@@ -228,17 +224,6 @@ void Game::add_ui(const Weak<UIElement>& ui)
 	instance_->ui_root_->add_child(ui);
 }
 
-void Game::dump_texture_usage()
-{
-	const auto& counter = Texture::get_usage_counter();
-	List<String> result;
-	for (const auto& kvp : counter)
-	{
-		result.Add(StringFormat("[%s]: %i", kvp.first->get_name().c(), kvp.second));
-	}
-	print_debug("Texture", "Usage dump:\n%s", StringJoin(result, '\n').c());
-}
-
 bool Game::is_loading_stage()
 {
 	return instance_->is_loading_stage_;
@@ -287,16 +272,15 @@ void Game::prepare()
 void Game::render_loop()
 {
 	const String renderer(reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-	verbose("Game", "Active GPU: %s", renderer.c());
-
+	verbose("OpenGL", "Active GPU: %s", renderer.c());
 	glfwSetWindowTitle(window_, (get_info().title + " - " + renderer).c());
 	
 	const String opengl_version_string(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
-	verbose("Game", "Detected OpenGL version: %s", opengl_version_string.c());
+	verbose("OpenGL", "Detected version: %s", opengl_version_string.c());
 	const Version opengl_version = opengl_version_string.substring(0, opengl_version_string.index_of(' '));
 	if (opengl_version < Version(3, 0, 0))
 	{
-		print_error("Game", "Unsupported OpenGL version");
+		print_error("OpenGL", "Unsupported version");
 		return;
 	}
 	
@@ -482,7 +466,7 @@ void Game::render_loop()
 		last_delta_time = static_cast<float>(glfwGetTime() - tick_start);
 	}
 
-	dump_texture_usage();
+	Texture::print_usage_dump();
 
 	close_world();
 }
@@ -501,7 +485,7 @@ void Game::cleanup()
 	
 	shaders_.clear();
 
-	Texture::cleanup();
+	Texture::unload_all_static();
 
 	meshes_.clear();
 }

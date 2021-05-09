@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <string>
-
 #include "Path.h"
 #include "Version.h"
 

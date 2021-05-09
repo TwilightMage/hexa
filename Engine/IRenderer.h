@@ -1,7 +1,7 @@
 ﻿#pragma once
-#include <map>
-#include <glm/fwd.hpp>
 
+#include <map>
+#include <glm/detail/type_mat4x4.hpp>
 
 #include "BasicTypes.h"
 

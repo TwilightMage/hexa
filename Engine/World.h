@@ -1,10 +1,12 @@
 ﻿#pragma once
+
 #include "List.h"
 #include "Entity.h"
 #include "Quaternion.h"
 #include "Vector3.h"
 
 class Game;
+class Entity;
 
 namespace reactphysics3d
 {

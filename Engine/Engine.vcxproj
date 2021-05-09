@@ -208,6 +208,7 @@
     <ClInclude Include="ITexture.h" />
     <ClInclude Include="ITickable.h" />
     <ClInclude Include="IUsageCountable.h" />
+    <ClInclude Include="IUsageCountableBase.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="LogStream.h" />
     <ClInclude Include="Margins.h" />
@@ -224,6 +225,7 @@
     <ClInclude Include="RendererUtils.h" />
     <ClInclude Include="Set.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="SlotBase.h" />
     <ClInclude Include="SpriteFont.h" />
     <ClInclude Include="String.h" />
     <ClInclude Include="TeeBuf.h" />
@@ -232,12 +234,14 @@
     <ClInclude Include="ITextureBinding.h" />
     <ClInclude Include="TextureAtlasBinding.h" />
     <ClInclude Include="TextureBinding.h" />
-    <ClInclude Include="TextureSlot.h" />
+    <ClInclude Include="Slot.h" />
     <ClInclude Include="UIRenderer.h" />
     <ClInclude Include="ui\Image.h" />
     <ClInclude Include="ui\Panel.h" />
     <ClInclude Include="ui\TextBlock.h" />
     <ClInclude Include="ui\UIElement.h" />
+    <ClInclude Include="UsageCounter.h" />
+    <ClInclude Include="UsageCounterBase.h" />
     <ClInclude Include="Utils.h" />
     <ClInclude Include="Vector2.h" />
     <ClInclude Include="Vector3.h" />
@@ -257,6 +261,7 @@
     <ClCompile Include="GeometryEditor.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="ImageEditor.cpp" />
+    <ClCompile Include="IUsageCountableBase.cpp" />
     <ClCompile Include="LogStream.cpp" />
     <ClCompile Include="Math.cpp" />
     <ClCompile Include="Mesh.cpp" />
@@ -274,6 +279,7 @@
     <ClCompile Include="Regex.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="SlotBase.cpp" />
     <ClCompile Include="SpriteFont.cpp" />
     <ClCompile Include="String.cpp" />
     <ClCompile Include="TeeBuf.cpp" />
@@ -346,7 +352,6 @@
     </ClCompile>
     <ClCompile Include="TextureAtlasBinding.cpp" />
     <ClCompile Include="TextureBinding.cpp" />
-    <ClCompile Include="TextureSlot.cpp" />
     <ClCompile Include="UIRenderer.cpp" />
     <ClCompile Include="ui\Image.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>

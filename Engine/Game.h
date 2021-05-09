@@ -4,16 +4,12 @@
 #include <mutex>
 #include <optional>
 
-
-
 #include "EventBus.h"
 #include "GameInfo.h"
 #include "List.h"
 #include "LogStream.h"
-#include "Mesh.h"
 #include "Path.h"
 #include "Renderer.h"
-#include "Shader.h"
 #include "String.h"
 #include "Vector2.h"
 #include "Version.h"
@@ -90,8 +86,6 @@ public:
     static void hide_mouse();
     static void show_mouse();
     static void add_ui(const Weak<UIElement>& ui);
-
-    static void dump_texture_usage();
 
     static bool is_loading_stage();
     static bool is_render_stage();

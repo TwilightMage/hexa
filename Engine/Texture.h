@@ -4,16 +4,16 @@
 
 #include "Color.h"
 #include "Entity.h"
+#include "Game.h"
 #include "ITexture.h"
 #include "IUsageCountable.h"
 #include "List.h"
 #include "Object.h"
 #include "Path.h"
+#include "UsageCounter.h"
 
-class TextureSlot;
 class UIElement;
 class Image;
-class Game;
 
 EXTERN class EXPORT Texture : public Object, public ITexture, public IUsageCountable<Texture>, public std::enable_shared_from_this<Texture>
 {
@@ -24,7 +24,6 @@ public:
     
 private:
     friend Game;
-    friend TextureSlot;
     friend Editor;
     
 public:
@@ -59,17 +58,14 @@ public:
 
     Shared<Editor> edit();
 
-    static const std::map<Texture*, uint>& get_usage_counter();
-    uint usage_count() const;
+protected:
+    void load() override;
+    void unload() override;
     
 private:
-    void usage_count_increase();
-    void usage_count_decrease();
-    void usage_count_changed();
-    void activate();
+    void load_internal();
     void edit_count_increase();
     void edit_count_decrease();
-    static void cleanup();
     
     List<Color> pixels_;
     uint width_ = 0;
@@ -81,3 +77,5 @@ private:
     uint edit_count_;
     bool delayed_activation_;
 };
+
+typedef Slot<Texture> TextureSlot;

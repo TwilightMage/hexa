@@ -7,8 +7,6 @@
 #include <glad/glad.h>
 #include <stb/stb_image_write.h>
 
-
-
 #include "File.h"
 #include "Game.h"
 #include "ImageEditor.h"

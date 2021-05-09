@@ -8,8 +8,6 @@
 
 #include "Game.h"
 
-std::map<Texture*, uint> Texture::usage_counter_ = std::map<Texture*, uint>();
-
 Texture::Editor::Editor(const Editor& rhs)
     : target_(rhs.target_)
 {
@@ -139,59 +137,27 @@ Shared<Texture::Editor> Texture::edit()
     return nullptr;
 }
 
-const std::map<Texture*, uint>& Texture::get_usage_counter()
+void Texture::load()
 {
-    return usage_counter_;
-}
-
-uint Texture::usage_count() const
-{
-    const auto ptr = const_cast<Texture*>(this);
-    return usage_counter_.contains(ptr) ? usage_counter_[ptr] : 0;
-}
-
-void Texture::usage_count_increase()
-{
-    usage_counter_[this]++;
-    usage_count_changed();
-}
-
-void Texture::usage_count_decrease()
-{
-    auto& usage_count = usage_counter_[this];
-    usage_count--;
-    usage_count_changed();
-    if (usage_count == 0)
+    if (edit_count_ == 0)
     {
-        usage_counter_.erase(this);
+        load_internal();
+    }
+    else
+    {
+        delayed_activation_ = true;
     }
 }
 
-void Texture::usage_count_changed()
+void Texture::unload()
 {
-    const auto usage_count = usage_counter_[this];
-    if (usage_count > 0 && gl_texture_binding_ == 0)
-    {
-        if (edit_count_ == 0)
-        {
-            activate();
-        }
-        else
-        {
-            delayed_activation_ = true;
-        }
-        
-    }
-    else if (usage_count == 0 && gl_texture_binding_ != 0)
-    {
-        glMakeTextureHandleNonResidentARB(handle_arb_);
-        handle_arb_ = 0;
-        glDeleteTextures(1, &gl_texture_binding_);
-        gl_texture_binding_ = 0;
-    }
+    glMakeTextureHandleNonResidentARB(handle_arb_);
+    handle_arb_ = 0;
+    glDeleteTextures(1, &gl_texture_binding_);
+    gl_texture_binding_ = 0;
 }
 
-void Texture::activate()
+void Texture::load_internal()
 {
     glGenTextures(1, &gl_texture_binding_);
     glBindTexture(GL_TEXTURE_2D, gl_texture_binding_);
@@ -219,16 +185,6 @@ void Texture::edit_count_decrease()
     edit_count_--;
     if (edit_count_ == 0 && delayed_activation_)
     {
-        activate();
+        load_internal();
     }
-}
-
-void Texture::cleanup()
-{
-    for (auto& usage : usage_counter_)
-    {
-        usage.second = 0;
-        usage.first->usage_count_changed();
-    }
-    usage_counter_.clear();
 }

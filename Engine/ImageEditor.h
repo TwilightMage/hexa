@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "BasicTypes.h"
-#include "Rect.h"
 
 class Color;
 

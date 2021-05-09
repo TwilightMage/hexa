@@ -5,8 +5,8 @@
 #include "IRenderable.h"
 #include "Object.h"
 #include "Quaternion.h"
-#include "String.h"
-#include "TextureSlot.h"
+#include "Slot.h"
+#include "Texture.h"
 #include "Vector3.h"
 
 namespace reactphysics3d
@@ -65,7 +65,7 @@ private:
     Weak<World> world_;
     Shared<Mesh> mesh_;
     Shared<Shader> shader_;
-    TextureSlot texture_;
+    Slot<Texture> texture_;
     bool pending_kill_;
     bool started_;
     reactphysics3d::RigidBody* rigid_body_;

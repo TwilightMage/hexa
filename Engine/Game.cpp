@@ -20,7 +20,6 @@
 #include "World.h"
 #include "ui/Image.h"
 #include "ui/Panel.h"
-#include "ui/TextBlock.h"
 
 Game* Game::instance_ = nullptr;
 
@@ -174,9 +173,9 @@ Shared<Texture> Game::get_white_pixel()
 	return instance_->white_pixel_;
 }
 
-Shared<SpriteFont> Game::get_font_harrington()
+Shared<SpriteFont> Game::get_default_font()
 {
-	return instance_->font_harrington_;
+	return instance_->default_font_;
 }
 
 uint Game::get_screen_width()
@@ -246,6 +245,10 @@ void Game::setup_window()
 {
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+
+	ui_root_->set_size(Vector2(800, 600));
+	ui_root_->mouse_detection_ = false;
+	ui_root_->constructed_ = true;
 	
 	window_ = glfwCreateWindow(800, 600, get_info().title.c(), nullptr, nullptr);
 	if (!window_)
@@ -263,6 +266,7 @@ void Game::prepare()
 	glfwSwapInterval(1);
 	
 	glfwSetErrorCallback(error_callback);
+	glfwSetWindowSizeLimits(window_, 800, 600, GLFW_DONT_CARE, GLFW_DONT_CARE);
 	glfwSetKeyCallback(window_, key_callback);
 	glfwSetMouseButtonCallback(window_, mouse_button_callback);
 	glfwSetCursorPosCallback(window_, cursor_position_callback);
@@ -325,13 +329,13 @@ void Game::render_loop()
 	basic_shader_ = Shader::compile("resources/engine/shaders/basic", basic_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
 
 	Shader::Meta basic_ui_shader_meta;
-	basic_shader_meta.instance_count = 146;
+	basic_ui_shader_meta.instance_count = 146;
 	basic_ui_shader_meta.transparency = true;
 	basic_ui_shader_ = Shader::compile("resources/engine/shaders/basic_ui", basic_ui_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
 
 	white_pixel_ = MakeShared<Texture>("White Pixel", 1, 1, List<Color>::of(Color::white));
 
-	font_harrington_ = SpriteFont::load_fnt("resources/hexagame/fonts/harrington.fnt");
+	default_font_ = SpriteFont::load_fnt("resources/hexagame/fonts/berkshire_swash.fnt");
 	
 	// Call load stage in mods
 	for (auto& mod : mods_)
@@ -370,35 +374,6 @@ void Game::render_loop()
 	start();
 
 	float last_delta_time = 0.0f;
-	
-	auto panel = MakeShared<Panel>(Texture::load_png("resources/hexagame/textures/ui/panel.png"), Margins(16, 16, 16, 16));
-	panel->set_size(Vector2(780.0f, 190.0f));
-	panel->set_position(Vector2(10.0f, 400.0f));
-	add_ui(panel);
-
-	auto frame = MakeShared<Image>(Texture::load_png("resources/hexagame/textures/ui/frame.png"));
-	frame->set_z(0.2f);
-	frame->set_position(Vector2(20.0f, 20.0f));
-	frame->set_size(Vector2(76.0f, 76.0f) * 2.0f);
-	panel->add_child(frame);
-
-	auto avatar = MakeShared<Image>(Texture::load_png("resources/hexagame/textures/ui/dragon.png"));
-	avatar->set_z(0.1f);
-	avatar->set_position(Vector2(6.0f, 6.0f) * 2.0f);
-	avatar->set_size(Vector2(64.0f, 64.0f) * 2.0f);
-	frame->add_child(avatar);
-
-	auto text1 = MakeShared<TextBlock>("???");
-	text1->set_z(0.1f);
-	text1->set_size(Vector2(300.0f, 170.0f));
-	text1->set_position(Vector2(200.0f, 25.0f));
-	panel->add_child(text1);
-	
-	auto text2 = MakeShared<TextBlock>("Well, well, well...");
-	text2->set_z(0.1f);
-	text2->set_size(Vector2(300.0f, 170.0f));
-	text2->set_position(Vector2(190.0f, 70.0f));
-	panel->add_child(text2);
 	
 	verbose("Game", "Entering game-loop...");
 	while (!glfwWindowShouldClose(window_))
@@ -456,6 +431,7 @@ void Game::render_loop()
 			
 			is_render_stage_ = true;
 			renderer_->render(vp);
+			glClear(GL_DEPTH_BUFFER_BIT);
 			ui_renderer_->render(ui_vp);
 			is_render_stage_ = false;
 		}
@@ -558,5 +534,5 @@ void Game::cursor_position_callback(class GLFWwindow* window, double x_pos, doub
 
 void Game::window_size_callback(class GLFWwindow* window, int width, int height)
 {
-	instance_->ui_root_->on_size_changed();
+	instance_->ui_root_->set_size(Vector2(static_cast<float>(width), static_cast<float>(height)));
 }

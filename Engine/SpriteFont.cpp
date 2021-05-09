@@ -136,6 +136,14 @@ Shared<SpriteFont> SpriteFont::load_fnt(const Path& path)
                 }
             }
 
+            result->atlas_texture_ = result->atlas_->to_texture();
+            if (const auto editor = result->atlas_texture_->edit())
+            {
+                editor->process_pixels([](uint x, uint y, const Color& color) -> Color
+                {
+                    return Color(255, 255, 255, color.r);
+                });
+            }
             return result;
         }
     }
@@ -155,23 +163,63 @@ uint SpriteFont::measure_string(const String& string) const
     return result;
 }
 
-List<SpriteFont::UILetter> SpriteFont::arrange_string(const String& string) const
+uint SpriteFont::measure_char(char ch) const
 {
+    return (entries_.contains(ch) ? entries_.at(ch) : entries_.at('?')).advance + 1;
+}
+
+List<SpriteFont::UILetter> SpriteFont::arrange_string(const String& string, uint& out_length) const
+{
+    out_length = 0;
     List<UILetter> result;
     uint ptr = 0;
     for (auto ch : string)
     {
         const auto letter = entries_.contains(ch) ? entries_.at(ch) : entries_.at('?');
-        result.Add({{static_cast<int>(ptr + letter.offset_x), static_cast<int>(base_ - letter.height), static_cast<int>(letter.width), static_cast<int>(letter.height)}, atlas_->get_entry(letter.atlas_entry_id_)});
+        result.Add({{static_cast<int>(ptr + letter.offset_x), static_cast<int>(letter.offset_y), static_cast<int>(letter.width), static_cast<int>(letter.height)}, atlas_->get_entry(letter.atlas_entry_id_), ch});
         ptr += letter.advance + 1;
     }
+    out_length = ptr;
     
     return result;
 }
 
-Shared<const TextureAtlas> SpriteFont::get_atlas() const
+List<SpriteFont::UILetter> SpriteFont::arrange_line(const String& whole_text, uint line_width) const
 {
-    return atlas_;
+    uint current_length = 0;
+    const auto space_letter = entries_.contains(' ') ? entries_.at(' ') : entries_.at('?');
+    auto words = whole_text.split(' ', true);
+    if (words.length() > 0)
+    {
+        uint i = 0;
+        uint word_length;
+        List<UILetter> result = arrange_string(words[i++], word_length);
+        current_length = word_length;
+        while (i < words.length())
+        {
+            auto word = arrange_string(words[i++], word_length);
+            if (current_length + space_letter.advance + 1 + word_length < line_width)
+            {
+                result.Add({{static_cast<int>(current_length + space_letter.offset_x), static_cast<int>(space_letter.offset_y), static_cast<int>(space_letter.width), static_cast<int>(space_letter.height)}, atlas_->get_entry(space_letter.atlas_entry_id_), ' '});
+                for (auto& letter : word) letter.rect.x += current_length + space_letter.advance + 1;
+                result.AddMany(word);
+                current_length += space_letter.advance + 1 + word_length;
+            }
+            else
+            {
+                break;
+            }
+        }
+
+        return result;
+    }
+
+    return List<UILetter>();
+}
+
+Shared<Texture> SpriteFont::get_atlas_texture() const
+{
+    return atlas_texture_;
 }
 
 uint SpriteFont::get_line_height() const

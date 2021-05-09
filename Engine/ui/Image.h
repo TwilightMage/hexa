@@ -10,6 +10,10 @@ EXTERN class EXPORT Image : public UIElement, public IRenderable
 {
 public:
     Image();
+    ~Image()
+    {
+        
+    }
     explicit Image(const Shared<Texture>& texture);
     
     Shared<Mesh> get_mesh() const override;

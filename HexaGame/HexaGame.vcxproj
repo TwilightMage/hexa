@@ -185,6 +185,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="HexaGame.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="ui\DialoguePanel.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CollisionEditor\CollisionEditorPlayer.cpp">
@@ -592,6 +593,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ui\DialoguePanel.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.vcxproj">
@@ -599,6 +601,8 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="resources\hexagame\fonts\arial.fnt" />
+    <Content Include="resources\hexagame\fonts\arial_0.png" />
     <Content Include="resources\hexagame\fonts\harrington.fnt" />
     <Content Include="resources\hexagame\fonts\harrington_0.png" />
     <Content Include="resources\hexagame\meshes\arrow.obj" />

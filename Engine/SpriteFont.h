@@ -12,6 +12,7 @@ public:
     {
         Rect rect;
         const TextureAtlas::Entry* atlas_entry;
+        char character;
     };
     
     SpriteFont(const String& name);
@@ -19,9 +20,11 @@ public:
     static Shared<SpriteFont> load_fnt(const Path& path);
 
     uint measure_string(const String& string) const;
-    List<UILetter> arrange_string(const String& string) const;
+    uint measure_char(char ch) const;
+    List<UILetter> arrange_string(const String& string, uint& out_length) const;
+    List<UILetter> arrange_line(const String& whole_text, uint line_width) const;
 
-    Shared<const TextureAtlas> get_atlas() const;
+    Shared<Texture> get_atlas_texture() const;
     uint get_line_height() const;
     uint get_base() const;
 
@@ -37,6 +40,7 @@ private:
     };
     
     Shared<TextureAtlas> atlas_;
+    Shared<Texture> atlas_texture_;
     uint line_height_;
     uint base_;
     std::map<char, Letter> entries_;

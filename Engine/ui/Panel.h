@@ -6,7 +6,7 @@
 class Texture;
 class Image;
 
-class Panel : public UIElement
+EXTERN class EXPORT Panel : public UIElement
 {
 public:
     Panel(const Shared<Texture>& texture, const Margins& texture_offsets = Margins());

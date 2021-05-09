@@ -2,10 +2,10 @@
 fileVersion=1
 
 # font settings
-fontName=Harrington
+fontName=Berkshire Swash
 fontFile=
 charSet=0
-fontSize=32
+fontSize=24
 aa=1
 scaleH=100
 useSmoothing=1
@@ -54,6 +54,6 @@ invB=0
 outlineThickness=0
 
 # selected chars
-chars=32-33,39,44-46,48-59,63,65-91,93,97-122
+chars=32-126
 
 # imported icon images

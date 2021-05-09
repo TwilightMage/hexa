@@ -122,8 +122,20 @@ public:
             reallocate(get_allocate_size(length_ + 1));
         }
 
-        inner_[length_] = std::move(item);
-        length_++;
+        inner_[length_++] = std::move(item);
+    }
+
+    void AddMany(const List<T>& items)
+    {
+        if (length_ + items.length() > allocated_length_)
+        {
+            reallocate(get_allocate_size(length_ + items.length()));
+        }
+        
+        for (const auto& item : items)
+        {
+            inner_[length_++] = std::move(item);
+        }
     }
 
     bool Contains(const T& item)
@@ -168,29 +180,60 @@ public:
 
     void Remove(const T& item)
     {
-        uint entriesAmount = 0;
-        uint* entries = new uint[length_];
-
+        uint offset = 0;
         for (uint i = 0; i < length_; i++)
         {
-            if (inner_[i] == item)
+            if (i + offset < length_)
             {
-                entries[entriesAmount++] = i;
+                while (inner_[i + offset] == item && i + offset < length_) ++offset;
+                if (offset > 0)
+                {
+                    if (i + offset < length_)
+                    {
+                        inner_[i] = std::move(inner_[i + offset]);
+                    }
+                    else
+                    {
+                        inner_[i] = T();
+                    }
+                }
+            }
+            else
+            {
+                inner_[i] = T();
             }
         }
 
-        // TODO: Remove memcpy or start using malloc and free
-        for (uint i = 0; i < entriesAmount - 1; i++)
+        length_ -= offset;
+    }
+
+    void Remove(bool(* predicate)(const T&))
+    {
+        uint offset = 0;
+        for (uint i = 0; i < length_; i++)
         {
-            memcpy(inner_ + entries[i] - i, inner_ + entries[i] + 1, sizeof(T) * (entries[i + 1] - entries[i] - 1));
+            if (i + offset < length_)
+            {
+                while (predicate(inner_[i + offset]) && i + offset < length_) ++offset;
+                if (offset > 0)
+                {
+                    if (i + offset < length_)
+                    {
+                        inner_[i] = std::move(inner_[i + offset]);
+                    }
+                    else
+                    {
+                        inner_[i] = T();
+                    }
+                }
+            }
+            else
+            {
+                inner_[i] = T();
+            }
         }
 
-        // Don't try to understand, I was drunk
-        memcpy(inner_ + entries[entriesAmount - 1] - entriesAmount + 1, inner_ + entries[entriesAmount - 1] + 1, sizeof(T) * (length_ - entries[entriesAmount - 1] - 1));
-
-        length_ -= entriesAmount;
-
-        delete[] entries;
+        length_ -= offset;
     }
 
     T& operator[](uint index)
@@ -211,6 +254,104 @@ public:
         }
 
         return inner_[index];
+    }
+
+    T& first()
+    {
+        return operator[](0);
+    }
+
+    const T& first() const
+    {
+        return operator[](0);
+    }
+
+    T& first_or_default()
+    {
+        return length_ > 0 ? operator[](0) : T();
+    }
+
+    const T& first_or_default() const
+    {
+        return length_ > 0 ? operator[](0) : T();
+    }
+    
+    T& last()
+    {
+        return operator[](length_ - 1);
+    }
+
+    const T& last() const
+    {
+        return operator[](length_ - 1);
+    }
+
+    T& last_or_default()
+    {
+        return length_ > 0 ? operator[](length_ - 1) : T();
+    }
+
+    const T& last_or_default() const
+    {
+        return length_ > 0 ? operator[](length_ - 1) : T();
+    }
+
+    bool all(bool(* predicate)(const T&)) const
+    {
+        for (uint i = 0; i < length_; i++)
+        {
+            if (!predicate(inner_[i])) return false;
+        }
+
+        return  true;
+    }
+
+    bool any(bool(* predicate)(const T&)) const
+    {
+        for (uint i = 0; i < length_; i++)
+        {
+            if (predicate(inner_[i])) return true;
+        }
+
+        return  false;
+    }
+    
+    bool none(bool(* predicate)(const T&)) const
+    {
+        for (uint i = 0; i < length_; i++)
+        {
+            if (predicate(inner_[i])) return false;
+        }
+
+        return  true;
+    }
+
+    bool count(bool(* predicate)(const T&)) const
+    {
+        uint counter = 0;
+        for (uint i = 0; i < length_; i++)
+        {
+            if (predicate(inner_[i]))
+            {
+                counter++;
+            }
+        }
+
+        return  counter;
+    }
+
+    List<T> select(bool(* predicate)(const T&)) const
+    {
+        List<T> result;
+        for (uint i = 0; i < length_; i++)
+        {
+            if (predicate(inner_[i]))
+            {
+                result.Add(inner_[i]);
+            }
+        }
+        
+        return result;
     }
 
     void Insert(const T& item, uint indexAt)

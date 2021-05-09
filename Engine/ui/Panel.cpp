@@ -84,7 +84,7 @@ void Panel::on_size_changed()
 
 void Panel::update_geometry() const
 {
-    if (texture_)
+    if (is_started_construction() && texture_)
     {
         const auto size = get_size();
         const auto left = static_cast<float>(margins_.left);
@@ -95,68 +95,41 @@ void Panel::update_geometry() const
         const int mx = texture_->get_width() - (margins_.left + margins_.right);
         const int my = texture_->get_height() - (margins_.top + margins_.bottom);
         
-        if (lt_)
-        {
-            lt_->set_position(Vector2(0.0f, 0.0f));
-            lt_->set_size(Vector2(left, top));
-            lt_->set_rect(Rect(0, 0, margins_.left, margins_.top));
-        }
+        lt_->set_position(Vector2(0.0f, 0.0f));
+        lt_->set_size(Vector2(left, top));
+        lt_->set_rect(Rect(0, 0, margins_.left, margins_.top));
 
-        if (mt_)
-        {
-            mt_->set_position(Vector2(left, 0.0f));
-            mt_->set_size(Vector2(size.x - (left + right), top));
-            mt_->set_rect(Rect(margins_.left, 0, mx, margins_.top));
-        }
+        mt_->set_position(Vector2(left, 0.0f));
+        mt_->set_size(Vector2(size.x - (left + right), top));
+        mt_->set_rect(Rect(margins_.left, 0, mx, margins_.top));
 
-        if (rt_)
-        {
-            rt_->set_position(Vector2(size.x - right, 0.0f));
-            rt_->set_size(Vector2(right, top));
-            rt_->set_rect(Rect(texture_->get_width() - margins_.right, 0, margins_.right, margins_.top));
-        }
+        rt_->set_position(Vector2(size.x - right, 0.0f));
+        rt_->set_size(Vector2(right, top));
+        rt_->set_rect(Rect(texture_->get_width() - margins_.right, 0, margins_.right, margins_.top));
 
-        if (lm_)
-        {
-            lm_->set_position(Vector2(0.0f, top));
-            lm_->set_size(Vector2(left, size.y - (top + bottom)));
-            lm_->set_rect(Rect(0, margins_.top, margins_.left, my));
-        }
+        lm_->set_position(Vector2(0.0f, top));
+        lm_->set_size(Vector2(left, size.y - (top + bottom)));
+        lm_->set_rect(Rect(0, margins_.top, margins_.left, my));
 
-        if (mm_)
-        {
-            mm_->set_position(Vector2(left, top));
-            mm_->set_size(Vector2(size.x - (left + right), size.y - (top + bottom)));
-            mm_->set_rect(Rect(margins_.left, margins_.top, mx, my));
-        }
+        mm_->set_position(Vector2(left, top));
+        mm_->set_size(Vector2(size.x - (left + right), size.y - (top + bottom)));
+        mm_->set_rect(Rect(margins_.left, margins_.top, mx, my));
 
-        if (rm_)
-        {
-            rm_->set_position(Vector2(size.x - right, top));
-            rm_->set_size(Vector2(right, size.y - (top + bottom)));
-            rm_->set_rect(Rect(texture_->get_width() - margins_.right, margins_.top, margins_.right, my));
-        }
+        rm_->set_position(Vector2(size.x - right, top));
+        rm_->set_size(Vector2(right, size.y - (top + bottom)));
+        rm_->set_rect(Rect(texture_->get_width() - margins_.right, margins_.top, margins_.right, my));
 
-        if (lb_)
-        {
-            lb_->set_position(Vector2(0.0f, size.y - bottom));
-            lb_->set_size(Vector2(left, bottom));
-            lb_->set_rect(Rect(0, texture_->get_height() - margins_.bottom, margins_.left, margins_.bottom));
-        }
+        lb_->set_position(Vector2(0.0f, size.y - bottom));
+        lb_->set_size(Vector2(left, bottom));
+        lb_->set_rect(Rect(0, texture_->get_height() - margins_.bottom, margins_.left, margins_.bottom));
 
-        if (mb_)
-        {
-            mb_->set_position(Vector2(left, size.y - bottom));
-            mb_->set_size(Vector2(size.x - (left + right), bottom));
-            mb_->set_rect(Rect(margins_.left, texture_->get_height() - margins_.bottom, mx, margins_.bottom));
-        }
+        mb_->set_position(Vector2(left, size.y - bottom));
+        mb_->set_size(Vector2(size.x - (left + right), bottom));
+        mb_->set_rect(Rect(margins_.left, texture_->get_height() - margins_.bottom, mx, margins_.bottom));
 
-        if (rb_)
-        {
-            rb_->set_position(Vector2(size.x - right, size.y - bottom));
-            rb_->set_size(Vector2(right, bottom));
-            rb_->set_rect(Rect(texture_->get_width() - margins_.right, texture_->get_height() - margins_.bottom, margins_.right, margins_.bottom));
-        }
+        rb_->set_position(Vector2(size.x - right, size.y - bottom));
+        rb_->set_size(Vector2(right, bottom));
+        rb_->set_rect(Rect(texture_->get_width() - margins_.right, texture_->get_height() - margins_.bottom, margins_.right, margins_.bottom));
     }
 }
 

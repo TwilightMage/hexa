@@ -3,13 +3,20 @@
 
 #include "Engine/Game.h"
 #include "Engine/Texture.h"
+#include "Engine/Utils.h"
 
 UIElement::UIElement()
     : size_(Vector3::one())
+    , mouse_detection_(true)
     , trans_rot_matrix_(glm::mat4(1.0f))
     , trans_rot_matrix_stacked_(glm::mat4(1.0f))
     , trans_rot_size_matrix_(glm::mat4(1.0f))
 {
+}
+
+const Vector3& UIElement::get_position() const
+{
+    return position_;
 }
 
 void UIElement::set_position(const Vector2& vec2_pos)
@@ -60,11 +67,30 @@ void UIElement::set_size(const Vector2& vec2_size)
     update_matrix();
 
     on_size_changed();
+    for (auto& child : children_)
+    {
+        child->on_parent_size_changed();
+    }
 }
 
 const glm::mat4& UIElement::get_ui_matrix() const
 {
     return trans_rot_size_matrix_;
+}
+
+bool UIElement::get_mouse_detection() const
+{
+    return mouse_detection_;
+}
+
+void UIElement::set_mouse_detection(bool state)
+{
+    mouse_detection_ = state;
+}
+
+Weak<UIElement> UIElement::get_parent() const
+{
+    return parent_;
 }
 
 void UIElement::add_child(const Weak<UIElement>& child)
@@ -91,11 +117,7 @@ void UIElement::add_child(const Weak<UIElement>& child)
 
         child_ptr->update_matrix();
 
-        if (!child_ptr->constructed_)
-        {
-            child_ptr->on_construct();
-            child_ptr->constructed_ = true;
-        }
+        child_ptr->construct();
     }
 }
 
@@ -107,17 +129,30 @@ void UIElement::remove_from_parent()
 
         if (auto me_renderable = cast<IRenderable>(shared_from_this()))
         {
-            if (Game::instance_->ui_renderer_->register_object(me_renderable))
+            if (Game::instance_->ui_renderer_->unregister_object(me_renderable))
             {
-                register_render();
+                unregister_render();
             }
         }
+    }
+}
+
+void UIElement::remove_all_children()
+{
+    while (children_.length() > 0)
+    {
+        children_.last()->remove_from_parent();
     }
 }
 
 bool UIElement::should_render() const
 {
     return should_render_;
+}
+
+bool UIElement::is_started_construction() const
+{
+    return is_started_construction_;
 }
 
 bool UIElement::is_constructed() const
@@ -145,6 +180,21 @@ void UIElement::unregister_render()
     }
 }
 
+void UIElement::construct()
+{
+    if (!constructed_)
+    {
+        is_started_construction_ = true;
+        on_construct();
+        constructed_ = true;
+    }
+
+    for (auto& child : children_)
+    {
+        child->construct();
+    }
+}
+
 void UIElement::on_register_render()
 {
 }
@@ -159,6 +209,35 @@ void UIElement::on_construct()
 
 void UIElement::on_size_changed()
 {
+}
+
+void UIElement::on_parent_size_changed()
+{
+}
+
+void UIElement::on_press()
+{
+}
+
+void UIElement::on_release()
+{
+}
+
+void UIElement::detect_topmost_under_mouse(const Vector2& relative_mouse_pos, Shared<UIElement>& topmost, float& topmost_z)
+{
+    if (is_rect_under_mouse(relative_mouse_pos))
+    {
+        for (const auto& child : children_)
+        {
+            child->detect_topmost_under_mouse(relative_mouse_pos - child->get_position(), topmost, topmost_z);
+        }
+        if (mouse_detection_ && position_.z > topmost_z) topmost = shared_from_this();
+    }
+}
+
+bool UIElement::is_rect_under_mouse(const Vector2& mouse) const
+{
+    return mouse.x >= position_.x && mouse.x < position_.x + size_.x && mouse.y >= position_.y && mouse.y < position_.y + size_.y;
 }
 
 void UIElement::update_matrix()
@@ -182,9 +261,11 @@ void UIElement::update_matrix_child(const glm::mat4& parent_matrix)
 {
     trans_rot_matrix_stacked_ = parent_matrix * trans_rot_matrix_;
 
+    uint i = 0;
     for (auto& child : children_)
     {
         child->update_matrix_child(trans_rot_matrix_stacked_);
+        i++;
     }
 
     trans_rot_size_matrix_ = scale(trans_rot_matrix_stacked_, cast_object<glm::vec3>(size_));

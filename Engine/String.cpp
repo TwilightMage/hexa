@@ -231,6 +231,8 @@ int String::last_index_of(const String& substr) const
 
 String String::substring(uint start, uint num) const
 {
+	if (start >= length_) return "";
+	
 	const uint min = min(length_, start + num);
 	char* result = new char[min - start];
 

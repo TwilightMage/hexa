@@ -5,16 +5,28 @@
 
 class SpriteFont;
 
-class TextBlock : public UIElement
+EXTERN class EXPORT TextBlock : public UIElement
 {
 public:
     TextBlock(const String& string);
 
+    float get_font_size() const;
+    void set_font_size(float font_size);
+    const String& get_text() const;
+    void set_text(const String& text);
+    bool get_wrap() const;
+    void set_wrap(bool wrap);
+
 protected:
     void on_construct() override;
+    void on_size_changed() override;
 
 private:
-    String string_;
+    void update_geometry();
+    
+    String text_;
     Shared<SpriteFont> font_;
-    float scale_;
+    float font_size_;
+    float font_scale_;
+    bool wrap_;
 };

@@ -263,6 +263,7 @@
     <ClCompile Include="ImageEditor.cpp" />
     <ClCompile Include="IUsageCountableBase.cpp" />
     <ClCompile Include="LogStream.cpp" />
+    <ClCompile Include="Margins.cpp" />
     <ClCompile Include="Math.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Mod.cpp" />

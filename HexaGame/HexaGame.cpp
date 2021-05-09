@@ -7,6 +7,7 @@
 #include "Entities/Arrow.h"
 #include "Entities/DebugPlayer.h"
 #include "Entities/DemoMeshEntity.h"
+#include "ui/DialoguePanel.h"
 
 HexaGame::HexaGame(int argc, char* argv[])
     : Game(argc, argv)
@@ -25,6 +26,9 @@ void HexaGame::start()
     
     auto world = MakeShared<CollisionEditorWorld>();
     open_world(world);
+
+    auto dialogue_panel = MakeShared<DialoguePanel>();
+    add_ui(dialogue_panel);
 
     /*const auto player = MakeShared<DebugPlayer>();
     world->spawn_entity(player, Vector3(-3.0f, 0.0f, 0.0f), Quaternion(Vector3(0.0f, 0.0f, 0.0f)));

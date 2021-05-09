@@ -3,11 +3,10 @@
 #define GLFW_INCLUDE_NONE
 #include <GLFW/glfw3.h>
 
-
-
 #include "Arrow.h"
 #include "Engine/Camera.h"
 #include "Engine/Game.h"
+#include "Engine/World.h"
 
 DebugPlayer::DebugPlayer()
     : Entity()

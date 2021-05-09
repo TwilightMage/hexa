@@ -74,7 +74,7 @@ public:
     static Shared<Shader> get_basic_shader();
     static Shared<Shader> get_basic_ui_shader();
     static Shared<Texture> get_white_pixel();
-    static Shared<SpriteFont> get_font_harrington();
+    static Shared<SpriteFont> get_default_font();
 
     static uint get_screen_width();
     static uint get_screen_height();
@@ -144,7 +144,7 @@ private:
     Shared<Shader> basic_shader_;
     Shared<Shader> basic_ui_shader_;
     Shared<Texture> white_pixel_;
-    Shared<SpriteFont> font_harrington_;
+    Shared<SpriteFont> default_font_;
     List<Shared<Mod>> mods_;
     
     // Game Play

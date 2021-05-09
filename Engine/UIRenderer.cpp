@@ -68,7 +68,6 @@ void UIRenderer::render(const glm::mat4& view_projection_matrix) const
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     auto& db = *database_;
     for (const auto& shader_meshes : db)
@@ -76,6 +75,7 @@ void UIRenderer::render(const glm::mat4& view_projection_matrix) const
         if (shader_meshes.key->get_meta().transparency)
         {
             glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
         }
         else
         {

@@ -46,7 +46,6 @@ void Renderer::render(const glm::mat4& view_projection_matrix) const
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
     auto& db = *database_;
     for (const auto& shader_meshes : db)

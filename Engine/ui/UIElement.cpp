@@ -223,21 +223,28 @@ void UIElement::on_release()
 {
 }
 
-void UIElement::detect_topmost_under_mouse(const Vector2& relative_mouse_pos, Shared<UIElement>& topmost, float& topmost_z)
+void UIElement::detect_topmost_under_mouse(Vector2 mouse_pos, float parent_z, Shared<UIElement>& topmost, float& topmost_z)
 {
-    if (is_rect_under_mouse(relative_mouse_pos))
+    mouse_pos.x -= position_.x;
+    mouse_pos.y += position_.y;
+    if (is_rect_under_mouse(mouse_pos))
     {
+        if (mouse_detection_ && parent_z + position_.z >= topmost_z)
+        {
+            topmost = shared_from_this();
+            topmost_z = parent_z + position_.z;
+        }
+        
         for (const auto& child : children_)
         {
-            child->detect_topmost_under_mouse(relative_mouse_pos - child->get_position(), topmost, topmost_z);
+            child->detect_topmost_under_mouse(mouse_pos, parent_z + position_.z, topmost, topmost_z);
         }
-        if (mouse_detection_ && position_.z > topmost_z) topmost = shared_from_this();
     }
 }
 
 bool UIElement::is_rect_under_mouse(const Vector2& mouse) const
 {
-    return mouse.x >= position_.x && mouse.x < position_.x + size_.x && mouse.y >= position_.y && mouse.y < position_.y + size_.y;
+    return mouse.x >= 0 && mouse.x < size_.x && mouse.y >= 0 && mouse.y < size_.y;
 }
 
 void UIElement::update_matrix()

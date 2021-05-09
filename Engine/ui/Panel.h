@@ -23,15 +23,15 @@ private:
     
     Margins margins_;
 
-    Image* lt_;
-    Image* mt_;
-    Image* rt_;
-    Image* lm_;
-    Image* mm_;
-    Image* rm_;
-    Image* lb_;
-    Image* mb_;
-    Image* rb_;
+    Shared<Image> lt_;
+    Shared<Image> mt_;
+    Shared<Image> rt_;
+    Shared<Image> lm_;
+    Shared<Image> mm_;
+    Shared<Image> rm_;
+    Shared<Image> lb_;
+    Shared<Image> mb_;
+    Shared<Image> rb_;
 
     Shared<Texture> texture_;
 };

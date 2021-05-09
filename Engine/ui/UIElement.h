@@ -47,7 +47,7 @@ protected:
     virtual void on_release();
     
 private:
-    void detect_topmost_under_mouse(const Vector2& relative_mouse_pos, Shared<UIElement>& topmost, float& topmost_z);
+    void detect_topmost_under_mouse(Vector2 mouse_pos, float parent_z, Shared<UIElement>& topmost, float& topmost_z);
     bool is_rect_under_mouse(const Vector2& mouse) const;
     void register_render();
     void unregister_render();

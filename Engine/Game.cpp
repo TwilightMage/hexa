@@ -513,11 +513,31 @@ void Game::mouse_button_callback(class GLFWwindow* window, int button, int actio
 	{
 		if (action == GLFW_PRESS)
 		{
-			instance_->current_controllable_->mouse_button_down(button);
+			Shared<UIElement> ui_under_mouse;
+			float pressed_z = 0.0f;
+			instance_->ui_root_->detect_topmost_under_mouse(instance_->mouse_pos_, 0.0f, ui_under_mouse, pressed_z);
+
+			if (ui_under_mouse)
+			{
+				ui_under_mouse->on_press();
+				instance_->pressed_ui_ = ui_under_mouse;
+			}
+			else
+			{
+				instance_->current_controllable_->mouse_button_down(button);
+			}
 		}
 		else if (action == GLFW_RELEASE)
 		{
-			instance_->current_controllable_->mouse_button_up(button);
+			if (auto released_ui = instance_->pressed_ui_.lock())
+			{
+				released_ui->on_release();
+				instance_->pressed_ui_.reset();
+			}
+			else
+			{
+				instance_->current_controllable_->mouse_button_up(button);
+			}
 		}
 	}
 }

@@ -37,41 +37,41 @@ void Panel::use_texture(const Shared<Texture>& texture)
 
 void Panel::on_construct()
 {
-    const auto lt = MakeShared<Image>();
-    lt_ = lt.get();
-    add_child(lt);
+    lt_ = MakeShared<Image>();
+    lt_->set_mouse_detection(false);
+    add_child(lt_);
 
-    const auto mt = MakeShared<Image>();
-    mt_ = mt.get();
-    add_child(mt);
+    mt_ = MakeShared<Image>();
+    mt_->set_mouse_detection(false);
+    add_child(mt_);
 
-    const auto rt = MakeShared<Image>();
-    rt_ = rt.get();
-    add_child(rt);
+    rt_ = MakeShared<Image>();
+    rt_->set_mouse_detection(false);
+    add_child(rt_);
 
-    const auto lm = MakeShared<Image>();
-    lm_ = lm.get();
-    add_child(lm);
+    lm_ = MakeShared<Image>();
+    lm_->set_mouse_detection(false);
+    add_child(lm_);
 
-    const auto mm = MakeShared<Image>();
-    mm_ = mm.get();
-    add_child(mm);
+    mm_ = MakeShared<Image>();
+    mm_->set_mouse_detection(false);
+    add_child(mm_);
 
-    const auto rm = MakeShared<Image>();
-    rm_ = rm.get();
-    add_child(rm);
+    rm_ = MakeShared<Image>();
+    rm_->set_mouse_detection(false);
+    add_child(rm_);
 
-    const auto lb = MakeShared<Image>();
-    lb_ = lb.get();
-    add_child(lb);
+    lb_ = MakeShared<Image>();
+    lb_->set_mouse_detection(false);
+    add_child(lb_);
 
-    const auto mb = MakeShared<Image>();
-    mb_ = mb.get();
-    add_child(mb);
+    mb_ = MakeShared<Image>();
+    mb_->set_mouse_detection(false);
+    add_child(mb_);
 
-    const auto rb = MakeShared<Image>();
-    rb_ = rb.get();
-    add_child(rb);
+    rb_ = MakeShared<Image>();
+    rb_->set_mouse_detection(false);
+    add_child(rb_);
 
     update_texture();
     update_geometry();

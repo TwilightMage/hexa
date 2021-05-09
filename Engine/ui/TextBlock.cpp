@@ -11,6 +11,7 @@ TextBlock::TextBlock(const String& string)
 {
     font_ = Game::get_default_font();
     font_scale_ = font_size_ / font_->get_line_height();
+    set_mouse_detection(false);
 }
 
 float TextBlock::get_font_size() const
@@ -91,6 +92,7 @@ void TextBlock::update_geometry()
                     ui_let->set_size(Vector2(static_cast<float>(let.rect.w) * font_scale_, static_cast<float>(let.rect.h) * font_scale_));
                     ui_let->use_texture(font_->get_atlas_texture());
                     ui_let->set_rect(let.atlas_entry->rect);
+                    ui_let->set_mouse_detection(false);
                     add_child(ui_let);
                     z += 0.0001f;
                 }
@@ -112,6 +114,7 @@ void TextBlock::update_geometry()
                 ui_let->set_size(Vector2(static_cast<float>(let.rect.w) * font_scale_, static_cast<float>(let.rect.h) * font_scale_));
                 ui_let->use_texture(font_->get_atlas_texture());
                 ui_let->set_rect(let.atlas_entry->rect);
+                ui_let->set_mouse_detection(false);
                 add_child(ui_let);
                 z += 0.0001f;
             }

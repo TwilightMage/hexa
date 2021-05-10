@@ -157,6 +157,7 @@ private:
     Unique<IRenderer> ui_renderer_;
     Shared<reactphysics3d::PhysicsCommon> physics_;
     Shared<UIElement> ui_root_;
+    Weak<UIElement> ui_under_mouse_;
     Weak<UIElement> pressed_ui_;
 
     bool is_loading_stage_;

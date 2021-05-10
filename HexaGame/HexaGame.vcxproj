@@ -609,7 +609,6 @@
     <Content Include="resources\hexagame\meshes\hexagon_tile.obj" />
     <Content Include="resources\hexagame\textures\arrow.png" />
     <Content Include="resources\hexagame\textures\axis_arrows.png" />
-    <Content Include="resources\hexagame\textures\spritefont.png" />
     <Content Include="resources\hexagame\textures\tiles\dirt.png" />
     <Content Include="resources\hexagame\textures\tiles\grass.png" />
     <Content Include="resources\hexagame\textures\tiles\iron_ore.png" />
@@ -617,6 +616,9 @@
     <Content Include="resources\hexagame\textures\tiles\sand.png" />
     <Content Include="resources\hexagame\textures\tiles\stone.png" />
     <Content Include="resources\hexagame\textures\tiles\stone_bricks.png" />
+    <Content Include="resources\hexagame\textures\ui\dragon.png" />
+    <Content Include="resources\hexagame\textures\ui\frame.png" />
+    <Content Include="resources\hexagame\textures\ui\panel.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

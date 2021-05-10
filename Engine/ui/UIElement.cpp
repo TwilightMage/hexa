@@ -160,6 +160,16 @@ bool UIElement::is_constructed() const
     return constructed_;
 }
 
+bool UIElement::is_mouse_over() const
+{
+    return is_mouse_over_;
+}
+
+bool UIElement::is_pressed() const
+{
+    return is_pressed_;
+}
+
 void UIElement::register_render()
 {
     should_render_ = true;
@@ -212,6 +222,14 @@ void UIElement::on_size_changed()
 }
 
 void UIElement::on_parent_size_changed()
+{
+}
+
+void UIElement::on_mouse_enter()
+{
+}
+
+void UIElement::on_mouse_leave()
 {
 }
 

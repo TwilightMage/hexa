@@ -236,6 +236,7 @@
     <ClInclude Include="TextureBinding.h" />
     <ClInclude Include="Slot.h" />
     <ClInclude Include="UIRenderer.h" />
+    <ClInclude Include="ui\ButtonImage.h" />
     <ClInclude Include="ui\Image.h" />
     <ClInclude Include="ui\Panel.h" />
     <ClInclude Include="ui\TextBlock.h" />
@@ -354,6 +355,7 @@
     <ClCompile Include="TextureAtlasBinding.cpp" />
     <ClCompile Include="TextureBinding.cpp" />
     <ClCompile Include="UIRenderer.cpp" />
+    <ClCompile Include="ui\ButtonImage.cpp" />
     <ClCompile Include="ui\Image.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>

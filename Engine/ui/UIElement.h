@@ -36,6 +36,8 @@ public:
     bool should_render() const;
     bool is_started_construction() const;
     bool is_constructed() const;
+    bool is_mouse_over() const;
+    bool is_pressed() const;
 
 protected:
     virtual void on_register_render();
@@ -43,6 +45,8 @@ protected:
     virtual void on_construct();
     virtual void on_size_changed();
     virtual void on_parent_size_changed();
+    virtual void on_mouse_enter();
+    virtual void on_mouse_leave();
     virtual void on_press();
     virtual void on_release();
     
@@ -67,4 +71,6 @@ private:
     bool should_render_ = false;
     bool is_started_construction_ = false;
     bool constructed_ = false;
+    bool is_mouse_over_ = false;
+    bool is_pressed_ = false;
 };

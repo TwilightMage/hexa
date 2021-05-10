@@ -513,13 +513,10 @@ void Game::mouse_button_callback(class GLFWwindow* window, int button, int actio
 	{
 		if (action == GLFW_PRESS)
 		{
-			Shared<UIElement> ui_under_mouse;
-			float pressed_z = 0.0f;
-			instance_->ui_root_->detect_topmost_under_mouse(instance_->mouse_pos_, 0.0f, ui_under_mouse, pressed_z);
-
-			if (ui_under_mouse)
+			if (auto ui_under_mouse = instance_->ui_under_mouse_.lock())
 			{
 				ui_under_mouse->on_press();
+				ui_under_mouse->is_pressed_ = true;
 				instance_->pressed_ui_ = ui_under_mouse;
 			}
 			else
@@ -532,6 +529,7 @@ void Game::mouse_button_callback(class GLFWwindow* window, int button, int actio
 			if (auto released_ui = instance_->pressed_ui_.lock())
 			{
 				released_ui->on_release();
+				released_ui->is_pressed_ = false;
 				instance_->pressed_ui_.reset();
 			}
 			else
@@ -549,6 +547,28 @@ void Game::cursor_position_callback(class GLFWwindow* window, double x_pos, doub
 	{
 		instance_->last_mouse_pos_ = instance_->mouse_pos_;
 		instance_->has_mouse_pos_ = true;
+	}
+
+	Shared<UIElement> ui_under_mouse;
+	float pressed_z = 0.0f;
+	instance_->ui_root_->detect_topmost_under_mouse(instance_->mouse_pos_, 0.0f, ui_under_mouse, pressed_z);
+
+	auto current_ui_under_mouse = instance_->ui_under_mouse_.lock();
+
+	if (current_ui_under_mouse != ui_under_mouse)
+	{
+		if (current_ui_under_mouse)
+		{
+			current_ui_under_mouse->on_mouse_leave();
+			current_ui_under_mouse->is_mouse_over_ = false;
+		}
+		if (ui_under_mouse)
+		{
+			ui_under_mouse->on_mouse_enter();
+			ui_under_mouse->is_mouse_over_ = true;
+		}
+			
+		instance_->ui_under_mouse_ = ui_under_mouse;
 	}
 }
 

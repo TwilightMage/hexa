@@ -1,13 +1,14 @@
 ﻿#pragma once
 
-#include "Engine/ui/Panel.h"
-#include "Engine/ui/TextBlock.h"
 #include "Engine/ui/UIElement.h"
+
+class TextBlock;
+class Image;
+class Panel;
+class ButtonImage;
 
 class DialoguePanel : public UIElement
 {
-public:
-
 protected:
     void on_size_changed() override;
     void on_parent_size_changed() override;
@@ -22,4 +23,5 @@ private:
     Shared<Image> avatar_;
     Shared<TextBlock> name_;
     Shared<TextBlock> message_;
+    Shared<ButtonImage> close_button_;
 };

@@ -186,6 +186,7 @@
     <ClInclude Include="HexaGame.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="ui\DialoguePanel.h" />
+    <ClInclude Include="ui\MainMenu.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CollisionEditor\CollisionEditorPlayer.cpp">
@@ -594,6 +595,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="ui\DialoguePanel.cpp" />
+    <ClCompile Include="ui\MainMenu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.vcxproj">

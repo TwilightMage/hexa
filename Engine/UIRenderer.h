@@ -17,7 +17,7 @@ public:
     bool change_object_mesh(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh) override;
     bool change_object_shader(const Weak<IRenderable>& renderable, const Weak<Shader>& old_shader) override;
     std::map<Texture*, uint> dump_texture_usage() const override;
-    void render(const glm::mat4& view_projection_matrix) const override;
+    void render(const Matrix4x4& view_projection_matrix) const override;
     void cleanup() const override;
 
 private:

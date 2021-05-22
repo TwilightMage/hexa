@@ -165,3 +165,13 @@ void Quaternion::operator*=(const Quaternion& rhs)
     z =  x_ * rhs.y - y_ * rhs.x + z_ * rhs.w + w_ * rhs.z;
     w = -x_ * rhs.x - y_ * rhs.y - z_ * rhs.z + w_ * rhs.w;
 }
+
+bool Quaternion::operator==(const Quaternion& rhs) const
+{
+    return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
+}
+
+bool Quaternion::operator!=(const Quaternion& rhs) const
+{
+    return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w;
+}

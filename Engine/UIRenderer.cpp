@@ -63,7 +63,7 @@ std::map<Texture*, uint> UIRenderer::dump_texture_usage() const
     return database_->dump_texture_usage();
 }
 
-void UIRenderer::render(const glm::mat4& view_projection_matrix) const
+void UIRenderer::render(const Matrix4x4& view_projection_matrix) const
 {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -92,7 +92,7 @@ void UIRenderer::render(const glm::mat4& view_projection_matrix) const
                 const auto instance_count = std::min(mesh_objects.value.length() - rendered_instance_count, shader_meshes.key->get_meta().instance_count);
 
                 // declare local buffers
-                glm::mat4* mvp_array = new glm::mat4[instance_count];
+                Matrix4x4* mvp_array = new Matrix4x4[instance_count];
                 Quaternion* uv_array = new Quaternion[instance_count];
                 Quaternion* color_array = new Quaternion[instance_count];
                 uint64* texture_handle_array = new uint64[instance_count];

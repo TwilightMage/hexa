@@ -430,9 +430,9 @@ void Game::render_loop()
 			glm::mat4 ui_vp = glm::ortho(0.0f, (float)width, (float)-height, 0.0f, -1000.0f, 0.0001f);
 			
 			is_render_stage_ = true;
-			renderer_->render(vp);
+			renderer_->render(cast_object<Matrix4x4>(vp));
 			glClear(GL_DEPTH_BUFFER_BIT);
-			ui_renderer_->render(ui_vp);
+			ui_renderer_->render(cast_object<Matrix4x4>(ui_vp));
 			is_render_stage_ = false;
 		}
  

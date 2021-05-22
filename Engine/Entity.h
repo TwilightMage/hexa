@@ -38,7 +38,7 @@ public:
     Shared<Mesh> get_mesh() const override;
     Shared<Shader> get_shader() const override;
     Shared<Texture> get_texture() const override;
-    glm::mat4 get_matrix() const override;
+    Matrix4x4 get_matrix() const override;
     Vector3 get_position() const;
     void set_position(const Vector3& pos);
     Quaternion get_rotation() const;
@@ -60,7 +60,7 @@ private:
     Vector3 position_;
     Quaternion rotation_;
     Vector3 scale_ = Vector3::one();
-    glm::mat4 cached_matrix_;
+    Matrix4x4 cached_matrix_;
     
     Weak<World> world_;
     Shared<Mesh> mesh_;

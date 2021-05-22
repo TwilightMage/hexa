@@ -41,7 +41,7 @@ std::map<Texture*, uint> Renderer::dump_texture_usage() const
     return database_->dump_texture_usage();
 }
 
-void Renderer::render(const glm::mat4& view_projection_matrix) const
+void Renderer::render(const Matrix4x4& view_projection_matrix) const
 {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -82,10 +82,10 @@ void Renderer::cleanup() const
     database_->cleanup();
 }
 
-void Renderer::put_params_for_intances(const glm::mat4& view_projection_matrix, const Shared<IRenderable>* objects, uint instance_count) const
+void Renderer::put_params_for_intances(const Matrix4x4& view_projection_matrix, const Shared<IRenderable>* objects, uint instance_count) const
 {
     // declare local buffers
-    glm::mat4* mvp_array = new glm::mat4[instance_count];
+    Matrix4x4* mvp_array = new Matrix4x4[instance_count];
     uint64* texture_handle_array = new uint64[instance_count];
 
     // fill local buffers

@@ -17,11 +17,11 @@ public:
 
     std::map<Texture*, uint> dump_texture_usage() const override;
     
-    void render(const glm::mat4& view_projection_matrix) const override;
+    void render(const Matrix4x4& view_projection_matrix) const override;
     void cleanup() const override;
 
 protected:
-    virtual void put_params_for_intances(const glm::mat4& view_projection_matrix, const Shared<IRenderable>* objects, uint instance_count) const;
+    virtual void put_params_for_intances(const Matrix4x4& view_projection_matrix, const Shared<IRenderable>* objects, uint instance_count) const;
 
 private:
     render_database<IRenderable>* database_ = nullptr;

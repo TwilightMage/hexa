@@ -1,102 +1,89 @@
 #include "pch.h"
 #include "CppUnitTest.h"
+#include "../Engine/Matrix4x4.h"
 #include "../Engine/String.h"
+#include "../ThirdParty/include/glm/detail/type_mat4x4.hpp"
+#include "../ThirdParty/include/glm/ext/matrix_transform.hpp"
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
+bool compare(const Matrix4x4& m1, glm::mat4 m2)
+{
+	return	m1.data[0].x == m2[0][0] && m1.data[0].y == m2[0][1] && m1.data[0].z == m2[0][2] && m1.data[0].w == m2[0][3] &&
+			m1.data[1].x == m2[1][0] && m1.data[1].y == m2[1][1] && m1.data[1].z == m2[1][2] && m1.data[1].w == m2[1][3] &&
+			m1.data[2].x == m2[2][0] && m1.data[2].y == m2[2][1] && m1.data[2].z == m2[2][2] && m1.data[2].w == m2[2][3] &&
+			m1.data[3].x == m2[3][0] && m1.data[3].y == m2[3][1] && m1.data[3].z == m2[3][2] && m1.data[3].w == m2[3][3];
+}
+
 namespace HexaTest
 {
-	TEST_CLASS(EngineStringTest)
+	TEST_CLASS(MatrixTest)
 	{
-		const String str = "Best dragon Spyro dragon";
-
 	public:
-		TEST_METHOD(WString)
+		TEST_METHOD(Base)
 		{
-			Assert::IsTrue(false, str.wc());
+			Matrix4x4 m1;
+			glm::mat4 m2(1.0f);
+
+			Assert::IsTrue(compare(m1, cast_object<glm::mat4>(m1)));
+		}
+		
+		TEST_METHOD(Translate)
+		{
+			Matrix4x4 m1 = Matrix4x4().translate(Vector3(1, 2, 3));
+
+			glm::mat4 m2(1.0f);
+			m2 = glm::translate(m2, glm::vec3(1, 2, 3));
+
+			Assert::IsTrue(compare(m1, m2));
 		}
 
-		TEST_METHOD(Length)
+		TEST_METHOD(Rotate)
 		{
-			Assert::IsTrue(str.length_() == strlen(str.c()), L"Best dragon Spyro dragon");
+			Quaternion rot = Quaternion(Vector3(23, 35, 235));
+			
+			Matrix4x4 m1 = Matrix4x4().rotate(rot);
+
+			glm::mat4 m2(1.0f);
+			m2 = glm::rotate(m2, rot.axis_angle(), cast_object<glm::vec3>(rot.axis()));
+
+			Assert::IsTrue(compare(m1, m2));
 		}
 
-		TEST_METHOD(IndexOf)
+		TEST_METHOD(Scale)
 		{
-			Assert::IsTrue(str.index_of("Best") == 0, L"Best");
-			Assert::IsTrue(str.index_of("dragon") == 5, L"dragon");
-			Assert::IsTrue(str.index_of("Spyro") == 12, L"Spyro");
-			Assert::IsTrue(str.index_of("beast") == -1, L"beast");
-			Assert::IsTrue(str.index_of("Best dragon Spyro dragon dragon") == -1, L"Best dragon Spyro dragon dragon");
+			Matrix4x4 m1 = Matrix4x4().scale(Vector3(1, 2, 3));
+
+			glm::mat4 m2(1.0f);
+			m2 = glm::scale(m2, glm::vec3(1, 2, 3));
+
+			Assert::IsTrue(compare(m1, m2));
 		}
 
-		TEST_METHOD(LastIndexOf)
+		TEST_METHOD(Multiply)
 		{
-			Assert::IsTrue(str.last_index_of("dragon") == 18, L"dragon");
-			Assert::IsTrue(str.last_index_of("beast") == -1, L"beast");
-			Assert::IsTrue(str.last_index_of("Best dragon Spyro dragon dragon") == -1, L"Best dragon Spyro dragon dragon");
-		}
+			Quaternion rot1 = Quaternion(Vector3(23, 35, 235));
+			Quaternion rot2 = Quaternion(Vector3(36, 234, 129));
 
-		TEST_METHOD(Substring)
-		{
-			Assert::IsTrue(str.substring(5, 6) == "dragon", L"dragon");
-			Assert::IsTrue(str.substring(5) == "dragon Spyro dragon", L"dragon Spyro dragon");
-			Assert::IsTrue(str.substring(5, 50) == "dragon Spyro dragon", L"50, dragon Spyro dragon");
-		}
+			auto a = rot2.axis();
+			auto b = rot2.axis_angle();
+			
+			Matrix4x4 m11 = Matrix4x4().translate(Vector3(1, 2, 3)).rotate(rot1).scale(Vector3(1, 2, 3));
+			Matrix4x4 m12 = Matrix4x4()/*.translate(Vector3(4, 2, 6))*/.rotate(rot2);// .scale(Vector3(4, 7, 2));
 
-		TEST_METHOD(Replace)
-		{
-			Assert::IsTrue(str.replace("Spyro", "Cynder") == "Best dragon Cynder dragon", L"Spyro -> Cynder");
-			Assert::IsTrue(str.replace("Spyro", "Cyn") == "Best dragon Cyn dragon", L"Spyro -> Cyn");
-			Assert::IsTrue(str.replace("dragon", "drag") == "Best drag Spyro drag", L"dragon -> drag");
-		}
+			glm::mat4 m21(1.0f);
+			m21 = glm::translate(m21, glm::vec3(1, 2, 3));
+			m21 = glm::rotate(m21, rot1.axis_angle(), cast_object<glm::vec3>(rot1.axis()));
+			m21 = glm::scale(m21, glm::vec3(1, 2, 3));
 
-		TEST_METHOD(Remove)
-		{
-			Assert::IsTrue(str.remove("Spyro") == "Best dragon  dragon", L"Spyro");
-			Assert::IsTrue(str.remove("dragon") == "Best  Spyro ", L"dragon");
-		}
+			glm::mat4 m22(1.0f);
+			//m22 = glm::translate(m22, glm::vec3(4, 2, 6));
+			m22 = glm::rotate(m22, rot2.axis_angle(), cast_object<glm::vec3>(rot2.axis()));
+			//m22 = glm::scale(m22, glm::vec3(4, 7, 2));
 
-		TEST_METHOD(Fit)
-		{
-			String s = "dragon";
-
-			Assert::IsTrue(s.fit(10, '-') == "dragon----", L"dragon----");
-			Assert::IsTrue(s.fit(4, '-') == "drag", L"drag");
-			Assert::IsTrue(s.fit(-10, '-') == "----dragon", L"----dragon");
-			Assert::IsTrue(s.fit(-4, '-') == "agon", L"agon");
-		}
-
-		TEST_METHOD(LowerUpper)
-		{
-			String s = "Dragon";
-
-			Assert::IsTrue(s.to_lower() == "dragon", L"dragon");
-			Assert::IsTrue(s.to_upper() == "DRAGON", L"DRAGON");
-		}
-
-		TEST_METHOD(Trim)
-		{
-			String s = "   dragon   ";
-
-			Assert::IsTrue(s.trim_start() == "dragon   ", L"dragon   ");
-			Assert::IsTrue(s.trim_end() == "   dragon", L"   dragon");
-			Assert::IsTrue(s.trim() == "dragon", L"dragon");
-		}
-
-		TEST_METHOD(Contains)
-		{
-			Assert::IsTrue(str.starts_with("Best"), L"Starts with Best");
-			Assert::IsTrue(str.ends_with("dragon"), L"Ends with dragon");
-			Assert::IsTrue(str.contains("Spyro"), L"Contains Spyro");
-		}
-
-		TEST_METHOD(Split)
-		{
-			String s = "my test  dragon";
-
-			Assert::IsTrue(s.split(" ") == List<String>{"my", "test", "", "dragon"}, L"keep empty");
-			Assert::IsTrue(s.split(" ", true) == List<String>{"my", "test", "dragon"}, L"drop empty");
+			Assert::IsTrue(compare(m11, m21));
+			Assert::IsTrue(compare(m12, m22));
+			//Assert::IsTrue(compare(m11 * m12, m21 * m22));
 		}
 	};
 }

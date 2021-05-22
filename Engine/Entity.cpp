@@ -12,7 +12,6 @@
 
 Entity::Entity()
     : Object(typeid(this).name() + String(" entity"))
-    , cached_matrix_(glm::mat4(1.0f))
     , shader_(Game::get_basic_shader())
     , texture_(Game::get_white_pixel(), false)
     , pending_kill_(false)
@@ -141,7 +140,7 @@ Shared<Texture> Entity::get_texture() const
     return *texture_;
 }
 
-glm::mat4 Entity::get_matrix() const
+Matrix4x4 Entity::get_matrix() const
 {
     return cached_matrix_;
 }
@@ -239,11 +238,7 @@ bool Entity::is_rigid_body()
 
 void Entity::cache_matrix()
 {
-    cached_matrix_ = glm::mat4(1.0f);
-    
-    cached_matrix_ = translate(cached_matrix_, cast_object<glm::vec3>(position_));
-    cached_matrix_ = rotate(cached_matrix_, rotation_.axis_angle(), cast_object<glm::vec3>(rotation_.axis()));
-    cached_matrix_ = scale(cached_matrix_, cast_object<glm::vec3>(scale_));
+    cached_matrix_ = Matrix4x4().translate(position_).rotate(rotation_).scale(scale_);
 }
 
 void Entity::start()

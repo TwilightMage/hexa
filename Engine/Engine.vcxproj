@@ -213,6 +213,7 @@
     <ClInclude Include="LogStream.h" />
     <ClInclude Include="Margins.h" />
     <ClInclude Include="Math.h" />
+    <ClInclude Include="Matrix4x4.h" />
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Mod.h" />
     <ClInclude Include="Object.h" />
@@ -237,6 +238,8 @@
     <ClInclude Include="Slot.h" />
     <ClInclude Include="UIRenderer.h" />
     <ClInclude Include="ui\ButtonImage.h" />
+    <ClInclude Include="ui\ButtonTextPanel.h" />
+    <ClInclude Include="ui\Button.h" />
     <ClInclude Include="ui\Image.h" />
     <ClInclude Include="ui\Panel.h" />
     <ClInclude Include="ui\TextBlock.h" />
@@ -266,6 +269,7 @@
     <ClCompile Include="LogStream.cpp" />
     <ClCompile Include="Margins.cpp" />
     <ClCompile Include="Math.cpp" />
+    <ClCompile Include="Matrix4x4.cpp" />
     <ClCompile Include="Mesh.cpp" />
     <ClCompile Include="Mod.cpp" />
     <ClCompile Include="Object.cpp" />
@@ -355,7 +359,9 @@
     <ClCompile Include="TextureAtlasBinding.cpp" />
     <ClCompile Include="TextureBinding.cpp" />
     <ClCompile Include="UIRenderer.cpp" />
+    <ClCompile Include="ui\Button.cpp" />
     <ClCompile Include="ui\ButtonImage.cpp" />
+    <ClCompile Include="ui\ButtonTextPanel.cpp" />
     <ClCompile Include="ui\Image.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>

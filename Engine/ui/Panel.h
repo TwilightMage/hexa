@@ -2,6 +2,7 @@
 
 #include "UIElement.h"
 #include "Engine/Margins.h"
+#include "Engine/Rect.h"
 
 class Texture;
 class Image;
@@ -12,6 +13,9 @@ public:
     Panel(const Shared<Texture>& texture, const Margins& texture_offsets = Margins());
 
     void use_texture(const Shared<Texture>& texture);
+    const Rect& get_rect() const;
+    void set_rect(const Rect& rect);
+    void clear_rect();
 
 protected:
     void on_construct() override;
@@ -22,6 +26,8 @@ private:
     void update_texture() const;
     
     Margins margins_;
+    Rect rect_;
+    bool have_rect_;
 
     Shared<Image> lt_;
     Shared<Image> mt_;

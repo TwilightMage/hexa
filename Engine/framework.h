@@ -32,6 +32,10 @@
     #define EXPORT
 #endif
 
+#ifndef FORCEINLINE
+#define FORCEINLINE __forceinline
+#endif
+
 // Platform-specific definitions
 #if PLATFORM_WINDOWS
     #define WIN32_LEAN_AND_MEAN

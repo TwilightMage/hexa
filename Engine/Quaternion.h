@@ -32,6 +32,8 @@ public:
 
     Quaternion operator*(const Quaternion& rhs) const;
     void operator*=(const Quaternion& rhs);
+    bool operator==(const Quaternion& rhs) const;
+    bool operator!=(const Quaternion& rhs) const;
     
     float x;
     float y;

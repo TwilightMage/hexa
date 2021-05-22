@@ -12,10 +12,12 @@ public:
 
     float get_font_size() const;
     void set_font_size(float font_size);
+    const Shared<SpriteFont>& get_font() const;
     const String& get_text() const;
     void set_text(const String& text);
     bool get_wrap() const;
     void set_wrap(bool wrap);
+    float get_text_offset() const;
 
 protected:
     void on_construct() override;
@@ -29,4 +31,6 @@ private:
     float font_size_;
     float font_scale_;
     bool wrap_;
+
+    float text_offset_;
 };

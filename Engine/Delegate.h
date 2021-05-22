@@ -27,6 +27,11 @@ public:
 		};
 	}
 
+	void operator+=(void(* func)(InTypes...))
+	{
+		bind(func);
+	}
+
 	// Execute all bindings
 	void call(InTypes... args)
 	{

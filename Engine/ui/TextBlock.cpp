@@ -1,8 +1,8 @@
 ﻿#include "TextBlock.h"
 
-
 #include "Image.h"
 #include "Engine/Game.h"
+#include "Engine/Math.h"
 #include "Engine/SpriteFont.h"
 
 TextBlock::TextBlock(const String& string)
@@ -27,6 +27,11 @@ void TextBlock::set_font_size(float font_size)
         font_scale_ = font_size_ / font_->get_line_height();
         update_geometry();
     }
+}
+
+const Shared<SpriteFont>& TextBlock::get_font() const
+{
+    return font_;
 }
 
 const String& TextBlock::get_text() const
@@ -57,6 +62,11 @@ void TextBlock::set_wrap(bool wrap)
     }
 }
 
+float TextBlock::get_text_offset() const
+{
+    return text_offset_;
+}
+
 void TextBlock::on_construct()
 {
     update_geometry();
@@ -75,9 +85,11 @@ void TextBlock::update_geometry()
     if (is_started_construction())
     {
         remove_all_children();
-
+        text_offset_ = std::numeric_limits<float>::max();
+        
         if (wrap_)
         {
+            float text_height = 0;
             float line_y = 0;
             String text_to_arrange = text_;
             while (text_to_arrange.length() > 0)
@@ -95,14 +107,20 @@ void TextBlock::update_geometry()
                     ui_let->set_mouse_detection(false);
                     add_child(ui_let);
                     z += 0.0001f;
+
+                    text_offset_ = Math::min(text_offset_, ui_let->get_position().y);
+                    text_height = Math::max(text_height, ui_let->get_position().y + ui_let->get_size().y);
                 }
 
                 line_y += static_cast<float>(font_->get_line_height()) * font_scale_;
                 text_to_arrange = text_to_arrange.substring(letters.length()).trim_start();
+
+                set_size_internal(Vector2(get_size().x, text_height));
             }
         }
         else
         {
+            Vector2 text_size;
             uint len;
             auto letters = font_->arrange_string(text_, len);
             float z = get_position().z;
@@ -117,7 +135,18 @@ void TextBlock::update_geometry()
                 ui_let->set_mouse_detection(false);
                 add_child(ui_let);
                 z += 0.0001f;
+
+                text_offset_ = Math::min(text_offset_, ui_let->get_position().y);
+                text_size.x = Math::max(text_size.x, ui_let->get_position().x + ui_let->get_size().x);
+                text_size.y = Math::max(text_size.y, ui_let->get_position().y + ui_let->get_size().y);
             }
+
+            set_size_internal(text_size);
+        }
+
+        if (text_offset_ == std::numeric_limits<float>::max())
+        {
+            text_offset_ = 0;
         }
     }
 }

@@ -2,6 +2,7 @@
 
 #include "BasicTypes.h"
 #include "framework.h"
+#include "Math.h"
 
 String::String()
 	: inner_(new char('\0'))
@@ -233,7 +234,7 @@ String String::substring(uint start, uint num) const
 {
 	if (start >= length_) return "";
 	
-	const uint min = min(length_, start + num);
+	const uint min = Math::min(length_, start + num);
 	char* result = new char[min - start];
 
 	for (uint i = start; i < min; i++)
@@ -569,7 +570,7 @@ bool String::operator!=(const String& rhs) const
 
 bool String::operator<(const String& rhs) const
 {
-	for (uint i = 0; i < min(length_, rhs.length_); i++)
+	for (uint i = 0; i < Math::min(length_, rhs.length_); i++)
 	{
 		if (inner_[i] < rhs.inner_[i]) return true;
 		if (inner_[i] > rhs.inner_[i]) return false;
@@ -580,7 +581,7 @@ bool String::operator<(const String& rhs) const
 
 bool String::operator<=(const String& rhs) const
 {
-	for (uint i = 0; i < min(length_, rhs.length_); i++)
+	for (uint i = 0; i < Math::min(length_, rhs.length_); i++)
 	{
 		if (inner_[i] < rhs.inner_[i]) return true;
 		if (inner_[i] > rhs.inner_[i]) return false;
@@ -591,7 +592,7 @@ bool String::operator<=(const String& rhs) const
 
 bool String::operator>(const String& rhs) const
 {
-	for (uint i = 0; i < min(length_, rhs.length_); i++)
+	for (uint i = 0; i < Math::min(length_, rhs.length_); i++)
 	{
 		if (inner_[i] > rhs.inner_[i]) return true;
 		if (inner_[i] < rhs.inner_[i]) return false;
@@ -602,7 +603,7 @@ bool String::operator>(const String& rhs) const
 
 bool String::operator>=(const String& rhs) const
 {
-	for (uint i = 0; i < min(length_, rhs.length_); i++)
+	for (uint i = 0; i < Math::min(length_, rhs.length_); i++)
 	{
 		if (inner_[i] > rhs.inner_[i]) return true;
 		if (inner_[i] < rhs.inner_[i]) return false;

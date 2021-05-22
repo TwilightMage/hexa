@@ -1,9 +1,9 @@
 ﻿#pragma once
 
 #include <map>
-#include <glm/detail/type_mat4x4.hpp>
 
 #include "BasicTypes.h"
+#include "Matrix4x4.h"
 
 class Texture;
 class Shader;
@@ -22,6 +22,6 @@ public:
     //virtual std::map<Mesh*, uint> dump_mesh_usage() const = 0;
     //virtual std::map<Shader*, uint> dump_shader_usage() const = 0;
     
-    virtual void render(const glm::mat4& view_projection_matrix) const = 0;
+    virtual void render(const Matrix4x4& view_projection_matrix) const = 0;
     virtual void cleanup() const = 0;
 };

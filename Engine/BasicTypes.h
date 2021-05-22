@@ -4,6 +4,9 @@
 #include <cstdint>
 #include <memory>
 
+#undef min
+#undef max
+
 typedef unsigned int uint;
 typedef int64_t int64;
 typedef uint64_t uint64;

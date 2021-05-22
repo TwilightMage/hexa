@@ -36,7 +36,7 @@ Shared<Texture> Image::get_texture() const
     return *texture_;
 }
 
-glm::mat4 Image::get_matrix() const
+Matrix4x4 Image::get_matrix() const
 {
     return get_ui_matrix();
 }

@@ -86,6 +86,7 @@ public:
     static void hide_mouse();
     static void show_mouse();
     static void add_ui(const Weak<UIElement>& ui);
+    static float get_ui_scale();
 
     static bool is_loading_stage();
     static bool is_render_stage();
@@ -140,6 +141,7 @@ private:
 
     // Game
     Version game_version_ = {0, 1, 0};
+    float ui_scale_ = 2;
     Unique<EventBus> event_bus_;
     Shared<Shader> basic_shader_;
     Shared<Shader> basic_ui_shader_;

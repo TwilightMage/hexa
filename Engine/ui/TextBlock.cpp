@@ -100,7 +100,7 @@ void TextBlock::update_geometry()
                 for (const auto& let : letters)
                 {
                     auto ui_let = MakeShared<Image>();
-                    ui_let->set_position(Vector3(static_cast<float>(let.rect.x) * font_scale_, static_cast<float>(let.rect.y) + line_y * font_scale_, z));
+                    ui_let->set_position(Vector3(static_cast<float>(let.rect.x) * font_scale_, static_cast<float>(let.rect.y) * font_scale_ + line_y, z));
                     ui_let->set_size(Vector2(static_cast<float>(let.rect.w) * font_scale_, static_cast<float>(let.rect.h) * font_scale_));
                     ui_let->use_texture(font_->get_atlas_texture());
                     ui_let->set_rect(let.atlas_entry->rect);

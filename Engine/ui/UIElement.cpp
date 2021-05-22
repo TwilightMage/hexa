@@ -256,9 +256,8 @@ void UIElement::set_size_internal(const Vector2& vec2_size)
 
 void UIElement::detect_topmost_under_mouse(Vector2 mouse_pos, float parent_z, Shared<UIElement>& topmost, float& topmost_z)
 {
-    mouse_pos.x -= position_.x;
-    mouse_pos.y -= position_.y;
-    if (is_rect_under_mouse(mouse_pos))
+    mouse_pos -= position_ * Game::get_ui_scale();
+    if (is_rect_under_mouse(mouse_pos / Game::get_ui_scale()))
     {
         const auto my_z = parent_z + position_.z + 0.001f;
         
@@ -287,7 +286,7 @@ void UIElement::update_matrix()
     Vector3 trans = position_;
     trans.z += 0.001f;
     trans.y *= -1;
-    trans_rot_matrix_ = Matrix4x4().translate(trans).rotate(rotation_);
+    trans_rot_matrix_ = Matrix4x4().translate(trans * Game::get_ui_scale()).rotate(rotation_);
     
     Matrix4x4 parent_matrix;
     if (const auto& parent = parent_.lock())
@@ -308,5 +307,5 @@ void UIElement::update_matrix_child(const Matrix4x4& parent_matrix)
         i++;
     }
 
-    trans_rot_size_matrix_ = trans_rot_matrix_stacked_.scale(size_);
+    trans_rot_size_matrix_ = trans_rot_matrix_stacked_.scale(size_ * Game::get_ui_scale());
 }

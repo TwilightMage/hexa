@@ -19,38 +19,42 @@ void DialoguePanel::on_parent_size_changed()
 {
     if (auto parent = get_parent().lock())
     {
-        set_size(Vector2(Math::min(1080.0f, parent->get_size().x - 20), 200));
-        set_position(Vector2((parent->get_size().x - get_size().x) / 2, parent->get_size().y - 210));
+        set_size(Vector2(Math::min(500.0f, parent->get_size().x - 20), 100));
+        set_position(Vector2((parent->get_size().x - get_size().x) / 2, parent->get_size().y - 110));
     }
 }
 
 void DialoguePanel::on_construct()
 {    
-    panel_ = MakeShared<Panel>(Texture::load_png("resources/hexagame/textures/ui/panel.png"), Margins(8, 8, 8, 8));
+    panel_ = MakeShared<Panel>(Texture::load_png("resources/hexagame/textures/ui/panel.png"), Margins(4, 4, 4, 4));
     add_child(panel_);
     
     frame_ = MakeShared<Image>(Texture::load_png("resources/hexagame/textures/ui/frame.png"));
-    frame_->set_z(0.2f);
+    frame_->set_position(Vector2(10.0f, 10.0f));
+    frame_->set_size(Vector2(38.0f, 38.0f) * 2.0f);
+    frame_->set_z(0.1f);
     panel_->add_child(frame_);
     
     avatar_ = MakeShared<Image>(Texture::load_png("resources/hexagame/textures/ui/dragon.png"));
-    avatar_->set_z(0.1f);
+    avatar_->set_position(Vector2(3.0f, 3.0f) * 2.0f);
+    avatar_->set_size(Vector2(32.0f, 32.0f) * 2.0f);
     frame_->add_child(avatar_);
     
     name_ = MakeShared<TextBlock>("Orachir, the Dragon");
-    name_->set_z(0.1f);
-    name_->set_font_size(48);
+    name_->set_position(Vector2(95.0f, 5.0f));
+    name_->set_font_size(24);
     panel_->add_child(name_);
     
     message_ = MakeShared<TextBlock>("Well, well, well... Look who came. What do you want to ask me this time?");
     message_->set_wrap(true);
-    message_->set_font_size(24);
+    message_->set_font_size(12);
+    message_->set_position(Vector2(95.0f, 30.0f));
     message_->set_z(0.1f);
     panel_->add_child(message_);
 
     button_ = MakeShared<ButtonTextPanel>();
     button_->set_text("Push me!");
-    button_->set_size(Vector2(150.0f, 40.0f));
+    button_->set_size(Vector2(75.0f, 20.0f));
     button_->on_click.bind(this, &DialoguePanel::push_button);
     panel_->add_child(button_);
     
@@ -63,19 +67,11 @@ void DialoguePanel::update_geometry()
     {
         panel_->set_size(get_size());
 
-        frame_->set_position(Vector2(20.0f, 20.0f));
-        frame_->set_size(Vector2(76.0f, 76.0f) * 2.0f);
-
-        avatar_->set_position(Vector2(6.0f, 6.0f) * 2.0f);
-        avatar_->set_size(Vector2(64.0f, 64.0f) * 2.0f);
-
-        name_->set_size(Vector2(panel_->get_size().x - 190 - 20, 170.0f));
-        name_->set_position(Vector2(190.0f, 10.0f));
+        name_->set_size(Vector2(panel_->get_size().x - 95 - 10, 85.0f));
 	
-        message_->set_size(Vector2(panel_->get_size().x - 190 - 20, 170.0f));
-        message_->set_position(Vector2(190.0f, 60.0f));
+        message_->set_size(Vector2(panel_->get_size().x - 95 - 10, 85.0f));
 
-        button_->set_position(Vector2(get_size().x - 170, get_size().y - 60));
+        button_->set_position(Vector2(get_size().x - 85, get_size().y - 30));
     }
 }
 

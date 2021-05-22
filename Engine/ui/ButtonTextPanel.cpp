@@ -19,11 +19,12 @@ void ButtonTextPanel::set_text(const String& text)
 
 void ButtonTextPanel::on_construct()
 {
-    panel_ = MakeShared<Panel>(texture_, Margins(8, 8, 8, 8));
+    panel_ = MakeShared<Panel>(texture_, Margins(4, 4, 4, 4));
     panel_->set_mouse_detection(false);
     add_child(panel_);
 
     text_block_ = MakeShared<TextBlock>(text_);
+    text_block_->set_font_size(12);
     text_block_->set_z(0.01f);
     add_child(text_block_);
 
@@ -46,13 +47,10 @@ void ButtonTextPanel::state_updated(State state)
 
 void ButtonTextPanel::update_geometry()
 {
-    if (panel_)
+    if (is_started_construction())
     {
         panel_->set_size(get_size());
-    }
-
-    if (text_block_)
-    {
+        
         text_block_->set_position((get_size() - text_block_->get_size() - Vector2(0, text_block_->get_text_offset())) / 2.0f);
     }
 }

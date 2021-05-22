@@ -223,6 +223,11 @@ void Game::add_ui(const Weak<UIElement>& ui)
 	instance_->ui_root_->add_child(ui);
 }
 
+float Game::get_ui_scale()
+{
+	return instance_->ui_scale_;
+}
+
 bool Game::is_loading_stage()
 {
 	return instance_->is_loading_stage_;
@@ -246,7 +251,7 @@ void Game::setup_window()
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
-	ui_root_->set_size(Vector2(800, 600));
+	ui_root_->set_size(Vector2(800 / get_ui_scale(), 600 / get_ui_scale()));
 	ui_root_->mouse_detection_ = false;
 	ui_root_->constructed_ = true;
 	
@@ -574,5 +579,5 @@ void Game::cursor_position_callback(class GLFWwindow* window, double x_pos, doub
 
 void Game::window_size_callback(class GLFWwindow* window, int width, int height)
 {
-	instance_->ui_root_->set_size(Vector2(static_cast<float>(width), static_cast<float>(height)));
+	instance_->ui_root_->set_size(Vector2(static_cast<float>(width) / get_ui_scale(), static_cast<float>(height) / get_ui_scale()));
 }

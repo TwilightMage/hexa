@@ -21,16 +21,16 @@ void HexaGame::init_game_info(GameInfo& outInfo)
 
 void HexaGame::start()
 {
-    //lock_mouse();
-    //hide_mouse();
+    lock_mouse();
+    hide_mouse();
     
-    auto world = MakeShared<CollisionEditorWorld>();
+    auto world = MakeShared<World>();
     open_world(world);
 
-    auto dialogue_panel = MakeShared<DialoguePanel>();
-    add_ui(dialogue_panel);
+    /*auto dialogue_panel = MakeShared<DialoguePanel>();
+    add_ui(dialogue_panel);*/
 
-    /*const auto player = MakeShared<DebugPlayer>();
+    const auto player = MakeShared<DebugPlayer>();
     world->spawn_entity(player, Vector3(-3.0f, 0.0f, 0.0f), Quaternion(Vector3(0.0f, 0.0f, 0.0f)));
     possess(player);
 
@@ -57,6 +57,4 @@ void HexaGame::start()
     entity5->name = "Tile 5";
     world->spawn_entity(entity5, Vector3(0.0f, 0.86602540378444f * 8, 0.0f));
     entity5->use_texture(Texture::load_png("resources/hexagame/textures/tiles/dirt.png"));
-
-    dump_texture_usage();*/
 }

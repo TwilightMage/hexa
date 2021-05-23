@@ -54,6 +54,7 @@ public:
     uint64 get_handle_arb() const;
     uint get_width() const;
     uint get_height() const;
+    Vector2 get_size() const;
     Color get_pixel(uint x, uint y) const;
 
     Shared<Editor> edit();

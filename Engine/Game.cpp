@@ -238,6 +238,10 @@ bool Game::is_render_stage()
 	return instance_->is_render_stage_;
 }
 
+void Game::loading_stage()
+{
+}
+
 void Game::start()
 {
 }
@@ -341,6 +345,8 @@ void Game::render_loop()
 	white_pixel_ = MakeShared<Texture>("White Pixel", 1, 1, List<Color>::of(Color::white));
 
 	default_font_ = SpriteFont::load_fnt("resources/hexagame/fonts/berkshire_swash.fnt");
+	
+	loading_stage();
 	
 	// Call load stage in mods
 	for (auto& mod : mods_)

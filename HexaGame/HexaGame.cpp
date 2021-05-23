@@ -2,12 +2,15 @@
 
 
 
+#include "Tiles.h"
 #include "CollisionEditor/CollisionEditorWorld.h"
 #include "Engine/Texture.h"
 #include "Entities/Arrow.h"
 #include "Entities/DebugPlayer.h"
 #include "Entities/DemoMeshEntity.h"
-#include "ui/DialoguePanel.h"
+#include "ui/TileDatabaseViewer.h"
+
+Shared<Database<TileInfo>> HexaGame::tile_database = MakeShared<Database<TileInfo>>("Tile Database");
 
 HexaGame::HexaGame(int argc, char* argv[])
     : Game(argc, argv)
@@ -21,14 +24,17 @@ void HexaGame::init_game_info(GameInfo& outInfo)
 
 void HexaGame::start()
 {
-    lock_mouse();
-    hide_mouse();
+    //lock_mouse();
+    //hide_mouse();
     
     auto world = MakeShared<World>();
     open_world(world);
 
-    /*auto dialogue_panel = MakeShared<DialoguePanel>();
+    /*const auto dialogue_panel = MakeShared<DialoguePanel>();
     add_ui(dialogue_panel);*/
+
+    const auto tile_database_viewer = MakeShared<TileDatabaseViewer>(tile_database);
+    add_ui(tile_database_viewer);
 
     const auto player = MakeShared<DebugPlayer>();
     world->spawn_entity(player, Vector3(-3.0f, 0.0f, 0.0f), Quaternion(Vector3(0.0f, 0.0f, 0.0f)));
@@ -41,20 +47,25 @@ void HexaGame::start()
     const auto entity2 = MakeShared<DemoMeshEntity>();
     entity2->name = "Tile 2";
     world->spawn_entity(entity2, Vector3(0.0f, 0.86602540378444f * 2, 0.0f));
-    entity2->use_texture(Texture::load_png("resources/hexagame/textures/tiles/grass.png"));
+    entity2->use_texture(Tiles::grass.get()->texture);
 
     const auto entity3 = MakeShared<DemoMeshEntity>();
     entity3->name = "Tile 3";
     world->spawn_entity(entity3, Vector3(0.0f, 0.86602540378444f * 4, 0.0f));
-    entity3->use_texture(Texture::load_png("resources/hexagame/textures/tiles/sand.png"));
+    entity3->use_texture(Tiles::sand.get()->texture);
 
     const auto entity4 = MakeShared<DemoMeshEntity>();
     entity4->name = "Tile 4";
     world->spawn_entity(entity4, Vector3(0.0f, 0.86602540378444f * 6, 0.0f));
-    entity4->use_texture(Texture::load_png("resources/hexagame/textures/tiles/stone.png"));
+    entity4->use_texture(Tiles::stone.get()->texture);
 
     const auto entity5 = MakeShared<DemoMeshEntity>();
     entity5->name = "Tile 5";
     world->spawn_entity(entity5, Vector3(0.0f, 0.86602540378444f * 8, 0.0f));
-    entity5->use_texture(Texture::load_png("resources/hexagame/textures/tiles/dirt.png"));
+    entity5->use_texture(Tiles::dirt.get()->texture);
+}
+
+void HexaGame::loading_stage()
+{
+    Database<TileInfo>::register_entries<Tiles>();
 }

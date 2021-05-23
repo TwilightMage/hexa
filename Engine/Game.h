@@ -93,6 +93,7 @@ public:
     
 protected:
     virtual void init_game_info(GameInfo& out_info) = 0;
+    virtual void loading_stage();
     virtual void start();
     virtual void tick(float delta_time);
     

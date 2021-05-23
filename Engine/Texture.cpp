@@ -126,6 +126,11 @@ uint Texture::get_height() const
     return height_;
 }
 
+Vector2 Texture::get_size() const
+{
+    return Vector2(static_cast<float>(width_), static_cast<float>(height_));
+}
+
 Color Texture::get_pixel(uint x, uint y) const
 {
     return pixels_[y * width_ + x];

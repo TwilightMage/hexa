@@ -185,8 +185,12 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="HexaGame.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="TileInfo.h" />
+    <ClInclude Include="Tiles.h" />
     <ClInclude Include="ui\DialoguePanel.h" />
     <ClInclude Include="ui\MainMenu.h" />
+    <ClInclude Include="ui\TileDatabaseRow.h" />
+    <ClInclude Include="ui\TileDatabaseViewer.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CollisionEditor\CollisionEditorPlayer.cpp">
@@ -596,6 +600,8 @@
     </ClCompile>
     <ClCompile Include="ui\DialoguePanel.cpp" />
     <ClCompile Include="ui\MainMenu.cpp" />
+    <ClCompile Include="ui\TileDatabaseRow.cpp" />
+    <ClCompile Include="ui\TileDatabaseViewer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.vcxproj">

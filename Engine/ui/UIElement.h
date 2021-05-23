@@ -28,6 +28,7 @@ public:
     void set_mouse_detection(bool state);
     
     Weak<UIElement> get_parent() const;
+    const List<Shared<UIElement>>& get_children() const;
     void add_child(const Weak<UIElement>& child);
     void remove_from_parent();
     void remove_all_children();
@@ -48,7 +49,10 @@ protected:
     virtual void on_mouse_leave();
     virtual void on_press();
     virtual void on_release();
-
+    virtual void on_child_added(const Shared<UIElement>& child);
+    virtual void on_child_removed(const Shared<UIElement>& child);
+    virtual void on_all_child_removed();
+    
     void set_size_internal(const Vector2& vec2_size);
     
 private:

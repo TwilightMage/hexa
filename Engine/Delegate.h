@@ -167,6 +167,11 @@ template<typename... ArgTypes>
 class Action
 {
 public:
+	Action(void(* func)(ArgTypes...))
+	{
+		return {std::bind(func), true};
+	}
+	
 	template<typename T>
 	void Bind(T* obj, void(T::* func)(ArgTypes...))
 	{
@@ -213,14 +218,19 @@ template<typename RetType, typename... ArgTypes>
 class Function
 {
 public:
+	Function(RetType(* func)(ArgTypes...))
+	{
+		return {std::bind(func), true};
+	}
+	
 	template<typename T>
-	void Bind(T* obj, void(T::* func)(ArgTypes...))
+	void Bind(T* obj, RetType(T::* func)(ArgTypes...))
 	{
 		binding = std::bind(func, obj);
 		isBound = true;
 	}
 
-	void Bind(void(* func)(ArgTypes...))
+	void Bind(RetType(* func)(ArgTypes...))
 	{
 		binding = std::bind(func);
 		isBound = true;

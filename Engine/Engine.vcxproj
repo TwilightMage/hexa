@@ -193,7 +193,12 @@
     <ClInclude Include="BasicTypes.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="Database.h" />
+    <ClInclude Include="DatabaseBase.h" />
+    <ClInclude Include="DatabaseEntry.h" />
+    <ClInclude Include="DatabaseUtils.h" />
     <ClInclude Include="DateTime.h" />
+    <ClInclude Include="DeferredRegister.h" />
     <ClInclude Include="Delegate.h" />
     <ClInclude Include="EventBus.h" />
     <ClInclude Include="File.h" />
@@ -240,10 +245,14 @@
     <ClInclude Include="ui\ButtonImage.h" />
     <ClInclude Include="ui\ButtonTextPanel.h" />
     <ClInclude Include="ui\Button.h" />
+    <ClInclude Include="ui\DatabaseViewer.h" />
+    <ClInclude Include="ui\HorizontalList.h" />
     <ClInclude Include="ui\Image.h" />
     <ClInclude Include="ui\Panel.h" />
     <ClInclude Include="ui\TextBlock.h" />
     <ClInclude Include="ui\UIElement.h" />
+    <ClInclude Include="ui\UIList.h" />
+    <ClInclude Include="ui\VerticalList.h" />
     <ClInclude Include="UsageCounter.h" />
     <ClInclude Include="UsageCounterBase.h" />
     <ClInclude Include="Utils.h" />
@@ -256,7 +265,150 @@
   <ItemGroup>
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
+    <ClInclude Include="Database.cpp">
+      <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <Optimization>Disabled</Optimization>
+      <SupportJustMyCode>true</SupportJustMyCode>
+      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerListingLocation>x64\Debug\</AssemblerListingLocation>
+      <AcceptableNonZeroExitCodes></AcceptableNonZeroExitCodes>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <BrowseInformation>false</BrowseInformation>
+      <BrowseInformationFile>x64\Debug\</BrowseInformationFile>
+      <CompileAs>Default</CompileAs>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Column</DiagnosticsFormat>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <ErrorReporting>Prompt</ErrorReporting>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <EnableASAN>false</EnableASAN>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedUsingFiles></ForcedUsingFiles>
+      <GenerateModuleDependencies>false</GenerateModuleDependencies>
+      <GenerateSourceDependencies>false</GenerateSourceDependencies>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDependenciesFile>x64\Debug\</ModuleDependenciesFile>
+      <ModuleOutputFile>x64\Debug\</ModuleOutputFile>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ObjectFileName>x64\Debug\</ObjectFileName>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ProgramDataBaseFileName>x64\Debug\vc142.pdb</ProgramDataBaseFileName>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>x64\Debug\Engine.pch</PrecompiledHeaderOutputFile>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessKeepComments>false</PreprocessKeepComments>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <ShowIncludes>true</ShowIncludes>
+      <SourceDependenciesFile>x64\Debug\</SourceDependenciesFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <SpectreMitigation>false</SpectreMitigation>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <TrackerLogDirectory>x64\Debug\Engine.tlog\</TrackerLogDirectory>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <UseFullPaths>true</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <XMLDocumentationFileName>x64\Debug\</XMLDocumentationFileName>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <IntelJCCErratum>false</IntelJCCErratum>
+      <PreprocessorDefinitions>_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;_WINDLL;_UNICODE;UNICODE;</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <LinkCompiled>true</LinkCompiled>
+      <LibCompiled></LibCompiled>
+      <ImpLibCompiled></ImpLibCompiled>
+    </ClInclude>
+    <ClCompile Include="DatabaseBase.cpp" />
     <ClCompile Include="DateTime.cpp" />
+    <ClInclude Include="DeferredRegister.cpp">
+      <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <Optimization>Disabled</Optimization>
+      <SupportJustMyCode>true</SupportJustMyCode>
+      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerListingLocation>x64\Debug\</AssemblerListingLocation>
+      <AcceptableNonZeroExitCodes></AcceptableNonZeroExitCodes>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <BrowseInformation>false</BrowseInformation>
+      <BrowseInformationFile>x64\Debug\</BrowseInformationFile>
+      <CompileAs>Default</CompileAs>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Column</DiagnosticsFormat>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <ErrorReporting>Prompt</ErrorReporting>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <EnableASAN>false</EnableASAN>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <ForcedIncludeFiles></ForcedIncludeFiles>
+      <ForcedUsingFiles></ForcedUsingFiles>
+      <GenerateModuleDependencies>false</GenerateModuleDependencies>
+      <GenerateSourceDependencies>false</GenerateSourceDependencies>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDependenciesFile>x64\Debug\</ModuleDependenciesFile>
+      <ModuleOutputFile>x64\Debug\</ModuleOutputFile>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ObjectFileName>x64\Debug\</ObjectFileName>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ProgramDataBaseFileName>x64\Debug\vc142.pdb</ProgramDataBaseFileName>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>x64\Debug\Engine.pch</PrecompiledHeaderOutputFile>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessKeepComments>false</PreprocessKeepComments>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <ShowIncludes>true</ShowIncludes>
+      <SourceDependenciesFile>x64\Debug\</SourceDependenciesFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <SpectreMitigation>false</SpectreMitigation>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <TrackerLogDirectory>x64\Debug\Engine.tlog\</TrackerLogDirectory>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <UseFullPaths>true</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <XMLDocumentationFileName>x64\Debug\</XMLDocumentationFileName>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <IntelJCCErratum>false</IntelJCCErratum>
+      <PreprocessorDefinitions>_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;_WINDLL;_UNICODE;UNICODE;</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <LinkCompiled>true</LinkCompiled>
+      <LibCompiled></LibCompiled>
+      <ImpLibCompiled></ImpLibCompiled>
+    </ClInclude>
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="EventBus.cpp" />
     <ClCompile Include="File.cpp" />
@@ -362,6 +514,73 @@
     <ClCompile Include="ui\Button.cpp" />
     <ClCompile Include="ui\ButtonImage.cpp" />
     <ClCompile Include="ui\ButtonTextPanel.cpp" />
+    <ClCompile Include="ui\DatabaseViewer.cpp">
+      <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <Optimization>Disabled</Optimization>
+      <SupportJustMyCode>true</SupportJustMyCode>
+      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerListingLocation>x64\Debug\</AssemblerListingLocation>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <BrowseInformation>false</BrowseInformation>
+      <BrowseInformationFile>x64\Debug\</BrowseInformationFile>
+      <CompileAs>Default</CompileAs>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Column</DiagnosticsFormat>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <ErrorReporting>Prompt</ErrorReporting>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <EnableASAN>false</EnableASAN>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <GenerateModuleDependencies>false</GenerateModuleDependencies>
+      <GenerateSourceDependencies>false</GenerateSourceDependencies>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDependenciesFile>x64\Debug\</ModuleDependenciesFile>
+      <ModuleOutputFile>x64\Debug\</ModuleOutputFile>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ObjectFileName>x64\Debug\</ObjectFileName>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ProgramDataBaseFileName>x64\Debug\vc142.pdb</ProgramDataBaseFileName>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>x64\Debug\Engine.pch</PrecompiledHeaderOutputFile>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessKeepComments>false</PreprocessKeepComments>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <ShowIncludes>false</ShowIncludes>
+      <SourceDependenciesFile>x64\Debug\</SourceDependenciesFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <SpectreMitigation>false</SpectreMitigation>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <TrackerLogDirectory>x64\Debug\Engine.tlog\</TrackerLogDirectory>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <TreatWarningAsError>true</TreatWarningAsError>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <UseFullPaths>true</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <XMLDocumentationFileName>x64\Debug\</XMLDocumentationFileName>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <IntelJCCErratum>false</IntelJCCErratum>
+      <PreprocessorDefinitions>_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;_WINDLL;_UNICODE;UNICODE;</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <LinkCompiled>true</LinkCompiled>
+    </ClCompile>
+    <ClCompile Include="ui\HorizontalList.cpp" />
     <ClCompile Include="ui\Image.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -496,6 +715,8 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="ui\UIList.cpp" />
+    <ClCompile Include="ui\VerticalList.cpp" />
     <ClCompile Include="Utils.cpp" />
     <ClCompile Include="Vector2.cpp" />
     <ClCompile Include="Vector3.cpp" />

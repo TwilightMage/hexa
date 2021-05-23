@@ -99,6 +99,11 @@ Weak<UIElement> UIElement::get_parent() const
     return parent_;
 }
 
+const List<Shared<UIElement>>& UIElement::get_children() const
+{
+    return children_;
+}
+
 void UIElement::add_child(const Weak<UIElement>& child)
 {
     if (const auto child_ptr = child.lock())
@@ -106,6 +111,7 @@ void UIElement::add_child(const Weak<UIElement>& child)
         if (const auto old_parent = child_ptr->parent_.lock())
         {
             old_parent->children_.Remove(child_ptr);
+            old_parent->on_child_removed(child_ptr);
         }
         else
         {
@@ -120,6 +126,7 @@ void UIElement::add_child(const Weak<UIElement>& child)
         
         child_ptr->parent_ = weak_from_this();
         children_.Add(child_ptr);
+        on_child_added(child_ptr);
 
         child_ptr->update_matrix();
 
@@ -132,6 +139,7 @@ void UIElement::remove_from_parent()
     if (const auto parent_ptr = parent_.lock())
     {
         parent_ptr->children_.Remove(shared_from_this());
+        parent_ptr->on_child_removed(shared_from_this());
 
         if (auto me_renderable = cast<IRenderable>(shared_from_this()))
         {
@@ -149,6 +157,8 @@ void UIElement::remove_all_children()
     {
         children_.last()->remove_from_parent();
     }
+
+    on_all_child_removed();
 }
 
 bool UIElement::should_render() const
@@ -244,6 +254,18 @@ void UIElement::on_press()
 }
 
 void UIElement::on_release()
+{
+}
+
+void UIElement::on_child_added(const Shared<UIElement>& child)
+{
+}
+
+void UIElement::on_child_removed(const Shared<UIElement>& child)
+{
+}
+
+void UIElement::on_all_child_removed()
 {
 }
 

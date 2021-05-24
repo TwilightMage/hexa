@@ -10,62 +10,36 @@
 
 #include <reactphysics3d/reactphysics3d.h>
 
-void World::spawn_entity(const Weak<Entity>& entity, const Vector3& pos, const Quaternion& rot)
+void World::spawn_entity(const Shared<Entity>& entity, const Vector3& pos, const Quaternion& rot)
 {
-    if (auto entity_ptr = entity.lock())
-    {
-        entity_ptr->position_ = pos;
-        entity_ptr->rotation_ = rot;
-        spawn_entity(entity);
-    }
+    if (ensure_child_not_exist(entity)) return;
+    
+    entity->position_ = pos;
+    entity->rotation_ = rot;
+    spawn_entity_internal(entity);
 }
 
-void World::spawn_entity(const Weak<Entity>& entity, const Vector3& pos)
+void World::spawn_entity(const Shared<Entity>& entity, const Vector3& pos)
 {
-    if (auto entity_ptr = entity.lock())
-    {
-        entity_ptr->position_ = pos;
-        spawn_entity(entity);
-    }
+    if (ensure_child_not_exist(entity)) return;
+    
+    entity->position_ = pos;
+    spawn_entity_internal(entity);
 }
 
-void World::spawn_entity(const Weak<Entity>& entity, const Quaternion& rot)
+void World::spawn_entity(const Shared<Entity>& entity, const Quaternion& rot)
 {
-    if (auto entity_ptr = entity.lock())
-    {
-        entity_ptr->rotation_ = rot;
-        spawn_entity(entity);
-    }
+    if (ensure_child_not_exist(entity)) return;
+    
+    entity->rotation_ = rot;
+    spawn_entity_internal(entity);
 }
 
-void World::spawn_entity(const Weak<Entity>& entity)
+void World::spawn_entity(const Shared<Entity>& entity)
 {
-    if (auto entity_ptr = entity.lock())
-    {
-        entity_ptr->world_ = weak_from_this();
-        if (entity_ptr->is_rigid_body())
-        {
-            entity_ptr->rigid_body_ = physics_world_->createRigidBody(
-                reactphysics3d::Transform(
-                    reactphysics3d::Vector3(entity_ptr->position_.x, entity_ptr->position_.y, entity_ptr->position_.z),
-                    reactphysics3d::Quaternion(entity_ptr->rotation_.x, entity_ptr->rotation_.y, entity_ptr->rotation_.z, entity_ptr->rotation_.w)
-                )
-            );
-        }
-        
-        if (const auto mesh = entity_ptr->get_mesh())
-        {
-            mesh->usage_count_++;
-        }
-        
-        entities_.Add(entity_ptr);
-        entity_ptr->start();
-
-        if (entity_ptr->get_mesh() && entity_ptr->get_shader())
-        {
-            notify_renderable_added(entity_ptr);
-        }
-    }
+    if (ensure_child_not_exist(entity)) return;
+    
+    spawn_entity_internal(entity);
 }
 
 void World::start()
@@ -219,4 +193,41 @@ void World::close()
     on_close();
     Game::instance_->physics_->destroyPhysicsWorld(physics_world_);
     physics_world_ = nullptr;
+}
+
+void World::spawn_entity_internal(const Shared<Entity>& entity)
+{
+    entity->world_ = weak_from_this();
+    if (entity->is_rigid_body())
+    {
+        entity->rigid_body_ = physics_world_->createRigidBody(
+            reactphysics3d::Transform(
+                reactphysics3d::Vector3(entity->position_.x, entity->position_.y, entity->position_.z),
+                reactphysics3d::Quaternion(entity->rotation_.x, entity->rotation_.y, entity->rotation_.z, entity->rotation_.w)
+            )
+        );
+    }
+        
+    if (const auto mesh = entity->get_mesh())
+    {
+        mesh->usage_count_++;
+    }
+        
+    entities_.Add(entity);
+    entity->start();
+
+    if (entity->get_mesh() && entity->get_shader())
+    {
+        notify_renderable_added(entity);
+    }
+}
+
+bool World::ensure_child_not_exist(const Shared<Entity>& entity)
+{
+    for (auto& existing_entity : entities_)
+    {
+        if (existing_entity == entity) return true;
+    }
+
+    return false;
 }

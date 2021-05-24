@@ -3,8 +3,6 @@
 #define GLFW_INCLUDE_NONE
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/quaternion.hpp>
 #include <reactphysics3d/reactphysics3d.h>
 
 #include "Camera.h"
@@ -418,32 +416,29 @@ void Game::render_loop()
 			}
 
 			// 3d matrix
-			glm::vec3 cam_from = cast_object<glm::vec3>(current_camera_->owner->get_position());
-			glm::vec3 cam_to = cast_object<glm::vec3>(current_camera_->owner->get_position() + current_camera_->owner->get_rotation().forward());
+			auto cam_from = current_camera_->owner->get_position();
+			auto cam_to = current_camera_->owner->get_position() + current_camera_->owner->get_rotation().forward();
 			cam_from.y *= -1;
 			cam_to.y *= -1;
-			glm::mat4 view = glm::lookAt(
-                cam_from,
-                cam_to,
-                glm::vec3(0.0f, 0.0f, 1.0f)
-                ) * glm::mat4 (
-				    1.0, 0.0, 0.0, 0.0,
-				    0.0, -1.0, 0.0, 0.0,
-				    0.0, 0.0, 1.0, 0.0,
-				    0.0, 0.0, 0.0, 1.0
-			    );
 
-			glm::mat4 proj = glm::perspective(current_camera_->fov, (float) width / (float) height, 0.01f, 1000.0f);
+			auto view = Matrix4x4::look_at(cam_from, cam_to) * Matrix4x4(
+                    1.0, 0.0, 0.0, 0.0,
+                    0.0, -1.0, 0.0, 0.0,
+                    0.0, 0.0, 1.0, 0.0,
+                    0.0, 0.0, 0.0, 1.0
+                );
 
-			glm::mat4 vp = proj * view;
+			auto proj = Matrix4x4::perspective(current_camera_->fov, static_cast<float>(width) / static_cast<float>(height), 0.01f, 1000.0f);
+			
+			auto vp = proj * view;
 
 			// UI matrix
-			glm::mat4 ui_vp = glm::ortho(0.0f, (float)width, (float)-height, 0.0f, -1000.0f, 0.0001f);
+			auto ui_vp = Matrix4x4::ortho(0.0f, static_cast<float>(width), static_cast<float>(-height), 0.0f, -1000.0f, 0.0001f);
 			
 			is_render_stage_ = true;
-			renderer_->render(cast_object<Matrix4x4>(vp));
+			renderer_->render(vp);
 			glClear(GL_DEPTH_BUFFER_BIT);
-			ui_renderer_->render(cast_object<Matrix4x4>(ui_vp));
+			ui_renderer_->render(ui_vp);
 			is_render_stage_ = false;
 		}
  

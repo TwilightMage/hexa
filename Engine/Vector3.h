@@ -1,4 +1,5 @@
 ﻿#pragma once
+
 #include "framework.h"
 #include "Vector2.h"
 
@@ -36,6 +37,8 @@ public:
     void operator/=(float rhs);
     bool operator==(const Vector3& rhs) const;
     bool operator!=(const Vector3& rhs) const;
+
+    Vector3 operator-() const;
     
     float x;
     float y;

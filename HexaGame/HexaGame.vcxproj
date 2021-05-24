@@ -185,9 +185,12 @@
     <ClInclude Include="Entities\TileDemoMeshEntity.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="HexaGame.h" />
+    <ClInclude Include="HexaMath.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="TileIndex.h" />
     <ClInclude Include="TileInfo.h" />
     <ClInclude Include="Tiles.h" />
+    <ClInclude Include="TileSide.h" />
     <ClInclude Include="ui\DialoguePanel.h" />
     <ClInclude Include="ui\MainMenu.h" />
     <ClInclude Include="ui\TileDatabaseRow.h" />
@@ -595,12 +598,14 @@
     </ClCompile>
     <ClCompile Include="Entities\TileDemoMeshEntity.cpp" />
     <ClCompile Include="HexaGame.cpp" />
+    <ClCompile Include="HexaMath.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="TileIndex.cpp" />
     <ClCompile Include="ui\DialoguePanel.cpp" />
     <ClCompile Include="ui\MainMenu.cpp" />
     <ClCompile Include="ui\TileDatabaseRow.cpp" />

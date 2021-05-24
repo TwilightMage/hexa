@@ -18,10 +18,10 @@ EXTERN class EXPORT World : public std::enable_shared_from_this<World>
     friend Game;
     
 public:
-    void spawn_entity(const Weak<Entity>& entity, const Vector3& pos, const Quaternion& rot);
-    void spawn_entity(const Weak<Entity>& entity, const Vector3& pos);
-    void spawn_entity(const Weak<Entity>& entity, const Quaternion& rot);
-    void spawn_entity(const Weak<Entity>& entity);
+    void spawn_entity(const Shared<Entity>& entity, const Vector3& pos, const Quaternion& rot);
+    void spawn_entity(const Shared<Entity>& entity, const Vector3& pos);
+    void spawn_entity(const Shared<Entity>& entity, const Quaternion& rot);
+    void spawn_entity(const Shared<Entity>& entity);
 
     void start();
     void tick(float delta_time);
@@ -46,7 +46,9 @@ protected:
 
 private:
     void close();
-
+    void spawn_entity_internal(const Shared<Entity>& entity);
+    bool ensure_child_not_exist(const Shared<Entity>& entity);
+    
     List<Shared<Entity>> entities_;
     reactphysics3d::PhysicsWorld* physics_world_;
     float physics_tick_accum_;

@@ -1,8 +1,5 @@
 ﻿#pragma once
 
-#include <glm/ext/matrix_transform.hpp>
-
-
 #include "IRenderable.h"
 #include "Mesh.h"
 #include "Shader.h"

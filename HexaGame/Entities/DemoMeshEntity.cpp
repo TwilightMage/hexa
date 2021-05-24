@@ -3,7 +3,6 @@
 
 #include "Engine/GeometryEditor.h"
 #include "Engine/Mesh.h"
-#include "Engine/Texture.h"
 #include "HexaGame/Tiles.h"
 #include "HexaGame/WorldGenerator.h"
 
@@ -16,7 +15,7 @@ void DemoMeshEntity::on_start()
 {
     List<Mesh::vertex> vertices;
     List<uint> indices;
-    WorldGenerator::generate_tile(TileSide::Down | TileSide::Up, Tiles::grass.get(), vertices, indices);
+    WorldGenerator::generate_tile(TileSide::All, Tiles::grass.get(), vertices, indices, 0.0f);
     GeometryEditor::remove_indices(vertices, indices);
 
     Shared<Mesh> mesh = MakeShared<Mesh>("tile", vertices);

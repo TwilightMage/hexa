@@ -1,6 +1,6 @@
 ﻿#include "Vector3.h"
 
-#include <glm/glm.hpp>
+#include "Math.h"
 
 Vector3::Vector3()
     : x(0.0f)
@@ -46,7 +46,7 @@ Vector3::Vector3(const Vector3& rhs)
 
 float Vector3::magnitude() const
 {
-    return glm::sqrt(x * x + y * y + z * z);
+    return Math::sqrt(x * x + y * y + z * z);
 }
 
 float Vector3::dot_product(const Vector3& rhs) const
@@ -177,6 +177,11 @@ bool Vector3::operator==(const Vector3& rhs) const
 bool Vector3::operator!=(const Vector3& rhs) const
 {
     return (x != rhs.x || y != rhs.y || z != rhs.z);
+}
+
+Vector3 Vector3::operator-() const
+{
+    return Vector3(-x, -y, -z);
 }
 
 Vector3 Vector3::zero()

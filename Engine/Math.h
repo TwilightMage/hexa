@@ -1,13 +1,26 @@
 ﻿#pragma once
 
+#include <valarray>
+
 #include "framework.h"
-#include "ui/TextBlock.h"
+
+#undef min
+#undef max
 
 class Math
 {
-public:    
-    inline const static float pi = 3.141592653589793238462643383279502884197169399375105820974944592f;
-    inline const static double pi_double = 3.141592653589793238462643383279502884197169399375105820974944592f;
+public:
+    template<typename T>
+    static T pi()
+    {
+        return static_cast<T>(3.141592653589793238462643383279502884197169399375105820974944592);
+    }
+
+    template<typename T>
+    static T epsilon()
+    {
+        return static_cast<T>(2.2204460492503131e-016);
+    }
 
     template<typename T>
     static T min(T a, T b)
@@ -21,24 +34,34 @@ public:
         return a > b ? a : b;
     }
 
-    static float degrees(float radians)
+    template<typename T>
+    static T degrees(T radians)
     {
-        return radians / pi * 180;
+        return radians / pi<T>() * static_cast<T>(180);
     }
 
-    static double degrees(double radians)
+    template<typename T>
+    static T radians(T degrees)
     {
-        return radians / pi_double * 180;
+        return degrees / static_cast<T>(180) * pi<T>();
+    }
+    
+    template<typename T>
+    static T sqr(T in)
+    {
+        return in * in;
     }
 
-    static float radians(float degrees)
+    template<typename T>
+    static T pow(T in, T pow)
     {
-        return degrees / 180 * pi;
+        return std::pow(in, pow);
     }
-
-    static double radians(double degrees)
+    
+    template<typename T>
+    static T sqrt(T in)
     {
-        return degrees / 180 * pi_double;
+        return std::sqrt(in);
     }
 
     template<typename T>
@@ -63,6 +86,24 @@ public:
     static T cos_rad(T rad)
     {
         return cos(rad);
+    }
+
+    template<typename T>
+    static int floor(T in)
+    {
+        return static_cast<int>(::floor(in));
+    }
+
+    template<typename T>
+    static int ceil(T in)
+    {
+        return static_cast<int>(::ceil(in));
+    }
+
+    template<typename T>
+    static int round(T in)
+    {
+        return static_cast<int>(::round(in));
     }
 };
 

@@ -1,0 +1,2 @@
+﻿#include "HexaMath.h"
+

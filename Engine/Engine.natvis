@@ -86,4 +86,17 @@
             <Item Name="[3]" ExcludeView="simple">value[3]</Item>
         </Expand>
     </Type>
+
+    <Type Name="Matrix4x4::Row">
+        <DisplayString>{{ {x}, {y}, {z}, {w} }}</DisplayString>
+    </Type>
+    <Type Name="Matrix4x4">
+        <DisplayString>mat4 {{ expand to view }}</DisplayString>
+        <Expand>
+            <Item Name="[0]" ExcludeView="simple">data[0]</Item>
+            <Item Name="[1]" ExcludeView="simple">data[1]</Item>
+            <Item Name="[2]" ExcludeView="simple">data[2]</Item>
+            <Item Name="[3]" ExcludeView="simple">data[3]</Item>
+        </Expand>
+    </Type>
 </AutoVisualizer>

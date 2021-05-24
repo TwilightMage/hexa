@@ -1,10 +1,10 @@
 ﻿#pragma once
 
 #include <stdexcept>
+#include <vector>
 
 #include "Array.h"
 #include "BasicTypes.h"
-#include "framework.h"
 
 template<typename T>
 class List : public Array<T>
@@ -384,6 +384,21 @@ public:
     {
         reallocate(0);
         length_ = 0;
+    }
+
+    List operator+(const List& rhs)
+    {
+        List result = *this;
+        result.AddMany(rhs);
+
+        return result;
+    }
+
+    List operator+=(const List& rhs)
+    {
+        AddMany(rhs);
+
+        return *this;
     }
 
 private:

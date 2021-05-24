@@ -1,7 +1,5 @@
 ﻿#include "UIElement.h"
 
-#include <glm/detail/type_mat4x4.hpp>
-
 #include "Engine/Game.h"
 #include "Engine/Texture.h"
 #include "Engine/Utils.h"

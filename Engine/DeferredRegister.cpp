@@ -3,19 +3,24 @@
 #include "Database.h"
 
 template <class C>
-DeferredRegister<C>::DeferredRegister(uint, Shared<Database<C>>&(* db_provider)(), C(* record_provider)())
-    : db_provider_(db_provider)
-    , record_provider_(record_provider)
+DeferredRegister<C>::DeferredRegister(C(* record_provider)())
+    : record_provider_(record_provider)
     , registration_performed_(false)
 {
 }
 
 template <class C>
-void DeferredRegister<C>::perform_registration()
+DeferredRegister<C>::DeferredRegister()
+{
+}
+
+template <class C>
+void DeferredRegister<C>::perform_registration(Database<C>* database)
 {
     if (!registration_performed_)
     {
-        cached_value_ = db_provider_()->add(record_provider_());
+        auto rec = record_provider_();
+        cached_value_ = database->add(rec);
         registration_performed_ = true;
     }
 }

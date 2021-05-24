@@ -55,11 +55,13 @@ template <class T>
 template <class C>
 void Database<T>::register_entries()
 {
-    const uint count = C::end - C::begin - 1;
-    byte* data_start = reinterpret_cast<byte*>(reinterpret_cast<uint*>(&C::begin) + 1);
+    // I don't give a fuck, why "+ 8" is required, but the code doesn't work without it
+    const static uint stride = sizeof(DeferredRegister<T>) + 8;
+    
+    const uint64 count = (reinterpret_cast<byte*>(&C::end) - reinterpret_cast<byte*>(&C::begin)) / stride - 1;
+    byte* data_start = reinterpret_cast<byte*>(&C::begin) + stride;
     for (uint i = 0; i < count; i++)
     {
-        // I don't give a fuck, why "+ 8" is required, but the code doesn't work without it
-        reinterpret_cast<DeferredRegister<T>*>((data_start + (sizeof(DeferredRegister<T>) + 8) * i))->perform_registration();
+        reinterpret_cast<DeferredRegister<T>*>(data_start + stride * i)->perform_registration(this);
     }
 }

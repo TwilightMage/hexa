@@ -10,14 +10,14 @@ template<class C>
 class DeferredRegister
 {
 public:
-    DeferredRegister(uint, Shared<Database<C>>&(* db_provider)(), C(* record_provider)());
-
-    void perform_registration();
+    DeferredRegister(C(* record_provider)());
+    DeferredRegister();
+    
+    void perform_registration(Database<C>* database);
 
     const Shared<const C>& get() const;
 
-private:
-    Shared<Database<C>>&(* db_provider_)();
+private:    
     C(* record_provider_)();
     Shared<const C> cached_value_;
     bool registration_performed_;

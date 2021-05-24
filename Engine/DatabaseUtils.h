@@ -2,15 +2,12 @@
 
 #include "BasicTypes.h"
 
-#define USE_DATABASE(type, path)\
-    inline static auto db_provider = []()->Shared<Database<type>>&{ return path; };
-
-#define BEGIN_RECORDS()\
+#define BEGIN_RECORDS(type)\
     public:\
-    inline static uint begin = __COUNTER__;
+    inline static DeferredRegister<type> begin = DeferredRegister<type>();
 
-#define END_RECORDS()\
-    inline static uint end = __COUNTER__;
+#define END_RECORDS(type)\
+    inline static DeferredRegister<type> end = DeferredRegister<type>();
 
 #define RECORD(type, name, ...)\
-    inline static DeferredRegister<type> name = DeferredRegister<type>(__COUNTER__, db_provider, [](){return type{ #name, __VA_ARGS__};});
+    inline static DeferredRegister<type> name = DeferredRegister<type>([](){return type{ #name, __VA_ARGS__};});

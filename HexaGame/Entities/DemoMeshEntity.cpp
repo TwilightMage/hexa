@@ -4,6 +4,8 @@
 #include "Engine/GeometryEditor.h"
 #include "Engine/Mesh.h"
 #include "Engine/Texture.h"
+#include "HexaGame/Tiles.h"
+#include "HexaGame/WorldGenerator.h"
 
 DemoMeshEntity::DemoMeshEntity()
     : Entity()
@@ -12,21 +14,12 @@ DemoMeshEntity::DemoMeshEntity()
 
 void DemoMeshEntity::on_start()
 {
-    //static Shared<Mesh> mesh = GeometryEditor::get_unit_cube();
-    static Shared<Mesh> mesh = Mesh::load_obj("resources/hexagame/meshes/hexagon_tile.obj");
-    /*static Shared<Mesh> mesh = Shared<Mesh>(new Mesh
-    {
-        List<Mesh::vertex>({
-            {{0.f, 0.f, 0.f}, {0.f, 1.f}, {1.f, 1.f, 1.f}},
-            {{0.f, 1.f, 0.f}, {1.f, 1.f}, {1.f, 1.f, 1.f}},
-            {{1.f, 0.f, 0.f}, {0.f, 0.f}, {1.f, 1.f, 1.f}},
-            {{1.f, 0.f, 0.f}, {0.f, 0.f}, {1.f, 1.f, 1.f}},
-            {{0.f, 1.f, 0.f}, {1.f, 1.f}, {1.f, 1.f, 1.f}},
-            {{1.f, 1.f, 0.f}, {1.f, 0.f}, {1.f, 1.f, 1.f}}
-        })
-    });*/
+    List<Mesh::vertex> vertices;
+    List<uint> indices;
+    WorldGenerator::generate_tile(TileSide::Down | TileSide::Up, Tiles::grass.get(), vertices, indices);
+    GeometryEditor::remove_indices(vertices, indices);
 
+    Shared<Mesh> mesh = MakeShared<Mesh>("tile", vertices);
+    
     use_mesh(mesh);
-
-    use_texture(Texture::load_png("resources/hexagame/textures/tiles/stone_bricks.png"));
 }

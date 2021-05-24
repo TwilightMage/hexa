@@ -172,26 +172,14 @@ inline type operator+(type in, int delta)							\
 inline type operator-(type in, int delta)							\
 {																	\
 	return static_cast<type>(static_cast<uint32_t>(in) - delta);	\
-}																	\
+}
 
-#define IMPLEMENT_ENUM_FLAGS(type)													\
-inline type operator|(type a, type b)												\
-{																					\
-	return static_cast<type>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));	\
-}																					\
-inline void operator|=(type& a, type b)												\
-{																					\
-	a = static_cast<type>(static_cast<uint32_t>(a) | static_cast<uint32_t>(b));		\
-}																					\
-inline type operator&(type a, type b)												\
-{																					\
-	return static_cast<type>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));	\
-}																					\
-inline void operator&=(type& a, type b)												\
-{																					\
-	a = static_cast<type>(static_cast<uint32_t>(a) & static_cast<uint32_t>(b));		\
-}																					\
-inline type operator~(type a)														\
-{																					\
-	return static_cast<type>(~static_cast<uint32_t>(a));							\
-}																					\
+#define IMPLEMENT_ENUM_FLAGS(Type)																											 \
+inline           Type& operator|=(Type& Lhs, Type rhs) { return Lhs = (Type)((__underlying_type(Type))Lhs | (__underlying_type(Type))rhs); } \
+inline           Type& operator&=(Type& Lhs, Type rhs) { return Lhs = (Type)((__underlying_type(Type))Lhs & (__underlying_type(Type))rhs); } \
+inline           Type& operator^=(Type& Lhs, Type rhs) { return Lhs = (Type)((__underlying_type(Type))Lhs ^ (__underlying_type(Type))rhs); } \
+inline constexpr Type  operator| (Type  Lhs, Type rhs) { return (Type)((__underlying_type(Type))Lhs | (__underlying_type(Type))rhs); }		 \
+inline constexpr Type  operator& (Type  Lhs, Type rhs) { return (Type)((__underlying_type(Type))Lhs & (__underlying_type(Type))rhs); }		 \
+inline constexpr Type  operator^ (Type  Lhs, Type rhs) { return (Type)((__underlying_type(Type))Lhs ^ (__underlying_type(Type))rhs); }		 \
+inline constexpr bool  operator! (Type  e)             { return !(__underlying_type(Type))e; }												 \
+inline constexpr Type  operator~ (Type  e)             { return (Type)~(__underlying_type(Type))e; }

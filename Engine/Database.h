@@ -18,7 +18,7 @@ public:
     const std::map<String, Shared<T>>& records() const;
 
     template<class C>
-    static void register_entries();
+    void register_entries();
 
 private:
     std::map<String, Shared<T>> data_;

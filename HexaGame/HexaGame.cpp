@@ -24,17 +24,14 @@ void HexaGame::init_game_info(GameInfo& outInfo)
 
 void HexaGame::start()
 {
-    //lock_mouse();
-    //hide_mouse();
+    lock_mouse();
+    hide_mouse();
     
     auto world = MakeShared<World>();
     open_world(world);
 
     /*const auto dialogue_panel = MakeShared<DialoguePanel>();
     add_ui(dialogue_panel);*/
-
-    const auto tile_database_viewer = MakeShared<TileDatabaseViewer>(tile_database);
-    add_ui(tile_database_viewer);
 
     const auto player = MakeShared<DebugPlayer>();
     world->spawn_entity(player, Vector3(-3.0f, 0.0f, 0.0f), Quaternion(Vector3(0.0f, 0.0f, 0.0f)));
@@ -43,6 +40,7 @@ void HexaGame::start()
     const auto entity1 = MakeShared<DemoMeshEntity>();
     entity1->name = "Tile 1";
     world->spawn_entity(entity1, Vector3(0.0f, 0.0f, 0.0f));
+    entity1->use_texture(Tiles::stone_bricks.get()->texture);
     
     const auto entity2 = MakeShared<DemoMeshEntity>();
     entity2->name = "Tile 2";
@@ -67,5 +65,5 @@ void HexaGame::start()
 
 void HexaGame::loading_stage()
 {
-    Database<TileInfo>::register_entries<Tiles>();
+    tile_database->register_entries<Tiles>();
 }

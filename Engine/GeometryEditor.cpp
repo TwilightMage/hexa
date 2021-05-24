@@ -24,7 +24,7 @@ void GeometryEditor::optimize(List<Mesh::vertex>& vertices, List<uint>& indices)
 
 void GeometryEditor::remove_indices(List<Mesh::vertex>& vertices, List<uint>& indices)
 {
-    for (uint i = 0; i < indices.length() - 1; i++)
+    /*for (uint i = 0; i < indices.length() - 1; i++)
     {
         if (indices[i] != i)
         {
@@ -35,7 +35,15 @@ void GeometryEditor::remove_indices(List<Mesh::vertex>& vertices, List<uint>& in
                 if (indices[j] >= i) indices[j]++;
             }
         }
+    }*/
+
+    List<Mesh::vertex> result;
+    for (auto index : indices)
+    {
+        result.Add(vertices[index]);
     }
+
+    vertices = result;
 }
 
 void GeometryEditor::invert_vertices(List<Mesh::vertex>& vertices)

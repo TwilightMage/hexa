@@ -184,6 +184,11 @@ Vector3 Vector3::operator-() const
     return Vector3(-x, -y, -z);
 }
 
+float Vector3::sum_all() const
+{
+    return x + y + z;
+}
+
 Vector3 Vector3::zero()
 {
     return Vector3(0.0f, 0.0f, 0.0f);

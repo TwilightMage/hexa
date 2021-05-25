@@ -39,6 +39,8 @@ public:
     bool operator!=(const Vector3& rhs) const;
 
     Vector3 operator-() const;
+
+    float sum_all() const;
     
     float x;
     float y;

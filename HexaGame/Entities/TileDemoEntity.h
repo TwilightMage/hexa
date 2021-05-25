@@ -8,10 +8,10 @@
 
 class TileInfo;
 
-class TileDemoMeshEntity : public Entity
+class TileDemoEntity : public Entity
 {
 public:
-    TileDemoMeshEntity(const std::array<Shared<const TileInfo>, 6>& tiles);
+    TileDemoEntity(const std::array<Shared<const TileInfo>, 6>& tiles);
 
 protected:
     void on_start() override;

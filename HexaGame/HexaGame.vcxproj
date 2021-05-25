@@ -175,14 +175,17 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="HexaWorld.h" />
+    <ClInclude Include="WorldChunkMesh.h" />
     <ClInclude Include="CollisionEditor\CollisionEditorPlayer.h" />
     <ClInclude Include="CollisionEditor\CollisionEditorWorld.h" />
+    <ClInclude Include="DefaultWorldGenerator.h" />
     <ClInclude Include="Entities\Arrow.h" />
     <ClInclude Include="Entities\AxisArrows.h" />
     <ClInclude Include="Entities\DebugPlayer.h" />
     <ClInclude Include="Entities\DemoMeshEntity.h" />
     <ClInclude Include="Entities\MeshEntity.h" />
-    <ClInclude Include="Entities\TileDemoMeshEntity.h" />
+    <ClInclude Include="Entities\TileDemoEntity.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="HexaGame.h" />
     <ClInclude Include="HexaMath.h" />
@@ -195,9 +198,13 @@
     <ClInclude Include="ui\MainMenu.h" />
     <ClInclude Include="ui\TileDatabaseRow.h" />
     <ClInclude Include="ui\TileDatabaseViewer.h" />
+    <ClInclude Include="WorldChunk.h" />
+    <ClInclude Include="WorldChunkData.h" />
     <ClInclude Include="WorldGenerator.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="HexaWorld.cpp" />
+    <ClCompile Include="WorldChunkMesh.cpp" />
     <ClCompile Include="CollisionEditor\CollisionEditorPlayer.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
@@ -330,6 +337,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="DefaultWorldGenerator.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="Entities\Arrow.cpp" />
     <ClCompile Include="Entities\AxisArrows.cpp">
@@ -596,7 +604,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
-    <ClCompile Include="Entities\TileDemoMeshEntity.cpp" />
+    <ClCompile Include="Entities\TileDemoEntity.cpp" />
     <ClCompile Include="HexaGame.cpp" />
     <ClCompile Include="HexaMath.cpp" />
     <ClCompile Include="pch.cpp">
@@ -610,6 +618,8 @@
     <ClCompile Include="ui\MainMenu.cpp" />
     <ClCompile Include="ui\TileDatabaseRow.cpp" />
     <ClCompile Include="ui\TileDatabaseViewer.cpp" />
+    <ClCompile Include="WorldChunk.cpp" />
+    <ClCompile Include="WorldChunkData.cpp" />
     <ClCompile Include="WorldGenerator.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -636,6 +646,7 @@
     <Content Include="resources\hexagame\textures\ui\dragon.png" />
     <Content Include="resources\hexagame\textures\ui\frame.png" />
     <Content Include="resources\hexagame\textures\ui\panel.png" />
+    <ClInclude Include="TileType.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

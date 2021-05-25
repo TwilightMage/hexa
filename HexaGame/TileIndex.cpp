@@ -1,6 +1,7 @@
 ﻿#include "TileIndex.h"
 
 #include "HexaMath.h"
+#include "WorldChunkData.h"
 #include "Engine/Math.h"
 
 TileIndex::TileIndex(int x, int y, uint z)
@@ -29,4 +30,14 @@ TileIndex TileIndex::from_index(const Vector3& vector)
     int r = Math::floor((temp + Math::floor(-x + Math::sqrt(3.0f) * y + 1.0f)) / 3.0f);
 
     return TileIndex(Math::floor((Math::floor(2.0f * x + 1.0f) + temp) / 3.0f), Math::floor((temp + Math::floor(-x + Math::sqrt(3.0f) * y + 1.0f)) / 3.0f), static_cast<uint>(vector.z / HexaMath::tile_height));
+}
+
+TileIndex TileIndex::offset(int x, int y, int z) const
+{
+    return TileIndex(this->x + x, this->y + y, this->z + z);
+}
+
+TileIndex TileIndex::cycle_chunk() const
+{
+    return TileIndex(x % WorldChunkData::chunk_size, y  % WorldChunkData::chunk_size, z);
 }

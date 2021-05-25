@@ -1,4 +1,4 @@
-﻿#include "TileDemoMeshEntity.h"
+﻿#include "TileDemoEntity.h"
 
 
 #include "Engine/GeometryEditor.h"
@@ -6,12 +6,12 @@
 #include "HexaGame/TileIndex.h"
 #include "HexaGame/WorldGenerator.h"
 
-TileDemoMeshEntity::TileDemoMeshEntity(const std::array<Shared<const TileInfo>, 6>& tiles)
+TileDemoEntity::TileDemoEntity(const std::array<Shared<const TileInfo>, 6>& tiles)
     : tiles_(tiles)
 {
 }
 
-void TileDemoMeshEntity::on_start()
+void TileDemoEntity::on_start()
 {
     if (auto world = get_world().lock())
     {
@@ -23,7 +23,7 @@ void TileDemoMeshEntity::on_start()
                 List<Mesh::vertex> tile_vertices;
                 List<uint> tile_indices;
         
-                WorldGenerator::generate_tile(masks[i], tiles_[i], tile_vertices, tile_indices, 0.0f);
+                WorldGenerator::generate_tile_mesh(masks[i], tiles_[i], tile_vertices, tile_indices, 0.0f);
                 GeometryEditor::remove_indices(tile_vertices, tile_indices);
                 GeometryEditor::translate(tile_vertices, tile_positions[i].to_vector());
 

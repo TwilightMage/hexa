@@ -56,10 +56,10 @@ void add_poly(List<uint>& src_indices, List<uint> indices, int offset)
 	}
 }
 
-void WorldGenerator::generate_tile(TileSide sides, const Shared<const TileInfo>& tileInfo, List<Mesh::vertex>& vertices, List<uint>& indices, float seed)
+void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const TileInfo>& tileInfo, List<Mesh::vertex>& vertices, List<uint>& indices, float seed)
 {
     int vertexCount = 0;
-	int int_seed = static_cast<int>(seed * 7);
+	int int_seed = static_cast<int>(seed * 5.2355f);
 
 	if (!!(sides & TileSide::Up)) vertexCount += 6;
 	if (!!(sides & TileSide::Down)) vertexCount += 6;

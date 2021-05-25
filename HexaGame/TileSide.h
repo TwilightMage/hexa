@@ -4,6 +4,7 @@
 
 enum class TileSide
 {
+    None        = 0,
     Front       = 1,
     FrontRight  = 2,
     BackRight   = 4,

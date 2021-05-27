@@ -24,27 +24,27 @@ std::chrono::system_clock::time_point to_time_point(const DateTime& in_time)
 	return result;
 }
 
-float DateTime::Interval::get_total_hours() const
+float TimeInterval::get_total_hours() const
 {
 	return get_total_minutes() / 60.0f;
 }
 
-float DateTime::Interval::get_total_minutes() const
+float TimeInterval::get_total_minutes() const
 {
 	return get_total_seconds() / 60.0f;
 }
 
-float DateTime::Interval::get_total_seconds() const
+float TimeInterval::get_total_seconds() const
 {
 	return get_total_milliseconds() / 1000.0f;
 }
 
-int DateTime::Interval::get_total_milliseconds() const
+int TimeInterval::get_total_milliseconds() const
 {
 	return millisecond + (second + (minute + (hour * day * 24) * 60) * 60) * 1000;
 }
 
-String DateTime::Interval::to_string() const
+String TimeInterval::to_string() const
 {
 	String result = StringMake(millisecond) + "ms";
 	if (day > 0 || hour > 0 || minute > 0 || second > 0) result = StringMake(second) + "s, " + result;
@@ -102,7 +102,7 @@ DateTime DateTime::now()
 	};
 }
 
-DateTime::Interval DateTime::epoch_time()
+TimeInterval DateTime::epoch_time()
 {
 	return now() - DateTime{ 1970, 1, 1, 0, 0, 0, 0 };
 }
@@ -112,7 +112,7 @@ DateTime::operator String() const
 	return to_string();
 }
 
-DateTime::Interval DateTime::operator-(const DateTime& rhs) const
+TimeInterval DateTime::operator-(const DateTime& rhs) const
 {
 	const auto my_point = to_time_point(*this);
 	const auto rhs_point = to_time_point(rhs);

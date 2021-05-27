@@ -2,7 +2,7 @@
 
 #include "String.h"
 
-class DatabaseEntry
+EXTERN class EXPORT DatabaseEntry
 {
 public:
     String key = "";

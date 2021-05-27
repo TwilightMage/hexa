@@ -14,7 +14,7 @@ public:
     explicit Database(const String& name);
     
     Shared<const T> add(const T& record);
-    Shared<const T> get(const String& key);
+    Shared<const T> get(const String& key) const;
     const std::map<String, Shared<T>>& records() const;
 
     template<class C>

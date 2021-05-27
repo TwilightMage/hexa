@@ -2,10 +2,11 @@
 
 #include "BasicTypes.h"
 #include "Delegate.h"
+#include "framework.h"
 
 class World;
 
-class EventBus
+EXTERN class EXPORT EventBus
 {
 public:
     Delegate<const Weak<World>&> world_opened;

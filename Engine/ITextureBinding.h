@@ -3,7 +3,7 @@
 #include "BasicTypes.h"
 #include "Vector2.h"
 
-class ITextureBinding
+EXTERN class EXPORT ITextureBinding
 {
 public:
     virtual uint get_gl_id() = 0;

@@ -1,7 +1,9 @@
 ﻿#include "WorldGenerator.h"
 
-
 #include "HexaMath.h"
+#include "HexaSaveGame.h"
+#include "HexaSettings.h"
+#include "Engine/Game.h"
 #include "Engine/Math.h"
 
 const Vector2 tex_size(60, 45);
@@ -59,7 +61,7 @@ void add_poly(List<uint>& src_indices, List<uint> indices, int offset)
 void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const TileInfo>& tileInfo, List<Mesh::vertex>& vertices, List<uint>& indices, float seed)
 {
     int vertexCount = 0;
-	int int_seed = static_cast<int>(seed * 5.2355f);
+	int int_seed = static_cast<int>(seed * 127.2355f);
 
 	if (!!(sides & TileSide::Up)) vertexCount += 6;
 	if (!!(sides & TileSide::Down)) vertexCount += 6;
@@ -134,4 +136,61 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const TileI
 		if (!!(sides & TileSide::Back))        add_poly(indices, { 4, 5, 12, 11 }, offset); // back
 		if (!!(sides & TileSide::BackLeft))    add_poly(indices, { 5, 6, 13, 12 }, offset); // back-right
 	}
+}
+
+void WorldGenerator::request_chunk_generation(const Shared<WorldChunkData>& chunk)
+{
+	pending_chunks_.Add(chunk);
+	try_to_start_new_generation();
+}
+
+mINI::INIStructure WorldGenerator::write_settings() const
+{
+	return mINI::INIStructure();
+}
+
+void WorldGenerator::read_settings(const mINI::INIStructure& settings)
+{
+}
+
+void WorldGenerator::try_to_start_new_generation()
+{
+	if (threads.size() < cast<HexaSettings>(Game::get_settings())->get_max_threads() && pending_chunks_.length() > 0)
+	{
+		Shared<WorldChunkData> chunk = pending_chunks_.first();
+		pending_chunks_.RemoveAt(0);
+		auto thread = MakeShared<std::thread>(&WorldGenerator::do_generate, this, chunk);
+		threads[chunk] = thread;
+	}
+}
+
+void WorldGenerator::do_generate(const Shared<WorldChunkData>& chunk)
+{
+	chunk->set_state(WorldChunkDataState::Loading);
+
+	perform_chunk_generation(EditableChunk(chunk));
+	if (const auto save_game = cast<HexaSaveGame>(Game::get_save_game()))
+	{
+		if (auto modifications = save_game->get_chunk_modifications(chunk->get_index()))
+		{
+			for (auto& modification : *modifications)
+			{
+				chunk->data[modification.first.x][modification.first.y][modification.first.z] = modification.second;
+			}
+		}
+	}
+	chunk->generate_metadata();
+	
+	Game::call_on_main_thread([this, chunk]()
+	{
+		finish_generation(chunk);
+	});
+}
+
+void WorldGenerator::finish_generation(const Shared<WorldChunkData>& chunk)
+{
+	chunk->set_state(WorldChunkDataState::Loaded);
+	threads[chunk]->join();
+	threads.erase(chunk);
+	try_to_start_new_generation();
 }

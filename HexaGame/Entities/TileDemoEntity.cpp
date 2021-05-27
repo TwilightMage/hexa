@@ -13,7 +13,7 @@ TileDemoEntity::TileDemoEntity(const std::array<Shared<const TileInfo>, 6>& tile
 
 void TileDemoEntity::on_start()
 {
-    if (auto world = get_world().lock())
+    if (auto world = get_world())
     {
         std::map<Shared<Texture>, List<Mesh::vertex>> domains;
         for (uint i = 0; i < 6; i++)

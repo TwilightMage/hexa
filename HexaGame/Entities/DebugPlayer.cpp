@@ -19,7 +19,7 @@ void DebugPlayer::on_start()
     camera_->owner = this;
     camera_->fov = 45.0f;
 
-    if (auto world_ptr = get_world().lock())
+    if (auto world = get_world())
     {
         auto arrows_mesh = Mesh::load_obj("resources/engine/meshes/axis_arrows.obj");
         for (auto& vertex : arrows_mesh->vertices_)
@@ -29,7 +29,7 @@ void DebugPlayer::on_start()
         
         arrows_ = MakeShared<MeshEntity>(arrows_mesh);
         arrows_->set_scale(Vector3(0.1f));
-        world_ptr->spawn_entity(arrows_);
+        world->spawn_entity(arrows_);
     }
 }
 
@@ -57,10 +57,10 @@ void DebugPlayer::mouse_button_down(int button)
 {
     if (button == 1)
     {
-        if (auto world_ptr = get_world().lock())
+        if (auto world = get_world())
         {
             const auto arrow = MakeShared<Arrow>();
-            world_ptr->spawn_entity(arrow, get_position() + get_rotation().forward(), get_rotation());
+            world->spawn_entity(arrow, get_position() + get_rotation().forward(), get_rotation());
         }
     }
 }

@@ -10,6 +10,8 @@
 
 #include <reactphysics3d/reactphysics3d.h>
 
+#include "Settings.h"
+
 void World::spawn_entity(const Shared<Entity>& entity, const Vector3& pos, const Quaternion& rot)
 {
     if (ensure_child_not_exist(entity)) return;
@@ -62,7 +64,7 @@ void World::tick(float delta_time)
     if (delta_time != 0.0f)
     {
         physics_tick_accum_ += delta_time;
-        const auto interval = Game::get_info().physics_tick;
+        const auto interval = Game::get_settings()->get_physics_tick_interval();
         while (physics_tick_accum_ > interval)
         {
             physics_tick_accum_ -= interval;
@@ -104,6 +106,7 @@ void World::tick(float delta_time)
     {
         entities_.RemoveAt(to_delete[to_delete.length() - 1 - i]);
     }
+    to_delete.Clear();
 }
 
 const List<Shared<Entity>>& World::get_entities() const

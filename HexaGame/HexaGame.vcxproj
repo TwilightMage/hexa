@@ -175,7 +175,14 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="ChunkIndex.h" />
+    <ClInclude Include="DefaultWorldGeneratorInfo.h" />
+    <ClInclude Include="EditableChunk.h" />
+    <ClInclude Include="HexaSettings.h" />
     <ClInclude Include="HexaWorld.h" />
+    <ClInclude Include="Tree2D.h" />
+    <ClInclude Include="HexaSaveGame.h" />
+    <ClInclude Include="WorldChunkDataState.h" />
     <ClInclude Include="WorldChunkMesh.h" />
     <ClInclude Include="CollisionEditor\CollisionEditorPlayer.h" />
     <ClInclude Include="CollisionEditor\CollisionEditorWorld.h" />
@@ -201,9 +208,16 @@
     <ClInclude Include="WorldChunk.h" />
     <ClInclude Include="WorldChunkData.h" />
     <ClInclude Include="WorldGenerator.h" />
+    <ClInclude Include="WorldGeneratorInfo.h" />
+    <ClInclude Include="Worlds\GameWorld.h" />
+    <ClInclude Include="Worlds\TilePresentationWorld.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="ChunkIndex.cpp" />
+    <ClCompile Include="DefaultWorldGeneratorInfo.cpp" />
+    <ClCompile Include="EditableChunk.cpp" />
     <ClCompile Include="HexaWorld.cpp" />
+    <ClCompile Include="HexaSaveGame.cpp" />
     <ClCompile Include="WorldChunkMesh.cpp" />
     <ClCompile Include="CollisionEditor\CollisionEditorPlayer.cpp">
       <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
@@ -621,6 +635,8 @@
     <ClCompile Include="WorldChunk.cpp" />
     <ClCompile Include="WorldChunkData.cpp" />
     <ClCompile Include="WorldGenerator.cpp" />
+    <ClCompile Include="Worlds\GameWorld.cpp" />
+    <ClCompile Include="Worlds\TilePresentationWorld.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Engine\Engine.vcxproj">

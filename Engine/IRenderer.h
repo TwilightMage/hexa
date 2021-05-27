@@ -10,7 +10,7 @@ class Shader;
 class Mesh;
 class IRenderable;
 
-class IRenderer
+EXTERN class EXPORT IRenderer
 {
 public:
     virtual bool register_object(const Weak<IRenderable>& renderable) const = 0;

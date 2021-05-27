@@ -3,18 +3,14 @@
 
 
 #include "DefaultWorldGenerator.h"
-#include "HexaWorld.h"
+#include "DefaultWorldGeneratorInfo.h"
+#include "HexaSaveGame.h"
+#include "HexaSettings.h"
 #include "Tiles.h"
-#include "WorldChunk.h"
 #include "WorldGenerator.h"
-#include "CollisionEditor/CollisionEditorWorld.h"
 #include "Engine/GeometryEditor.h"
-#include "Engine/Texture.h"
-#include "Entities/Arrow.h"
-#include "Entities/DebugPlayer.h"
-#include "Entities/DemoMeshEntity.h"
-#include "Entities/TileDemoEntity.h"
 #include "ui/TileDatabaseViewer.h"
+#include "Worlds/GameWorld.h"
 
 Shared<Database<TileInfo>> HexaGame::tile_database = MakeShared<Database<TileInfo>>("Tile Database");
 
@@ -23,59 +19,36 @@ HexaGame::HexaGame(int argc, char* argv[])
 {
 }
 
+void HexaGame::register_world_generator(const Shared<WorldGeneratorInfo>& generator_info)
+{
+    cast<HexaGame>(get_instance())->generator_infos_[generator_info->get_name()] = generator_info;
+}
+
 void HexaGame::init_game_info(GameInfo& outInfo)
 {
     outInfo.title = "Hexa";
 }
 
+Shared<Settings> HexaGame::generate_settings_object()
+{
+    return MakeShared<HexaSettings>();
+}
+
+Shared<SaveGame> HexaGame::generate_save_game_object(const String& profile_name)
+{
+    return MakeShared<HexaSaveGame>(profile_name);
+}
+
 void HexaGame::start()
 {
-    lock_mouse();
-    hide_mouse();
+    auto defaut_world_generator_info = MakeShared<DefaultWorldGeneratorInfo>();
+    register_world_generator(defaut_world_generator_info);
     
-    auto world = MakeShared<HexaWorld>(MakeShared<DefaultWorldGenerator>());
+    default_world_generator_ = cast<DefaultWorldGenerator>(defaut_world_generator_info->create_generator());
+    default_world_generator_->init(0);
+
+    const auto world = MakeShared<GameWorld>(default_world_generator_);
     open_world(world);
-
-    /*const auto dialogue_panel = MakeShared<DialoguePanel>();
-    add_ui(dialogue_panel);*/
-
-    const auto player = MakeShared<DebugPlayer>();
-    world->spawn_entity(player, Vector3(-3.0f, 0.0f, 0.0f), Quaternion(Vector3(0.0f, 0.0f, 0.0f)));
-    possess(player);
-
-    uint x = 0;
-    uint y = 0;
-    uint i = 2;
-    for (auto& entry : tile_database->records())
-    {
-        const Vector3 pos = TileIndex(x, y++, 0).to_vector();
-        
-        List<Mesh::vertex> vertices;
-        List<uint> indices;
-        WorldGenerator::generate_tile_mesh(TileSide::All, Tiles::grass.get(), vertices, indices, pos.x + pos.y + pos.z);
-        GeometryEditor::remove_indices(vertices, indices);
-
-        Shared<Mesh> mesh = MakeShared<Mesh>("tile", vertices);
-        
-        const auto entity = MakeShared<Entity>();
-        entity->use_mesh(mesh);
-        world->spawn_entity(entity, pos);
-        entity->use_texture(entry.second->texture);
-
-        if (i++ == 3)
-        {
-            x++;
-            y--;
-            i -= 3;
-        }
-    }
-
-    const auto tile_demo_entity = MakeShared<TileDemoEntity>(std::array<Shared<const TileInfo>, 6>{Tiles::dirt.get(), Tiles::dirt.get(), Tiles::grass.get(), Tiles::dirt.get(), Tiles::grass.get(), Tiles::grass.get()});
-    world->spawn_entity(tile_demo_entity, TileIndex(3, 0, 0).to_vector());
-
-    const auto world_chunk = MakeShared<WorldChunk>(world->get_generator()->generate_chunk(0, 0));
-    world->spawn_entity(world_chunk, TileIndex(15, 0, 0).to_vector());
-    world_chunk->make_visible();
 }
 
 void HexaGame::loading_stage()

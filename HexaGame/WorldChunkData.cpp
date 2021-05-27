@@ -10,7 +10,14 @@
 #include "Engine/List.h"
 #include "Engine/Mesh.h"
 
-void WorldChunkData::validate_and_generate_metadata()
+WorldChunkData::WorldChunkData(const ChunkIndex& index)
+	: index_(index)
+	, state_(WorldChunkDataState::Pending)
+	, plane_metadata{}
+{
+}
+
+void WorldChunkData::generate_metadata()
 {
 	for (uint x = 0; x < chunk_size; x++)
 	{
@@ -226,4 +233,29 @@ void WorldChunkData::unlink()
 	back_ = nullptr;
 	left_ = nullptr;
 	back_left_ = nullptr;
+}
+
+const ChunkIndex& WorldChunkData::get_index() const
+{
+	return index_;
+}
+
+WorldChunkDataState WorldChunkData::get_state() const
+{
+	return state_;
+}
+
+const Shared<const TileInfo>& WorldChunkData::get_tile(const TileIndex& index) const
+{
+	return data[index.x][index.y][index.z];
+}
+
+void WorldChunkData::set_state(WorldChunkDataState state)
+{
+	if (state_ == state) return;
+
+	state_ = state;
+	on_state_changed(shared_from_this(), state);
+	if (state == WorldChunkDataState::Loading) on_loading(shared_from_this());
+	else if (state == WorldChunkDataState::Loaded) on_loaded(shared_from_this());
 }

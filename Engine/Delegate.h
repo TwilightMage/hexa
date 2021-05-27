@@ -18,6 +18,19 @@ public:
 		};
 	}
 
+	template<typename T>
+    void bind_unique(T* obj, void(T::* func)(InTypes...))
+	{
+		auto key = obj_func(obj, func_id::construct(func));
+		if (bindings_.find(key) == bindings_.end())
+		{
+			bindings_[key] = [obj, func](InTypes... args) -> void
+			{
+				(obj->*func)(args...);
+			};
+		}
+	}
+
 	// Add static or non-member function to execution list
 	void bind(void(* func)(InTypes...))
 	{
@@ -25,6 +38,18 @@ public:
 		{
 			(*func)(args...);
 		};
+	}
+
+	void bind_unique(void(* func)(InTypes...))
+	{
+		auto key = obj_func(nullptr, func_id::construct(func));
+		if (bindings_.find(key) == bindings_.end())
+		{
+			bindings_[key] = [func](InTypes... args) -> void
+			{
+				(*func)(args...);
+			};
+		}
 	}
 
 	void operator+=(void(* func)(InTypes...))
@@ -117,15 +142,16 @@ private:
 		{
 			return size == rhs.size && memcmp(data, rhs.data, size) == 0;
 		}
+
+		bool operator!=(const func_id& rhs) const
+		{
+			return size != rhs.size || memcmp(data, rhs.data, size) != 0;
+		}
 		
 		bool operator<(const func_id& rhs) const
 		{
-			if (size < rhs.size) return true;
-			for (uint i = 0; i < size; i++)
-			{
-				if (data[i] < rhs.data[i]) return true;
-			}
-			return false;
+			if (size != rhs.size) return size < rhs.size;
+			return memcmp(data, rhs.data, size) < 0;
 		}
 
 		template<typename FSIG>
@@ -156,7 +182,9 @@ private:
 
 		bool operator<(const obj_func& rhs) const
 		{
-			return obj < rhs.obj || func < rhs.func;
+			if (obj != rhs.obj) return obj < rhs.obj;
+			if (func != rhs.func) return func < rhs.func;
+			return false;
 		}
 	};
 
@@ -218,21 +246,26 @@ template<typename RetType, typename... ArgTypes>
 class Function
 {
 public:
-	Function(RetType(* func)(ArgTypes...))
+	Function()
 	{
-		return {std::bind(func), true};
 	}
 	
 	template<typename T>
 	void Bind(T* obj, RetType(T::* func)(ArgTypes...))
 	{
-		binding = std::bind(func, obj);
+		binding = [obj, func](ArgTypes... args) -> RetType
+		{
+			return (obj->*func)(args...);
+		};
 		isBound = true;
 	}
 
 	void Bind(RetType(* func)(ArgTypes...))
 	{
-		binding = std::bind(func);
+		binding = [func](ArgTypes... args) -> RetType
+		{
+			return (*func)(args...);
+		};
 		isBound = true;
 	}
 

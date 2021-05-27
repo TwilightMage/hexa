@@ -14,6 +14,8 @@
 #include "Vector2.h"
 #include "Version.h"
 
+class SaveGame;
+class Settings;
 class SpriteFont;
 class UIElement;
 class Image;
@@ -48,6 +50,7 @@ EXTERN class EXPORT Game
     
 public:
     Game(int argc, char* argv[]);
+    ~Game();
 
     void launch();
 
@@ -62,8 +65,12 @@ public:
     static Game* get_instance();
 
     static const GameInfo& get_info();
+    static const Shared<Settings>& get_settings();
+    static const Shared<SaveGame>& get_save_game();
 
     static void new_log_record(ELogLevel level, const String& category, const String& message);
+
+    static void call_on_main_thread(std::function<void()> func);
 
     static bool is_app_path_set();
     static const Path& get_app_path();
@@ -93,6 +100,8 @@ public:
     
 protected:
     virtual void init_game_info(GameInfo& out_info) = 0;
+    virtual Shared<Settings> generate_settings_object();
+    virtual Shared<SaveGame> generate_save_game_object(const String& profile_name);
     virtual void loading_stage();
     virtual void start();
     virtual void tick(float delta_time);
@@ -118,6 +127,8 @@ private:
     List<String> args_;
 
     GameInfo info_;
+    Shared<Settings> settings_;
+    Shared<SaveGame> save_game_;
 
     // Logging
     LogStream log_stream_;
@@ -162,6 +173,8 @@ private:
     Shared<UIElement> ui_root_;
     Weak<UIElement> ui_under_mouse_;
     Weak<UIElement> pressed_ui_;
+    List<std::function<void()>> main_thread_calls_;
+    std::mutex main_thread_calls_mutex_;
 
     bool is_loading_stage_;
     bool is_render_stage_;

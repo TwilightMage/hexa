@@ -2,7 +2,7 @@
 
 #include "BasicTypes.h"
 
-class ITexture
+EXTERN class EXPORT ITexture
 {
 public:
     virtual uint get_gl_texture_id() = 0;

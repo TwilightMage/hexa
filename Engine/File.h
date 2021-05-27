@@ -5,10 +5,10 @@
 
 #include "Path.h"
 
-class File
+EXTERN class EXPORT File
 {
 public:
-	class Reader
+	class EXPORT Reader
 	{
 	public:
 		static Shared<Reader> open(const Path& path);
@@ -23,11 +23,11 @@ public:
 	private:
 		Reader() {};
 
-		std::ifstream stream_;
+		mutable std::ifstream stream_;
 		uint64 size_;
 	};
 
-	class Writer
+	class EXPORT Writer
 	{
 	public:
 		static Shared<Writer> open(const Path& path);

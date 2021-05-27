@@ -190,6 +190,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="Array.h" />
+    <ClInclude Include="Array2D.h" />
     <ClInclude Include="BasicTypes.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
@@ -224,12 +225,15 @@
     <ClInclude Include="Object.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="Regex.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="RendererUtils.h" />
+    <ClInclude Include="SaveGame.h" />
     <ClInclude Include="Set.h" />
+    <ClInclude Include="Settings.h" />
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SlotBase.h" />
     <ClInclude Include="SpriteFont.h" />
@@ -413,11 +417,9 @@
     <ClCompile Include="EventBus.cpp" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="Game.cpp" />
-    <ClCompile Include="GameInfo.cpp" />
     <ClCompile Include="GeometryEditor.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="ImageEditor.cpp" />
-    <ClCompile Include="IUsageCountableBase.cpp" />
     <ClCompile Include="LogStream.cpp" />
     <ClCompile Include="Margins.cpp" />
     <ClCompile Include="Matrix4x4.cpp" />
@@ -435,6 +437,7 @@
     <ClCompile Include="Rect.cpp" />
     <ClCompile Include="Regex.cpp" />
     <ClCompile Include="Renderer.cpp" />
+    <ClCompile Include="SaveGame.cpp" />
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SlotBase.cpp" />
     <ClCompile Include="SpriteFont.cpp" />

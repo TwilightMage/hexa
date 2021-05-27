@@ -11,6 +11,8 @@
 #include "Path.h"
 #include "Quaternion.h"
 #include "Renderer.h"
+#include "SaveGame.h"
+#include "Settings.h"
 #include "Shader.h"
 #include "SpriteFont.h"
 #include "TextureAtlas.h"
@@ -37,13 +39,17 @@ Game::Game(int argc, char* argv[])
 	{
 		instance_ = this;
 	}
-
+	
 	for (int i = 0; i < argc; i++)
 	{
 		args_.Add(argv[i]);
 	}
 
 	set_app_path(String(argv[0]));
+}
+
+Game::~Game()
+{
 }
 
 void Game::launch()
@@ -114,6 +120,16 @@ const GameInfo& Game::get_info()
 	return instance_->info_;
 }
 
+const Shared<Settings>& Game::get_settings()
+{
+	return instance_->settings_;
+}
+
+const Shared<SaveGame>& Game::get_save_game()
+{
+	return instance_->save_game_;
+}
+
 void Game::new_log_record(ELogLevel level, const String& category, const String& message)
 {
 	static const char* levelNames[4] = { "Verbose", "Debug", "Warning", "Error" };
@@ -122,6 +138,13 @@ void Game::new_log_record(ELogLevel level, const String& category, const String&
 	instance_->log_stream_mutex_.lock();
 	instance_->log_stream_ << levelColors[static_cast<int>(level)] << "[" << DateTime::now().to_string().c() << "] [" << levelNames[static_cast<int>(level)] << "] [" << category.c() << "] " << message.c() << CONSOLE_RESET << "\n";
 	instance_->log_stream_mutex_.unlock();
+}
+
+void Game::call_on_main_thread(std::function<void()> func)
+{
+	instance_->main_thread_calls_mutex_.lock();
+	instance_->main_thread_calls_.Add(func);
+	instance_->main_thread_calls_mutex_.unlock();
 }
 
 bool Game::is_app_path_set()
@@ -234,6 +257,16 @@ bool Game::is_loading_stage()
 bool Game::is_render_stage()
 {
 	return instance_->is_render_stage_;
+}
+
+Shared<Settings> Game::generate_settings_object()
+{
+	return MakeShared<Settings>();
+}
+
+Shared<SaveGame> Game::generate_save_game_object(const String& profile_name)
+{
+	return MakeShared<SaveGame>(profile_name);
 }
 
 void Game::loading_stage()
@@ -379,6 +412,8 @@ void Game::render_loop()
 		}
 	}
 
+	save_game_ = generate_save_game_object("soft fur dragon");
+
 	verbose("Game", "Starting...");
 	start();
 
@@ -388,6 +423,14 @@ void Game::render_loop()
 	while (!glfwWindowShouldClose(window_))
 	{
 		const auto tick_start = glfwGetTime();
+
+		main_thread_calls_mutex_.lock();
+		for (auto& func : main_thread_calls_)
+		{
+			func();
+		}
+		main_thread_calls_.Clear();
+		main_thread_calls_mutex_.unlock();
 		
 		int width, height;
  
@@ -477,9 +520,9 @@ void Game::init_game()
 	info_ = GameInfo();
 
 	info_.title = "Untitled Game";
-	info_.physics_tick = 1.0f / 60.0f;
 
 	init_game_info(info_);
+	settings_ = generate_settings_object();
 }
 
 void Game::set_app_path(const Path& new_app_path)

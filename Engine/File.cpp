@@ -102,7 +102,7 @@ String File::Reader::read_line()
 
 bool File::Reader::is_end_of_file() const
 {
-	return stream_.eof();
+	return stream_.tellg() == size_;
 }
 
 uint File::Reader::get_size() const

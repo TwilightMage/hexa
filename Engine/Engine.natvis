@@ -99,4 +99,27 @@
             <Item Name="[3]" ExcludeView="simple">data[3]</Item>
         </Expand>
     </Type>
+    
+    <Type Name="ChunkIndex">
+        <DisplayString>{{ {x} {y} }}</DisplayString>
+        <Expand>
+            <Item Name="key" ExcludeView="simple">key</Item>
+            <Item Name="value" ExcludeView="simple">value</Item>
+            <Item Name="ll" ExcludeView="simple">left.left</Item>
+            <Item Name="gl" ExcludeView="simple">right.left</Item>
+            <Item Name="lg" ExcludeView="simple">left.right</Item>
+            <Item Name="gg" ExcludeView="simple">right.right</Item>
+        </Expand>
+    </Type>
+    <Type Name="ChunkTree::Node">
+        <DisplayString>Chunk Tree Node {{ {key}: {value} }}</DisplayString>
+        <Expand>
+            <Item Name="key" ExcludeView="simple">key</Item>
+            <Item Name="value" ExcludeView="simple">value</Item>
+            <Item Name="ll" ExcludeView="simple">left.left</Item>
+            <Item Name="gl" ExcludeView="simple">right.left</Item>
+            <Item Name="lg" ExcludeView="simple">left.right</Item>
+            <Item Name="gg" ExcludeView="simple">right.right</Item>
+        </Expand>
+    </Type>
 </AutoVisualizer>

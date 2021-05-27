@@ -21,9 +21,9 @@ Entity::Entity()
 {
 }
 
-Weak<World> Entity::get_world() const
+Shared<World> Entity::get_world() const
 {
-    return world_;
+    return world_.lock();
 }
 
 void Entity::on_start()

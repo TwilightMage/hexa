@@ -4,7 +4,7 @@
 #include "Engine/DatabaseUtils.h"
 #include "Engine/Texture.h"
 
-class Tiles
+EXTERN class EXPORT Tiles
 {
     BEGIN_RECORDS(TileInfo);
     RECORD(TileInfo, air, TileType::Air, false, false, nullptr, "");

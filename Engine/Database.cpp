@@ -35,9 +35,10 @@ Shared<const T> Database<T>::add(const T& record)
 }
 
 template <class T>
-Shared<const T> Database<T>::get(const String& key)
+Shared<const T> Database<T>::get(const String& key) const
 {
-    if (auto& found = data_.find(key))
+    auto found = data_.find(key);
+    if (found != data_.end())
     {
         return found->second;
     }

@@ -6,5 +6,4 @@
 EXTERN struct EXPORT GameInfo
 {
     String title;
-    float physics_tick;
 };

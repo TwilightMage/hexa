@@ -22,7 +22,7 @@ EXTERN class EXPORT Entity : public Object, public IRenderable, public std::enab
 public:
     Entity();
     
-    Weak<World> get_world() const;
+    Shared<World> get_world() const;
     
     virtual void on_start();
     virtual void on_destroy();

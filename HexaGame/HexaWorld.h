@@ -6,49 +6,29 @@
 #include "Engine/Rect.h"
 #include "Engine/World.h"
 
+class WorldChunkObserver;
 class WorldChunk;
 class WorldGenerator;
 
 EXTERN class EXPORT HexaWorld : public World
 {
-    friend class ChunkObserver;
+    friend class WorldChunkObserver;
 
-public:
-    class ChunkObserver
-    {
-        friend HexaWorld;
-
-    public:
-        void set_render_chunks(bool render_chunks);
-        Rect get_coverage_rect() const;
-    
-    private:
-        ChunkObserver(const ChunkIndex& chunk_index, uint half_size, const Weak<HexaWorld>& world);
-    
-        ChunkIndex chunk_index_;
-        int half_size_;
-        Array2D<Shared<WorldChunk>> chunks_;
-        Weak<HexaWorld> world_;
-        bool render_chunks_;
-
-    public:
-        void move(const ChunkIndex& chunk_index);
-    };
-    
+public:    
     explicit HexaWorld(const Shared<WorldGenerator>& generator);
 
     const Shared<WorldGenerator>& get_generator() const;
     
-    Shared<ChunkObserver> register_chunk_observer(const ChunkIndex& chunk_index, uint half_size);
+    Shared<WorldChunkObserver> register_chunk_observer(const ChunkIndex& chunk_index, uint half_size);
     Shared<WorldChunk> get_chunk(const ChunkIndex& chunk_index);
     
     void dump_observable_area(); 
 
 private:
-    Shared<WorldChunk> generate_chunk_callback(const ChunkIndex& tile_index);
+    void move_observer(WorldChunkObserver* observer, const ChunkIndex& to);
 
-    void move_observer(ChunkObserver* observer, const ChunkIndex& to);
+    void fill_observer(WorldChunkObserver* observer);
     
     Shared<WorldGenerator> generator_;
-    Tree2D<int, Shared<ChunkObserver>> chunk_storage_;
+    Tree2D<int, Shared<WorldChunkObserver>> observer_storage_;
 };

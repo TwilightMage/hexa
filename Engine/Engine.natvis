@@ -65,6 +65,10 @@
         <DisplayString>Quaternion {{ x={x}, y={y}, z={z}, w={w} }}</DisplayString>
     </Type>
 
+    <Type Name="Rect">
+        <DisplayString>Vector3 {{ x={x}, y={y}, w={w}, h={h} }}</DisplayString>
+    </Type>
+
     <Type Name="Mesh::vertex">
         <DisplayString>Vertex {{ pos={pos}, uv={uv}, col={col} }}</DisplayString>
     </Type>
@@ -99,27 +103,8 @@
             <Item Name="[3]" ExcludeView="simple">data[3]</Item>
         </Expand>
     </Type>
-    
+
     <Type Name="ChunkIndex">
-        <DisplayString>{{ {x} {y} }}</DisplayString>
-        <Expand>
-            <Item Name="key" ExcludeView="simple">key</Item>
-            <Item Name="value" ExcludeView="simple">value</Item>
-            <Item Name="ll" ExcludeView="simple">left.left</Item>
-            <Item Name="gl" ExcludeView="simple">right.left</Item>
-            <Item Name="lg" ExcludeView="simple">left.right</Item>
-            <Item Name="gg" ExcludeView="simple">right.right</Item>
-        </Expand>
-    </Type>
-    <Type Name="ChunkTree::Node">
-        <DisplayString>Chunk Tree Node {{ {key}: {value} }}</DisplayString>
-        <Expand>
-            <Item Name="key" ExcludeView="simple">key</Item>
-            <Item Name="value" ExcludeView="simple">value</Item>
-            <Item Name="ll" ExcludeView="simple">left.left</Item>
-            <Item Name="gl" ExcludeView="simple">right.left</Item>
-            <Item Name="lg" ExcludeView="simple">left.right</Item>
-            <Item Name="gg" ExcludeView="simple">right.right</Item>
-        </Expand>
+        <DisplayString>{{ {x}, {y} }}</DisplayString>
     </Type>
 </AutoVisualizer>

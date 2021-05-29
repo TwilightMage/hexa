@@ -53,5 +53,5 @@ void HexaGame::start()
 
 void HexaGame::loading_stage()
 {
-    tile_database->register_entries<Tiles>();
+    Tiles::init(tile_database);
 }

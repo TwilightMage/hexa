@@ -27,7 +27,7 @@ void WorldChunkData::generate_metadata()
 			{
 				if (data[x][y][z] == nullptr)
 				{
-					data[x][y][z] = Tiles::air.get();
+					data[x][y][z] = Tiles::air;
 				}
 				
 				plane_metadata[z] |= data[x][y][z]->type;
@@ -57,9 +57,15 @@ Shared<WorldChunkMesh> WorldChunkData::generate_mesh() const
 
 	for (int z = 0; z < chunk_height; z++)
 	{
-		const TileType plane_metadata_down = z > 0 ? plane_metadata[z - 1] : TileType::None;
-		const TileType plane_metadata_up = z < chunk_height - 1 ? plane_metadata[z + 1] : TileType::None;
-		if (count_difference(plane_metadata[z] | plane_metadata_up | plane_metadata_down) >= 2)
+		const TileType plane_metadata_front_right = front_right_->plane_metadata[z];
+		const TileType plane_metadata_back_left = back_left_->plane_metadata[z];
+		const TileType plane_metadata_right = right_->plane_metadata[z];
+		const TileType plane_metadata_left = left_->plane_metadata[z];
+		const TileType plane_metadata_forward = front_->plane_metadata[z];
+		const TileType plane_metadata_back = back_->plane_metadata[z];
+		const TileType plane_metadata_down = z > 0 ? plane_metadata[z - 1] : TileType::Air;
+		const TileType plane_metadata_up = z < chunk_height - 1 ? plane_metadata[z + 1] : TileType::Air;
+		if (count_difference(plane_metadata[z] | plane_metadata_up | plane_metadata_down | plane_metadata_forward | plane_metadata_back | plane_metadata_right | plane_metadata_left | plane_metadata_front_right | plane_metadata_back_left) >= 2)
 		{
 			for (int x = 0; x < chunk_size; x++)
 			{
@@ -94,7 +100,7 @@ Shared<WorldChunkMesh> WorldChunkData::generate_mesh() const
 
 	for (auto& kvp : vertices)
 	{
-		result->domains.Add({MakeShared<Mesh>("World chunk mesh domain", kvp.second), kvp.first->texture});
+		result->domains.Add({MakeShared<Mesh>(StringFormat("Chunk {%i %i} %s", index_.x, index_.y, kvp.first->key.c()), kvp.second), kvp.first->texture});
 	}
 
 	return result;
@@ -119,7 +125,7 @@ TileSide WorldChunkData::get_tile_face_flags(const TileIndex& tile_index) const
 }
 
 #define get_tile()			(data[pos.x][pos.y][pos.z])
-#define try_get_tile(name)	(name ? name->data[pos.x][pos.y][pos.z] : Tiles::air.get())
+#define try_get_tile(name)	(name ? name->data[pos.x][pos.y][pos.z] : Tiles::air)
 
 const Shared<const TileInfo>& WorldChunkData::front_tile(const TileIndex& index) const
 {
@@ -185,6 +191,8 @@ const Shared<const TileInfo>& WorldChunkData::front_left_tile(const TileIndex& i
 
 const Shared<const TileInfo>& WorldChunkData::up_tile(const TileIndex& index) const
 {
+	if (index.z == chunk_height - 1) return Tiles::air;
+	
 	const auto pos = index.offset(0, 0, 1);
 
 	return get_tile();
@@ -192,9 +200,41 @@ const Shared<const TileInfo>& WorldChunkData::up_tile(const TileIndex& index) co
 
 const Shared<const TileInfo>& WorldChunkData::down_tile(const TileIndex& index) const
 {
+	if (index.z == 0) return Tiles::air;
+	
 	const auto pos = index.offset(0, 0, -1);
 
 	return get_tile();
+}
+
+WorldChunkData* WorldChunkData::get_front() const
+{
+	return front_;
+}
+
+WorldChunkData* WorldChunkData::get_front_right() const
+{
+	return front_right_;
+}
+
+WorldChunkData* WorldChunkData::get_right() const
+{
+	return right_;
+}
+
+WorldChunkData* WorldChunkData::get_back() const
+{
+	return back_;
+}
+
+WorldChunkData* WorldChunkData::get_back_left() const
+{
+	return back_left_;
+}
+
+WorldChunkData* WorldChunkData::get_left() const
+{
+	return left_;
 }
 
 #undef get_tile
@@ -203,12 +243,12 @@ const Shared<const TileInfo>& WorldChunkData::down_tile(const TileIndex& index) 
 void WorldChunkData::link(WorldChunkData* front, WorldChunkData* right, WorldChunkData* front_right,
 	WorldChunkData* back, WorldChunkData* left, WorldChunkData* back_left)
 {
-	front_ = front;
-	right_ = right;
-	front_right_ = front_right;
-	back_ = back;
-	left_ = left;
-	back_left_ = back_left;
+	if (front) front_ = front;
+	if (right) right_ = right;
+	if (front_right) front_right_ = front_right;
+	if (back) back_ = back;
+	if (left) left_ = left;
+	if (back_left) back_left_ = back_left;
 
 	if (front_) front_->back_ = this;
 	if (right_) right_->left_ = this;
@@ -248,6 +288,22 @@ WorldChunkDataState WorldChunkData::get_state() const
 const Shared<const TileInfo>& WorldChunkData::get_tile(const TileIndex& index) const
 {
 	return data[index.x][index.y][index.z];
+}
+
+void WorldChunkData::inc_observe()
+{
+	observe_counter_++;
+}
+
+bool WorldChunkData::dec_observe()
+{
+	if (--observe_counter_ == 0)
+	{
+		unlink();
+		return true;
+	}
+
+	return false;
 }
 
 void WorldChunkData::set_state(WorldChunkDataState state)

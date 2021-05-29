@@ -4,8 +4,10 @@
 #include "Engine/Entity.h"
 #include "Engine/IControllable.h"
 #include "Engine/ITickable.h"
+#include "HexaGame/ChunkIndex.h"
 
-
+class TextBlock;
+class WorldChunkObserver;
 class Camera;
 
 EXTERN class EXPORT DebugPlayer : public Entity, public IControllable, public ITickable
@@ -23,6 +25,8 @@ public:
 
     void tick(float delta_time) override;
 
+    void use_observer(const Shared<WorldChunkObserver>& observer);
+    
 private:
     float move_forward_ = 0;
     float move_right_ = 0;
@@ -30,4 +34,8 @@ private:
 
     Shared<Camera> camera_;
     Shared<MeshEntity> arrows_;
+
+    Shared<WorldChunkObserver> observer_;
+    ChunkIndex old_chunk_ = ChunkIndex(0, 0);
+    Shared<TextBlock> debug_text_;
 };

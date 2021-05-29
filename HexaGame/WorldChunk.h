@@ -20,10 +20,11 @@ public:
     FORCEINLINE const Shared<WorldChunkData>& get_data() const { return data_; }
 
 private:
-    void appear_mesh();
-    void delay_mesh_appear(const Shared<WorldChunkData>& sender);
-    
+    void try_show_mesh();
+    void loaded_callback(const Shared<WorldChunkData>& sender);
+
     int visibility_counter_ = 0;
+    int load_counter_ = 0;
     
     ChunkIndex index_;
     Weak<HexaWorld> world_;

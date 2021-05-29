@@ -3,13 +3,13 @@
 #include <map>
 
 #include "Color.h"
-#include "Entity.h"
 #include "Game.h"
 #include "ITexture.h"
 #include "IUsageCountable.h"
 #include "List.h"
 #include "Object.h"
 #include "Path.h"
+#include "Slot.h"
 #include "UsageCounter.h"
 
 class UIElement;

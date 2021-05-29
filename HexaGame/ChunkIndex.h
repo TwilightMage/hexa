@@ -4,12 +4,14 @@
 EXTERN class EXPORT ChunkIndex
 {
 public:
+    ChunkIndex();
     ChunkIndex(int x, int y);
     
     bool operator==(const ChunkIndex& rhs) const;
     bool operator!=(const ChunkIndex& rhs) const;
 
     Vector3 to_vector() const;
+    static ChunkIndex from_vector(const Vector3& vector);
     
     int x;
     int y;

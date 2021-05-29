@@ -3,6 +3,7 @@
 #include <assert.h>
 
 #include "BasicTypes.h"
+#include "String.h"
 
 template<typename T>
 class Array2D
@@ -21,6 +22,39 @@ public:
                 data_[i][j] = T();
             }
         }
+    }
+
+    Array2D(const Array2D& rhs)
+        : size_x_(rhs.size_x_)
+        , size_y_(rhs.size_y_)
+    {
+        data_ = new T*[size_x_];
+        for (uint i = 0; i < size_x_; i++)
+        {
+            data_[i] = new T[size_y_];
+            for (uint j = 0; j < size_y_; j++)
+            {
+                data_[i][j] = std::move(rhs.data_[i][j]);
+            }
+        }
+    }
+
+    Array2D& operator=(const Array2D& rhs)
+    {
+        size_x_ = rhs.size_x_;
+        size_y_ = rhs.size_y_;
+        
+        data_ = new T*[size_x_];
+        for (uint i = 0; i < size_x_; i++)
+        {
+            data_[i] = new T[size_y_];
+            for (uint j = 0; j < size_y_; j++)
+            {
+                data_[i][j] = std::move(rhs.data_[i][j]);
+            }
+        }
+
+        return *this;
     }
 
     ~Array2D()

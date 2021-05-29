@@ -111,6 +111,10 @@ public:
                 inner_[i] = std::move(rhs.inner_[i]);
             }
         }
+        else
+        {
+            inner_ = nullptr;
+        }
 
         return *this;
     }
@@ -171,11 +175,13 @@ public:
         {
             for (uint i = index; i < length_ - 1; i++)
             {
-                inner_[i] = inner_[i + 1];
+                inner_[i] = std::move(inner_[i + 1]);
             }
         }
+
+        inner_[length_ - 1] = T();
         
-        length_--;
+        --length_;
     }
 
     void Remove(const T& item)

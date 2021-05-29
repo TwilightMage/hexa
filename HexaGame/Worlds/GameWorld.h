@@ -12,4 +12,6 @@ public:
 
 private:
     void spawn_player(const Shared<WorldChunkData>& sender);
+
+    Shared<WorldChunkObserver> observer_;
 };

@@ -34,6 +34,15 @@ public:
         return a > b ? a : b;
     }
 
+    FORCEINLINE static uint mod(int value, uint m)
+    {
+        int mod = value % (int)m;
+        if (mod < 0) {
+            mod += m;
+        }
+        return mod;
+    }
+
     template<typename T>
     static T degrees(T radians)
     {

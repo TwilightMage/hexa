@@ -73,8 +73,9 @@ struct simple_map
             return key == rhs.key = value == rhs.value;
         }
     };
+    
     List<entry> entries;
-
+    
     V& operator[](const K& key)
     {
         for (auto& entry : entries)
@@ -407,7 +408,14 @@ private:
                     Mesh::vertex* vertex_buffer = extract_gl_buffer<Mesh::vertex>(shader_meshes.gl_vertex_buffer_id, GL_ARRAY_BUFFER, vertex_buffer_size);
 
                     memcpy(vertex_buffer + mesh_objects->value.vertex_buffer_offset, vertex_buffer + mesh_objects->value.vertex_buffer_offset + mesh_objects->value.size_in_vertex_buffer, sizeof(Mesh::vertex) * (vertex_buffer_size - mesh_objects->value.vertex_buffer_offset - mesh_objects->value.size_in_vertex_buffer));
-
+                    for (auto& entry : shader_meshes)
+                    {
+                        if (entry.value.vertex_buffer_offset > mesh_objects->value.vertex_buffer_offset)
+                        {
+                            entry.value.vertex_buffer_offset -= mesh_objects->value.size_in_vertex_buffer;
+                        }
+                    }
+                    
                     glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.gl_vertex_buffer_id);
                     // save updated buffer
                     glBufferData(GL_ARRAY_BUFFER, sizeof(Mesh::vertex) * vertex_buffer_size - mesh_objects->value.size_in_vertex_buffer, vertex_buffer, GL_STATIC_DRAW);

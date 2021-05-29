@@ -3,10 +3,11 @@
 #include <map>
 
 #include "Path.h"
+#include "Object.h"
 
 #include <glad/glad.h>
 
-EXTERN class EXPORT Shader
+EXTERN class EXPORT Shader : public Object
 {
 public:
     struct Meta
@@ -45,6 +46,8 @@ public:
         COMPUTE   = 8
     };
 
+    explicit Shader(const String& name);
+
     uint get_program() const;
     const Meta& get_meta() const;
 
@@ -75,5 +78,4 @@ private:
     uint program_ = 0;
     Meta shader_meta_ = {};
     std::map<type, uint> shaders_;
-    String name;
 };

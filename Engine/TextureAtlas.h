@@ -22,8 +22,8 @@ public:
     
     struct Entry
     {
-        Vector2 get_scale() const;
-        Vector2 get_offset() const;
+        FORCEINLINE Vector2 get_scale() const;
+        FORCEINLINE Vector2 get_offset() const;
         
         Rect rect;
         TextureAtlas* owner;
@@ -37,15 +37,15 @@ public:
 
     uint put(const Path& path);
     uint claim_rect(const Rect& rect);
-    uint get_num_entries() const;
-    List<UVMod> get_cached_mods() const;
-    const Entry* get_entry(uint index) const;
-    void dump(const Path& path);
-    Shared<Texture> to_texture() const;
+    FORCEINLINE uint get_num_entries() const;
+    FORCEINLINE List<UVMod> get_cached_mods() const;
+    FORCEINLINE const Entry* get_entry(uint index) const;
+    FORCEINLINE void dump(const Path& path);
+    FORCEINLINE Shared<Texture> to_texture() const;
 
     void bind(uint storage_slot) const;
 
-    uint get_gl_texture_id() override;
+    FORCEINLINE uint get_gl_texture_id() override;
 
     static Shared<TextureAtlas> load_png(const Path& path);
     

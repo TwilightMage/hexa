@@ -20,14 +20,12 @@ Vector3 TileIndex::to_vector() const
         );
 }
 
-TileIndex TileIndex::from_index(const Vector3& vector)
+TileIndex TileIndex::from_vector(const Vector3& vector)
 {
     float x = vector.x / (0.5f * Math::sqrt(3.0f));
     float y = vector.y / (0.5f * Math::sqrt(3.0f));
 
     const auto temp = Math::floor(x + Math::sqrt(3.0f) * y + 1.0f);
-    int q = Math::floor((Math::floor(2.0f * x + 1.0f) + temp) / 3.0f);
-    int r = Math::floor((temp + Math::floor(-x + Math::sqrt(3.0f) * y + 1.0f)) / 3.0f);
 
     return TileIndex(Math::floor((Math::floor(2.0f * x + 1.0f) + temp) / 3.0f), Math::floor((temp + Math::floor(-x + Math::sqrt(3.0f) * y + 1.0f)) / 3.0f), static_cast<uint>(vector.z / HexaMath::tile_height));
 }
@@ -39,7 +37,7 @@ TileIndex TileIndex::offset(int x, int y, int z) const
 
 TileIndex TileIndex::cycle_chunk() const
 {
-    return TileIndex(x % WorldChunkData::chunk_size, y  % WorldChunkData::chunk_size, z);
+    return TileIndex(Math::mod(x, WorldChunkData::chunk_size), Math::mod(y, WorldChunkData::chunk_size), z);
 }
 
 bool TileIndex::operator<(const TileIndex& rhs) const

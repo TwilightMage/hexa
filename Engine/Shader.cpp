@@ -3,6 +3,11 @@
 #include "File.h"
 #include "Game.h"
 
+Shader::Shader(const String& name)
+    : Object(name)
+{
+}
+
 uint Shader::get_program() const
 {
     return program_;
@@ -67,7 +72,7 @@ Shared<Shader> Shader::compile(const Path& path, const Meta& shader_meta, int ty
     
     if (type_flags != 0)
     {
-        const auto result = MakeShared<Shader>();
+        const auto result = MakeShared<Shader>(path.filename);
         result->program_ = glCreateProgram();
         
         if (type_flags & VERTEX)

@@ -22,7 +22,7 @@ public:
     void bind_unique(T* obj, void(T::* func)(InTypes...))
 	{
 		auto key = obj_func(obj, func_id::construct(func));
-		if (bindings_.find(key) == bindings_.end())
+		if (!bindings_.contains(key))
 		{
 			bindings_[key] = [obj, func](InTypes... args) -> void
 			{

@@ -49,3 +49,8 @@ Vector2 Rect::get_size() const
 {
     return Vector2(static_cast<float>(w), static_cast<float>(h));
 }
+
+bool Rect::contains(int p_x, int p_y) const
+{
+    return p_x >= x && p_x < x + w && p_y >= y && p_y < y + h;
+}

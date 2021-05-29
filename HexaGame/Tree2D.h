@@ -156,6 +156,11 @@ public:
         insert(p, root);
     }
 
+    void remove(KeyType x, KeyType y)
+    {
+        
+    }
+
     void insert(std::vector<point<KeyType, ValueType>> &points){
         // function to insert medians.
         // proper implementation would require use of a data 

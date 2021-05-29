@@ -5,6 +5,7 @@
 #include "HexaGame/HexaMath.h"
 #include "HexaGame/Tiles.h"
 #include "HexaGame/WorldChunk.h"
+#include "HexaGame/WorldChunkObserver.h"
 #include "HexaGame/Entities/DebugPlayer.h"
 
 GameWorld::GameWorld(const Shared<WorldGenerator>& generator)
@@ -16,9 +17,9 @@ void GameWorld::on_start()
 {
     Game::lock_mouse();
     Game::hide_mouse();
-    
-    auto observer = register_chunk_observer(ChunkIndex(0, 0), 2);
-    observer->set_render_chunks(true);
+
+    observer_ = register_chunk_observer(ChunkIndex(0, 0), 2);
+    observer_->set_render_chunks(true);
 
     auto chunk = get_chunk(ChunkIndex(0, 0));
     if (chunk->get_data()->get_state() == WorldChunkDataState::Loaded)
@@ -37,9 +38,10 @@ void GameWorld::spawn_player(const Shared<WorldChunkData>& sender)
 
     for (uint i = 0; i < WorldChunkData::chunk_height; i++)
     {
-        if (sender->get_tile(TileIndex(0, 0, WorldChunkData::chunk_height - 1 - i)) != Tiles::air.get())
+        if (sender->get_tile(TileIndex(0, 0, WorldChunkData::chunk_height - 1 - i)) != Tiles::air)
         {
             const auto player = MakeShared<DebugPlayer>();
+            player->use_observer(observer_);
             spawn_entity(player, TileIndex(0, 0, WorldChunkData::chunk_height - 1 - i + 1).to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
             Game::possess(player);
             break;

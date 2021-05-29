@@ -15,7 +15,7 @@ void DemoMeshEntity::on_start()
 {
     List<Mesh::vertex> vertices;
     List<uint> indices;
-    WorldGenerator::generate_tile_mesh(TileSide::All, Tiles::grass.get(), vertices, indices, 0.0f);
+    WorldGenerator::generate_tile_mesh(TileSide::All, Tiles::grass, vertices, indices, 0.0f);
     GeometryEditor::remove_indices(vertices, indices);
 
     Shared<Mesh> mesh = MakeShared<Mesh>("tile", vertices);

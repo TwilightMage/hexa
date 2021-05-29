@@ -7,6 +7,8 @@
 #include "Engine/Camera.h"
 #include "Engine/Game.h"
 #include "Engine/World.h"
+#include "HexaGame/WorldChunkObserver.h"
+#include "Engine/ui/TextBlock.h"
 
 DebugPlayer::DebugPlayer()
     : Entity()
@@ -72,10 +74,11 @@ void DebugPlayer::on_possess()
 
 void DebugPlayer::tick(float delta_time)
 {
+    static float speed = 3;
     auto pos = get_position();
-    pos += get_rotation().forward() * delta_time * move_forward_;
-    pos += get_rotation().right() * delta_time * move_right_;
-    pos.z += delta_time * move_up_;
+    pos += get_rotation().forward() * delta_time * move_forward_ * speed;
+    pos += get_rotation().right() * delta_time * move_right_ * speed;
+    pos.z += delta_time * move_up_ * speed;
     set_position(pos);
 
     auto rot = get_rotation();
@@ -84,4 +87,24 @@ void DebugPlayer::tick(float delta_time)
     set_rotation(rot);
     
     arrows_->set_position(get_position() + get_rotation().forward());
+
+    const ChunkIndex current_chunk = ChunkIndex::from_vector(get_position());
+
+    if (current_chunk != old_chunk_)
+    {
+        if (observer_)
+        {
+            observer_->move(current_chunk);
+            debug_text_->set_text(StringFormat("Chunk: %i, %i", current_chunk.x, current_chunk.y));
+        }
+        old_chunk_ = current_chunk;
+    }
+}
+
+void DebugPlayer::use_observer(const Shared<WorldChunkObserver>& observer)
+{
+    observer_ = observer;
+    
+    debug_text_ = MakeShared<TextBlock>(StringFormat("Chunk: %i, %i", observer->get_index().x, observer->get_index().y));
+    Game::add_ui(debug_text_);
 }

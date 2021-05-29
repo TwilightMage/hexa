@@ -1,8 +1,16 @@
 ﻿#include "ChunkIndex.h"
 
 
+
+#include "HexaMath.h"
 #include "WorldChunkData.h"
 #include "Engine/Math.h"
+
+ChunkIndex::ChunkIndex()
+    : x(0)
+    , y(0)
+{
+}
 
 ChunkIndex::ChunkIndex(int x, int y)
     : x(x)
@@ -26,5 +34,20 @@ Vector3 ChunkIndex::to_vector() const
             (Math::sqrt(3.0f) / 2.0f * y * WorldChunkData::chunk_size + Math::sqrt(3.0f) * -x * WorldChunkData::chunk_size) * -0.5f,
             (3.0f / 2.0f * y * WorldChunkData::chunk_size) * 0.5f,
             0.0f
+        );
+}
+
+ChunkIndex ChunkIndex::from_vector(const Vector3& vector)
+{
+    float x = vector.x / (0.5f * Math::sqrt(3.0f));
+    float y = vector.y / (0.5f * Math::sqrt(3.0f));
+
+    const auto temp = Math::floor(x + Math::sqrt(3.0f) * y + 1.0f);
+    int q = Math::floor((Math::floor(2.0f * x + 1.0f) + temp) / 3.0f);
+    int r = Math::floor((temp + Math::floor(-x + Math::sqrt(3.0f) * y + 1.0f)) / 3.0f);
+
+    return ChunkIndex(
+        q < 0 ? q / static_cast<int>(WorldChunkData::chunk_size) - 1 : q / static_cast<int>(WorldChunkData::chunk_size),
+        r < 0 ? r / static_cast<int>(WorldChunkData::chunk_size) - 1 : r / static_cast<int>(WorldChunkData::chunk_size)
         );
 }

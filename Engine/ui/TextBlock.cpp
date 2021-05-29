@@ -7,7 +7,7 @@
 
 TextBlock::TextBlock(const String& string)
     : text_(string)
-    , font_size_(24)
+    , font_size_(12)
 {
     font_ = Game::get_default_font();
     font_scale_ = font_size_ / font_->get_line_height();

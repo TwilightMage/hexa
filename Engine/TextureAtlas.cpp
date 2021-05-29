@@ -136,12 +136,19 @@ uint TextureAtlas::put(const Path& path)
 
 uint TextureAtlas::claim_rect(const Rect& rect)
 {
+    // TODO: Fix sprite font in release build
+    uint i = 0;
     for (const auto& entry : entries_)
     {
         if (rect.intersects(entry.rect))
         {
-            return -1;
+            print_debug("debug", "%i %i %i %i", entry.rect.x, entry.rect.y, entry.rect.w, entry.rect.x);
+            if (rect.intersects(entry.rect))
+            {
+                return -1;
+            }
         }
+        i = i + 1;
     }
 
     entries_.Add({rect, this});

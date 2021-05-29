@@ -12,7 +12,8 @@ public:
     Shared<Rect> intersection(const Rect& rhs) const;
     Vector2 get_position() const;
     Vector2 get_size() const;
-    
+    bool contains(int p_x, int p_y) const;
+
     int x;
     int y;
     int w;

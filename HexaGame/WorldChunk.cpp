@@ -25,6 +25,17 @@ void WorldChunk::load()
     }
 }
 
+#define test_neighbor(candidate)\
+    if (candidate->get_state() != WorldChunkDataState::Loaded)\
+    {\
+        candidate->on_loaded.bind_unique(this, &WorldChunk::loaded_callback);\
+    }\
+    else\
+    {\
+        load_counter_--;\
+    }\
+
+
 void WorldChunk::set_visibility(bool visibility)
 {
     const bool old_state = visibility_counter_ > 0;
@@ -41,14 +52,16 @@ void WorldChunk::set_visibility(bool visibility)
         {
             if (new_state)
             {
-                if (data_->get_state() != WorldChunkDataState::Loaded)
-                {
-                    data_->on_loaded.bind_unique(this, &WorldChunk::delay_mesh_appear);
-                }
-                else
-                {
-                    appear_mesh();
-                }
+                load_counter_ = 7;
+                test_neighbor(data_);
+                test_neighbor(data_->get_front());
+                test_neighbor(data_->get_back());
+                test_neighbor(data_->get_right());
+                test_neighbor(data_->get_left());
+                test_neighbor(data_->get_front_right());
+                test_neighbor(data_->get_back_left());
+
+                try_show_mesh();
             }
             else
             {
@@ -63,27 +76,33 @@ void WorldChunk::set_visibility(bool visibility)
     }
 }
 
-void WorldChunk::appear_mesh()
+#undef test_neighbor
+
+void WorldChunk::try_show_mesh()
 {
-    if (auto world = world_.lock())
+    if (load_counter_ == 0)
     {
-        chunk_mesh_ = data_->generate_mesh();
-            
-        for (auto& domain : chunk_mesh_->domains)
+        if (auto world = world_.lock())
         {
-            auto domain_mesh = MakeShared<Entity>();
-            domain_mesh->set_position(index_.to_vector());
-            domain_mesh->use_mesh(domain.mesh);
-            domain_mesh->use_texture(domain.texture);
-            world->spawn_entity(domain_mesh);
+            chunk_mesh_ = data_->generate_mesh();
+            
+            for (auto& domain : chunk_mesh_->domains)
+            {
+                auto domain_mesh = MakeShared<Entity>();
+                domain_mesh->set_position(index_.to_vector());
+                domain_mesh->use_mesh(domain.mesh);
+                domain_mesh->use_texture(domain.texture);
+                world->spawn_entity(domain_mesh);
         
-            child_domains_.Add(domain_mesh);
+                child_domains_.Add(domain_mesh);
+            }
         }
     }
 }
 
-void WorldChunk::delay_mesh_appear(const Shared<WorldChunkData>& sender)
+void WorldChunk::loaded_callback(const Shared<WorldChunkData>& sender)
 {
-    data_->on_loaded.unbind(this, &WorldChunk::delay_mesh_appear);
-    appear_mesh();
+    sender->on_loaded.unbind(this, &WorldChunk::loaded_callback);
+    load_counter_--;
+    try_show_mesh();
 }

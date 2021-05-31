@@ -3,6 +3,7 @@
 #include "HexaMath.h"
 #include "HexaSaveGame.h"
 #include "HexaSettings.h"
+#include "WorldChunk.h"
 #include "Engine/Game.h"
 #include "Engine/Math.h"
 
@@ -55,6 +56,14 @@ void add_poly(List<uint>& src_indices, List<uint> indices, int offset)
 		src_indices.Add(indices[i + 1] + offset);
 		src_indices.Add(indices[i] + offset);
 		src_indices.Add(indices[0] + offset);
+	}
+}
+
+WorldGenerator::~WorldGenerator()
+{
+	for (auto& kvp : threads_)
+	{
+		kvp.second->join();
 	}
 }
 
@@ -138,7 +147,7 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const TileI
 	}
 }
 
-void WorldGenerator::request_chunk_generation(const Shared<WorldChunkData>& chunk)
+void WorldGenerator::request_chunk_generation(const Shared<WorldChunk>& chunk)
 {
 	if (pending_chunks_.Contains(chunk) || threads_.contains(chunk)) return;
 	
@@ -159,21 +168,21 @@ void WorldGenerator::try_to_start_new_generation()
 {
 	if (threads_.size() < cast<HexaSettings>(Game::get_settings())->get_max_threads() && pending_chunks_.length() > 0)
 	{
-		Shared<WorldChunkData> chunk = pending_chunks_.first();
+		Shared<WorldChunk> chunk = pending_chunks_.first();
 		pending_chunks_.RemoveAt(0);
 		auto thread = MakeShared<std::thread>(&WorldGenerator::do_generate, this, chunk);
 		threads_[chunk] = thread;
 	}
 }
 
-void WorldGenerator::do_generate(const Shared<WorldChunkData>& chunk)
+void WorldGenerator::do_generate(const Shared<WorldChunk>& chunk)
 {
 	chunk->set_state(WorldChunkDataState::Loading);
 
-	perform_chunk_generation(EditableChunk(chunk));
+	generate_chunk(EditableChunk(chunk));
 	if (const auto save_game = cast<HexaSaveGame>(Game::get_save_game()))
 	{
-		if (auto modifications = save_game->get_chunk_modifications(chunk->get_index()))
+		if (const auto modifications = save_game->get_chunk_modifications(chunk->get_index()))
 		{
 			for (auto& modification : *modifications)
 			{
@@ -189,7 +198,7 @@ void WorldGenerator::do_generate(const Shared<WorldChunkData>& chunk)
 	});
 }
 
-void WorldGenerator::finish_generation(const Shared<WorldChunkData>& chunk)
+void WorldGenerator::finish_generation(const Shared<WorldChunk>& chunk)
 {
 	chunk->set_state(WorldChunkDataState::Loaded);
 	threads_[chunk]->join();

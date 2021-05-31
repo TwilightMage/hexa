@@ -29,7 +29,7 @@ Shared<WorldChunkObserver> HexaWorld::register_chunk_observer(const Rect& rect)
     {
         for (uint y = 0; y < observer->chunks_.get_size_y(); y++)
         {
-            observer->chunks_.at(x, y)->get_data()->inc_observe();
+            observer->chunks_.at(x, y)->inc_observe();
         }
     }
     
@@ -122,10 +122,10 @@ void HexaWorld::unregister_chunk_observer(WorldChunkObserver* observer)
         {
             auto& chunk = observer->chunks_.at(x, y);
 
-            chunk->get_data()->dec_observe();
+            chunk->dec_observe();
             if (observer->render_chunks_)
             {
-                chunk->set_visibility(false);
+                chunk->dec_visibility();
             }
         }
     }
@@ -166,14 +166,14 @@ void HexaWorld::move_observer(WorldChunkObserver* observer, const Rect& new_rect
             
             if (!new_rect.contains(g_x, g_y))
             {
-                old_chunks.at(x, y)->get_data()->dec_observe();
+                old_chunks.at(x, y)->dec_observe();
             }
 
             if (observer->render_chunks_)
             {
                 if (old_rect_render.contains(g_x, g_y) && !new_rect_render.contains(g_x, g_y))
                 {
-                    old_chunks.at(x, y)->set_visibility(false);
+                    old_chunks.at(x, y)->dec_visibility();
                 }
             }
         }
@@ -188,14 +188,14 @@ void HexaWorld::move_observer(WorldChunkObserver* observer, const Rect& new_rect
             
             if (new_rect.contains(g_x, g_y))
             {
-                new_chunks.at(x, y)->get_data()->inc_observe();
+                new_chunks.at(x, y)->inc_observe();
             }
 
             if (observer->render_chunks_)
             {
                 if (new_rect_render.contains(g_x, g_y) && !old_rect_render.contains(g_x, g_y))
                 {
-                    new_chunks.at(x, y)->set_visibility(true);
+                    new_chunks.at(x, y)->inc_visibility();
                 }
             }
         }
@@ -277,13 +277,13 @@ void HexaWorld::fill_observer_array(Array2D<Shared<WorldChunk>>& array, int star
                 ? get_chunk(ChunkIndex(start_x - 1, start_y + index.y - 1))
                 : get_chunk(ChunkIndex(start_x - 1, start_y - 1));
         auto& chunk = array.at(index.x, index.y);
-        chunk->get_data()->link(
-            chunk_front ? chunk_front->get_data().get() : nullptr,
-            chunk_right ? chunk_right->get_data().get() : nullptr,
-            chunk_front_right ? chunk_front_right->get_data().get() : nullptr,
-            chunk_back ? chunk_back->get_data().get() : nullptr,
-            chunk_left ? chunk_left->get_data().get() : nullptr,
-            chunk_back_left ? chunk_back_left->get_data().get() : nullptr
+        chunk->link(
+            chunk_front ? chunk_front.get() : nullptr,
+            chunk_right ? chunk_right.get() : nullptr,
+            chunk_front_right ? chunk_front_right.get() : nullptr,
+            chunk_back ? chunk_back.get() : nullptr,
+            chunk_left ? chunk_left.get() : nullptr,
+            chunk_back_left ? chunk_back_left.get() : nullptr
             );
     }
 }

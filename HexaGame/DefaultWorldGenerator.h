@@ -12,7 +12,7 @@ public:
     void read_settings(const mINI::INIStructure& settings) override;
 
 protected:
-    void perform_chunk_generation(const EditableChunk& editable) override;
+    void generate_chunk(const EditableChunk& editable) override;
 
 private:
     float ground_level = 30.0f;

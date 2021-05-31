@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "WorldChunkData.h"
+#include "TileType.h"
 #include "Engine/DatabaseEntry.h"
 
 class Texture;

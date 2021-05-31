@@ -3,19 +3,20 @@
 #include "TileIndex.h"
 #include "Engine/BasicTypes.h"
 
+class WorldChunk;
 class WorldGenerator;
 class TileInfo;
-class WorldChunkData;
 
 EXTERN class EXPORT EditableChunk
 {
     friend WorldGenerator;
+    
 public:
-    const Shared<WorldChunkData>& get_chunk() const;
+    const Shared<WorldChunk>& get_chunk() const;
     Shared<const TileInfo>& tile(const TileIndex& index) const;
 
 private:
-    explicit EditableChunk(const Shared<WorldChunkData>& chunk);
+    explicit EditableChunk(const Shared<WorldChunk>& chunk);
     
-    Shared<WorldChunkData> chunk_;
+    Shared<WorldChunk> chunk_;
 };

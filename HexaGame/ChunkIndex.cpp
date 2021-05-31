@@ -1,9 +1,7 @@
 ﻿#include "ChunkIndex.h"
 
 
-
-#include "HexaMath.h"
-#include "WorldChunkData.h"
+#include "WorldChunk.h"
 #include "Engine/Math.h"
 
 ChunkIndex::ChunkIndex()
@@ -31,8 +29,8 @@ bool ChunkIndex::operator!=(const ChunkIndex& rhs) const
 Vector3 ChunkIndex::to_vector() const
 {
     return Vector3(
-            (Math::sqrt(3.0f) / 2.0f * y * WorldChunkData::chunk_size + Math::sqrt(3.0f) * -x * WorldChunkData::chunk_size) * -0.5f,
-            (3.0f / 2.0f * y * WorldChunkData::chunk_size) * 0.5f,
+            (Math::sqrt(3.0f) / 2.0f * y * WorldChunk::chunk_size + Math::sqrt(3.0f) * -x * WorldChunk::chunk_size) * -0.5f,
+            (3.0f / 2.0f * y * WorldChunk::chunk_size) * 0.5f,
             0.0f
         );
 }
@@ -47,8 +45,8 @@ ChunkIndex ChunkIndex::from_vector(const Vector3& vector)
     int r = Math::floor((temp + Math::floor(-x + Math::sqrt(3.0f) * y + 1.0f)) / 3.0f);
 
     return ChunkIndex(
-        q < 0 ? q / static_cast<int>(WorldChunkData::chunk_size) - 1 : q / static_cast<int>(WorldChunkData::chunk_size),
-        r < 0 ? r / static_cast<int>(WorldChunkData::chunk_size) - 1 : r / static_cast<int>(WorldChunkData::chunk_size)
+        q < 0 ? q / static_cast<int>(WorldChunk::chunk_size) - 1 : q / static_cast<int>(WorldChunk::chunk_size),
+        r < 0 ? r / static_cast<int>(WorldChunk::chunk_size) - 1 : r / static_cast<int>(WorldChunk::chunk_size)
         );
 }
 

@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <map>
 #include <thread>
 
 #include "EditableChunk.h"
@@ -9,14 +10,14 @@
 #include "Engine/Mesh.h"
 #include "mini/ini.h"
 
-class WorldChunkData;
-
 EXTERN class EXPORT WorldGenerator
 {
 public:
+    ~WorldGenerator();
+    
     static void generate_tile_mesh(TileSide sides, const Shared<const TileInfo>& tileInfo, List<Mesh::vertex>& vertices, List<uint>& indices, float seed);
 
-    void request_chunk_generation(const Shared<WorldChunkData>& chunk);
+    void request_chunk_generation(const Shared<WorldChunk>& chunk);
 
     virtual void init(uint seed) = 0;
     
@@ -24,13 +25,13 @@ public:
     virtual void read_settings(const mINI::INIStructure& settings);
 
 protected:
-    virtual void perform_chunk_generation(const EditableChunk& editable) = 0;
+    virtual void generate_chunk(const EditableChunk& editable) = 0;
 
 private:
     void try_to_start_new_generation();
-    void do_generate(const Shared<WorldChunkData>& chunk);
-    void finish_generation(const Shared<WorldChunkData>& chunk);
+    void do_generate(const Shared<WorldChunk>& chunk);
+    void finish_generation(const Shared<WorldChunk>& chunk);
     
-    List<Shared<WorldChunkData>> pending_chunks_;
-    std::map<Shared<WorldChunkData>, Shared<std::thread>> threads_;
+    List<Shared<WorldChunk>> pending_chunks_;
+    std::map<Shared<WorldChunk>, Shared<std::thread>> threads_;
 };

@@ -22,7 +22,14 @@ void WorldChunkObserver::set_render_chunks(bool render_chunks)
     {
         for (uint j = 1; j < chunks_.get_size_y() - 1; j++)
         {
-            chunks_.at(i, j)->set_visibility(render_chunks_);
+            if (render_chunks_)
+            {
+                chunks_.at(i, j)->inc_visibility();
+            }
+            else
+            {
+                chunks_.at(i, j)->dec_visibility();
+            }
         }
     }
 }

@@ -205,7 +205,6 @@
     <ClInclude Include="ui\TileDatabaseRow.h" />
     <ClInclude Include="ui\TileDatabaseViewer.h" />
     <ClInclude Include="WorldChunk.h" />
-    <ClInclude Include="WorldChunkData.h" />
     <ClInclude Include="WorldChunkObserver.h" />
     <ClInclude Include="WorldGenerator.h" />
     <ClInclude Include="WorldGeneratorInfo.h" />
@@ -243,7 +242,6 @@
     <ClCompile Include="ui\TileDatabaseRow.cpp" />
     <ClCompile Include="ui\TileDatabaseViewer.cpp" />
     <ClCompile Include="WorldChunk.cpp" />
-    <ClCompile Include="WorldChunkData.cpp" />
     <ClCompile Include="WorldChunkObserver.cpp" />
     <ClCompile Include="WorldGenerator.cpp" />
     <ClCompile Include="Worlds\GameWorld.cpp" />

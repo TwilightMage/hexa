@@ -18,44 +18,39 @@ const Shared<WorldGenerator>& HexaWorld::get_generator() const
     return generator_;
 }
 
-Shared<WorldChunkObserver> HexaWorld::register_chunk_observer(const ChunkIndex& chunk_index, uint half_size)
+Shared<WorldChunkObserver> HexaWorld::register_chunk_observer(const Rect& rect)
 {
-    auto observer = MakeSharedInternal(WorldChunkObserver, chunk_index, half_size, cast<HexaWorld>(weak_from_this()));
-    Rect observer_rect = observer->get_coverage_rect();
-    
-    observer_storage_.for_each([&](const point<int, Shared<WorldChunkObserver>>& another_observer)
+    auto observer = MakeSharedInternal(WorldChunkObserver, rect, cast<HexaWorld>(weak_from_this()));
+
+    collect_observer_array(observer->chunks_, rect.x, rect.y);
+    fill_observer_array(observer->chunks_, rect.x, rect.y);
+
+    for (uint x = 0; x < observer->chunks_.get_size_x(); x++)
     {
-        Rect another_rect = another_observer.value->get_coverage_rect();
-
-        if (auto intersection = another_rect.intersection(observer_rect))
+        for (uint y = 0; y < observer->chunks_.get_size_y(); y++)
         {
-            for (int x = 0; x < intersection->w; x++)
-            {
-                for (int y = 0; y < intersection->h; y++)
-                {
-                    observer->chunks_.at(intersection->x - observer_rect.x + x, intersection->y - observer_rect.y + y) = another_observer.value->chunks_.at(intersection->x - another_rect.x + x, intersection->y - another_rect.y + y);
-                }
-            }
+            observer->chunks_.at(x, y)->get_data()->inc_observe();
         }
-    });
-
-    fill_observer(observer.get());
+    }
     
-    observer_storage_.insert({chunk_index.x, chunk_index.y, observer});
+    chunk_observers_.Add(observer);
 
     return observer;
 }
 
+Shared<WorldChunkObserver> HexaWorld::register_chunk_observer(const ChunkIndex& chunk_index, uint half_size)
+{
+    return register_chunk_observer(Rect(chunk_index.x - half_size, chunk_index.y - half_size, half_size * 2 + 1, half_size * 2 + 1));
+}
+
 Shared<WorldChunk> HexaWorld::get_chunk(const ChunkIndex& chunk_index)
 {
-    std::function callback = [&](const point<int, Shared<WorldChunkObserver>>& observer_point)->bool
+    for (auto observer : chunk_observers_)
     {
-        return chunk_index.x >= observer_point.x - observer_point.value->half_size_ && chunk_index.x < observer_point.x + observer_point.value->half_size_ &&
-               chunk_index.y >= observer_point.y - observer_point.value->half_size_ && chunk_index.y < observer_point.y + observer_point.value->half_size_;
-    };
-    if (auto point = observer_storage_.find(callback))
-    {
-        return point->value->chunks_.at(chunk_index.x - (point->x - point->value->half_size_), chunk_index.y - (point->y - point->value->half_size_));
+        if (observer->get_rect().contains(chunk_index.x, chunk_index.y))
+        {
+            return observer->chunks_.at(chunk_index.x, chunk_index.y);
+        }
     }
 
     return nullptr;
@@ -67,27 +62,27 @@ void HexaWorld::dump_observable_area()
     int min_y = std::numeric_limits<int>::max();
     int max_x = std::numeric_limits<int>::min();
     int max_y = std::numeric_limits<int>::min();
-    observer_storage_.for_each([&](const point<int, Shared<WorldChunkObserver>>& observer_point)
-        {
-            min_x = Math::min(min_x, observer_point.x - observer_point.value->half_size_);
-            min_y = Math::min(min_y, observer_point.y - observer_point.value->half_size_);
-            max_x = Math::max(max_x, observer_point.x + observer_point.value->half_size_);
-            max_y = Math::max(max_y, observer_point.y + observer_point.value->half_size_);
-        });
+    for (auto observer : chunk_observers_)
+    {
+        auto& rect = observer->get_rect();
+        min_x = Math::min(min_x, rect.x);
+        min_y = Math::min(min_y, rect.y);
+        max_x = Math::max(max_x, rect.x + rect.w);
+        max_y = Math::max(max_y, rect.y + rect.h);
+    }
 
     Array2D<bool> matrix(max_x - min_x, max_y - min_y);
-
-    observer_storage_.for_each([&](const point<int, Shared<WorldChunkObserver>>& observer_point)
+    for (auto observer : chunk_observers_)
+    {
+        auto& rect = observer->get_rect();
+        for (uint i = 0; i < observer->chunks_.get_size_x(); i++)
         {
-            for (uint i = 0; i < observer_point.value->chunks_.get_size_x(); i++)
+            for (uint j = 0; j < observer->chunks_.get_size_y(); j++)
             {
-                for (uint j = 0; j < observer_point.value->chunks_.get_size_y(); j++)
-                {
-                    auto a = observer_point.value->chunks_.at(j, i) ? true : false;
-                    matrix.at(observer_point.x - observer_point.value->half_size_ - min_x + j, observer_point.y - observer_point.value->half_size_ - min_y + i) = a;
-                }
+                matrix.at(rect.x - min_x + j, rect.y - min_y + i) = observer->chunks_.at(j, i) ? true : false;
             }
-        });
+        }
+    }
     
     List<String> s1;
     for (uint i = 0; i < matrix.get_size_y(); i++)
@@ -105,124 +100,132 @@ void HexaWorld::dump_observable_area()
     print_debug("Dump loaded chunks", "From %i %i\n" + s, min_x, min_y);
 }
 
-void HexaWorld::move_observer(WorldChunkObserver* observer, const ChunkIndex& to)
+void HexaWorld::unregister_chunk_observer(WorldChunkObserver* observer)
 {
-    const auto old_rect = observer->get_coverage_rect();
-    const auto new_rect = Rect(to.x - observer->half_size_, to.y - observer->half_size_, observer->half_size_ * 2 + 1, observer->half_size_ * 2 + 1);
-
-    // Remove retired chunks
-    if (const auto intersection = old_rect.intersection(new_rect))
+    int index = -1;
+    for (uint i = 0; i < chunk_observers_.length(); i++)
     {
-        for (uint x = 0; x < observer->chunks_.get_size_x(); x++)
+        if (chunk_observers_[i].get() == observer)
         {
-            for (uint y = 0; y < observer->chunks_.get_size_y(); y++)
-            {
-                if (!new_rect.contains(old_rect.x + x, old_rect.y + y))
-                {
-                    auto& chunk = observer->chunks_.at(x, y);
-                    if (chunk->get_data()->dec_observe())
-                    {
-                        chunk->set_visibility(false);
-                    }
-                    chunk = nullptr;
-                }
-            }
+            index = i;
+            break;
         }
-
-        // translate matrix cells
-        int x_from, x_to, x_dir;
-        if (new_rect.x > old_rect.x)
-        {
-            x_from = 0;
-            x_to = intersection->w;
-            x_dir = 1;
-        }
-        else
-        {
-            x_from = intersection->w - 1;
-            x_to = -1;
-            x_dir = -1;
-        }
-
-        int y_from, y_to, y_dir;
-        if (new_rect.x > old_rect.x)
-        {
-            y_from = 0;
-            y_to = intersection->h;
-            y_dir = 1;
-        }
-        else
-        {
-            y_from = intersection->h - 1;
-            y_to = -1;
-            y_dir = -1;
-        }
-        
-        Array2D<Shared<WorldChunk>> chunks_buffer = Array2D<Shared<WorldChunk>>(observer->chunks_.get_size_x(), observer->chunks_.get_size_y());
-        for (int x = x_from; x != x_to; x += x_dir)
-        {
-            for (int y = y_from; y != y_to; y += y_dir)
-            {
-                chunks_buffer.at(intersection->x - new_rect.x + x, intersection->y - new_rect.y + y) = observer->chunks_.at(intersection->x - old_rect.x + x, intersection->y - old_rect.y + y);
-            }
-        }
-        for (int x = 0; x < new_rect.w; x++)
-        {
-            for (int y = 0; y < new_rect.h; y++)
-            {
-                if (!old_rect.contains(new_rect.x + x, new_rect.y + y))
-                {
-                    chunks_buffer.at(x, y) = nullptr;
-                }
-            }
-        }
-        observer->chunks_ = chunks_buffer;
     }
 
-    observer_storage_.remove(observer->chunk_index_.x, observer->chunk_index_.y);
-    observer->chunk_index_ = to;
-    fill_observer(observer);
-
-    if (observer->render_chunks_)
+    if (index >= 0)
     {
-        for (int x = 0; x < new_rect.w; x++)
+        auto& old_rect = observer->get_rect();
+        for (int x = 0; x < old_rect.w; x++)
         {
-            for (int y = 0; y < new_rect.h; y++)
+            for (int y = 0; y < old_rect.h; y++)
             {
-                int g_x = new_rect.x + x;
-                int g_y = new_rect.y + y;
-                
-                const bool should_be_rendered = x > 0 && x < new_rect.w - 1 && y > 0 && y < new_rect.h - 1;
-                const bool was_rendered = g_x > old_rect.x && g_x < old_rect.x + old_rect.w - 1 && g_y > old_rect.y && g_y < old_rect.y + old_rect.h - 1;
-                if (should_be_rendered && !was_rendered)
+                auto& chunk = observer->chunks_.at(x, y);
+
+                chunk->get_data()->dec_observe();
+                if (observer->render_chunks_)
                 {
-                    observer->chunks_.at(x, y)->set_visibility(true);
+                    chunk->set_visibility(false);
                 }
-                else if (was_rendered && !should_be_rendered)
-                {
-                    observer->chunks_.at(x, y)->set_visibility(false);
-                }
-                    
             }
         }
+
+        chunk_observers_.RemoveAt(index);
     }
 }
 
-void HexaWorld::fill_observer(WorldChunkObserver* observer)
+void HexaWorld::move_observer(WorldChunkObserver* observer, const Rect& new_rect)
 {
-    const auto chunk_index = observer->chunk_index_;
-    const auto half_size = observer->half_size_;
+    auto& old_chunks = observer->chunks_;
+    auto& old_rect = observer->rect_;
+    const auto old_rect_render = Rect(old_rect.x + 1, old_rect.y + 1, old_rect.w - 2, old_rect.h - 2);
 
+    Array2D<Shared<WorldChunk>> new_chunks = Array2D<Shared<WorldChunk>>(new_rect.w, new_rect.h);
+    const auto new_rect_render = Rect(new_rect.x + 1, new_rect.y + 1, new_rect.w - 2, new_rect.h - 2);
+
+    collect_observer_array(new_chunks, new_rect.x, new_rect.y);
+    fill_observer_array(new_chunks, new_rect.x, new_rect.y);
+    
+    for (int x = 0; x < old_rect.w; x++)
+    {
+        for (int y = 0; y < old_rect.h; y++)
+        {
+            const int g_x = old_rect.x + x;
+            const int g_y = old_rect.y + y;
+            
+            if (!new_rect.contains(g_x, g_y))
+            {
+                old_chunks.at(x, y)->get_data()->dec_observe();
+            }
+
+            if (observer->render_chunks_)
+            {
+                if (old_rect_render.contains(g_x, g_y) && !new_rect_render.contains(g_x, g_y))
+                {
+                    old_chunks.at(x, y)->set_visibility(false);
+                }
+            }
+        }
+    }
+    
+    for (int x = 0; x < new_rect.w; x++)
+    {
+        for (int y = 0; y < new_rect.h; y++)
+        {
+            const int g_x = new_rect.x + x;
+            const int g_y = new_rect.y + y;
+            
+            if (new_rect.contains(g_x, g_y))
+            {
+                new_chunks.at(x, y)->get_data()->inc_observe();
+            }
+
+            if (observer->render_chunks_)
+            {
+                if (new_rect_render.contains(g_x, g_y) && !old_rect_render.contains(g_x, g_y))
+                {
+                    new_chunks.at(x, y)->set_visibility(true);
+                }
+            }
+        }
+    }
+
+    old_chunks = new_chunks;
+    old_rect = new_rect;
+}
+
+void HexaWorld::collect_observer_array(Array2D<Shared<WorldChunk>>& array, int start_x, int start_y)
+{
+    const Rect rect = Rect(start_x, start_y, array.get_size_x(), array.get_size_y());
+    
+    for (auto another_observer : chunk_observers_)
+        {
+            Rect another_rect = another_observer->get_rect();
+    
+            if (const auto intersection = another_rect.intersection(rect))
+            {
+                for (int x = 0; x < intersection->w; x++)
+                {
+                    for (int y = 0; y < intersection->h; y++)
+                    {
+                       array.at(intersection->x - rect.x + x, intersection->y - rect.y + y) = another_observer->chunks_.at(intersection->x - another_rect.x + x, intersection->y - another_rect.y + y);
+                    }
+                }
+            }
+        }
+}
+
+void HexaWorld::fill_observer_array(Array2D<Shared<WorldChunk>>& array, int start_x, int start_y)
+{
     List<ChunkIndex> added;
     
-    for (uint x = 0; x < observer->chunks_.get_size_x(); x++)
+    for (uint x = 0; x < array.get_size_x(); x++)
     {
-        for (uint y = 0; y < observer->chunks_.get_size_y(); y++)
+        for (uint y = 0; y < array.get_size_y(); y++)
         {
-            auto& chunk = observer->chunks_.at(x, y);
+            auto& chunk = array.at(x, y);
             if (chunk == nullptr)
             {
-                chunk = MakeShared<WorldChunk>(ChunkIndex(chunk_index.x - half_size + x, chunk_index.y - half_size + y), cast<HexaWorld>(shared_from_this()));
+                chunk = MakeShared<WorldChunk>(ChunkIndex(start_x + x, start_y + y), cast<HexaWorld>(shared_from_this()));
                 chunk->load();
                 added.Add(ChunkIndex(x, y));
             }
@@ -231,38 +234,37 @@ void HexaWorld::fill_observer(WorldChunkObserver* observer)
 
     for (auto& index : added)
     {
-        const bool _f = index.x < static_cast<int>(observer->chunks_.get_size_x()) - 1; // have local front
-        const bool _b = index.x > 0;                                                    // have local back
-        const bool _r = index.y < static_cast<int>(observer->chunks_.get_size_y()) - 1; // have local right
-        const bool _l = index.y > 0;                                                    // have local left
+        const bool _f = index.x < static_cast<int>(array.get_size_x()) - 1; // have local front
+        const bool _b = index.x > 0;                                        // have local back
+        const bool _r = index.y < static_cast<int>(array.get_size_y()) - 1; // have local right
+        const bool _l = index.y > 0;                                        // have local left
         const auto chunk_front = _f
-            ? observer->chunks_.at(index.x + 1, index.y)
-            : get_chunk(ChunkIndex(chunk_index.x + half_size + 1 + 1, chunk_index.y - half_size + index.y));
+            ? array.at(index.x + 1, index.y)
+            : get_chunk(ChunkIndex(start_x + array.get_size_x() + 1, start_y + index.y));
         const auto chunk_back = _b
-            ? observer->chunks_.at(index.x - 1, index.y)
-            : get_chunk(ChunkIndex(chunk_index.x - half_size - 1, chunk_index.y - half_size + index.y));
+            ? array.at(index.x - 1, index.y)
+            : get_chunk(ChunkIndex(start_x - 1, start_y + index.y));
         const auto chunk_right = _r
-            ? observer->chunks_.at(index.x, index.y + 1)
-            : get_chunk(ChunkIndex(chunk_index.x - half_size + index.x, chunk_index.y + half_size + 1 + 1));
+            ? array.at(index.x, index.y + 1)
+            : get_chunk(ChunkIndex(start_x + index.x, start_y + array.get_size_y() + 1));
         const auto chunk_left = _l
-            ? observer->chunks_.at(index.x, index.y - 1)
-            : get_chunk(ChunkIndex(chunk_index.x - half_size + index.x, chunk_index.y - half_size - 1));
+            ? array.at(index.x, index.y - 1)
+            : get_chunk(ChunkIndex(start_x + index.x, start_y - 1));
         const auto chunk_front_right = _f
             ? _r
-                ? observer->chunks_.at(index.x + 1, index.y + 1)
-                : get_chunk(ChunkIndex(chunk_index.x - half_size + index.x + 1, chunk_index.y + half_size + 1 + 1))
+                ? array.at(index.x + 1, index.y + 1)
+                : get_chunk(ChunkIndex(start_x + index.x + 1, start_y + array.get_size_y() + 1))
             : _r
-                ? get_chunk(ChunkIndex(chunk_index.x + half_size + 1 + 1, chunk_index.y - half_size + index.y + 1))
-                : get_chunk(ChunkIndex(chunk_index.x + half_size + 1 + 1, chunk_index.y + half_size + 1 + 1));
+                ? get_chunk(ChunkIndex(start_x + array.get_size_x() + 1, start_y + index.y + 1))
+                : get_chunk(ChunkIndex(start_x + array.get_size_x() + 1, start_y + array.get_size_y() + 1));
         const auto chunk_back_left = _b
             ? _l
-                ? observer->chunks_.at(index.x - 1, index.y - 1)
-                : get_chunk(ChunkIndex(chunk_index.x - half_size + index.x - 1, chunk_index.y - half_size - 1))
+                ? array.at(index.x - 1, index.y - 1)
+                : get_chunk(ChunkIndex(start_x + index.x - 1, start_y - 1))
             : _l
-                ? get_chunk(ChunkIndex(chunk_index.x - half_size - 1, chunk_index.y - half_size + index.y - 1))
-                : get_chunk(ChunkIndex(chunk_index.x - half_size - 1, chunk_index.y - half_size - 1));
-        auto& chunk = observer->chunks_.at(index.x, index.y);
-        chunk->get_data()->inc_observe();
+                ? get_chunk(ChunkIndex(start_x - 1, start_y + index.y - 1))
+                : get_chunk(ChunkIndex(start_x - 1, start_y - 1));
+        auto& chunk = array.at(index.x, index.y);
         chunk->get_data()->link(
             chunk_front ? chunk_front->get_data().get() : nullptr,
             chunk_right ? chunk_right->get_data().get() : nullptr,

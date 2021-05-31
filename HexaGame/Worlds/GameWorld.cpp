@@ -1,6 +1,10 @@
 ﻿#include "GameWorld.h"
 
+#include <array>
 
+
+
+#include "Engine/Tree1D.h"
 #include "HexaGame/HexaGame.h"
 #include "HexaGame/HexaMath.h"
 #include "HexaGame/Tiles.h"

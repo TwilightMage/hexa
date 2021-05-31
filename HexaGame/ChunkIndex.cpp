@@ -51,3 +51,13 @@ ChunkIndex ChunkIndex::from_vector(const Vector3& vector)
         r < 0 ? r / static_cast<int>(WorldChunkData::chunk_size) - 1 : r / static_cast<int>(WorldChunkData::chunk_size)
         );
 }
+
+ChunkIndex ChunkIndex::operator+(const ChunkIndex& rhs) const
+{
+    return ChunkIndex(x + rhs.x, y + rhs.y);
+}
+
+ChunkIndex ChunkIndex::operator-(const ChunkIndex& rhs) const
+{
+    return ChunkIndex(x - rhs.x, y - rhs.y);
+}

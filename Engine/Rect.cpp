@@ -54,3 +54,23 @@ bool Rect::contains(int p_x, int p_y) const
 {
     return p_x >= x && p_x < x + w && p_y >= y && p_y < y + h;
 }
+
+int Rect::left() const
+{
+    return x;
+}
+
+int Rect::right() const
+{
+    return x + w;
+}
+
+int Rect::top() const
+{
+    return y;
+}
+
+int Rect::bottom() const
+{
+    return y + h;
+}

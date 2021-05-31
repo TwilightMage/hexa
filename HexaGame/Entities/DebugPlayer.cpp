@@ -105,6 +105,6 @@ void DebugPlayer::use_observer(const Shared<WorldChunkObserver>& observer)
 {
     observer_ = observer;
     
-    debug_text_ = MakeShared<TextBlock>(StringFormat("Chunk: %i, %i", observer->get_index().x, observer->get_index().y));
+    debug_text_ = MakeShared<TextBlock>(StringFormat("Chunk: %i, %i", observer->get_rect().x + 2, observer->get_rect().y + 2));
     Game::add_ui(debug_text_);
 }

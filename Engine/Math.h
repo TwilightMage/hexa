@@ -44,6 +44,12 @@ public:
     }
 
     template<typename T>
+    static T abs(T value)
+    {
+        return std::abs(value);
+    }
+
+    template<typename T>
     static T degrees(T radians)
     {
         return radians / pi<T>() * static_cast<T>(180);

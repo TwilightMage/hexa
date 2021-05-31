@@ -12,16 +12,16 @@ EXTERN class EXPORT WorldChunkObserver
     friend HexaWorld;
 
 public:
+    ~WorldChunkObserver();
+    
     void set_render_chunks(bool render_chunks);
-    FORCEINLINE Rect get_coverage_rect() const;
+    FORCEINLINE const Rect& get_rect() const;
     FORCEINLINE Shared<HexaWorld> get_world() const;
-    FORCEINLINE const ChunkIndex& get_index() const;
     
 private:
-    WorldChunkObserver(const ChunkIndex& chunk_index, uint half_size, const Weak<HexaWorld>& world);
+    WorldChunkObserver(const Rect& rect, const Weak<HexaWorld>& world);
     
-    ChunkIndex chunk_index_;
-    int half_size_;
+    Rect rect_;
     Array2D<Shared<WorldChunk>> chunks_;
     Weak<HexaWorld> world_;
     bool render_chunks_;

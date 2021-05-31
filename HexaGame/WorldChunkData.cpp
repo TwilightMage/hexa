@@ -290,9 +290,9 @@ const Shared<const TileInfo>& WorldChunkData::get_tile(const TileIndex& index) c
 	return data[index.x][index.y][index.z];
 }
 
-void WorldChunkData::inc_observe()
+bool WorldChunkData::inc_observe()
 {
-	observe_counter_++;
+	return observe_counter_++ == 0;
 }
 
 bool WorldChunkData::dec_observe()
@@ -302,7 +302,7 @@ bool WorldChunkData::dec_observe()
 		unlink();
 		return true;
 	}
-
+	
 	return false;
 }
 

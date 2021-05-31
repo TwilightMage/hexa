@@ -104,7 +104,7 @@
         </Expand>
     </Type>
 
-    <Type Name="ChunkIndex">
-        <DisplayString>{{ {x}, {y} }}</DisplayString>
+    <Type Name="Tree1D::Point">
+        <DisplayString>{{ {x} }} = {value}</DisplayString>
     </Type>
 </AutoVisualizer>

@@ -12,6 +12,8 @@ public:
 
     Vector3 to_vector() const;
     static ChunkIndex from_vector(const Vector3& vector);
+    ChunkIndex operator+(const ChunkIndex& rhs) const;
+    ChunkIndex operator-(const ChunkIndex& rhs) const;
     
     int x;
     int y;

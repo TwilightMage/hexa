@@ -180,7 +180,6 @@
     <ClInclude Include="EditableChunk.h" />
     <ClInclude Include="HexaSettings.h" />
     <ClInclude Include="HexaWorld.h" />
-    <ClInclude Include="Tree2D.h" />
     <ClInclude Include="HexaSaveGame.h" />
     <ClInclude Include="WorldChunkDataState.h" />
     <ClInclude Include="WorldChunkMesh.h" />
@@ -256,7 +255,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="HexaGame.natvis" />
+    <Natvis Include="HexaGame.natvis" />
+  </ItemGroup>
+  <ItemGroup>
     <Content Include="resources\hexagame\fonts\arial.fnt" />
     <Content Include="resources\hexagame\fonts\arial_0.png" />
     <Content Include="resources\hexagame\fonts\berkshire_swash.fnt" />

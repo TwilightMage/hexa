@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include <functional>
 #include <stdexcept>
 #include <vector>
 
@@ -392,6 +393,63 @@ public:
         length_ = 0;
     }
 
+    void sort()
+    {
+        for (uint i = 0; i < length_ - 1; i++)
+        {
+            for (uint j = i + 1; j < length_; j++)
+            {
+                if (inner_[i] < inner_[j])
+                {
+                    std::swap(inner_[i], inner_[j]);
+                }
+            }
+        }
+    }
+
+    void sort_reverse()
+    {
+        for (uint i = 0; i < length_ - 1; i++)
+        {
+            for (uint j = i + 1; j < length_; j++)
+            {
+                if (inner_[i] > inner_[j])
+                {
+                    std::swap(inner_[i], inner_[j]);
+                }
+            }
+        }
+    }
+
+    template<class Predicate>
+    void sort()
+    {
+        for (uint i = 0; i < length_ - 1; i++)
+        {
+            for (uint j = i + 1; j < length_; j++)
+            {
+                if (Predicate(inner_[i], inner_[j]))
+                {
+                    std::swap(inner_[i], inner_[j]);
+                }
+            }
+        }
+    }
+
+    void sort(const std::function<bool(T a, T b)> predicate)
+    {
+        for (uint i = 0; i < length_ - 1; i++)
+        {
+            for (uint j = i + 1; j < length_; j++)
+            {
+                if (predicate(inner_[i], inner_[j]))
+                {
+                    std::swap(inner_[i], inner_[j]);
+                }
+            }
+        }
+    }
+
     List operator+(const List& rhs)
     {
         List result = *this;
@@ -400,9 +458,63 @@ public:
         return result;
     }
 
-    List operator+=(const List& rhs)
+    List& operator+=(const List& rhs)
     {
         AddMany(rhs);
+
+        return *this;
+    }
+
+    List operator*(const List& rhs) const
+    {
+        List result;
+        for (auto& entry : *this)
+        {
+            if (rhs.Contains(entry))
+            {
+                result.Add(entry);
+            }
+        }
+
+        return result;
+    }
+
+    List& operator*=(const List& rhs)
+    {
+        for (uint i = 0; i < length_; i++)
+        {
+            if (!rhs.Contains(inner_[i]))
+            {
+                RemoveAt(i--);
+            }
+        }
+
+        return *this;
+    }
+
+    List operator-(const List& rhs) const
+    {
+        List result;
+        for (auto& entry : *this)
+        {
+            if (!rhs.Contains(entry))
+            {
+                result.Add(entry);
+            }
+        }
+
+        return result;
+    }
+
+    List& operator-=(const List& rhs)
+    {
+        for (uint i = 0; i < length_; i++)
+        {
+            if (rhs.Contains(inner_[i]))
+            {
+                RemoveAt(i--);
+            }
+        }
 
         return *this;
     }

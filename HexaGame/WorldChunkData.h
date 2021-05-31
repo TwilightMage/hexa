@@ -55,7 +55,7 @@ public:
     FORCEINLINE const Shared<const TileInfo>& get_tile(const TileIndex& index) const;
 
 private:
-    void inc_observe();
+    bool inc_observe();
     bool dec_observe();
     
     void link(WorldChunkData* front, WorldChunkData* right, WorldChunkData* front_right, WorldChunkData* back, WorldChunkData* left, WorldChunkData* back_left);

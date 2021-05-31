@@ -15,6 +15,12 @@ WorldChunkData::WorldChunkData(const ChunkIndex& index)
 	, state_(WorldChunkDataState::Pending)
 	, plane_metadata{}
 {
+	print_debug("Chunk", "{%i, %i} Created", index_.x, index_.y);
+}
+
+WorldChunkData::~WorldChunkData()
+{
+	print_debug("Chunk", "{%i, %i} Destroyed", index_.x, index_.y);
 }
 
 void WorldChunkData::generate_metadata()
@@ -290,6 +296,11 @@ const Shared<const TileInfo>& WorldChunkData::get_tile(const TileIndex& index) c
 	return data[index.x][index.y][index.z];
 }
 
+int WorldChunkData::get_observe_counter() const
+{
+	return observe_counter_;
+}
+
 bool WorldChunkData::inc_observe()
 {
 	return observe_counter_++ == 0;
@@ -309,6 +320,13 @@ bool WorldChunkData::dec_observe()
 void WorldChunkData::set_state(WorldChunkDataState state)
 {
 	if (state_ == state) return;
+
+	String state_string = "";
+	if (state == WorldChunkDataState::Pending) state_string = "Pending";
+	else if (state == WorldChunkDataState::Loading) state_string = "Loading";
+	else if (state == WorldChunkDataState::Loaded) state_string = "Loaded";
+
+	print_debug("Chunk", "{%i, %i} %s", index_.x, index_.y, state_string.c());
 
 	state_ = state;
 	on_state_changed(shared_from_this(), state);

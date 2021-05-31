@@ -32,5 +32,5 @@ private:
     void finish_generation(const Shared<WorldChunkData>& chunk);
     
     List<Shared<WorldChunkData>> pending_chunks_;
-    std::map<Shared<WorldChunkData>, Shared<std::thread>> threads;
+    std::map<Shared<WorldChunkData>, Shared<std::thread>> threads_;
 };

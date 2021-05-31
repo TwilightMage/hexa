@@ -37,14 +37,6 @@ Shared<HexaWorld> WorldChunkObserver::get_world() const
     return world_.lock();
 }
 
-WorldChunkObserver::WorldChunkObserver(const Rect& rect, const Weak<HexaWorld>& world)
-    : rect_(rect)
-    , chunks_(rect.w, rect.h)
-    , world_(world)
-    , render_chunks_(false)
-{
-}
-
 void WorldChunkObserver::move(const Rect& rect)
 {
     if (auto world = world_.lock())
@@ -56,4 +48,12 @@ void WorldChunkObserver::move(const Rect& rect)
 void WorldChunkObserver::move(const ChunkIndex& new_chunk_index, uint half_size)
 {
     move(Rect(new_chunk_index.x - half_size, new_chunk_index.y - half_size, half_size * 2 + 1, half_size * 2 + 1));
+}
+
+WorldChunkObserver::WorldChunkObserver(const Rect& rect, const Weak<HexaWorld>& world)
+    : rect_(rect)
+    , chunks_(rect.w, rect.h)
+    , world_(world)
+    , render_chunks_(false)
+{
 }

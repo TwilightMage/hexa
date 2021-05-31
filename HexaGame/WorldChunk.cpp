@@ -80,7 +80,7 @@ void WorldChunk::set_visibility(bool visibility)
 
 void WorldChunk::try_show_mesh()
 {
-    if (load_counter_ == 0)
+    if (load_counter_ == 0 && visibility_counter_ > 0)
     {
         if (auto world = world_.lock())
         {

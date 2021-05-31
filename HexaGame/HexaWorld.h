@@ -21,6 +21,7 @@ public:
 
     Shared<WorldChunkObserver> register_chunk_observer(const Rect& rect);
     Shared<WorldChunkObserver> register_chunk_observer(const ChunkIndex& chunk_index, uint half_size);
+    
     Shared<WorldChunk> get_chunk(const ChunkIndex& chunk_index);
     
     void dump_observable_area(); 

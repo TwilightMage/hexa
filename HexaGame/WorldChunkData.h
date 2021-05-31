@@ -22,6 +22,7 @@ EXTERN class EXPORT WorldChunkData : public std::enable_shared_from_this<WorldCh
     
 public:
     explicit WorldChunkData(const ChunkIndex& index);
+    ~WorldChunkData();
     
     inline static const uint chunk_size = 10;
     inline static const uint chunk_height = 300;
@@ -53,6 +54,8 @@ public:
     Delegate<const Shared<WorldChunkData>&> on_loaded;
     Delegate<const Shared<WorldChunkData>&> on_loading;
     FORCEINLINE const Shared<const TileInfo>& get_tile(const TileIndex& index) const;
+
+    FORCEINLINE int get_observe_counter() const;
 
 private:
     bool inc_observe();

@@ -140,6 +140,8 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const TileI
 
 void WorldGenerator::request_chunk_generation(const Shared<WorldChunkData>& chunk)
 {
+	if (pending_chunks_.Contains(chunk) || threads_.contains(chunk)) return;
+	
 	pending_chunks_.Add(chunk);
 	try_to_start_new_generation();
 }
@@ -155,12 +157,12 @@ void WorldGenerator::read_settings(const mINI::INIStructure& settings)
 
 void WorldGenerator::try_to_start_new_generation()
 {
-	if (threads.size() < cast<HexaSettings>(Game::get_settings())->get_max_threads() && pending_chunks_.length() > 0)
+	if (threads_.size() < cast<HexaSettings>(Game::get_settings())->get_max_threads() && pending_chunks_.length() > 0)
 	{
 		Shared<WorldChunkData> chunk = pending_chunks_.first();
 		pending_chunks_.RemoveAt(0);
 		auto thread = MakeShared<std::thread>(&WorldGenerator::do_generate, this, chunk);
-		threads[chunk] = thread;
+		threads_[chunk] = thread;
 	}
 }
 
@@ -190,7 +192,7 @@ void WorldGenerator::do_generate(const Shared<WorldChunkData>& chunk)
 void WorldGenerator::finish_generation(const Shared<WorldChunkData>& chunk)
 {
 	chunk->set_state(WorldChunkDataState::Loaded);
-	threads[chunk]->join();
-	threads.erase(chunk);
+	threads_[chunk]->join();
+	threads_.erase(chunk);
 	try_to_start_new_generation();
 }

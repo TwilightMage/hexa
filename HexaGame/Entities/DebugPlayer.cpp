@@ -9,6 +9,7 @@
 #include "Engine/World.h"
 #include "HexaGame/WorldChunkObserver.h"
 #include "Engine/ui/TextBlock.h"
+#include "HexaGame/HexaWorld.h"
 
 DebugPlayer::DebugPlayer()
     : Entity()
@@ -32,6 +33,18 @@ void DebugPlayer::on_start()
         arrows_ = MakeShared<MeshEntity>(arrows_mesh);
         arrows_->set_scale(Vector3(0.1f));
         world->spawn_entity(arrows_);
+
+        if (auto hexa_world = cast<HexaWorld>(world))
+        {
+            const auto current_chunk = ChunkIndex::from_vector(get_position());
+            
+            observer_ = hexa_world->register_chunk_observer(current_chunk, load_distance_);
+            observer_->set_render_chunks(true);
+            
+            debug_text_ = MakeShared<TextBlock>(StringFormat("Chunk: %i, %i", current_chunk.x, current_chunk.y));
+            debug_text_->set_position(Vector2(5, 5));
+            Game::add_ui(debug_text_);
+        }
     }
 }
 
@@ -94,17 +107,9 @@ void DebugPlayer::tick(float delta_time)
     {
         if (observer_)
         {
-            observer_->move(current_chunk);
+            observer_->move(current_chunk, load_distance_);
             debug_text_->set_text(StringFormat("Chunk: %i, %i", current_chunk.x, current_chunk.y));
         }
         old_chunk_ = current_chunk;
     }
-}
-
-void DebugPlayer::use_observer(const Shared<WorldChunkObserver>& observer)
-{
-    observer_ = observer;
-    
-    debug_text_ = MakeShared<TextBlock>(StringFormat("Chunk: %i, %i", observer->get_rect().x + 2, observer->get_rect().y + 2));
-    Game::add_ui(debug_text_);
 }

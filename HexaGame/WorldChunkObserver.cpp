@@ -45,10 +45,15 @@ WorldChunkObserver::WorldChunkObserver(const Rect& rect, const Weak<HexaWorld>& 
 {
 }
 
-void WorldChunkObserver::move(const ChunkIndex& new_chunk_index)
+void WorldChunkObserver::move(const Rect& rect)
 {
     if (auto world = world_.lock())
     {
-        world->move_observer(this, Rect(new_chunk_index.x - 2, new_chunk_index.y - 2, 5, 5));
+        world->move_observer(this, rect);
     }
+}
+
+void WorldChunkObserver::move(const ChunkIndex& new_chunk_index, uint half_size)
+{
+    move(Rect(new_chunk_index.x - half_size, new_chunk_index.y - half_size, half_size * 2 + 1, half_size * 2 + 1));
 }

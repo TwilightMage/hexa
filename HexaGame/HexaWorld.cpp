@@ -47,9 +47,10 @@ Shared<WorldChunk> HexaWorld::get_chunk(const ChunkIndex& chunk_index)
 {
     for (auto observer : chunk_observers_)
     {
-        if (observer->get_rect().contains(chunk_index.x, chunk_index.y))
+        auto& rect = observer->get_rect();
+        if (rect.contains(chunk_index.x, chunk_index.y))
         {
-            return observer->chunks_.at(chunk_index.x, chunk_index.y);
+            return observer->chunks_.at(chunk_index.x - rect.x, chunk_index.y - rect.y);
         }
     }
 
@@ -112,29 +113,40 @@ void HexaWorld::unregister_chunk_observer(WorldChunkObserver* observer)
         }
     }
 
-    if (index >= 0)
-    {
-        auto& old_rect = observer->get_rect();
-        for (int x = 0; x < old_rect.w; x++)
-        {
-            for (int y = 0; y < old_rect.h; y++)
-            {
-                auto& chunk = observer->chunks_.at(x, y);
+    if (index == -1) return;
 
-                chunk->get_data()->dec_observe();
-                if (observer->render_chunks_)
-                {
-                    chunk->set_visibility(false);
-                }
+    auto& old_rect = observer->get_rect();
+    for (int x = 0; x < old_rect.w; x++)
+    {
+        for (int y = 0; y < old_rect.h; y++)
+        {
+            auto& chunk = observer->chunks_.at(x, y);
+
+            chunk->get_data()->dec_observe();
+            if (observer->render_chunks_)
+            {
+                chunk->set_visibility(false);
             }
         }
-
-        chunk_observers_.RemoveAt(index);
     }
+
+    chunk_observers_.RemoveAt(index);
 }
 
 void HexaWorld::move_observer(WorldChunkObserver* observer, const Rect& new_rect)
 {
+    int index = -1;
+    for (uint i = 0; i < chunk_observers_.length(); i++)
+    {
+        if (chunk_observers_[i].get() == observer)
+        {
+            index = i;
+            break;
+        }
+    }
+
+    if (index == -1) return;
+    
     auto& old_chunks = observer->chunks_;
     auto& old_rect = observer->rect_;
     const auto old_rect_render = Rect(old_rect.x + 1, old_rect.y + 1, old_rect.w - 2, old_rect.h - 2);

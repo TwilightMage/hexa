@@ -5,6 +5,8 @@
 #include "Tiles.h"
 #include "WorldChunkData.h"
 
+#define rest()  std::this_thread::sleep_for(std::chrono::milliseconds(1));
+
 void DefaultWorldGenerator::init(uint seed)
 {
     srand(seed);
@@ -49,6 +51,8 @@ void DefaultWorldGenerator::perform_chunk_generation(const EditableChunk& editab
                     editable.tile(TileIndex(c_x, c_y, c_z)) = Tiles::dirt;
                 }
             }
+
+            // rest();
         }
     }
 
@@ -65,6 +69,8 @@ void DefaultWorldGenerator::perform_chunk_generation(const EditableChunk& editab
                     break;
                 }
             }
+
+            // rest();
         }
     }
 }

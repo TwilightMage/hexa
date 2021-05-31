@@ -27,5 +27,6 @@ private:
     bool render_chunks_;
 
 public:
-    void move(const ChunkIndex& new_chunk_index);
+    void move(const Rect& rect);
+    void move(const ChunkIndex& new_chunk_index, uint half_size);
 };

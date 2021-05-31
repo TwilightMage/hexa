@@ -24,8 +24,6 @@ public:
     void on_possess() override;
 
     void tick(float delta_time) override;
-
-    void use_observer(const Shared<WorldChunkObserver>& observer);
     
 private:
     float move_forward_ = 0;
@@ -37,5 +35,6 @@ private:
 
     Shared<WorldChunkObserver> observer_;
     ChunkIndex old_chunk_ = ChunkIndex(0, 0);
+    uint load_distance_ = 3;
     Shared<TextBlock> debug_text_;
 };

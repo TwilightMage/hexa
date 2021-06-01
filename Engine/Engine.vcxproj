@@ -217,6 +217,7 @@
     <ClInclude Include="ITickable.h" />
     <ClInclude Include="IUsageCountable.h" />
     <ClInclude Include="IUsageCountableBase.h" />
+    <ClInclude Include="JSON.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="LogStream.h" />
     <ClInclude Include="Margins.h" />
@@ -433,6 +434,7 @@
     <ClCompile Include="GeometryEditor.cpp" />
     <ClCompile Include="glad.c" />
     <ClCompile Include="ImageEditor.cpp" />
+    <ClCompile Include="JSON.cpp" />
     <ClCompile Include="LogStream.cpp" />
     <ClCompile Include="Margins.cpp" />
     <ClCompile Include="Matrix4x4.cpp" />

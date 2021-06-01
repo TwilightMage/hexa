@@ -25,6 +25,4 @@ protected:
 
 private:
     std::map<String, Shared<WorldGeneratorInfo>> generator_infos_;
-
-    Shared<DefaultWorldGenerator> default_world_generator_;
 };

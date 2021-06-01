@@ -9,6 +9,9 @@ typedef uint64_t uint64;
 
 typedef uint8_t byte;
 
+typedef int16_t char16;
+typedef uint16_t byte16;
+
 template<typename T>
 using Unique = std::unique_ptr<T>;
 

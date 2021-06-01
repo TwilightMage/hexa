@@ -7,8 +7,8 @@
 #include "TileInfo.h"
 #include "TileSide.h"
 #include "Engine/BasicTypes.h"
+#include "Engine/JSON.h"
 #include "Engine/Mesh.h"
-#include "mini/ini.h"
 
 EXTERN class EXPORT WorldGenerator
 {
@@ -21,8 +21,8 @@ public:
 
     virtual void init(uint seed) = 0;
     
-    virtual mINI::INIStructure write_settings() const;
-    virtual void read_settings(const mINI::INIStructure& settings);
+    virtual JSON write_settings() const;
+    virtual void read_settings(const JSON& settings);
 
 protected:
     virtual void generate_chunk(const EditableChunk& editable) = 0;

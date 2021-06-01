@@ -8,8 +8,8 @@ EXTERN class EXPORT DefaultWorldGenerator : public WorldGenerator
 public:
     void init(uint seed) override;
     
-    mINI::INIStructure write_settings() const override;
-    void read_settings(const mINI::INIStructure& settings) override;
+    JSON write_settings() const override;
+    void read_settings(const JSON& settings) override;
 
 protected:
     void generate_chunk(const EditableChunk& editable) override;

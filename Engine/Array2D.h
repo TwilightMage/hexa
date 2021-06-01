@@ -41,6 +41,8 @@ public:
 
     Array2D& operator=(const Array2D& rhs)
     {
+        if (this == &rhs) return *this;
+    
         const bool rearrange = size_x_ != rhs.size_x_ || size_y_ != rhs.size_y_;
         
         if (rearrange)

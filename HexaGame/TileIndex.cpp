@@ -1,7 +1,7 @@
 ﻿#include "TileIndex.h"
 
 #include "HexaMath.h"
-#include "WorldChunkData.h"
+#include "WorldChunk.h"
 #include "Engine/Math.h"
 
 TileIndex::TileIndex(int x, int y, uint z)
@@ -37,7 +37,7 @@ TileIndex TileIndex::offset(int x, int y, int z) const
 
 TileIndex TileIndex::cycle_chunk() const
 {
-    return TileIndex(Math::mod(x, WorldChunkData::chunk_size), Math::mod(y, WorldChunkData::chunk_size), z);
+    return TileIndex(Math::mod(x, WorldChunk::chunk_size), Math::mod(y, WorldChunk::chunk_size), z);
 }
 
 bool TileIndex::operator<(const TileIndex& rhs) const

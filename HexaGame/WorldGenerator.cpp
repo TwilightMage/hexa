@@ -155,12 +155,12 @@ void WorldGenerator::request_chunk_generation(const Shared<WorldChunk>& chunk)
 	try_to_start_new_generation();
 }
 
-mINI::INIStructure WorldGenerator::write_settings() const
+JSON WorldGenerator::write_settings() const
 {
-	return mINI::INIStructure();
+	return JSON();
 }
 
-void WorldGenerator::read_settings(const mINI::INIStructure& settings)
+void WorldGenerator::read_settings(const JSON& settings)
 {
 }
 

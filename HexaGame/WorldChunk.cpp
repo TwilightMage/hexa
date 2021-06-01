@@ -304,8 +304,6 @@ void WorldChunk::regenerate_mesh()
             }
         }
 
-        Shared<WorldChunkMesh> chunk_mesh = MakeShared<WorldChunkMesh>();
-
         for (auto& kvp : vertices)
         {
             auto mesh_entity = MakeShared<Entity>();

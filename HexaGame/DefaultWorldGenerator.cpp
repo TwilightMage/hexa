@@ -1,6 +1,5 @@
 ﻿#include "DefaultWorldGenerator.h"
 
-#include "HexaSaveGame.h"
 #include "TileIndex.h"
 #include "Tiles.h"
 #include "WorldChunk.h"
@@ -19,17 +18,20 @@ void DefaultWorldGenerator::init(uint seed)
     generator_.reseed(seed);
 }
 
-mINI::INIStructure DefaultWorldGenerator::write_settings() const
+JSON DefaultWorldGenerator::write_settings() const
 {
-    mINI::INIStructure result;
-    result["general"].set("ground_level", StringMake(ground_level).std());
-
-    return result;
+    return JSON()
+    .with_object("general", JSON()
+        .with_float("ground_level", ground_level)
+        .with_float("ground_amplitude", ground_amplitude)
+        );
 }
 
-void DefaultWorldGenerator::read_settings(const mINI::INIStructure& settings)
+void DefaultWorldGenerator::read_settings(const JSON& settings)
 {
-    ground_level = StringParse<float>(settings.get("general").get("ground_level"));
+    const auto general = settings.get_object("general");
+    ground_level = general.get_float("ground_level", 30);
+    ground_amplitude = general.get_float("ground_amplitude", 10);
 }
 
 void DefaultWorldGenerator::generate_chunk(const EditableChunk& editable)

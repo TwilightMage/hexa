@@ -15,12 +15,12 @@ void TileDemoEntity::on_start()
 {
     if (auto world = get_world())
     {
-        std::map<Shared<Texture>, List<Mesh::vertex>> domains;
+        std::map<Shared<Texture>, List<Mesh::Vertex>> domains;
         for (uint i = 0; i < 6; i++)
         {
             if (tiles_[i])
             {
-                List<Mesh::vertex> tile_vertices;
+                List<Mesh::Vertex> tile_vertices;
                 List<uint> tile_indices;
         
                 WorldGenerator::generate_tile_mesh(masks[i], tiles_[i], tile_vertices, tile_indices, 0.0f);

@@ -9,7 +9,7 @@ EXTERN class EXPORT Mesh : public Object
     friend class Entity;
 
 public:
-    struct vertex
+    struct Vertex
     {
         Vector3 pos;
         Vector2 uv;
@@ -17,12 +17,12 @@ public:
     };
 
     Mesh(const String& name);
-    Mesh(const String& name, const List<vertex>& vertices);
-    Mesh(const String& name, const List<vertex>& vertices, const List<uint>& indices);
+    Mesh(const String& name, const List<Vertex>& vertices);
+    Mesh(const String& name, const List<Vertex>& vertices, const List<uint>& indices);
     
     static Shared<Mesh> load_obj(const Path& path);
 
-    const List<vertex>& get_vertices() const;
+    const List<Vertex>& get_vertices() const;
     const List<uint>& get_indices() const;
     
     uint get_usage_count() const;
@@ -31,7 +31,7 @@ public:
     static Shared<Mesh> empty;
 
 //private:
-    List<vertex> vertices_;
+    List<Vertex> vertices_;
     List<uint> indices_;
     uint usage_count_;
 };

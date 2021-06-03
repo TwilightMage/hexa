@@ -18,7 +18,10 @@ public:
     Vector3 cross_product(const Vector3& rhs) const;
     Vector3 normalized() const;
     void normalize();
-
+    
+    static float angle_deg(const Vector3& a, const Vector3& b);
+    static float angle_rad(const Vector3& a, const Vector3& b);
+    
     Vector3 operator+(const Vector3& rhs) const;
     Vector3 operator-(const Vector3& rhs) const;
     Vector3 operator*(const Vector3& rhs) const;

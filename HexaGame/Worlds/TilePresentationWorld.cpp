@@ -5,6 +5,7 @@
 #include "HexaGame/Tiles.h"
 #include "HexaGame/WorldGenerator.h"
 #include "HexaGame/Entities/DebugPlayer.h"
+#include "HexaGame/Entities/SingleTile.h"
 #include "HexaGame/Entities/TileDemoEntity.h"
 
 void TilePresentationWorld::on_start()
@@ -19,25 +20,22 @@ void TilePresentationWorld::on_start()
     uint x = 0;
     uint y = 0;
     uint i = 2;
-    //uint u = 0;
-    //Shared<Entity> ent = nullptr;
     for (auto& entry : HexaGame::tile_database->records())
     {
-        //if (u++ == 2) break;
         const Vector3 pos = TileIndex(x, y++, 0).to_vector();
         
-        List<Mesh::vertex> vertices;
+        List<Mesh::Vertex> vertices;
         List<uint> indices;
         WorldGenerator::generate_tile_mesh(TileSide::All, entry.second, vertices, indices, pos.x + pos.y + pos.z);
         GeometryEditor::remove_indices(vertices, indices);
 
-        Shared<Mesh> mesh = MakeShared<Mesh>("tile", vertices);
+        Shared<Mesh> mesh = MakeShared<Mesh>(StringFormat("tile %s", entry.second->key.c()), vertices);
         
-        const auto entity = MakeShared<Entity>();
+        const auto entity = MakeShared<SingleTile>();
         entity->use_mesh(mesh);
         spawn_entity(entity, pos);
+        entity->use_convex_collision(mesh);
         entity->use_texture(entry.second->texture);
-        //ent = entity;
 
         if (i++ == 3)
         {
@@ -46,8 +44,6 @@ void TilePresentationWorld::on_start()
             i -= 3;
         }
     }
-
-    //ent->destroy();
 
     const auto tile_demo_entity = MakeShared<TileDemoEntity>(std::array<Shared<const TileInfo>, 6>{Tiles::dirt, Tiles::dirt, Tiles::grass, Tiles::dirt, Tiles::grass, Tiles::grass});
     spawn_entity(tile_demo_entity, TileIndex(3, 0, 0).to_vector());

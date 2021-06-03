@@ -14,6 +14,7 @@
 #include "Vector2.h"
 #include "Version.h"
 
+class ConvexMesh;
 class SaveGame;
 class Settings;
 class SpriteFont;
@@ -47,6 +48,7 @@ EXTERN class EXPORT Game
     friend Texture;
     friend Entity;
     friend UIElement;
+    friend ConvexMesh;
     
 public:
     Game(int argc, char* argv[]);

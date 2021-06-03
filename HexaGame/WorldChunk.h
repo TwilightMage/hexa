@@ -38,7 +38,11 @@ public:
     FORCEINLINE WorldChunkDataState get_state() const;
     FORCEINLINE const Shared<const TileInfo>& get_tile(const TileIndex& index) const;
 
+    void set_tile(const TileIndex& index, const Shared<const TileInfo>& tile);
+
     TileSide get_tile_face_flags(const TileIndex& tile_index) const;
+
+    void save_if_dirty();
 
     inline static const uint chunk_size = 10;
     inline static const uint chunk_height = 300;
@@ -86,6 +90,8 @@ private:
     Weak<HexaWorld> world_;
 
     List<Shared<Entity>> mesh_entities_;
+    std::map<TileIndex, Shared<const TileInfo>> modifications_;
+    bool dirty_;
 
     WorldChunkDataState state_;
 

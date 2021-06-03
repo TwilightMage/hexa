@@ -14,7 +14,7 @@ Mesh::Mesh(const String& name)
 {
 }
 
-Mesh::Mesh(const String& name, const List<vertex>& vertices)
+Mesh::Mesh(const String& name, const List<Vertex>& vertices)
     : Object(name)
     , vertices_(vertices)
     , usage_count_(0)
@@ -25,7 +25,7 @@ Mesh::Mesh(const String& name, const List<vertex>& vertices)
     }
 }
 
-Mesh::Mesh(const String& name, const List<vertex>& vertices, const List<uint>& indices)
+Mesh::Mesh(const String& name, const List<Vertex>& vertices, const List<uint>& indices)
     : Object(name)
     , vertices_(vertices)
     , indices_(indices)
@@ -71,7 +71,7 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
     return result;
 }
 
-const List<Mesh::vertex>& Mesh::get_vertices() const
+const List<Mesh::Vertex>& Mesh::get_vertices() const
 {
     return vertices_;
 }

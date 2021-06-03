@@ -1,12 +1,15 @@
 ﻿#include "Entity.h"
 
 #include <reactphysics3d/body/RigidBody.h>
+#include <reactphysics3d/collision/PolygonVertexArray.h>
+#include <reactphysics3d/collision/TriangleVertexArray.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 
 
-
+#include "ConvexMesh.h"
 #include "Game.h"
 #include "Mesh.h"
+#include "GeometryEditor.h"
 #include "Texture.h"
 #include "World.h"
 
@@ -149,13 +152,10 @@ Vector3 Entity::get_position() const
 {
     if (rigid_body_)
     {
-        const auto pos = rigid_body_->getTransform().getPosition();
-        return Vector3(pos.x, pos.y, pos.z);
+        return cast_object<Vector3>(rigid_body_->getTransform().getPosition());
     }
-    else
-    {
-        return position_;
-    }
+    
+    return position_;
 }
 
 void Entity::set_position(const Vector3& pos)
@@ -171,20 +171,25 @@ void Entity::set_position(const Vector3& pos)
         position_ = pos;
     }
 
-    cache_matrix();
+    if (!rigid_body_)
+    {
+        cache_matrix();
+    }
+}
+
+void Entity::translate(const Vector3& translation)
+{
+    set_position(get_position() + translation);
 }
 
 Quaternion Entity::get_rotation() const
 {
     if (rigid_body_)
     {
-        const auto rot = rigid_body_->getTransform().getOrientation();
-        return Quaternion(rot.x, rot.y, rot.z, rot.w);
+        return cast_object<Quaternion>(rigid_body_->getTransform().getOrientation());
     }
-    else
-    {
-        return rotation_;
-    }
+    
+    return rotation_;
 }
 
 void Entity::set_rotation(const Quaternion& rot)
@@ -200,7 +205,10 @@ void Entity::set_rotation(const Quaternion& rot)
         rotation_ = rot;
     }
 
-    cache_matrix();
+    if (!rigid_body_)
+    {
+        cache_matrix();
+    }
 }
 
 Vector3 Entity::get_scale() const
@@ -212,7 +220,10 @@ void Entity::set_scale(const Vector3& scale)
 {
     scale_ = scale;
 
-    cache_matrix();
+    if (!rigid_body_)
+    {
+        cache_matrix();
+    }
 }
 
 void Entity::use_sphere_collision(float radius, const Vector3& offset)
@@ -222,13 +233,95 @@ void Entity::use_sphere_collision(float radius, const Vector3& offset)
     collider_ = rigid_body_->addCollider(Game::instance_->physics_->createSphereShape(radius), reactphysics3d::Transform(reactphysics3d::Vector3(offset.x, offset.y, offset.z), reactphysics3d::Quaternion::identity()));
 }
 
+void Entity::use_box_collision(const Vector3& extent, const Vector3& offset)
+{
+    remove_collision();
+
+    collider_ = rigid_body_->addCollider(Game::instance_->physics_->createBoxShape(cast_object<reactphysics3d::Vector3>(extent)), reactphysics3d::Transform(reactphysics3d::Vector3(offset.x, offset.y, offset.z), reactphysics3d::Quaternion::identity()));
+}
+
+void Entity::use_concave_collision(const Shared<Mesh>& mesh, const Vector3& offset)
+{
+    remove_collision();
+
+    auto verts = mesh->vertices_;
+    auto inds = mesh->indices_;
+
+    //GeometryEditor::invert_vertices(verts);
+    //GeometryEditor::invert_indices(inds);
+    
+    List<Vector3> vertices;
+    for (auto& vertex : verts)
+    {
+        vertices.Add(vertex.pos);
+    }
+    List<int> triangles;
+    for (auto index : inds)
+    {
+        triangles.Add(static_cast<int>(index));
+    }
+    
+    reactphysics3d::TriangleMesh* triangle_mesh = Game::instance_->physics_->createTriangleMesh();
+    reactphysics3d::TriangleVertexArray* vertex_array = new reactphysics3d::TriangleVertexArray(
+        vertices.length(),
+        vertices.get_data(),
+        sizeof(Vector3),
+        triangles.length() / 3,
+        triangles.get_data(),
+        sizeof(int) * 3,
+        reactphysics3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
+        reactphysics3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE
+        );
+    triangle_mesh->addSubpart(vertex_array);
+    reactphysics3d::ConcaveMeshShape* concave_mesh_shape = Game::instance_->physics_->createConcaveMeshShape(triangle_mesh);
+    collider_ = rigid_body_->addCollider(concave_mesh_shape, reactphysics3d::Transform(reactphysics3d::Vector3(offset.x, offset.y, offset.z), reactphysics3d::Quaternion::identity()));
+}
+
+void Entity::use_convex_collision(const Shared<Mesh>& mesh, const Vector3& offset)
+{
+    remove_collision();
+    
+    collider_ = rigid_body_->addCollider(ConvexMesh(mesh).get_physics_shape(), reactphysics3d::Transform(reactphysics3d::Vector3(offset.x, offset.y, offset.z), reactphysics3d::Quaternion::identity()));
+}
+
 void Entity::remove_collision()
 {
     if (collider_)
     {
+        const auto shape = collider_->getCollisionShape();
         rigid_body_->removeCollider(collider_);
+
+        if (const auto sphere_shape = cast<reactphysics3d::SphereShape>(shape))
+        {
+            Game::instance_->physics_->destroySphereShape(sphere_shape);
+        }
+        else if (const auto box_shape = cast<reactphysics3d::BoxShape>(shape))
+        {
+            Game::instance_->physics_->destroyBoxShape(box_shape);
+        }
+        
         collider_ = nullptr;
     }
+}
+
+void Entity::set_gravity_enabled(bool state) const
+{
+    rigid_body_->enableGravity(state);
+}
+
+void Entity::make_body_static() const
+{
+    rigid_body_->setType(reactphysics3d::BodyType::STATIC);
+}
+
+void Entity::make_body_dynamic() const
+{
+    rigid_body_->setType(reactphysics3d::BodyType::DYNAMIC);
+}
+
+void Entity::make_body_kinematic() const
+{
+    rigid_body_->setType(reactphysics3d::BodyType::KINEMATIC);
 }
 
 bool Entity::is_rigid_body()
@@ -238,13 +331,18 @@ bool Entity::is_rigid_body()
 
 void Entity::cache_matrix()
 {
-    cached_matrix_ = Matrix4x4().translate(position_).rotate(rotation_).scale(scale_);
+    cached_matrix_ = Matrix4x4().translate(get_position()).rotate(get_rotation()).scale(scale_);
 }
 
 void Entity::start()
 {
     started_ = true;
-    cache_matrix();
+
+    if (!rigid_body_)
+    {
+        cache_matrix();
+    }
+    
     if (mesh_)
     {
         texture_.activate();

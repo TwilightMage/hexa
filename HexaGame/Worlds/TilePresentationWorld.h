@@ -5,5 +5,5 @@
 EXTERN class EXPORT TilePresentationWorld : public World
 {
 public:
-    void on_start() override;    
+    void on_start() override;
 };

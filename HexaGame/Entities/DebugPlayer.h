@@ -35,6 +35,6 @@ private:
 
     Shared<WorldChunkObserver> observer_;
     ChunkIndex old_chunk_ = ChunkIndex(0, 0);
-    uint load_distance_ = 3;
+    uint load_distance_ = 1;
     Shared<TextBlock> debug_text_;
 };

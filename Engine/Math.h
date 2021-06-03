@@ -34,6 +34,21 @@ public:
         return a > b ? a : b;
     }
 
+    template<typename T>
+    static T clamp(T value, T min, T max)
+    {
+        return value < min ? min : value > max ? max : value;
+    }
+
+    template<typename T>
+    static T unwind(T value, T min, T max)
+    {
+        while (value >= max) value -= max - min;
+        while (value < min) value += max - min;
+
+        return value;
+    }
+
     FORCEINLINE static uint mod(int value, uint m)
     {
         int mod = value % (int)m;
@@ -101,6 +116,27 @@ public:
     static T cos_rad(T rad)
     {
         return cos(rad);
+    }
+
+    template<typename T>
+    static T acos_deg(T in)
+    {
+        return degrees(std::acos(in));
+    }
+
+    template<typename T>
+    static T acos_rad(T in)
+    {
+        return std::acos(in);
+    }
+
+    template<typename T>
+    static T unwind_angle(T in)
+    {
+        while (in >= 360) in -= 360;
+        while (in < 0) in += 360;
+
+        return in;
     }
 
     template<typename T>

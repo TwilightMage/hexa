@@ -13,7 +13,6 @@ class TileDemoEntity : public Entity
 public:
     TileDemoEntity(const std::array<Shared<const TileInfo>, 6>& tiles);
 
-protected:
     void on_start() override;
 
 private:

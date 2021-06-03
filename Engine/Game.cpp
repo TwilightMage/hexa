@@ -359,7 +359,7 @@ void Game::render_loop()
 
 	// Load shaders
 	Shader::Meta basic_shader_meta;
-	basic_shader_meta.vertex_param_size = sizeof(Mesh::vertex);
+	basic_shader_meta.vertex_param_size = sizeof(Mesh::Vertex);
 	basic_shader_meta.vertex_params = {
 		{"vPos", 0, 3, GL_FLOAT},
 		{"vUV", sizeof(float) * 3, 2, GL_FLOAT},

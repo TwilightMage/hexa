@@ -1,6 +1,9 @@
 ﻿#include "WorldChunk.h"
 
 
+
+#include "ChunkMeshEntity.h"
+#include "HexaSaveGame.h"
 #include "HexaWorld.h"
 #include "Tiles.h"
 #include "WorldChunkMesh.h"
@@ -74,6 +77,12 @@ const Shared<const TileInfo>& WorldChunk::get_tile(const TileIndex& index) const
 	return data[index.x][index.y][index.z];
 }
 
+void WorldChunk::set_tile(const TileIndex& index, const Shared<const TileInfo>& tile)
+{
+    modifications_[index] = tile;
+    dirty_ = true;
+}
+
 TileSide WorldChunk::get_tile_face_flags(const TileIndex& tile_index) const
 {
     auto flags = TileSide::None;
@@ -90,6 +99,18 @@ TileSide WorldChunk::get_tile_face_flags(const TileIndex& tile_index) const
     if (down_tile(tile_index)->type < current_type) flags |= TileSide::Down;
 
     return flags;
+}
+
+void WorldChunk::save_if_dirty()
+{
+    if (dirty_)
+    {
+        if (auto save_game = cast<HexaSaveGame>(Game::get_save_game()))
+        {
+            save_game->save_chunk_modifications(index_, modifications_);
+            dirty_ = false;
+        }
+    }
 }
 
 void WorldChunk::load()
@@ -261,7 +282,7 @@ void WorldChunk::regenerate_mesh()
     
     if (auto world = world_.lock())
     {
-        std::map<Shared<const TileInfo>, List<Mesh::vertex>> vertices;
+        std::map<Shared<const TileInfo>, List<Mesh::Vertex>> vertices;
 
         for (int z = 0; z < chunk_height; z++)
         {
@@ -289,7 +310,7 @@ void WorldChunk::regenerate_mesh()
                             if (side_flags != TileSide::None)
                             {
                                 Vector3 world_pos = index.to_vector();
-                                List<Mesh::vertex> tile_vertices;
+                                List<Mesh::Vertex> tile_vertices;
                                 List<uint> tile_indices;
                                 WorldGenerator::generate_tile_mesh(side_flags, tile, tile_vertices, tile_indices, world_pos.sum_all());
 
@@ -306,10 +327,14 @@ void WorldChunk::regenerate_mesh()
 
         for (auto& kvp : vertices)
         {
-            auto mesh_entity = MakeShared<Entity>();
-            mesh_entity->use_mesh(MakeShared<Mesh>(StringFormat("Chunk {%i %i} %s", index_.x, index_.y, kvp.first->key.c()), kvp.second));
+            auto mesh = MakeShared<Mesh>(StringFormat("Chunk {%i %i} %s", index_.x, index_.y, kvp.first->key.c()), kvp.second);
+            
+            auto mesh_entity = MakeShared<ChunkMeshEntity>();
+            mesh_entity->use_mesh(mesh);
             mesh_entity->use_texture(kvp.first->texture);
             world->spawn_entity(mesh_entity, index_.to_vector());
+
+            mesh_entity->use_concave_collision(mesh);
         
             mesh_entities_.Add(mesh_entity);
         }

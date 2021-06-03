@@ -149,12 +149,11 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
-      <TreatWarningAsError>true</TreatWarningAsError>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -198,6 +197,7 @@
     <ClInclude Include="BasicTypes.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="ConvexMesh.h" />
     <ClInclude Include="Database.h" />
     <ClInclude Include="DatabaseBase.h" />
     <ClInclude Include="DatabaseEntry.h" />
@@ -220,6 +220,7 @@
     <ClInclude Include="JSON.h" />
     <ClInclude Include="List.h" />
     <ClInclude Include="LogStream.h" />
+    <ClInclude Include="Map.h" />
     <ClInclude Include="Margins.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Matrix4x4.h" />
@@ -349,6 +350,7 @@
       <ImpLibCompiled>
       </ImpLibCompiled>
     </ClInclude>
+    <ClCompile Include="ConvexMesh.cpp" />
     <ClCompile Include="DatabaseBase.cpp" />
     <ClCompile Include="DateTime.cpp" />
     <ClInclude Include="DeferredRegister.cpp">
@@ -503,7 +505,8 @@
       <SupportJustMyCode>true</SupportJustMyCode>
       <AssemblerOutput>NoListing</AssemblerOutput>
       <AssemblerListingLocation>x64\Debug\</AssemblerListingLocation>
-      <AcceptableNonZeroExitCodes></AcceptableNonZeroExitCodes>
+      <AcceptableNonZeroExitCodes>
+      </AcceptableNonZeroExitCodes>
       <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
       <BrowseInformation>false</BrowseInformation>
       <BrowseInformationFile>x64\Debug\</BrowseInformationFile>
@@ -519,8 +522,10 @@
       <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
       <FloatingPointModel>Precise</FloatingPointModel>
       <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
-      <ForcedIncludeFiles></ForcedIncludeFiles>
-      <ForcedUsingFiles></ForcedUsingFiles>
+      <ForcedIncludeFiles>
+      </ForcedIncludeFiles>
+      <ForcedUsingFiles>
+      </ForcedUsingFiles>
       <GenerateModuleDependencies>false</GenerateModuleDependencies>
       <GenerateSourceDependencies>false</GenerateSourceDependencies>
       <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
@@ -564,8 +569,10 @@
       <PreprocessorDefinitions>_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;_WINDLL;_UNICODE;UNICODE;</PreprocessorDefinitions>
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
-      <LibCompiled></LibCompiled>
-      <ImpLibCompiled></ImpLibCompiled>
+      <LibCompiled>
+      </LibCompiled>
+      <ImpLibCompiled>
+      </ImpLibCompiled>
     </ClInclude>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

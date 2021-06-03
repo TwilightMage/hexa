@@ -288,7 +288,7 @@ private:
         return nullptr;
     }
 
-    static int remove(KeyType x, Node*& node)
+    static int remove(const KeyType& x, Node*& node)
     {
         if (node)
         {
@@ -347,12 +347,12 @@ private:
     }
 
 public:
-    void insert(KeyType x, ValueType value)
+    void insert(const KeyType& x, const ValueType& value)
     {
         insert(Point(x, value), root_, size_);
     }
 
-    const ValueType* find(KeyType x)
+    ValueType* find(const KeyType& x) const
     {
         Node* current = root_;
 
@@ -369,12 +369,12 @@ public:
         return nullptr;
     }
 
-    const Point* find(std::function<bool(const Point& point)> callback)
+    Point* find(std::function<bool(const Point& point)> callback) const
     {
         return find(callback, root_);
     }
 
-    void remove(KeyType x)
+    void remove(const KeyType& x)
     {
         remove(x, root_);
     }
@@ -384,16 +384,21 @@ public:
         for_each(callback, root_);
     }
 
-    Iterator begin()
+    Iterator begin() const
     {
         Iterator result = Iterator(this);
         fill_stack(result.stack_, root_);
         return result;
     }
 
-    Iterator end()
+    Iterator end() const
     {
         return Iterator::get_end(this);
+    }
+
+    uint size() const
+    {
+        return size_;
     }
 
 private:

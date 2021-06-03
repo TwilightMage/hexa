@@ -54,7 +54,7 @@ void DefaultWorldGenerator::generate_chunk(const EditableChunk& editable)
                 }
             }
 
-            rest();
+            //rest();
         }
     }
 
@@ -72,7 +72,7 @@ void DefaultWorldGenerator::generate_chunk(const EditableChunk& editable)
                 }
             }
 
-            rest();
+            //rest();
         }
     }
 }

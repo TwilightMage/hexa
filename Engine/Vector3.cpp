@@ -73,6 +73,16 @@ void Vector3::normalize()
     z /= m;
 }
 
+float Vector3::angle_deg(const Vector3& a, const Vector3& b)
+{
+    return Math::acos_deg(a.normalized().dot_product(b.normalized()));
+}
+
+float Vector3::angle_rad(const Vector3& a, const Vector3& b)
+{
+    return Math::acos_rad(a.normalized().dot_product(b.normalized()));
+}
+
 Vector3 Vector3::operator+(const Vector3& rhs) const
 {
     return Vector3(x + rhs.x, y + rhs.y, z + rhs.z);

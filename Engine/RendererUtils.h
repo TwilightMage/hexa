@@ -357,26 +357,26 @@ private:
         if (!shader_meshes.have_key(mesh_ptr)) // if we adding mesh
         {
             // extract current buffer
-            Mesh::vertex* vertex_buffer;
+            Mesh::Vertex* vertex_buffer;
             int vertex_buffer_size;
             if (shader_meshes.size() > 0) // if new mesh will be first
             {
                 // extract existing vertex buffer
-                vertex_buffer = extract_gl_buffer<Mesh::vertex>(shader_meshes.gl_vertex_buffer_id, GL_ARRAY_BUFFER, vertex_buffer_size, mesh_ptr->get_vertices().length());
+                vertex_buffer = extract_gl_buffer<Mesh::Vertex>(shader_meshes.gl_vertex_buffer_id, GL_ARRAY_BUFFER, vertex_buffer_size, mesh_ptr->get_vertices().length());
             }
             else
             {
                 vertex_buffer_size = mesh_ptr->get_vertices().length();
                 // initialize new empty buffer
-                vertex_buffer = new Mesh::vertex[vertex_buffer_size];
+                vertex_buffer = new Mesh::Vertex[vertex_buffer_size];
             }
 
             // modify copy of current buffer
-            memcpy(vertex_buffer + vertex_buffer_size - mesh_ptr->get_vertices().length(), mesh_ptr->get_vertices().get_data(), sizeof(Mesh::vertex) * mesh_ptr->get_vertices().length());
+            memcpy(vertex_buffer + vertex_buffer_size - mesh_ptr->get_vertices().length(), mesh_ptr->get_vertices().get_data(), sizeof(Mesh::Vertex) * mesh_ptr->get_vertices().length());
 
             glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.gl_vertex_buffer_id);
             // save updated buffer
-            glBufferData(GL_ARRAY_BUFFER, sizeof(Mesh::vertex) * vertex_buffer_size, vertex_buffer, GL_STATIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, sizeof(Mesh::Vertex) * vertex_buffer_size, vertex_buffer, GL_STATIC_DRAW);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
     
             delete vertex_buffer;
@@ -405,9 +405,9 @@ private:
                 if (mesh_objects->value.length() == 0)
                 {
                     int vertex_buffer_size;
-                    Mesh::vertex* vertex_buffer = extract_gl_buffer<Mesh::vertex>(shader_meshes.gl_vertex_buffer_id, GL_ARRAY_BUFFER, vertex_buffer_size);
+                    Mesh::Vertex* vertex_buffer = extract_gl_buffer<Mesh::Vertex>(shader_meshes.gl_vertex_buffer_id, GL_ARRAY_BUFFER, vertex_buffer_size);
 
-                    memcpy(vertex_buffer + mesh_objects->value.vertex_buffer_offset, vertex_buffer + mesh_objects->value.vertex_buffer_offset + mesh_objects->value.size_in_vertex_buffer, sizeof(Mesh::vertex) * (vertex_buffer_size - mesh_objects->value.vertex_buffer_offset - mesh_objects->value.size_in_vertex_buffer));
+                    memcpy(vertex_buffer + mesh_objects->value.vertex_buffer_offset, vertex_buffer + mesh_objects->value.vertex_buffer_offset + mesh_objects->value.size_in_vertex_buffer, sizeof(Mesh::Vertex) * (vertex_buffer_size - mesh_objects->value.vertex_buffer_offset - mesh_objects->value.size_in_vertex_buffer));
                     for (auto& entry : shader_meshes)
                     {
                         if (entry.value.vertex_buffer_offset > mesh_objects->value.vertex_buffer_offset)
@@ -418,7 +418,7 @@ private:
                     
                     glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.gl_vertex_buffer_id);
                     // save updated buffer
-                    glBufferData(GL_ARRAY_BUFFER, sizeof(Mesh::vertex) * vertex_buffer_size - mesh_objects->value.size_in_vertex_buffer, vertex_buffer, GL_STATIC_DRAW);
+                    glBufferData(GL_ARRAY_BUFFER, sizeof(Mesh::Vertex) * vertex_buffer_size - mesh_objects->value.size_in_vertex_buffer, vertex_buffer, GL_STATIC_DRAW);
                     glBindBuffer(GL_ARRAY_BUFFER, 0);
 
                     delete vertex_buffer;

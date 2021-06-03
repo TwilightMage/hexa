@@ -47,7 +47,8 @@ void World::spawn_entity(const Shared<Entity>& entity)
 void World::start()
 {
     physics_world_ = Game::instance_->physics_->createPhysicsWorld();
-    physics_world_->setGravity(reactphysics3d::Vector3(0.0f, 0.0f, -9.81f));
+    reactphysics3d::Vector3 gravity(0.0f, 0.0f, -9.81f);
+    physics_world_->setGravity(gravity);
     
     on_start();
 
@@ -78,26 +79,33 @@ void World::tick(float delta_time)
     
     for (uint i = 0; i < entities_.length(); i++)
     {
-        if (entities_[i]->pending_kill_)
+        auto& entity = entities_[i];
+        if (entity->pending_kill_)
         {
-            if (const auto mesh = entities_[i]->get_mesh())
+            if (const auto mesh = entity->get_mesh())
             {
                 mesh->usage_count_--;
             }
-            if (entities_[i]->get_mesh() && entities_[i]->get_shader())
+            if (entity->get_mesh() && entity->get_shader())
             {
-                notify_renderable_deleted(entities_[i]);
+                notify_renderable_deleted(entity);
             }
 
-            entities_[i]->on_destroy();
-            entities_[i]->pending_kill_ = false;
+            entity->on_destroy();
+            entity->pending_kill_ = false;
             to_delete.Add(i);
         }
         else if (time_scale_ != 0.0f)
-        {
-            if (auto tickable = cast<ITickable>(entities_[i]))
+        {            
+            if (auto tickable = cast<ITickable>(entity))
             {
                 tickable->tick(delta_time);
+            }
+
+            if (entity->rigid_body_)
+            {
+                auto t = entity->rigid_body_->getTransform();
+                entity->cache_matrix();
             }
         }
     }
@@ -176,7 +184,8 @@ Vector3 World::get_gravity() const
 
 void World::set_gravity(const Vector3& val) const
 {
-    physics_world_->setGravity(reactphysics3d::Vector3(val.x, val.y, val.z));
+    reactphysics3d::Vector3 gravity(val.x, val.y, val.z);
+    physics_world_->setGravity(gravity);
 }
 
 void World::on_start()

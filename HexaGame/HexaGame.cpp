@@ -11,6 +11,7 @@
 #include "Engine/GeometryEditor.h"
 #include "ui/TileDatabaseViewer.h"
 #include "Worlds/GameWorld.h"
+#include "Worlds/TilePresentationWorld.h"
 
 Shared<Database<TileInfo>> HexaGame::tile_database = MakeShared<Database<TileInfo>>("Tile Database");
 
@@ -57,7 +58,7 @@ void HexaGame::start()
                 generator->init(generator_settings.get_int("seed", 0));
                 generator->read_settings(generator_settings.get_object("settings"));
 
-                const auto world = MakeShared<GameWorld>(generator);
+                const auto world = MakeShared<TilePresentationWorld>();
                 open_world(world);
             }
         }

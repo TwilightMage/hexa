@@ -67,7 +67,7 @@ WorldGenerator::~WorldGenerator()
 	}
 }
 
-void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const TileInfo>& tileInfo, List<Mesh::vertex>& vertices, List<uint>& indices, float seed)
+void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const TileInfo>& tileInfo, List<Mesh::Vertex>& vertices, List<uint>& indices, float seed)
 {
     int vertexCount = 0;
 	int int_seed = static_cast<int>(seed * 127.2355f);
@@ -76,7 +76,7 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const TileI
 	if (!!(sides & TileSide::Down)) vertexCount += 6;
 	if (!!(sides & TileSide::Wall)) vertexCount += 14;
 
-	vertices = List<Mesh::vertex>(vertexCount);
+	vertices = List<Mesh::Vertex>(vertexCount);
 	indices.Clear();
 
 	int offset = 0;
@@ -188,6 +188,7 @@ void WorldGenerator::do_generate(const Shared<WorldChunk>& chunk)
 			{
 				chunk->data[modification.first.x][modification.first.y][modification.first.z] = modification.second;
 			}
+			chunk->modifications_ = *modifications;
 		}
 	}
 	chunk->generate_metadata();

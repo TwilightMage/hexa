@@ -85,7 +85,7 @@ public:
         return {{items...}};
     }
 
-    static List generate(uint size, T(*generator)(uint index))
+    static List generate(uint size, std::function<T(uint index)> generator)
     {
         auto result = List(size);
         for (uint i = 0; i < size; i++)
@@ -141,6 +141,19 @@ public:
         {
             inner_[length_++] = std::move(item);
         }
+    }
+
+    void add_unique(const T& item)
+    {
+        if (length_ > 0)
+        {
+            for (uint i = 0; i < length_; i++)
+            {
+                if (inner_[i] == item) return;;
+            }
+        }
+
+        Add(item);
     }
 
     bool Contains(const T& item)

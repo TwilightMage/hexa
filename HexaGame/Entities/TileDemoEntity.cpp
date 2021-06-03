@@ -1,8 +1,10 @@
 ﻿#include "TileDemoEntity.h"
 
 
+#include "TileDemoDomainEntity.h"
 #include "Engine/GeometryEditor.h"
 #include "Engine/World.h"
+#include "Engine/Physics/ConcaveMeshCollision.h"
 #include "HexaGame/TileIndex.h"
 #include "HexaGame/WorldGenerator.h"
 
@@ -33,13 +35,15 @@ void TileDemoEntity::on_start()
 
         for (auto& domain : domains)
         {
-            auto domain_mesh = MakeShared<Entity>();
+            auto domain_mesh = MakeShared<TileDemoDomainEntity>();
             domain_mesh->set_position(get_position());
             domain_mesh->set_rotation(get_rotation());
             domain_mesh->set_scale(get_scale());
-            domain_mesh->use_mesh(MakeShared<Mesh>("Tile demo mesh", domain.second));
+            auto mesh = MakeShared<Mesh>("Tile demo mesh", domain.second);
+            domain_mesh->use_mesh(mesh);
             domain_mesh->use_texture(domain.first);
             world->spawn_entity(domain_mesh);
+            domain_mesh->use_collision(MakeShared<ConcaveMeshCollision>(mesh));
 
             child_domains_.Add(domain_mesh);
         }

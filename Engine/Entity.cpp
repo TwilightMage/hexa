@@ -1,17 +1,16 @@
 ﻿#include "Entity.h"
 
 #include <reactphysics3d/body/RigidBody.h>
-#include <reactphysics3d/collision/PolygonVertexArray.h>
-#include <reactphysics3d/collision/TriangleVertexArray.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 
 
-#include "ConvexMesh.h"
+#include "Assert.h"
 #include "Game.h"
 #include "Mesh.h"
 #include "GeometryEditor.h"
 #include "Texture.h"
 #include "World.h"
+#include "Physics/Collision.h"
 
 Entity::Entity()
     : Object(typeid(this).name() + String(" entity"))
@@ -226,7 +225,19 @@ void Entity::set_scale(const Vector3& scale)
     }
 }
 
-void Entity::use_sphere_collision(float radius, const Vector3& offset)
+void Entity::use_collision(const Shared<Collision>& collision, const Vector3& offset)
+{
+    remove_collision();
+
+    const auto collider_shape = collision->get_collider_shape();
+
+    Assert(collider_shape != nullptr);
+    
+    collision_ = collision;
+    collider_ = rigid_body_->addCollider(collider_shape, reactphysics3d::Transform(cast_object<reactphysics3d::Vector3>(offset), reactphysics3d::Quaternion::identity()));
+}
+
+/*void Entity::use_sphere_collision(float radius, const Vector3& offset)
 {
     remove_collision();
 
@@ -246,28 +257,14 @@ void Entity::use_concave_collision(const Shared<Mesh>& mesh, const Vector3& offs
 
     auto verts = mesh->vertices_;
     auto inds = mesh->indices_;
-
-    //GeometryEditor::invert_vertices(verts);
-    //GeometryEditor::invert_indices(inds);
-    
-    List<Vector3> vertices;
-    for (auto& vertex : verts)
-    {
-        vertices.Add(vertex.pos);
-    }
-    List<int> triangles;
-    for (auto index : inds)
-    {
-        triangles.Add(static_cast<int>(index));
-    }
     
     reactphysics3d::TriangleMesh* triangle_mesh = Game::instance_->physics_->createTriangleMesh();
     reactphysics3d::TriangleVertexArray* vertex_array = new reactphysics3d::TriangleVertexArray(
-        vertices.length(),
-        vertices.get_data(),
-        sizeof(Vector3),
-        triangles.length() / 3,
-        triangles.get_data(),
+        mesh->vertices_.length(),
+        mesh->vertices_.get_data(),
+        sizeof(Mesh::Vertex),
+        mesh->indices_.length() / 3,
+        mesh->indices_.get_data(),
         sizeof(int) * 3,
         reactphysics3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
         reactphysics3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE
@@ -281,27 +278,18 @@ void Entity::use_convex_collision(const Shared<Mesh>& mesh, const Vector3& offse
 {
     remove_collision();
     
-    collider_ = rigid_body_->addCollider(ConvexMesh(mesh).get_physics_shape(), reactphysics3d::Transform(reactphysics3d::Vector3(offset.x, offset.y, offset.z), reactphysics3d::Quaternion::identity()));
-}
+    collider_ = rigid_body_->addCollider(ConvexMeshCollision(mesh).get_physics_shape(), reactphysics3d::Transform(reactphysics3d::Vector3(offset.x, offset.y, offset.z), reactphysics3d::Quaternion::identity()));
+}*/
 
 void Entity::remove_collision()
 {
     if (collider_)
     {
-        const auto shape = collider_->getCollisionShape();
         rigid_body_->removeCollider(collider_);
-
-        if (const auto sphere_shape = cast<reactphysics3d::SphereShape>(shape))
-        {
-            Game::instance_->physics_->destroySphereShape(sphere_shape);
-        }
-        else if (const auto box_shape = cast<reactphysics3d::BoxShape>(shape))
-        {
-            Game::instance_->physics_->destroyBoxShape(box_shape);
-        }
-        
         collider_ = nullptr;
     }
+
+    collision_ = nullptr;
 }
 
 void Entity::set_gravity_enabled(bool state) const

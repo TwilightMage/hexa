@@ -7,6 +7,7 @@
 #include "Engine/Camera.h"
 #include "Engine/Game.h"
 #include "Engine/World.h"
+#include "Engine/Physics/RaycastResult.h"
 #include "HexaGame/WorldChunkObserver.h"
 #include "Engine/ui/TextBlock.h"
 #include "HexaGame/HexaWorld.h"
@@ -98,8 +99,6 @@ void DebugPlayer::tick(float delta_time)
     rot = rot.rotate_around_z(Game::get_mouse_delta().x / 10.0f).normalized();
     rot = rot.rotate_around(rot.right(), Game::get_mouse_delta().y / 10.0f).normalized();
     set_rotation(rot);
-    
-    arrows_->set_position(get_position() + get_rotation().forward());
 
     const ChunkIndex current_chunk = ChunkIndex::from_vector(get_position());
 
@@ -111,5 +110,17 @@ void DebugPlayer::tick(float delta_time)
             debug_text_->set_text(StringFormat("Chunk: %i, %i", current_chunk.x, current_chunk.y));
         }
         old_chunk_ = current_chunk;
+    }
+
+    if (auto world = get_world())
+    {
+        if (auto hit = world->raycast(get_position(), get_position() + get_rotation().forward() * 10))
+        {
+            arrows_->set_position(hit->location);
+        }
+        else
+        {
+            arrows_->set_position(get_position() + get_rotation().forward());
+        }
     }
 }

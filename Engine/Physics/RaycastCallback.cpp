@@ -1,0 +1,17 @@
+﻿#include "RaycastCallback.h"
+
+#include <reactphysics3d/body/CollisionBody.h>
+
+#include "Engine/Entity.h"
+
+reactphysics3d::decimal RaycastCallback::notifyRaycastHit(const reactphysics3d::RaycastInfo& raycastInfo)
+{
+    RaycastResult result;
+    result.location = cast_object<Vector3>(raycastInfo.worldPoint);
+    result.normal = cast_object<Vector3>(raycastInfo.worldNormal);
+    result.triangle_index = raycastInfo.triangleIndex;
+    result.entity = static_cast<Entity*>(raycastInfo.body->getUserData())->shared_from_this();
+    results.Add(result);
+    
+    return 1.0f;
+}

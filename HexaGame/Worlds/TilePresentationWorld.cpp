@@ -1,6 +1,7 @@
 ﻿#include "TilePresentationWorld.h"
 
 #include "Engine/GeometryEditor.h"
+#include "Engine/Physics/ConvexMeshCollision.h"
 #include "HexaGame/HexaGame.h"
 #include "HexaGame/Tiles.h"
 #include "HexaGame/WorldGenerator.h"
@@ -34,7 +35,7 @@ void TilePresentationWorld::on_start()
         const auto entity = MakeShared<SingleTile>();
         entity->use_mesh(mesh);
         spawn_entity(entity, pos);
-        entity->use_convex_collision(mesh);
+        entity->use_collision(MakeShared<ConvexMeshCollision>(mesh));
         entity->use_texture(entry.second->texture);
 
         if (i++ == 3)

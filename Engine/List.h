@@ -408,6 +408,8 @@ public:
 
     void sort()
     {
+        if (inner_ == nullptr) return;
+        
         for (uint i = 0; i < length_ - 1; i++)
         {
             for (uint j = i + 1; j < length_; j++)
@@ -422,6 +424,8 @@ public:
 
     void sort_reverse()
     {
+        if (inner_ == nullptr) return;
+        
         for (uint i = 0; i < length_ - 1; i++)
         {
             for (uint j = i + 1; j < length_; j++)
@@ -437,6 +441,8 @@ public:
     template<class Predicate>
     void sort()
     {
+        if (inner_ == nullptr) return;
+        
         for (uint i = 0; i < length_ - 1; i++)
         {
             for (uint j = i + 1; j < length_; j++)
@@ -451,6 +457,8 @@ public:
 
     void sort(const std::function<bool(T a, T b)> predicate)
     {
+        if (inner_ == nullptr) return;
+        
         for (uint i = 0; i < length_ - 1; i++)
         {
             for (uint j = i + 1; j < length_; j++)

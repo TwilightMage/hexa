@@ -180,6 +180,7 @@
     <ClInclude Include="DefaultWorldGeneratorInfo.h" />
     <ClInclude Include="EditableChunk.h" />
     <ClInclude Include="Entities\SingleTile.h" />
+    <ClInclude Include="Entities\TileDemoDomainEntity.h" />
     <ClInclude Include="HexaSettings.h" />
     <ClInclude Include="HexaWorld.h" />
     <ClInclude Include="HexaSaveGame.h" />
@@ -219,6 +220,7 @@
     <ClCompile Include="DefaultWorldGeneratorInfo.cpp" />
     <ClCompile Include="EditableChunk.cpp" />
     <ClCompile Include="Entities\SingleTile.cpp" />
+    <ClCompile Include="Entities\TileDemoDomainEntity.cpp" />
     <ClCompile Include="HexaWorld.cpp" />
     <ClCompile Include="HexaSaveGame.cpp" />
     <ClCompile Include="WorldChunkMesh.cpp" />

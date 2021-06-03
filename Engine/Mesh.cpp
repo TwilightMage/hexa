@@ -61,6 +61,7 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
     result->indices_ = List(loader->LoadedIndices);
     loader->LoadedIndices.clear();
 
+    GeometryEditor::invert_indices(result->indices_);
     GeometryEditor::remove_indices(result->vertices_, result->indices_);
     GeometryEditor::rotate(result->vertices_, Quaternion(Vector3(90.0f, 0.0f, 180.0f)));
     GeometryEditor::mirror_y(result->vertices_);

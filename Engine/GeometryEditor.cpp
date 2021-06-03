@@ -4,6 +4,11 @@
 
 #include "Math.h"
 
+Vector3 GeometryEditor::compute_normal(const Vector3& a, const Vector3& b, const Vector3& c)
+{
+    return (c - a).cross_product(b - a).normalized();
+}
+
 void GeometryEditor::optimize(List<Mesh::Vertex>& vertices, List<uint>& indices)
 {
     for (uint i = 0; i < vertices.length() - 1; i++)
@@ -195,7 +200,7 @@ FORCEINLINE float angle(const Vector3& point, const Vector3& front, const Vector
     return Math::unwind_angle(angle);
 }
 
-void GeometryEditor::generate_faces(const List<Mesh::Vertex>& vertices, const List<uint>& indices, List<Face>& out_faces, List<uint>& out_indices)
+void GeometryEditor::compute_faces(const List<Mesh::Vertex>& vertices, const List<uint>& indices, List<Face>& out_faces, List<uint>& out_indices)
 {
     out_faces.Clear();
     out_indices.Clear();
@@ -207,7 +212,7 @@ void GeometryEditor::generate_faces(const List<Mesh::Vertex>& vertices, const Li
         triangles[i].points[0] = indices[i * 3 + 0];
         triangles[i].points[1] = indices[i * 3 + 1];
         triangles[i].points[2] = indices[i * 3 + 2];
-        triangles[i].normal = (vertices[indices[i * 3 + 2]].pos - vertices[indices[i * 3]].pos).cross_product(vertices[indices[i * 3 + 1]].pos - vertices[indices[i * 3]].pos).normalized();
+        triangles[i].normal = compute_normal(vertices[indices[i * 3 + 0]].pos, vertices[indices[i * 3 + 1]].pos, vertices[indices[i * 3 + 2]].pos);
     }
 
     for (uint i = 0; i < triangles.length(); i++)
@@ -264,6 +269,18 @@ void GeometryEditor::generate_faces(const List<Mesh::Vertex>& vertices, const Li
 
         out_faces.Add({ face_vertex_indices.length(), out_indices.length() });
         out_indices.AddMany(face_vertex_indices);
+    }
+}
+
+void GeometryEditor::compute_normals(const List<Mesh::Vertex>& vertices, const List<uint>& indices, List<Vector3>& out_normals, bool invert)
+{
+    out_normals.Clear();
+
+    for (uint i = 0; i < indices.length() / 3; i++)
+    {
+        auto normal = compute_normal(vertices[indices[i * 3 + 0]].pos, vertices[indices[i * 3 + 1]].pos, vertices[indices[i * 3 + 2]].pos);
+        if (invert) normal *= -1;
+        out_normals.Add(normal);
     }
 }
 

@@ -11,6 +11,17 @@ public:
         data_.insert(key, new_value);
     }
 
+    FORCEINLINE Value& find_or_insert(const Key& key, std::function<Value()> generator)
+    {
+        if (auto value = data_.find(key))
+        {
+            return *value;
+        }
+        
+        data_.insert(key, generator());
+        return *data_.find(key);
+    }
+    
     FORCEINLINE Value& find_or_insert(const Key& key, const Value& new_value = Value())
     {
         if (auto value = data_.find(key))

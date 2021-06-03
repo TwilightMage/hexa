@@ -10,6 +10,7 @@
 #include "WorldGenerator.h"
 #include "Engine/GeometryEditor.h"
 #include "Engine/World.h"
+#include "Engine/Physics/ConcaveMeshCollision.h"
 
 WorldChunk::WorldChunk(const ChunkIndex& index, const Weak<HexaWorld>& world)
     : index_(index)
@@ -334,7 +335,7 @@ void WorldChunk::regenerate_mesh()
             mesh_entity->use_texture(kvp.first->texture);
             world->spawn_entity(mesh_entity, index_.to_vector());
 
-            mesh_entity->use_concave_collision(mesh);
+            mesh_entity->use_collision(MakeShared<ConcaveMeshCollision>(mesh));
         
             mesh_entities_.Add(mesh_entity);
         }

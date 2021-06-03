@@ -46,6 +46,7 @@ void Renderer::render(const Matrix4x4& view_projection_matrix) const
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
     glEnable(GL_CULL_FACE);
+    glCullFace(GL_FRONT);
 
     auto& db = *database_;
     for (const auto& shader_meshes : db)

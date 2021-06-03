@@ -53,9 +53,9 @@ void add_poly(List<uint>& src_indices, List<uint> indices, int offset)
 {
 	for (uint i = 1; i < indices.length() - 1; i++)
 	{
-		src_indices.Add(indices[i + 1] + offset);
-		src_indices.Add(indices[i] + offset);
 		src_indices.Add(indices[0] + offset);
+		src_indices.Add(indices[i] + offset);
+		src_indices.Add(indices[i + 1] + offset);	
 	}
 }
 

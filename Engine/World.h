@@ -5,6 +5,7 @@
 #include "Quaternion.h"
 #include "Vector3.h"
 
+struct RaycastResult;
 class Game;
 class Entity;
 
@@ -22,6 +23,8 @@ public:
     void spawn_entity(const Shared<Entity>& entity, const Vector3& pos);
     void spawn_entity(const Shared<Entity>& entity, const Quaternion& rot);
     void spawn_entity(const Shared<Entity>& entity);
+
+    Shared<const RaycastResult> raycast(const Vector3& from, const Vector3& to) const;
 
     void start();
     void tick(float delta_time);

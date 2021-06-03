@@ -11,6 +11,7 @@
 #include <reactphysics3d/reactphysics3d.h>
 
 #include "Settings.h"
+#include "Physics/RaycastCallback.h"
 
 void World::spawn_entity(const Shared<Entity>& entity, const Vector3& pos, const Quaternion& rot)
 {
@@ -42,6 +43,17 @@ void World::spawn_entity(const Shared<Entity>& entity)
     if (ensure_child_not_exist(entity)) return;
     
     spawn_entity_internal(entity);
+}
+
+Shared<const RaycastResult> World::raycast(const Vector3& from, const Vector3& to) const
+{
+    RaycastCallback callback;
+    physics_world_->raycast(reactphysics3d::Ray(cast_object<reactphysics3d::Vector3>(from), cast_object<reactphysics3d::Vector3>(to)), &callback);
+    callback.results.sort([&](const RaycastResult& a, const RaycastResult& b)->bool
+    {
+        return Vector3::distance(from, a.location) > Vector3::distance(from, b.location);
+    });
+    return callback.results.length() > 0 ? MakeShared<RaycastResult>(callback.results.first()) : nullptr;
 }
 
 void World::start()
@@ -218,6 +230,7 @@ void World::spawn_entity_internal(const Shared<Entity>& entity)
                 reactphysics3d::Quaternion(entity->rotation_.x, entity->rotation_.y, entity->rotation_.z, entity->rotation_.w)
             )
         );
+        entity->rigid_body_->setUserData(entity.get());
     }
         
     if (const auto mesh = entity->get_mesh())

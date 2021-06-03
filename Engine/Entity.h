@@ -51,10 +51,7 @@ public:
     FORCEINLINE Vector3 get_scale() const;
     void set_scale(const Vector3& scale);
 
-    void use_sphere_collision(float radius, const Vector3& offset = Vector3::zero());
-    void use_box_collision(const Vector3& extent, const Vector3& offset = Vector3::zero());
-    void use_concave_collision(const Shared<Mesh>& mesh, const Vector3& offset = Vector3::zero());
-    void use_convex_collision(const Shared<Mesh>& mesh, const Vector3& offset = Vector3::zero());
+    void use_collision(const Shared<Collision>& collision, const Vector3& offset = Vector3::zero());
     void remove_collision();
 
     void set_gravity_enabled(bool state) const;
@@ -84,4 +81,5 @@ private:
     bool started_;
     reactphysics3d::RigidBody* rigid_body_;
     reactphysics3d::Collider* collider_;
+    Shared<Collision> collision_;
 };

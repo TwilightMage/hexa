@@ -1,0 +1,20 @@
+﻿#pragma once
+
+#include "Collision.h"
+#include "Engine/Vector3.h"
+
+namespace reactphysics3d {
+    class SphereShape;
+}
+
+EXTERN class EXPORT SphereCollision : public Collision
+{
+public:
+    SphereCollision(float radius);
+    ~SphereCollision();
+
+private:
+    FORCEINLINE reactphysics3d::CollisionShape* get_collider_shape() const override;
+
+    reactphysics3d::SphereShape* shape_;
+};

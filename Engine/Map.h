@@ -54,6 +54,11 @@ public:
         data_.remove(key);
     }
 
+    FORCEINLINE void clear()
+    {
+        data_.clear();
+    }
+
     FORCEINLINE Value* find(const Key& key) const
     {
         return data_.find(key);

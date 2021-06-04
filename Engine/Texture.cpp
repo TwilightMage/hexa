@@ -66,10 +66,9 @@ Texture::Texture(const String& name, uint width, uint height, List<Color> pixels
 
 Shared<Texture> Texture::load_png(const Path& path)
 {
-    const auto found = Game::instance_->textures_.find(path.get_absolute_string());
-    if (found != Game::instance_->textures_.end())
+    if (const auto found = Game::instance_->textures_.find(path.get_absolute_string()))
     {
-        return found->second;
+        return *found;
     }
 
     assert_error(path.exists(), nullptr, "Texture", "Texture does not exist %s", path.get_absolute_string().c())

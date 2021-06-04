@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include <map>
 #include <mutex>
 #include <optional>
 
@@ -8,6 +7,7 @@
 #include "GameInfo.h"
 #include "List.h"
 #include "LogStream.h"
+#include "Map.h"
 #include "Path.h"
 #include "Renderer.h"
 #include "String.h"
@@ -152,9 +152,9 @@ private:
     GLFWwindow* window_;
 
     // Assets
-    std::map<String, Shared<Shader>> shaders_;
-    std::map<String, Shared<Mesh>> meshes_;
-    std::map<String, Shared<Texture>> textures_;
+    Map<String, Shared<Shader>> shaders_;
+    Map<String, Shared<Mesh>> meshes_;
+    Map<String, Shared<Texture>> textures_;
 
     // Game
     Version game_version_ = {0, 1, 0};

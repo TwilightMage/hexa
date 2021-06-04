@@ -64,10 +64,9 @@ void Shader::cleanup()
 
 Shared<Shader> Shader::compile(const Path& path, const Meta& shader_meta, int type_flags)
 {
-    const auto found = Game::instance_->shaders_.find(path.get_absolute_string());
-    if (found != Game::instance_->shaders_.end())
+    if (const auto found = Game::instance_->shaders_.find(path.get_absolute_string()))
     {
-        return found->second;
+        return *found;
     }
     
     if (type_flags != 0)

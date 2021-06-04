@@ -88,20 +88,12 @@ void World::tick(float delta_time)
     
     for (uint i = 0; i < entities_.length(); i++)
     {
-        auto& entity = entities_[i];
-        if (entity->pending_kill_)
+        if (auto& entity = entities_[i]; entity->pending_kill_)
         {
-            if (const auto mesh = entity->get_mesh())
-            {
-                mesh->usage_count_--;
-            }
-            if (entity->get_mesh() && entity->get_shader())
-            {
-                notify_renderable_deleted(entity);
-            }
+            do_destroy(entity);
 
-            entity->on_destroy();
             entity->pending_kill_ = false;
+            
             to_delete.Add(i);
         }
         else if (time_scale_ != 0.0f)
@@ -212,6 +204,12 @@ void World::on_close()
 void World::close()
 {
     on_close();
+
+    for (auto& entity : entities_)
+    {
+        do_destroy(entity);
+    }
+    
     Game::instance_->physics_->destroyPhysicsWorld(physics_world_);
     physics_world_ = nullptr;
 }
@@ -252,4 +250,31 @@ bool World::ensure_child_not_exist(const Shared<Entity>& entity)
     }
 
     return false;
+}
+
+void World::do_destroy(const Shared<Entity>& entity)
+{
+    entity->on_destroy();
+
+    if (const auto mesh = entity->get_mesh())
+    {
+        mesh->usage_count_--;
+    }
+            
+    if (entity->get_mesh() && entity->get_shader())
+    {
+        notify_renderable_deleted(entity);
+    }
+
+    if (entity->rigid_body_)
+    {
+        if (entity->collider_)
+        {
+            entity->rigid_body_->removeCollider(entity->collider_);
+            entity->collision_ = nullptr;
+        }
+
+        physics_world_->destroyRigidBody(entity->rigid_body_);
+        entity->rigid_body_ = nullptr;
+    }
 }

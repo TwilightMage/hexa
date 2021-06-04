@@ -3,7 +3,6 @@
 #include "TileInfo.h"
 #include "Engine/Database.h"
 #include "Engine/Game.h"
-#include "Engine/Map.h"
 
 class DefaultWorldGenerator;
 class WorldGeneratorInfo;

@@ -514,7 +514,7 @@ void Game::cleanup()
 
 	for (auto& kvp : shaders_)
 	{
-		kvp.second->cleanup();
+		kvp.value->cleanup();
 	}
 	
 	shaders_.clear();

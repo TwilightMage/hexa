@@ -35,10 +35,9 @@ Mesh::Mesh(const String& name, const List<Vertex>& vertices, const List<uint>& i
 
 Shared<Mesh> Mesh::load_obj(const Path& path)
 {
-    const auto found = Game::instance_->meshes_.find(path.get_absolute_string());
-    if (found != Game::instance_->meshes_.end())
+    if (const auto found = Game::instance_->meshes_.find(path.get_absolute_string()))
     {
-        return found->second;
+        return *found;
     }
 
     assert_error(path.exists(), nullptr, "Mesh", "Mesh does not exists %s", path.get_absolute_string().c());

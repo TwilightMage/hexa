@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <functional>
+#include <map>
 #include <stack>
 
 
@@ -9,10 +10,10 @@
 template<typename KeyType, typename ValueType>
 class Tree1D
 {
-public:    
+public:
     struct Point
     {
-        KeyType x;
+        const KeyType x;
         ValueType value;
     };
 
@@ -88,7 +89,7 @@ public:
         Point& operator*() const { return stack_.top()->point; }
         Point& operator->() { return stack_.top()->point; }
    
-        explicit Iterator(Tree1D* tree)
+        explicit Iterator(const Tree1D* tree)
             : Iterator(tree, 0)
         {
             state_ = false;
@@ -100,20 +101,20 @@ public:
             stack_.pop();
         }
 
-        static Iterator get_end(Tree1D* tree)
+        static Iterator get_end(const Tree1D* tree)
         {
             return Iterator(tree, tree->size_);
         }
 
     private:
-        Iterator(Tree1D* tree, uint i)
+        Iterator(const Tree1D* tree, uint i)
             : tree_(tree)
             , i_(i)
             , state_(false)
         {
         }
 
-        Tree1D* tree_;
+        const Tree1D* tree_;
         uint i_;
         std::stack<Node*> stack_;
         bool state_;
@@ -234,7 +235,7 @@ private:
         {
             if (point.x == node->point.x)
             {
-                node->point = point;
+                node->point.value = point.value;
                 return node->h;
             }
 
@@ -346,7 +347,29 @@ private:
         }
     }
 
+    static void destroy(Node* node)
+    {
+        if (node)
+        {
+            destroy(node->left);
+            destroy(node->right);
+            delete node;
+        }
+    }
+
 public:
+    ~Tree1D()
+    {
+        destroy(root_);
+    }
+
+    void clear()
+    {
+        destroy(root_);
+        root_ = nullptr;
+        size_ = 0;
+    }
+    
     void insert(const KeyType& x, const ValueType& value)
     {
         insert(Point(x, value), root_, size_);
@@ -384,14 +407,26 @@ public:
         for_each(callback, root_);
     }
 
-    Iterator begin() const
+    Iterator begin()
     {
         Iterator result = Iterator(this);
         fill_stack(result.stack_, root_);
         return result;
     }
 
-    Iterator end() const
+    const Iterator begin() const
+    {
+        Iterator result = Iterator(this);
+        fill_stack(result.stack_, root_);
+        return result;
+    }
+
+    Iterator end()
+    {
+        return Iterator::get_end(this);
+    }
+    
+    const Iterator end() const
     {
         return Iterator::get_end(this);
     }

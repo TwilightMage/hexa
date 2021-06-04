@@ -51,6 +51,8 @@ private:
     void close();
     void spawn_entity_internal(const Shared<Entity>& entity);
     bool ensure_child_not_exist(const Shared<Entity>& entity);
+
+    void do_destroy(const Shared<Entity>& entity);
     
     List<Shared<Entity>> entities_;
     reactphysics3d::PhysicsWorld* physics_world_;

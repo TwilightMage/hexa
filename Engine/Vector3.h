@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "framework.h"
+#include "String.h"
 #include "Vector2.h"
 
 EXTERN class EXPORT Vector3
@@ -18,6 +19,7 @@ public:
     Vector3 cross_product(const Vector3& rhs) const;
     Vector3 normalized() const;
     void normalize();
+    String to_string() const;
 
     FORCEINLINE static float angle_deg(const Vector3& a, const Vector3& b);
     FORCEINLINE static float angle_rad(const Vector3& a, const Vector3& b);

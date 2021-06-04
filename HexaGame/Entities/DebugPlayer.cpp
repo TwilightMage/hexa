@@ -10,6 +10,7 @@
 #include "Engine/Physics/RaycastResult.h"
 #include "HexaGame/WorldChunkObserver.h"
 #include "Engine/ui/TextBlock.h"
+#include "HexaGame/HexaGame.h"
 #include "HexaGame/HexaWorld.h"
 
 DebugPlayer::DebugPlayer()
@@ -23,6 +24,10 @@ void DebugPlayer::on_start()
     camera_->owner = this;
     camera_->fov = 45.0f;
 
+    debug_text_ = MakeShared<TextBlock>("qwerty");
+    debug_text_->set_position(Vector2(5, 5));
+    Game::add_ui(debug_text_);
+    
     if (auto world = get_world())
     {
         auto arrows_mesh = Mesh::load_obj("resources/engine/meshes/axis_arrows.obj");
@@ -41,10 +46,6 @@ void DebugPlayer::on_start()
             
             observer_ = hexa_world->register_chunk_observer(current_chunk, load_distance_);
             observer_->set_render_chunks(true);
-            
-            debug_text_ = MakeShared<TextBlock>(StringFormat("Chunk: %i, %i", current_chunk.x, current_chunk.y));
-            debug_text_->set_position(Vector2(5, 5));
-            Game::add_ui(debug_text_);
         }
     }
 }
@@ -95,10 +96,10 @@ void DebugPlayer::tick(float delta_time)
     pos.z += delta_time * move_up_ * speed;
     set_position(pos);
 
-    auto rot = get_rotation();
+    /*auto rot = get_rotation();
     rot = rot.rotate_around_z(Game::get_mouse_delta().x / 10.0f).normalized();
     rot = rot.rotate_around(rot.right(), Game::get_mouse_delta().y / 10.0f).normalized();
-    set_rotation(rot);
+    set_rotation(rot);*/
 
     const ChunkIndex current_chunk = ChunkIndex::from_vector(get_position());
 
@@ -114,7 +115,7 @@ void DebugPlayer::tick(float delta_time)
 
     if (auto world = get_world())
     {
-        if (auto hit = world->raycast(get_position(), get_position() + get_rotation().forward() * 10))
+        if (auto hit = world->raycast(get_position(), get_position() + Game::get_instance()->get_un_projected_mouse() * 10))
         {
             arrows_->set_position(hit->location);
         }

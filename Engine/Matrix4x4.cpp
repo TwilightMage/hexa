@@ -19,8 +19,13 @@ Matrix4x4::Matrix4x4(float scale)
 {
 }
 
+Matrix4x4::Matrix4x4(const Row& r0, const Row& r1, const Row& r2, const Row& r3)
+	: data{ r0, r1, r2, r3 }
+{
+}
+
 Matrix4x4::Matrix4x4(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1, float x2, float y2,
-    float z2, float w2, float x3, float y3, float z3, float w3)
+                     float z2, float w2, float x3, float y3, float z3, float w3)
     : data {
         {x0, y0, z0, w0},
         {x1, y1, z1, w1},
@@ -78,6 +83,63 @@ Matrix4x4 Matrix4x4::scale(const Vector3& by) const
     return Result;
 }
 
+Matrix4x4 Matrix4x4::inverse() const
+{
+    float Coef00 = data[2][2] * data[3][3] - data[3][2] * data[2][3];
+	float Coef02 = data[1][2] * data[3][3] - data[3][2] * data[1][3];
+	float Coef03 = data[1][2] * data[2][3] - data[2][2] * data[1][3];
+
+	float Coef04 = data[2][1] * data[3][3] - data[3][1] * data[2][3];
+	float Coef06 = data[1][1] * data[3][3] - data[3][1] * data[1][3];
+	float Coef07 = data[1][1] * data[2][3] - data[2][1] * data[1][3];
+
+	float Coef08 = data[2][1] * data[3][2] - data[3][1] * data[2][2];
+	float Coef10 = data[1][1] * data[3][2] - data[3][1] * data[1][2];
+	float Coef11 = data[1][1] * data[2][2] - data[2][1] * data[1][2];
+
+	float Coef12 = data[2][0] * data[3][3] - data[3][0] * data[2][3];
+	float Coef14 = data[1][0] * data[3][3] - data[3][0] * data[1][3];
+	float Coef15 = data[1][0] * data[2][3] - data[2][0] * data[1][3];
+
+	float Coef16 = data[2][0] * data[3][2] - data[3][0] * data[2][2];
+	float Coef18 = data[1][0] * data[3][2] - data[3][0] * data[1][2];
+	float Coef19 = data[1][0] * data[2][2] - data[2][0] * data[1][2];
+
+	float Coef20 = data[2][0] * data[3][1] - data[3][0] * data[2][1];
+	float Coef22 = data[1][0] * data[3][1] - data[3][0] * data[1][1];
+	float Coef23 = data[1][0] * data[2][1] - data[2][0] * data[1][1];
+
+	Row Fac0(Coef00, Coef00, Coef02, Coef03);
+	Row Fac1(Coef04, Coef04, Coef06, Coef07);
+	Row Fac2(Coef08, Coef08, Coef10, Coef11);
+	Row Fac3(Coef12, Coef12, Coef14, Coef15);
+	Row Fac4(Coef16, Coef16, Coef18, Coef19);
+	Row Fac5(Coef20, Coef20, Coef22, Coef23);
+
+	Row Vec0(data[1][0], data[0][0], data[0][0], data[0][0]);
+	Row Vec1(data[1][1], data[0][1], data[0][1], data[0][1]);
+	Row Vec2(data[1][2], data[0][2], data[0][2], data[0][2]);
+	Row Vec3(data[1][3], data[0][3], data[0][3], data[0][3]);
+
+	Row Inv0(Vec1 * Fac0 - Vec2 * Fac1 + Vec3 * Fac2);
+	Row Inv1(Vec0 * Fac0 - Vec2 * Fac3 + Vec3 * Fac4);
+	Row Inv2(Vec0 * Fac1 - Vec1 * Fac3 + Vec3 * Fac5);
+	Row Inv3(Vec0 * Fac2 - Vec1 * Fac4 + Vec2 * Fac5);
+
+	Row SignA(+1, -1, +1, -1);
+	Row SignB(-1, +1, -1, +1);
+	Matrix4x4 Inverse(Inv0 * SignA, Inv1 * SignB, Inv2 * SignA, Inv3 * SignB);
+
+	Row Row0(Inverse.data[0][0], Inverse.data[1][0], Inverse.data[2][0], Inverse.data[3][0]);
+
+	Row Dot0(data[0] * Row0);
+	float Dot1 = (Dot0.x + Dot0.y) + (Dot0.z + Dot0.w);
+
+	float OneOverDeterminant = 1.0f / Dot1;
+
+	return Inverse * OneOverDeterminant;
+}
+
 Matrix4x4 Matrix4x4::look_at(const Vector3& from, const Vector3& to)
 {
     Vector3 zaxis = (from - to).normalized();    
@@ -124,6 +186,16 @@ Matrix4x4 Matrix4x4::ortho(float left, float right, float bottom, float top, flo
     return result;
 }
 
+Vector3 Matrix4x4::un_project(const Vector2& screen_point, const Vector2& screen_size, const Matrix4x4& camera_model, const Matrix4x4& camera_view, const Matrix4x4& camera_projection)
+{
+	const auto inverse = (camera_projection * camera_view * camera_model).inverse();
+	const Row point((screen_point.x / screen_size.x) * 2 - 1, (1 - (screen_point.y / screen_size.y)) * 2 - 1, 1.0f, 1.0f);
+	auto pos = inverse * point;
+	pos.w = 1.0f / pos.w;
+
+	return Vector3(pos.x / pos.w, pos.y / pos.w, pos.z / pos.w).normalized();
+}
+
 Matrix4x4 Matrix4x4::operator*(const Matrix4x4& rhs) const
 {
     const Row SrcA0 = data[0];
@@ -142,4 +214,30 @@ Matrix4x4 Matrix4x4::operator*(const Matrix4x4& rhs) const
     Result.data[2] = SrcA0 * SrcB2.x + SrcA1 * SrcB2.y + SrcA2 * SrcB2.z + SrcA3 * SrcB2.w;
     Result.data[3] = SrcA0 * SrcB3.x + SrcA1 * SrcB3.y + SrcA2 * SrcB3.z + SrcA3 * SrcB3.w;
     return Result;
+}
+
+Matrix4x4::Row Matrix4x4::operator*(const Row& rhs) const
+{
+	Row const Mov0(rhs[0]);
+	Row const Mov1(rhs[1]);
+	Row const Mul0 = data[0] * Mov0;
+	Row const Mul1 = data[1] * Mov1;
+	Row const Add0 = Mul0 + Mul1;
+	Row const Mov2(rhs[2]);
+	Row const Mov3(rhs[3]);
+	Row const Mul2 = data[2] * Mov2;
+	Row const Mul3 = data[3] * Mov3;
+	Row const Add1 = Mul2 + Mul3;
+	Row const Add2 = Add0 + Add1;
+	return Add2;
+}
+
+Matrix4x4 Matrix4x4::operator*(float rhs) const
+{
+	return Matrix4x4(data[0] * rhs, data[1] * rhs, data[2] * rhs, data[3] * rhs);
+}
+
+Matrix4x4 Matrix4x4::operator/(float rhs) const
+{
+	return Matrix4x4(data[0] / rhs, data[1] / rhs, data[2] / rhs, data[3] / rhs);
 }

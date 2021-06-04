@@ -3,6 +3,7 @@
 #include "TileInfo.h"
 #include "Engine/Database.h"
 #include "Engine/Game.h"
+#include "Engine/Map.h"
 
 class DefaultWorldGenerator;
 class WorldGeneratorInfo;
@@ -24,5 +25,5 @@ protected:
     void loading_stage() override;
 
 private:
-    std::map<String, Shared<WorldGeneratorInfo>> generator_infos_;
+    Map<String, Shared<WorldGeneratorInfo>> generator_infos_;
 };

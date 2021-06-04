@@ -1,15 +1,12 @@
 ﻿#include "World.h"
 
+#include <reactphysics3d/reactphysics3d.h>
 
 #include "Game.h"
 #include "ITickable.h"
 #include "Mesh.h"
 #include "Quaternion.h"
 #include "Renderer.h"
-#include "Texture.h"
-
-#include <reactphysics3d/reactphysics3d.h>
-
 #include "Settings.h"
 #include "Physics/RaycastCallback.h"
 

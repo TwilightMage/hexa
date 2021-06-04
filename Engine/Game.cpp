@@ -249,6 +249,11 @@ float Game::get_ui_scale()
 	return instance_->ui_scale_;
 }
 
+Vector3 Game::get_un_projected_mouse()
+{
+	return instance_->un_projected_mouse_;
+}
+
 bool Game::is_loading_stage()
 {
 	return instance_->is_loading_stage_;
@@ -452,6 +457,7 @@ void Game::render_loop()
 		
 		if (current_camera_ && current_camera_->owner)
 		{
+			// ticking
 			if (last_delta_time > 0.0f)
 			{
 				tick(last_delta_time);
@@ -465,19 +471,22 @@ void Game::render_loop()
 			cam_to.y *= -1;
 
 			auto view = Matrix4x4::look_at(cam_from, cam_to) * Matrix4x4(
-                    1.0, 0.0, 0.0, 0.0,
-                    0.0, -1.0, 0.0, 0.0,
-                    0.0, 0.0, 1.0, 0.0,
-                    0.0, 0.0, 0.0, 1.0
-                );
+					1.0, 0.0, 0.0, 0.0,
+					0.0, -1.0, 0.0, 0.0,
+					0.0, 0.0, 1.0, 0.0,
+					0.0, 0.0, 0.0, 1.0
+				);
 
 			auto proj = Matrix4x4::perspective(current_camera_->fov, static_cast<float>(width) / static_cast<float>(height), 0.01f, 1000.0f);
 			
 			auto vp = proj * view;
 
+			un_projected_mouse_ = Matrix4x4::un_project(Vector2(mouse_pos_.x, mouse_pos_.y), Vector2(width, height), Matrix4x4().translate(current_camera_->owner->get_position()), view, proj);
+				
 			// UI matrix
 			auto ui_vp = Matrix4x4::ortho(0.0f, static_cast<float>(width), static_cast<float>(-height), 0.0f, -1000.0f, 0.0001f);
-			
+
+			// rendering
 			is_render_stage_ = true;
 			renderer_->render(vp);
 			glClear(GL_DEPTH_BUFFER_BIT);

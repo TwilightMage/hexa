@@ -97,6 +97,7 @@ public:
     static void show_mouse();
     static void add_ui(const Weak<UIElement>& ui);
     static float get_ui_scale();
+    static Vector3 get_un_projected_mouse();
 
     static bool is_loading_stage();
     static bool is_render_stage();
@@ -145,6 +146,7 @@ private:
     Vector2 last_mouse_pos_;
     Vector2 mouse_delta_;
     bool lock_mouse_;
+    Vector3 un_projected_mouse_;
     
     // GLFW
     GLFWwindow* window_;

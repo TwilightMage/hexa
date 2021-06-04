@@ -22,7 +22,7 @@ public:
         return *data_.find(key);
     }
     
-    FORCEINLINE Value& find_or_insert(const Key& key, const Value& new_value = Value())
+    Value& find_or_insert(const Key& key, const Value& new_value = Value())
     {
         if (auto value = data_.find(key))
         {
@@ -30,6 +30,17 @@ public:
         }
         
         data_.insert(key, new_value);
+        return *data_.find(key);
+    }
+
+    Value& operator[](const Key& key)
+    {
+        if (auto value = data_.find(key))
+        {
+            return *value;
+        }
+        
+        data_.insert(key, Value());
         return *data_.find(key);
     }
 

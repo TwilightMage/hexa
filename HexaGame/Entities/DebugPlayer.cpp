@@ -10,13 +10,7 @@
 #include "Engine/Physics/RaycastResult.h"
 #include "HexaGame/WorldChunkObserver.h"
 #include "Engine/ui/TextBlock.h"
-#include "HexaGame/HexaGame.h"
 #include "HexaGame/HexaWorld.h"
-
-DebugPlayer::DebugPlayer()
-    : Entity()
-{
-}
 
 void DebugPlayer::on_start()
 {
@@ -31,12 +25,14 @@ void DebugPlayer::on_start()
     if (auto world = get_world())
     {
         auto arrows_mesh = Mesh::load_obj("resources/engine/meshes/axis_arrows.obj");
-        for (auto& vertex : arrows_mesh->vertices_)
+        auto arrows_vertices = arrows_mesh->get_vertices();
+        auto arrows_indices = arrows_mesh->get_indices();
+        for (auto& vertex : arrows_vertices)
         {
             vertex.col = vertex.pos;
         }
         
-        arrows_ = MakeShared<MeshEntity>(arrows_mesh);
+        arrows_ = MakeShared<MeshEntity>(MakeShared<Mesh>("Axis Arrows", arrows_vertices, arrows_indices));
         arrows_->set_scale(Vector3(0.1f));
         world->spawn_entity(arrows_);
 
@@ -84,6 +80,9 @@ void DebugPlayer::mouse_button_down(int button)
 
 void DebugPlayer::on_possess()
 {
+    Game::lock_mouse();
+    Game::hide_mouse();
+    
     Game::use_camera(camera_);
 }
 
@@ -96,10 +95,10 @@ void DebugPlayer::tick(float delta_time)
     pos.z += delta_time * move_up_ * speed;
     set_position(pos);
 
-    /*auto rot = get_rotation();
+    auto rot = get_rotation();
     rot = rot.rotate_around_z(Game::get_mouse_delta().x / 10.0f).normalized();
     rot = rot.rotate_around(rot.right(), Game::get_mouse_delta().y / 10.0f).normalized();
-    set_rotation(rot);*/
+    set_rotation(rot);
 
     const ChunkIndex current_chunk = ChunkIndex::from_vector(get_position());
 
@@ -115,7 +114,7 @@ void DebugPlayer::tick(float delta_time)
 
     if (auto world = get_world())
     {
-        if (auto hit = world->raycast(get_position(), get_position() + Game::get_instance()->get_un_projected_mouse() * 10))
+        if (auto hit = world->raycast(get_position(), get_position() + get_rotation().forward() * 10))
         {
             arrows_->set_position(hit->location);
         }

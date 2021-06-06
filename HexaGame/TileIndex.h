@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "ChunkIndex.h"
 #include "Engine/BasicTypes.h"
 #include "Engine/Vector3.h"
 
@@ -13,6 +14,7 @@ public:
 
     TileIndex offset(int x, int y, int z) const;
     TileIndex cycle_chunk() const;
+    ChunkIndex get_chunk() const;
 
     bool operator<(const TileIndex& rhs) const;
     bool operator==(const TileIndex& rhs) const;

@@ -24,6 +24,14 @@ public:
         Node* right = nullptr;
         int h = 1;
 
+        Node(const Node& rhs)
+            : point(rhs.point)
+            , left(rhs.left)
+            , right(rhs.right)
+            , h(rhs.h)
+        {
+        }
+        
         explicit Node(const Point& point)
             : point(point)
         {
@@ -48,39 +56,23 @@ public:
         Iterator& operator++()
         {
             i_++;
-            if (state_ == false)
+            if (stack_.top()->right)
             {
                 stack_.push(stack_.top()->right);
-                state_ = true;
-                if (stack_.top() == nullptr)
+                while (stack_.top()->left != nullptr)
                 {
-                    stack_.pop();
-                    stack_.pop();
-                    state_ = false;
-                }
-                else if (stack_.top()->left)
-                {
-                    do
-                    {
-                        stack_.push(stack_.top()->left);
-                    }
-                    while (stack_.top() != nullptr);
-                    stack_.pop();
-                    state_ = false;
+                    stack_.push(stack_.top()->left);
                 }
             }
-            else if (state_ == true)
+            else
             {
-                if (stack_.top()->right)
+                Node* prev;
+                do
                 {
-                    stack_.push(stack_.top()->right);
-                }
-                else
-                {
+                    prev = stack_.top();
                     stack_.pop();
-                    stack_.pop();
-                    state_ = false;
                 }
+                while (stack_.size() > 0 && prev == stack_.top()->right);
             }
 
             return *this;
@@ -92,7 +84,6 @@ public:
         explicit Iterator(const Tree1D* tree)
             : Iterator(tree, 0)
         {
-            state_ = false;
             stack_.push(tree->root_);
             while (stack_.top() != nullptr)
             {
@@ -110,14 +101,12 @@ public:
         Iterator(const Tree1D* tree, uint i)
             : tree_(tree)
             , i_(i)
-            , state_(false)
         {
         }
 
         const Tree1D* tree_;
         uint i_;
         std::stack<Node*> stack_;
-        bool state_;
     };
 
 private:
@@ -347,17 +336,52 @@ private:
         }
     }
 
-    static void destroy(Node* node)
+    static void destroy(Node*& node)
     {
         if (node)
         {
             destroy(node->left);
             destroy(node->right);
             delete node;
+            node = nullptr;
+        }
+    }
+
+    static void copy(Node* from, Node*& to)
+    {
+        if (from)
+        {
+            to = new Node(*from);
+            copy(from->left, to->left);
+            copy(from->right, to->right);
         }
     }
 
 public:
+    Tree1D()
+        : root_(nullptr)
+        , size_(0)
+    {
+    }
+
+    Tree1D(const Tree1D& rhs)
+        : size_(rhs.size_)
+    {
+        copy(rhs.root_, root_);
+    }
+
+    Tree1D& operator=(const Tree1D& rhs)
+    {
+        if (this == &rhs) return *this;
+
+        destroy(root_);
+        copy(rhs.root_, root_);
+
+        size_ = rhs.size_;
+
+        return *this;
+    }
+    
     ~Tree1D()
     {
         destroy(root_);
@@ -437,8 +461,6 @@ public:
     }
 
 private:
-    Node* root_ = nullptr;
-    uint size_ = 0;
-    
-    inline static int bf_abs_limit = 1; // 2 ^ (d - 1)
+    Node* root_;
+    uint size_;
 };

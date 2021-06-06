@@ -81,6 +81,7 @@ const Shared<const TileInfo>& WorldChunk::get_tile(const TileIndex& index) const
 void WorldChunk::set_tile(const TileIndex& index, const Shared<const TileInfo>& tile)
 {
     modifications_[index] = tile;
+    data[index.x][index.y][index.z] = tile;
     dirty_ = true;
 }
 
@@ -229,7 +230,7 @@ void WorldChunk::inc_visibility()
 
 void WorldChunk::dec_visibility()
 {
-    if (--observe_counter_ == 0)
+    if (--visibility_counter_ == 0)
     {
         for (auto& chunk_mesh : mesh_entities_)
         {

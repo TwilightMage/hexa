@@ -186,7 +186,7 @@ void WorldGenerator::do_generate(const Shared<WorldChunk>& chunk)
 		{
 			for (auto& modification : *modifications)
 			{
-				chunk->data[modification.first.x][modification.first.y][modification.first.z] = modification.second;
+				chunk->data[modification.x.x][modification.x.y][modification.x.z] = modification.value;
 			}
 			chunk->modifications_ = *modifications;
 		}

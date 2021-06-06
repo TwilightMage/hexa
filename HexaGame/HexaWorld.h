@@ -1,11 +1,14 @@
 ﻿#pragma once
 
 #include "ChunkIndex.h"
+#include "TileIndex.h"
 #include "Engine/Tree2D.h"
 #include "Engine/Array2D.h"
 #include "Engine/Rect.h"
 #include "Engine/World.h"
 
+class Character;
+class TileInfo;
 class WorldChunkObserver;
 class WorldChunk;
 class WorldGenerator;
@@ -22,11 +25,19 @@ public:
     Shared<WorldChunkObserver> register_chunk_observer(const Rect& rect);
     Shared<WorldChunkObserver> register_chunk_observer(const ChunkIndex& chunk_index, uint half_size);
     
-    Shared<WorldChunk> get_chunk(const ChunkIndex& chunk_index);
+    Shared<WorldChunk> get_chunk(const ChunkIndex& chunk_index) const;
+
+    bool spawn_character(const Shared<Character>& character, const TileIndex& tile_index);
+
+    void set_tile(const TileIndex& index, const Shared<const TileInfo>& id) const;
     
     void dump_observable_area(); 
 
 private:
+    void character_destroyed_callback(const Shared<Entity>& character);
+    
+    Shared<WorldChunk> get_chunk_internal(const ChunkIndex& chunk_index) const;
+    
     void unregister_chunk_observer(WorldChunkObserver* observer);
     void move_observer(WorldChunkObserver* observer, const Rect& new_rect);
 
@@ -35,4 +46,6 @@ private:
     
     Shared<WorldGenerator> generator_;
     List<Shared<WorldChunkObserver>> chunk_observers_;
+
+    List<Shared<Character>> characters_;
 };

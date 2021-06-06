@@ -4,9 +4,13 @@
 #include "Path.h"
 #include "Vector3.h"
 
+class World;
+class Entity;
+
 EXTERN class EXPORT Mesh : public Object
 {
-    friend class Entity;
+    friend Entity;
+    friend World;
 
 public:
     struct Vertex
@@ -30,7 +34,7 @@ public:
 
     static Shared<Mesh> empty;
 
-//private:
+private:
     List<Vertex> vertices_;
     List<uint> indices_;
     uint usage_count_;

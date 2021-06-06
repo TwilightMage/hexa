@@ -70,8 +70,10 @@ private:
 
     void generate_metadata();
 
+    public:
     void regenerate_mesh();
-
+    private:
+    
     FORCEINLINE const Shared<const TileInfo>& front_tile(const TileIndex& index) const;
     FORCEINLINE const Shared<const TileInfo>& front_right_tile(const TileIndex& index) const;
     FORCEINLINE const Shared<const TileInfo>& back_right_tile(const TileIndex& index) const;
@@ -90,7 +92,7 @@ private:
     Weak<HexaWorld> world_;
 
     List<Shared<Entity>> mesh_entities_;
-    std::map<TileIndex, Shared<const TileInfo>> modifications_;
+    Map<TileIndex, Shared<const TileInfo>> modifications_;
     bool dirty_;
 
     WorldChunkDataState state_;

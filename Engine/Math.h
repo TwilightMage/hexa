@@ -59,6 +59,12 @@ public:
     }
 
     template<typename T>
+    FORCEINLINE static T lerp(T from, T to, float alpha)
+    {
+        return from + (to - from) * alpha;
+    }
+
+    template<typename T>
     static T abs(T value)
     {
         return std::abs(value);

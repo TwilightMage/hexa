@@ -1,17 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
     <Type Name="ChunkIndex">
-        <DisplayString>{{ {x}, {y} }}</DisplayString>
+        <DisplayString>Chunk Index {{ {x}, {y} }}</DisplayString>
     </Type>
     
     <Type Name="TileIndex">
-        <DisplayString>{{ {x}, {y}, {z} }}</DisplayString>
+        <DisplayString>Tile Index {{ {x}, {y}, {z} }}</DisplayString>
     </Type>
 
-    <Type Name="Tree1D::Point">
-        <DisplayString>{{ {x} }} = {value}</DisplayString>
-    </Type>
-    <Type Name="Tree2D&lt;*,*&gt;::Point">
-        <DisplayString>{{ {x}, {y} }} = {value}</DisplayString>
+    <Type Name="TileInfo">
+        <DisplayString>Tile Info {{ {key} }}</DisplayString>
     </Type>
 </AutoVisualizer>

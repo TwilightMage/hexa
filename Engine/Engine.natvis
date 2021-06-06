@@ -49,6 +49,59 @@
         </Expand>
     </Type>
 
+    <Type Name="Array2D&lt;*&gt;">
+        <DisplayString>{{ size = {size_x_} x {size_y_} }}</DisplayString>
+        <Expand>
+            <ArrayItems>
+                <Direction>Backward</Direction>
+                <Rank>2</Rank>
+                <Size>$i==0?size_x_:size_y_</Size>
+                <ValuePointer>data_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+    
+    <Type Name="Tree1D&lt;*&gt;">
+        <DisplayString>{{ size = {size_} }}</DisplayString>
+        <Expand>
+            <Item Name="[size]">size_</Item>
+            <TreeItems>
+                <Size>size_</Size>
+                <HeadPointer>root_</HeadPointer>
+                <LeftPointer>left</LeftPointer>
+                <RightPointer>right</RightPointer>
+                <ValueNode Condition="this != nullptr">point</ValueNode>
+            </TreeItems>
+        </Expand>
+    </Type>
+
+    <Type Name="Tree1D&lt;*&gt;::Point">
+        <DisplayString>{x} = {value}</DisplayString>
+    </Type>
+
+    <Type Name="Map&lt;*&gt;">
+        <DisplayString>{{ size = {data_.size_} }}</DisplayString>
+        <Expand>
+            <Item Name="[size]">data_.size_</Item>
+            <TreeItems>
+                <Size>data_.size_</Size>
+                <HeadPointer>data_.root_</HeadPointer>
+                <LeftPointer>left</LeftPointer>
+                <RightPointer>right</RightPointer>
+                <ValueNode Condition="this != nullptr">point</ValueNode>
+            </TreeItems>
+        </Expand>
+    </Type>
+    
+    <Type Name="std::shared_ptr&lt;*&gt;">
+        <DisplayString Condition="_Ptr != nullptr">Shared {{ {_Ptr} }}</DisplayString>
+        <DisplayString>Shared {{ nullptr }}</DisplayString>
+        <Expand>
+            <Item Name="[reference count]">_Rep-&gt;_Uses</Item>
+            <ExpandedItem Condition="_Ptr != nullptr">*_Ptr</ExpandedItem>
+        </Expand>
+    </Type>
+
     <Type Name="DateTime::Interval">
         <DisplayString>{{ {day}d, {hour}h, {minute}m, {second}s, {millisecond}ms }}</DisplayString>
     </Type>
@@ -102,9 +155,5 @@
             <Item Name="[2]" ExcludeView="simple">data[2]</Item>
             <Item Name="[3]" ExcludeView="simple">data[3]</Item>
         </Expand>
-    </Type>
-
-    <Type Name="Tree1D::Point">
-        <DisplayString>{{ {x} }} = {value}</DisplayString>
     </Type>
 </AutoVisualizer>

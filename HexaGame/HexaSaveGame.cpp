@@ -25,7 +25,7 @@ FORCEINLINE void write(std::ofstream& stream, T value)
     stream.write((char*)&value, sizeof(T));
 }
 
-Shared<std::map<TileIndex, Shared<const TileInfo>>> HexaSaveGame::get_chunk_modifications(const ChunkIndex& index) const
+Shared<Map<TileIndex, Shared<const TileInfo>>> HexaSaveGame::get_chunk_modifications(const ChunkIndex& index) const
 {
     const auto path_to_file = get_path().get_child("world").get_child(StringFormat("%i_%i", index.x, index.y));
     if (path_to_file.exists())
@@ -33,7 +33,7 @@ Shared<std::map<TileIndex, Shared<const TileInfo>>> HexaSaveGame::get_chunk_modi
         std::ifstream stream(path_to_file.get_absolute_string().c(), std::ios::in | std::ios::binary);
         if (stream.is_open())
         {
-            Shared<std::map<TileIndex, Shared<const TileInfo>>> result = MakeShared<std::map<TileIndex, Shared<const TileInfo>>>();
+            Shared<Map<TileIndex, Shared<const TileInfo>>> result = MakeShared<Map<TileIndex, Shared<const TileInfo>>>();
             
             const int count = read<int>(stream);
             for (int i = 0; i < count; i++)
@@ -52,7 +52,7 @@ Shared<std::map<TileIndex, Shared<const TileInfo>>> HexaSaveGame::get_chunk_modi
 
                 if (const auto tile_id = HexaGame::tile_database->get(name))
                 {
-                    result->operator[](TileIndex(x, y, z)) = tile_id;
+                    result->insert(TileIndex(x, y, z), tile_id);
                 }
             }
 
@@ -63,7 +63,7 @@ Shared<std::map<TileIndex, Shared<const TileInfo>>> HexaSaveGame::get_chunk_modi
     return nullptr;
 }
 
-void HexaSaveGame::save_chunk_modifications(const ChunkIndex& index, const std::map<TileIndex, Shared<const TileInfo>>& modifications)
+void HexaSaveGame::save_chunk_modifications(const ChunkIndex& index, const Map<TileIndex, Shared<const TileInfo>>& modifications)
 {
     const auto path_to_file = get_path().get_child("world").get_child(StringFormat("%i_%i", index.x, index.y));
     File::write_file(path_to_file);
@@ -75,11 +75,11 @@ void HexaSaveGame::save_chunk_modifications(const ChunkIndex& index, const std::
 
         for (auto& kvp : modifications)
         {
-            write(stream, static_cast<byte>(kvp.first.x));
-            write(stream, static_cast<byte>(kvp.first.y));
-            write(stream, static_cast<byte16>(kvp.first.z));
+            write(stream, static_cast<byte>(kvp.x.x));
+            write(stream, static_cast<byte>(kvp.x.y));
+            write(stream, static_cast<byte16>(kvp.x.z));
 
-            for (auto& ch : kvp.second->key)
+            for (auto& ch : kvp.value->key)
             {
                 write(stream, ch);
             }

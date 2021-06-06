@@ -56,7 +56,7 @@ void HexaGame::start()
                 generator->init(generator_settings.get_int("seed", 0));
                 generator->read_settings(generator_settings.get_object("settings"));
 
-                const auto world = MakeShared<TilePresentationWorld>();
+                const auto world = MakeShared<GameWorld>(generator);
                 open_world(world);
             }
         }

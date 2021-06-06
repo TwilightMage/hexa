@@ -78,11 +78,11 @@ reactphysics3d::CollisionShape* ConcaveMeshCollision::get_collider_shape() const
 void ConcaveMeshCollision::fill_data_block(const Shared<DataBlock>& data_block, const Shared<Mesh>& mesh)
 {
     data_block->triangle_vertex_array = new reactphysics3d::TriangleVertexArray(
-        mesh->vertices_.length(),
-        mesh->vertices_.get_data(),
+        mesh->get_vertices().length(),
+        mesh->get_vertices().get_data(),
         sizeof(Mesh::Vertex),
-        mesh->indices_.length() / 3,
-        mesh->indices_.get_data(),
+        mesh->get_indices().length() / 3,
+        mesh->get_indices().get_data(),
         sizeof(int) * 3,
         reactphysics3d::TriangleVertexArray::VertexDataType::VERTEX_FLOAT_TYPE,
         reactphysics3d::TriangleVertexArray::IndexDataType::INDEX_INTEGER_TYPE

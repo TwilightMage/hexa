@@ -277,4 +277,6 @@ void World::do_destroy(const Shared<Entity>& entity)
         physics_world_->destroyRigidBody(entity->rigid_body_);
         entity->rigid_body_ = nullptr;
     }
+
+    entity->on_destroyed(entity);
 }

@@ -40,6 +40,11 @@ TileIndex TileIndex::cycle_chunk() const
     return TileIndex(Math::mod(x, WorldChunk::chunk_size), Math::mod(y, WorldChunk::chunk_size), z);
 }
 
+ChunkIndex TileIndex::get_chunk() const
+{
+    return ChunkIndex(x / WorldChunk::chunk_size, y / WorldChunk::chunk_size);
+}
+
 bool TileIndex::operator<(const TileIndex& rhs) const
 {
     if (x != rhs.x) return x < rhs.x;

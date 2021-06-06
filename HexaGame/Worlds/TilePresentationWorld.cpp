@@ -11,9 +11,6 @@
 
 void TilePresentationWorld::on_start()
 {
-    //Game::lock_mouse();
-    //Game::hide_mouse();
-    
     const auto player = MakeShared<DebugPlayer>();
     spawn_entity(player, Vector3(-3.0f, 0.0f, 0.0f), Quaternion(Vector3(0.0f, 0.0f, 0.0f)));
     Game::possess(player);

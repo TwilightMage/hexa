@@ -59,6 +59,8 @@ public:
     void make_body_static() const;
     void make_body_dynamic() const;
     void make_body_kinematic() const;
+
+    Delegate<const Shared<Entity>&> on_destroyed;
     
 protected:
     virtual bool is_rigid_body();

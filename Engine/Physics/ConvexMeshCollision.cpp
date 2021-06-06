@@ -31,7 +31,7 @@ ConvexMeshCollision::ConvexMeshCollision(const Shared<Mesh>& source_mesh)
         auto& data_block = data_blocks_.find_or_insert(source_mesh_, [&]()->Shared<DataBlock>
         {
             Shared<DataBlock> result = MakeShared<DataBlock>();
-            fill_data_block(result, source_mesh->vertices_, source_mesh->indices_);
+            fill_data_block(result, source_mesh->get_vertices(), source_mesh->get_indices());
             return result;
         });
         

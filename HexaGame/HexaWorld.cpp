@@ -1,5 +1,7 @@
 ﻿#include "HexaWorld.h"
 
+#include "Character.h"
+#include "HexaSaveGame.h"
 #include "Engine/Rect.h"
 #include "WorldChunk.h"
 #include "WorldChunkObserver.h"
@@ -43,18 +45,54 @@ Shared<WorldChunkObserver> HexaWorld::register_chunk_observer(const ChunkIndex& 
     return register_chunk_observer(Rect(chunk_index.x - half_size, chunk_index.y - half_size, half_size * 2 + 1, half_size * 2 + 1));
 }
 
-Shared<WorldChunk> HexaWorld::get_chunk(const ChunkIndex& chunk_index)
+Shared<WorldChunk> HexaWorld::get_chunk(const ChunkIndex& chunk_index) const
 {
-    for (auto observer : chunk_observers_)
+    return get_chunk_internal(chunk_index);
+}
+
+bool HexaWorld::spawn_character(const Shared<Character>& character, const TileIndex& tile_index)
+{
+    if (characters_.Contains(character)) return false;
+    
+    for (auto charact : characters_)
     {
-        auto& rect = observer->get_rect();
-        if (rect.contains(chunk_index.x, chunk_index.y))
-        {
-            return observer->chunks_.at(chunk_index.x - rect.x, chunk_index.y - rect.y);
-        }
+        if (charact->get_tile_position() == tile_index) return false;
     }
 
-    return nullptr;
+    spawn_entity(character);
+
+    characters_.Add(character);
+    character->set_tile_position(tile_index);
+
+    character->on_destroyed.bind(this, &HexaWorld::character_destroyed_callback);
+
+    return true;
+}
+
+void HexaWorld::set_tile(const TileIndex& index, const Shared<const TileInfo>& id) const
+{
+    const auto chunk_index = index.get_chunk();
+    if (auto chunk = get_chunk_internal(chunk_index))
+    {
+        chunk->set_tile(index.cycle_chunk(), id);
+    }
+    else
+    {
+        if (auto save_game = cast<HexaSaveGame>(Game::get_save_game()))
+        {
+            if (auto modifications = save_game->get_chunk_modifications(chunk_index))
+            {
+                modifications->insert(index.cycle_chunk(), id);
+                save_game->save_chunk_modifications(chunk_index, *modifications);
+            }
+            else
+            {
+                Map<TileIndex, Shared<const TileInfo>> new_modifications;
+                new_modifications.insert(index.cycle_chunk(), id);
+                save_game->save_chunk_modifications(chunk_index, new_modifications);
+            }
+        }
+    }
 }
 
 void HexaWorld::dump_observable_area()
@@ -99,6 +137,30 @@ void HexaWorld::dump_observable_area()
     }
     String s = StringJoin(s1, "\n");
     print_debug("Dump loaded chunks", "From %i %i\n" + s, min_x, min_y);
+}
+
+void HexaWorld::character_destroyed_callback(const Shared<Entity>& character)
+{
+    character->on_destroyed.unbind(this, &HexaWorld::character_destroyed_callback);
+    
+    if (auto charact = cast<Character>(character))
+    {
+        characters_.Remove(charact);
+    }
+}
+
+Shared<WorldChunk> HexaWorld::get_chunk_internal(const ChunkIndex& chunk_index) const
+{
+    for (auto observer : chunk_observers_)
+    {
+        auto& rect = observer->get_rect();
+        if (rect.contains(chunk_index.x, chunk_index.y))
+        {
+            return observer->chunks_.at(chunk_index.x - rect.x, chunk_index.y - rect.y);
+        }
+    }
+
+    return nullptr;
 }
 
 void HexaWorld::unregister_chunk_observer(WorldChunkObserver* observer)

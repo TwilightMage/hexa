@@ -175,15 +175,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Character.h" />
     <ClInclude Include="ChunkIndex.h" />
     <ClInclude Include="ChunkMeshEntity.h" />
     <ClInclude Include="DefaultWorldGeneratorInfo.h" />
     <ClInclude Include="EditableChunk.h" />
+    <ClInclude Include="Entities\GamePlayer.h" />
     <ClInclude Include="Entities\SingleTile.h" />
     <ClInclude Include="Entities\TileDemoDomainEntity.h" />
     <ClInclude Include="HexaSettings.h" />
     <ClInclude Include="HexaWorld.h" />
     <ClInclude Include="HexaSaveGame.h" />
+    <ClInclude Include="CharacterController.h" />
     <ClInclude Include="WorldChunkDataState.h" />
     <ClInclude Include="WorldChunkMesh.h" />
     <ClInclude Include="CollisionEditor\CollisionEditorPlayer.h" />
@@ -215,10 +218,13 @@
     <ClInclude Include="Worlds\TilePresentationWorld.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Character.cpp" />
+    <ClCompile Include="CharacterController.cpp" />
     <ClCompile Include="ChunkIndex.cpp" />
     <ClCompile Include="ChunkMeshEntity.cpp" />
     <ClCompile Include="DefaultWorldGeneratorInfo.cpp" />
     <ClCompile Include="EditableChunk.cpp" />
+    <ClCompile Include="Entities\GamePlayer.cpp" />
     <ClCompile Include="Entities\SingleTile.cpp" />
     <ClCompile Include="Entities\TileDemoDomainEntity.cpp" />
     <ClCompile Include="HexaWorld.cpp" />

@@ -13,8 +13,6 @@ class Camera;
 EXTERN class EXPORT DebugPlayer : public Entity, public IControllable, public ITickable
 {
 public:
-    DebugPlayer();
-    
     void on_start() override;
     
     void key_down(int key) override;

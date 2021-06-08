@@ -24,7 +24,13 @@ public:
     Quaternion conjugate() const;
     Vector3 axis() const;
     float axis_angle() const;
-    static Quaternion from_axis_angle(const Vector3& axis, float angle); 
+
+    static Quaternion from_axis_angle(const Vector3& axis, float angle);
+    FORCEINLINE static Quaternion look_at(const Vector3& from, const Vector3& to);
+    static Quaternion look_at(const Vector3& normal);
+
+    static Quaternion lerp(const Quaternion& from, const Quaternion& to, float alpha);
+    
     Quaternion rotate_around(const Vector3& axis, float angle) const;
     Quaternion rotate_around_x(float angle) const;
     Quaternion rotate_around_y(float angle) const;

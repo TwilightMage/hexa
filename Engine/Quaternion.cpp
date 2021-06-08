@@ -3,6 +3,8 @@
 #include <glm/detail/type_quat.hpp>
 #include <glm/gtc/quaternion.hpp>
 
+#include "Math.h"
+
 Quaternion::Quaternion()
     : x(0.0f)
     , y(0.0f)
@@ -127,6 +129,36 @@ Quaternion Quaternion::from_axis_angle(const Vector3& axis, float angle)
     const auto factor = sin(glm::radians(angle) / 2.0f);
 
     return Quaternion(axis.x * factor, axis.y * factor, axis.z * factor, cos(glm::radians(angle) / 2.0f)).normalized();
+}
+
+Quaternion Quaternion::look_at(const Vector3& from, const Vector3& to)
+{
+    return look_at((to - from).normalized());
+}
+
+Quaternion Quaternion::look_at(const Vector3& normal)
+{
+    float dot = Vector3::forward().dot_product(normal);
+
+    if (Math::abs(dot + 1.0f) < 0.000001f)
+    {
+        return Quaternion(0, 0, 1, -0.0000000437113883f);
+    }
+    
+    if (Math::abs(dot - 1.0f) < 0.000001f)
+    {
+        return Quaternion();
+    }
+
+    const float rotAngle = Math::acos_deg(dot);
+    Vector3 rotAxis = Vector3::forward().cross_product(normal);
+    rotAxis = rotAxis.normalized();
+    return from_axis_angle(rotAxis, rotAngle);
+}
+
+Quaternion Quaternion::lerp(const Quaternion& from, const Quaternion& to, float alpha)
+{
+    return Quaternion(Math::lerp(from.x, to.x, alpha), Math::lerp(from.y, to.y, alpha), Math::lerp(from.z, to.z, alpha), Math::lerp(from.w, to.w, alpha));
 }
 
 Quaternion Quaternion::rotate_around(const Vector3& axis, float angle) const

@@ -2,6 +2,7 @@
 
 #include <GLFW/glfw3.h>
 
+#include "Characters/Slime.h"
 #include "Engine/Camera.h"
 #include "Engine/Physics/RaycastResult.h"
 #include "HexaGame/Character.h"
@@ -85,6 +86,18 @@ void GamePlayer::tick(float delta_time)
     pos += get_rotation().right().cross_product(Vector3::up()) * delta_time * move_.x * speed;
     pos += get_rotation().right() * delta_time * move_.y * speed;
     set_position(pos);
+
+    if (auto world = cast<HexaWorld>(get_world()))
+    {
+        if (auto hit = world->raycast(get_position(), get_position() + Game::get_un_projected_mouse() * 10))
+        {
+            tile_under_mouse_ = TileIndex::from_vector(hit->location - hit->normal * 0.1f);
+            if (auto character = get_character())
+            {
+                character->rotate_to_tile(tile_under_mouse_);
+            }
+        }
+    }
 }
 
 Shared<const CharacterController> GamePlayer::get_as_character_controller() const
@@ -107,16 +120,16 @@ void GamePlayer::spawn_chunk_loaded(const Shared<WorldChunk>& sender)
         {
             if (sender->get_tile(TileIndex(0, 0, WorldChunk::chunk_height - 1 - i)) != Tiles::air)
             {
-                const auto character = MakeShared<Character>();
+                const auto character = MakeShared<Slime>();
                 if (world->spawn_character(character, TileIndex(0, 0, WorldChunk::chunk_height - i)))
                 {
                     posses_character(character);
-                    set_position(TileIndex(0, 0, WorldChunk::chunk_height - 1 - i + 1 + 10).to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
+                    set_position(character->get_tile_position().to_vector() + Vector3(-4, 0, 4));
                 }
-            
-                Game::possess(cast<GamePlayer>(shared_from_this()));
                 break;
             }
         }
     }
+
+    Game::possess(cast<GamePlayer>(shared_from_this()));
 }

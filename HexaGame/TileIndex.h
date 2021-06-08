@@ -7,6 +7,7 @@
 EXTERN class EXPORT TileIndex
 {
 public:
+    TileIndex();
     TileIndex(int x, int y, uint z);
     
     Vector3 to_vector() const;

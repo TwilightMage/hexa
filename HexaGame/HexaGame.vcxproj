@@ -179,7 +179,9 @@
     <ClInclude Include="ChunkIndex.h" />
     <ClInclude Include="ChunkMeshEntity.h" />
     <ClInclude Include="DefaultWorldGeneratorInfo.h" />
+    <ClInclude Include="Direction.h" />
     <ClInclude Include="EditableChunk.h" />
+    <ClInclude Include="Entities\Characters\Slime.h" />
     <ClInclude Include="Entities\GamePlayer.h" />
     <ClInclude Include="Entities\SingleTile.h" />
     <ClInclude Include="Entities\TileDemoDomainEntity.h" />
@@ -224,6 +226,7 @@
     <ClCompile Include="ChunkMeshEntity.cpp" />
     <ClCompile Include="DefaultWorldGeneratorInfo.cpp" />
     <ClCompile Include="EditableChunk.cpp" />
+    <ClCompile Include="Entities\Characters\Slime.cpp" />
     <ClCompile Include="Entities\GamePlayer.cpp" />
     <ClCompile Include="Entities\SingleTile.cpp" />
     <ClCompile Include="Entities\TileDemoDomainEntity.cpp" />

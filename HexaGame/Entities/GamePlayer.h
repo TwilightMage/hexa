@@ -4,6 +4,7 @@
 #include "Engine/IControllable.h"
 #include "Engine/ITickable.h"
 #include "HexaGame/CharacterController.h"
+#include "HexaGame/TileIndex.h"
 
 class WorldChunk;
 class WorldChunkObserver;
@@ -30,4 +31,6 @@ public:
 
 private:
     void spawn_chunk_loaded(const Shared<WorldChunk>& sender);
+
+    TileIndex tile_under_mouse_;
 };

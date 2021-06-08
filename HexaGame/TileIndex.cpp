@@ -4,6 +4,13 @@
 #include "WorldChunk.h"
 #include "Engine/Math.h"
 
+TileIndex::TileIndex()
+    : x(0)
+    , y(0)
+    , z(0)
+{
+}
+
 TileIndex::TileIndex(int x, int y, uint z)
     : x(x)
     , y(y)

@@ -65,6 +65,26 @@ public:
     }
 
     template<typename T>
+    FORCEINLINE static T sign(T in)
+    {
+        return in / abs(in);
+    }
+
+    template<typename T>
+    static T lerp_cycled(T from, T to, float alpha, T min, T max)
+    {
+        const T delta = to - from;
+        if (abs(delta) < abs(to - (from + (max - min) * sign(delta))))
+        {
+            return from + (to - from) * alpha;
+        }
+        else
+        {
+            return  unwind(from + (to - (from + (max - min) * sign(delta))) * alpha, min, max);
+        }
+    }
+
+    template<typename T>
     static T abs(T value)
     {
         return std::abs(value);

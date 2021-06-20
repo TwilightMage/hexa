@@ -7,7 +7,7 @@
 class World;
 class Entity;
 
-EXTERN class EXPORT Mesh : public Object
+class EXPORT Mesh : public Object
 {
     friend Entity;
     friend World;

@@ -12,7 +12,7 @@
 
 class Game;
 
-EXTERN class EXPORT TextureAtlas : public Object, public ITexture
+class EXPORT TextureAtlas : public Object, public ITexture
 {
     friend Game;
 
@@ -40,7 +40,7 @@ public:
     FORCEINLINE uint get_num_entries() const;
     FORCEINLINE List<UVMod> get_cached_mods() const;
     FORCEINLINE const Entry* get_entry(uint index) const;
-    FORCEINLINE void dump(const Path& path);
+    FORCEINLINE void save_to_file(const Path& path) override;
     FORCEINLINE Shared<Texture> to_texture() const;
 
     void bind(uint storage_slot) const;

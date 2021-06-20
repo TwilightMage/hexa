@@ -6,7 +6,7 @@
 class Texture;
 class Mesh;
 
-EXTERN class EXPORT WorldChunkMesh
+class EXPORT WorldChunkMesh
 {
 public:
     struct Domain

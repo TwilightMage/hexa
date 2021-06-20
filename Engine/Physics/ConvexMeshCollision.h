@@ -15,7 +15,7 @@ namespace reactphysics3d
 
 class Mesh;
 
-EXTERN class EXPORT ConvexMeshCollision : public Collision
+class EXPORT ConvexMeshCollision : public Collision
 {
     struct DataBlock
     {

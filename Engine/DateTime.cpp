@@ -46,11 +46,11 @@ int TimeInterval::get_total_milliseconds() const
 
 String TimeInterval::to_string() const
 {
-	String result = StringMake(millisecond) + "ms";
-	if (day > 0 || hour > 0 || minute > 0 || second > 0) result = StringMake(second) + "s, " + result;
-	if (day > 0 || hour > 0 || minute > 0) result = StringMake(second) + "m, " + result;
-	if (day > 0 || hour > 0) result = StringMake(second) + "h, " + result;
-	if (day > 0) result = StringMake(second) + "d, " + result;
+	String result = String::make(millisecond) + "ms";
+	if (day > 0 || hour > 0 || minute > 0 || second > 0) result = String::make(second) + "s, " + result;
+	if (day > 0 || hour > 0 || minute > 0) result = String::make(second) + "m, " + result;
+	if (day > 0 || hour > 0) result = String::make(second) + "h, " + result;
+	if (day > 0) result = String::make(second) + "d, " + result;
 	return result;
 }
 

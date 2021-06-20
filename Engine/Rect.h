@@ -2,7 +2,7 @@
 
 #include "Vector2.h"
 
-EXTERN class EXPORT Rect
+class EXPORT Rect
 {
 public:
     Rect();

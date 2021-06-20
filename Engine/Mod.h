@@ -6,7 +6,7 @@
 class Game;
 class EventBus;
 
-EXTERN class EXPORT Mod
+class EXPORT Mod
 {
     friend Game;
     

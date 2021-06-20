@@ -1,7 +1,13 @@
 ﻿#include "Panel.h"
 
 #include "Image.h"
+#include "Engine/Paths.h"
 #include "Engine/Texture.h"
+
+Panel::Panel()
+    : Panel(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI + "panel.png"), Margins(4, 4, 4, 4))
+{
+}
 
 Panel::Panel(const Shared<Texture>& texture, const Margins& texture_offsets)
     : margins_(texture_offsets)

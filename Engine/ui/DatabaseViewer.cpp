@@ -33,7 +33,7 @@ void DatabaseViewer::on_construct()
 
 void DatabaseViewer::update_geometry()
 {
-    if (auto parent = get_parent().lock())
+    if (const auto parent = get_parent())
     {
         set_size(parent->get_size() = Vector2(20, 20));
 

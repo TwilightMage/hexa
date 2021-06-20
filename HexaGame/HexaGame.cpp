@@ -7,6 +7,8 @@
 #include "Tiles.h"
 #include "WorldGenerator.h"
 #include "Engine/GeometryEditor.h"
+#include "Engine/AnimationEditor/AnimationEditorWorld.h"
+#include "Entities/Characters/Slime.h"
 #include "ui/TileDatabaseViewer.h"
 #include "Worlds/GameWorld.h"
 #include "Worlds/TilePresentationWorld.h"
@@ -40,7 +42,7 @@ Shared<SaveGame> HexaGame::generate_save_game_object(const String& profile_name)
 
 void HexaGame::start()
 {
-    const auto default_world_generator_info = MakeShared<DefaultWorldGeneratorInfo>();
+    /*const auto default_world_generator_info = MakeShared<DefaultWorldGeneratorInfo>();
     register_world_generator(default_world_generator_info);
 
     if (const auto save_game = cast<HexaSaveGame>(Game::get_save_game()))
@@ -60,7 +62,11 @@ void HexaGame::start()
                 open_world(world);
             }
         }
-    }
+    }*/
+    auto editor = MakeShared<AnimationEditorWorld>();
+    open_world(editor);
+    auto slime = MakeShared<Slime>();
+    editor->open(slime);
 }
 
 void HexaGame::loading_stage()

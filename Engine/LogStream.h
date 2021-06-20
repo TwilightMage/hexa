@@ -23,7 +23,7 @@
 #define CONSOLE_BOLD_CYAN    "\033[1m\033[36m" // Bold Cyan
 #define CONSOLE_BOLD_WHITE   "\033[1m\033[37m" // Bold White
 
-EXTERN class EXPORT LogStream : public std::ostream
+class EXPORT LogStream : public std::ostream
 {
 public:
     explicit LogStream(const DateTime& log_start_time, const char* root);

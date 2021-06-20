@@ -7,7 +7,7 @@
 class DefaultWorldGenerator;
 class WorldGeneratorInfo;
 
-EXTERN class EXPORT HexaGame : public Game
+class EXPORT HexaGame : public Game
 {
 public:
     HexaGame(int argc, char* argv[]);

@@ -6,7 +6,7 @@ class VerticalList;
 class DatabaseBase;
 class DatabaseViewerRow;
 
-EXTERN class EXPORT DatabaseViewer : public UIElement
+class EXPORT DatabaseViewer : public UIElement
 {
 public:
     explicit DatabaseViewer(const Shared<DatabaseBase>& database);

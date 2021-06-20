@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "Engine/Vector3.h"
 
-EXTERN class EXPORT ChunkIndex
+class EXPORT ChunkIndex
 {
 public:
     ChunkIndex();

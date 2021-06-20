@@ -4,7 +4,7 @@
 #include "Engine/Entity.h"
 #include "Engine/Mesh.h"
 
-EXTERN class EXPORT MeshEntity : public Entity
+class EXPORT MeshEntity : public Entity
 {
 public:
     MeshEntity(const Weak<Mesh>& mesh);

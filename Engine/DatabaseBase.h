@@ -2,7 +2,7 @@
 
 #include "Object.h"
 
-EXTERN class EXPORT DatabaseBase : public Object
+class EXPORT DatabaseBase : public Object
 {
 public:
     virtual ~DatabaseBase(){ }

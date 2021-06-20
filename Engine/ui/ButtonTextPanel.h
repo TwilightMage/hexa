@@ -7,11 +7,15 @@ class TextBlock;
 class Panel;
 class Texture;
 
-EXTERN class EXPORT ButtonTextPanel : public Button
+class EXPORT ButtonTextPanel : public Button
 {
 public:
     ButtonTextPanel();
+    explicit ButtonTextPanel(const String& text);
     
+    void set_panel_texture(const Shared<Texture>& panel_texture);
+
+    FORCEINLINE const String& get_text() const;
     void set_text(const String& text);
     
 protected:

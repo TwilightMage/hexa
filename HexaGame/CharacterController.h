@@ -5,7 +5,7 @@
 
 class Character;
 
-EXTERN class EXPORT CharacterController
+class EXPORT CharacterController
 {
 public:
     virtual void posses_character(const Shared<Character>& character);

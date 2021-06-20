@@ -5,7 +5,7 @@
 class SlotBase;
 class UsageCounterBase;
 
-EXTERN class EXPORT IUsageCountableBase
+class EXPORT IUsageCountableBase
 {
     friend SlotBase;
     

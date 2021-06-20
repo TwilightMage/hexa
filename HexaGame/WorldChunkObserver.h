@@ -7,7 +7,7 @@
 class WorldChunk;
 class HexaWorld;
 
-EXTERN class EXPORT WorldChunkObserver
+class EXPORT WorldChunkObserver
 {
     friend HexaWorld;
 

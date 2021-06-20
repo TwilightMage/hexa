@@ -1,8 +1,11 @@
 ﻿#include "Character.h"
 
+#include "HexaWorld.h"
+#include "Engine/AnimatorComponent.h"
+
 void Character::tick(float delta_time)
 {
-    set_rotation(Quaternion(Vector3(0, 0, Math::lerp(get_rotation().yaw(), get_desired_rotation_angle(), 0.1f))));
+    set_rotation(Quaternion(Vector3(0, 0, Math::lerp_cycled(get_rotation().yaw(), get_desired_rotation_angle(), 0.1f, -180.0f, 180.0f))));
 }
 
 void Character::go_to(const TileIndex& tile_position)
@@ -33,9 +36,15 @@ void Character::on_character_un_possesed()
 {
 }
 
-const TileIndex& Character::get_tile_position() const
+void Character::generate_components()
 {
-    return tile_position_;
+    animator_ = MakeShared<AnimatorComponent>();
+    add_component(animator_);
+}
+
+void Character::modify_matrix_params(Vector3& position, Quaternion& rotation, Vector3& scale)
+{
+    position += animation_position_offset_;
 }
 
 void Character::set_tile_position(const TileIndex& tile_position)

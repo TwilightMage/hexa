@@ -6,7 +6,7 @@
 
 class Image;
 
-EXTERN class EXPORT UIRenderer : public IRenderer
+class EXPORT UIRenderer : public IRenderer
 {
 public:
     UIRenderer();

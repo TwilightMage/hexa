@@ -27,7 +27,7 @@ FORCEINLINE void write(std::ofstream& stream, T value)
 
 Shared<Map<TileIndex, Shared<const TileInfo>>> HexaSaveGame::get_chunk_modifications(const ChunkIndex& index) const
 {
-    const auto path_to_file = get_path().get_child("world").get_child(StringFormat("%i_%i", index.x, index.y));
+    const auto path_to_file = get_path().get_child("world").get_child(String::format("%i_%i", index.x, index.y));
     if (path_to_file.exists())
     {        
         std::ifstream stream(path_to_file.get_absolute_string().c(), std::ios::in | std::ios::binary);
@@ -65,7 +65,7 @@ Shared<Map<TileIndex, Shared<const TileInfo>>> HexaSaveGame::get_chunk_modificat
 
 void HexaSaveGame::save_chunk_modifications(const ChunkIndex& index, const Map<TileIndex, Shared<const TileInfo>>& modifications)
 {
-    const auto path_to_file = get_path().get_child("world").get_child(StringFormat("%i_%i", index.x, index.y));
+    const auto path_to_file = get_path().get_child("world").get_child(String::format("%i_%i", index.x, index.y));
     File::write_file(path_to_file);
 
     std::ofstream stream(path_to_file.get_absolute_string().c(), std::ios::out | std::ios::binary);

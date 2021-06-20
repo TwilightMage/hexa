@@ -33,7 +33,7 @@ bool Utils::check_gl_error()
     }
     if (errors.length() > 0)
     {
-        print_error("OpenGL", StringJoin(errors, ", ") + "\n" + get_callstack_string(1));
+        print_error("OpenGL", String::join(errors, ", ") + "\n" + get_callstack_string(1));
         return false;
     }
 
@@ -138,7 +138,7 @@ List<String> Utils::get_callstack(uint offset)
             if (frame >= offset)
             {
                 String filename = line->FileName;
-                result.Add(StringFormat("\tat %s in %s:%lu", pSymbol->Name, filename.substring(filename.index_of("Hexa")).c(), line->LineNumber));
+                result.Add(String::format("\tat %s in %s:%lu", pSymbol->Name, filename.substring(filename.index_of("Hexa")).c(), line->LineNumber));
                 if (strcmp(pSymbol->Name, "main") == 0) break;
             }
         }     
@@ -152,7 +152,7 @@ List<String> Utils::get_callstack(uint offset)
 
 String Utils::get_callstack_string(uint offset)
 {
-    return StringJoin(get_callstack(offset + 1), "\n");
+    return String::join(get_callstack(offset + 1), "\n");
 }
 
 void Utils::print_callstack(String category, uint offset)

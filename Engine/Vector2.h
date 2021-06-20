@@ -4,7 +4,7 @@
 
 class Vector3;
 
-EXTERN class EXPORT Vector2
+class EXPORT Vector2
 {
 public:
     Vector2();

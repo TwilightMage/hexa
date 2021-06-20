@@ -2,7 +2,7 @@
 
 #include "Vector3.h"
 
-EXTERN class EXPORT Quaternion
+class EXPORT Quaternion
 {
 public:
     Quaternion();

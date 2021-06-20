@@ -278,12 +278,13 @@ private:
         return nullptr;
     }
 
-    static int remove(const KeyType& x, Node*& node)
+    static int remove(const KeyType& x, Node*& node, uint& size)
     {
         if (node)
         {
             if (x == node->point.x)
             {
+                size--;
                 if (node->left)
                 {
                     auto most_r = take_most_right(node->left);
@@ -309,7 +310,7 @@ private:
                 }
             }
 
-            node->h = remove(x, (x < node->point.x) ? node->left : node->right) + 1;
+            node->h = remove(x, (x < node->point.x) ? node->left : node->right, size) + 1;
             return node->h;
         }
 
@@ -423,7 +424,7 @@ public:
 
     void remove(const KeyType& x)
     {
-        remove(x, root_);
+        remove(x, root_, size_);
     }
 
     void for_each(std::function<void(const Point& point)> callback)

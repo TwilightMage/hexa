@@ -25,10 +25,8 @@
 #define DLL 1
 
 #if DLL
-    #define EXTERN extern "C"
     #define EXPORT __declspec(dllexport)
 #else
-    #define EXTERN
     #define EXPORT
 #endif
 
@@ -36,10 +34,13 @@
 #define FORCEINLINE __forceinline
 #endif
 
+#define _GLFW_BUILD_DLL
+
 // Platform-specific definitions
 #if PLATFORM_WINDOWS
     #define WIN32_LEAN_AND_MEAN
     #define VK_USE_PLATFORM_WIN32_KHR
+	#define GLFW_EXPOSE_NATIVE_WIN32
 #endif
 
 

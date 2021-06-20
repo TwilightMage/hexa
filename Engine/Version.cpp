@@ -15,14 +15,14 @@ Version::Version(uint version_number, uint patch_number, uint fix_number)
 Version::Version(const String& version_string)
 {
     auto parts = version_string.split('.');
-    version_number = StringParse<uint>(parts[0]);
-    patch_number = StringParse<uint>(parts[1]);
-    fix_number = StringParse<uint>(parts[2]);
+    version_number = String::parse<uint>(parts[0]);
+    patch_number = String::parse<uint>(parts[1]);
+    fix_number = String::parse<uint>(parts[2]);
 }
 
 String Version::to_string() const
 {
-    return StringFormat("%i.%i.%i", version_number, patch_number, fix_number);
+    return String::format("%i.%i.%i", version_number, patch_number, fix_number);
 }
 
 bool Version::operator<(const Version& rhs) const

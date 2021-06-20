@@ -131,11 +131,11 @@ void HexaWorld::dump_observable_area()
         {
             if (j + min_x == 0 && i + min_y == 0) s2.Add("()");
             else if (j + min_x == 10 && i + min_y == 10) s2.Add("XX");
-            else s2.Add(StringFormat("%s", matrix.at(j, i) ? "00" : "--"));
+            else s2.Add(String::format("%s", matrix.at(j, i) ? "00" : "--"));
         }
-        s1.Add(StringJoin(s2, " "));
+        s1.Add(String::join(s2, " "));
     }
-    String s = StringJoin(s1, "\n");
+    String s = String::join(s1, "\n");
     print_debug("Dump loaded chunks", "From %i %i\n" + s, min_x, min_y);
 }
 

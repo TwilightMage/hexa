@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Utils.h"
+#include "Game.h"
 
 #define Assert(condition)\
 if (!(condition))\

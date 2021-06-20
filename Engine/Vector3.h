@@ -4,7 +4,7 @@
 #include "String.h"
 #include "Vector2.h"
 
-EXTERN class EXPORT Vector3
+class EXPORT Vector3
 {
 public:
     Vector3();

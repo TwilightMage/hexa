@@ -3,7 +3,7 @@
 #include "Engine/Mod.h"
 #include "Engine/World.h"
 
-EXTERN class EXPORT ExampleMod : public Mod
+class EXPORT ExampleMod : public Mod
 {
 public:
     void on_loaded(EventBus* event_bus) override;

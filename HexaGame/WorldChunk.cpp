@@ -329,7 +329,7 @@ void WorldChunk::regenerate_mesh()
 
         for (auto& kvp : vertices)
         {
-            auto mesh = MakeShared<Mesh>(StringFormat("Chunk {%i %i} %s", index_.x, index_.y, kvp.first->key.c()), kvp.second);
+            auto mesh = MakeShared<Mesh>(String::format("Chunk {%i %i} %s", index_.x, index_.y, kvp.first->key.c()), kvp.second);
             
             auto mesh_entity = MakeShared<ChunkMeshEntity>();
             mesh_entity->use_mesh(mesh);

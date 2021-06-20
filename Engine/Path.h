@@ -16,7 +16,7 @@ enum class EPathType
 
 IMPLEMENT_ENUM(EPathType)
 
-EXTERN class EXPORT Path
+class EXPORT Path
 {
 public:
 	Path();

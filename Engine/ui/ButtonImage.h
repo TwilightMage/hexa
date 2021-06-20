@@ -7,10 +7,16 @@
 class Texture;
 class Image;
 
-EXTERN class EXPORT ButtonImage : public Button
+class EXPORT ButtonImage : public Button
 {
 public:
+    ButtonImage();
     ButtonImage(const Shared<Texture>& texture);
+
+    void set_texture(const Shared<Texture>& texture);
+
+    FORCEINLINE bool get_stretch_image() const { return stretch_image_; }
+    void set_stretch_image(bool value);
 
 protected:
     void on_construct() override;
@@ -20,4 +26,5 @@ protected:
 private:    
     Shared<Image> image_;
     Shared<Texture> texture_;
+    bool stretch_image_ = false;
 };

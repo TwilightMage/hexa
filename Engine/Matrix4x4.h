@@ -6,7 +6,7 @@
 #include "Rect.h"
 #include "Vector3.h"
 
-EXTERN class EXPORT Matrix4x4
+class EXPORT Matrix4x4
 {
 public:
     struct Row

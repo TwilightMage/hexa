@@ -4,7 +4,7 @@
 
 class Entity;
 
-EXTERN class EXPORT Camera
+class EXPORT Camera
 {
 public:
     Entity* owner;

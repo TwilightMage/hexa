@@ -45,7 +45,7 @@ void UIElement::set_position(const Vector3& vec3_pos)
 
 float UIElement::get_rotation_angle() const
 {
-    return 0.0f; // TODO: add rotation angle to UI
+    return rotation_.roll();
 }
 
 void UIElement::set_rotation(float angle)
@@ -77,6 +77,16 @@ void UIElement::set_size(const Vector2& vec2_size)
     }
 }
 
+const Color& UIElement::get_color() const
+{
+    return color_;
+}
+
+void UIElement::set_color(const Color& color)
+{
+    color_ = color;
+}
+
 const Matrix4x4& UIElement::get_ui_matrix() const
 {
     return trans_rot_size_matrix_;
@@ -92,9 +102,9 @@ void UIElement::set_mouse_detection(bool state)
     mouse_detection_ = state;
 }
 
-Weak<UIElement> UIElement::get_parent() const
+Shared<UIElement> UIElement::get_parent() const
 {
-    return parent_;
+    return parent_.lock();
 }
 
 const List<Shared<UIElement>>& UIElement::get_children() const
@@ -102,33 +112,34 @@ const List<Shared<UIElement>>& UIElement::get_children() const
     return children_;
 }
 
-void UIElement::add_child(const Weak<UIElement>& child)
+void UIElement::add_child(const Shared<UIElement>& child)
 {
-    if (const auto child_ptr = child.lock())
+    if (child)
     {       
-        if (const auto old_parent = child_ptr->parent_.lock())
+        if (const auto old_parent = child->get_parent())
         {
-            old_parent->children_.Remove(child_ptr);
-            old_parent->on_child_removed(child_ptr);
-        }
-        else
-        {
-            if (auto child_renderable = cast<IRenderable>(child_ptr))
+            if (old_parent.get() == this)
             {
-                if (Game::instance_->ui_renderer_->register_object(child_renderable))
-                {
-                    child_ptr->register_render();
-                }
+                return;
             }
+            
+            old_parent->children_.Remove(child);
+            old_parent->on_child_removed(child);
+        }
+
+        if (is_in_hierarchy_)
+        {
+            child->added_to_hierarchy();
         }
         
-        child_ptr->parent_ = weak_from_this();
-        children_.Add(child_ptr);
-        on_child_added(child_ptr);
+        child->parent_ = weak_from_this();
+        children_.Add(child);
+        on_child_added(child);
 
-        child_ptr->update_matrix();
+        child->update_matrix();
 
-        child_ptr->construct();
+        child->construct();
+        child->on_parent_size_changed();
     }
 }
 
@@ -136,16 +147,7 @@ void UIElement::remove_from_parent()
 {
     if (const auto parent_ptr = parent_.lock())
     {
-        parent_ptr->children_.Remove(shared_from_this());
-        parent_ptr->on_child_removed(shared_from_this());
-
-        if (auto me_renderable = cast<IRenderable>(shared_from_this()))
-        {
-            if (Game::instance_->ui_renderer_->unregister_object(me_renderable))
-            {
-                unregister_render();
-            }
-        }
+        parent_ptr->remove_child_internal(shared_from_this());
     }
 }
 
@@ -153,7 +155,8 @@ void UIElement::remove_all_children()
 {
     while (children_.length() > 0)
     {
-        children_.last()->remove_from_parent();
+        auto temp = children_.last();
+        temp->remove_from_parent();
     }
 
     on_all_child_removed();
@@ -182,6 +185,11 @@ bool UIElement::is_mouse_over() const
 bool UIElement::is_pressed() const
 {
     return is_pressed_;
+}
+
+bool UIElement::is_in_hierarchy() const
+{
+    return is_in_hierarchy_;
 }
 
 void UIElement::register_render()
@@ -299,6 +307,47 @@ bool UIElement::is_rect_under_mouse(const Vector2& mouse) const
     return mouse.x >= 0 && mouse.x < size_.x && mouse.y >= 0 && mouse.y < size_.y;
 }
 
+void UIElement::added_to_hierarchy()
+{
+    if (!is_in_hierarchy_)
+    {
+        if (auto me_renderable = cast<IRenderable>(shared_from_this()))
+        {
+            if (Game::instance_->ui_renderer_->register_object(me_renderable))
+            {
+                register_render();
+            }
+        }
+
+        for (auto& child : children_)
+        {
+            child->added_to_hierarchy();
+        }
+    }
+    
+    is_in_hierarchy_ = true;
+}
+
+void UIElement::removed_from_hierarchy()
+{
+    if (is_in_hierarchy_)
+    {
+        if (auto me_renderable = cast<IRenderable>(shared_from_this()))
+        {
+            if (Game::instance_->ui_renderer_->unregister_object(me_renderable))
+            {
+                unregister_render();
+            }
+        }
+
+        for (auto& child : children_)
+        {
+            child->removed_from_hierarchy();
+        }
+    }
+    is_in_hierarchy_ = false;
+}
+
 void UIElement::update_matrix()
 {
     trans_rot_matrix_ = Matrix4x4();
@@ -328,4 +377,13 @@ void UIElement::update_matrix_child(const Matrix4x4& parent_matrix)
     }
 
     trans_rot_size_matrix_ = trans_rot_matrix_stacked_.scale(size_ * Game::get_ui_scale());
+}
+
+void UIElement::remove_child_internal(const Shared<UIElement>& item)
+{
+    children_.Remove(item);
+    on_child_removed(item);
+    item->parent_ = null_weak(UIElement);
+
+    item->removed_from_hierarchy();
 }

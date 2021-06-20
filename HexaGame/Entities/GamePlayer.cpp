@@ -3,11 +3,15 @@
 #include <GLFW/glfw3.h>
 
 #include "Characters/Slime.h"
+#include "Engine/Animation.h"
+#include "Engine/AnimatorComponent.h"
 #include "Engine/Camera.h"
+#include "Engine/Curve.h"
+#include "Engine/SystemIO.h"
 #include "Engine/Physics/RaycastResult.h"
 #include "HexaGame/Character.h"
 #include "HexaGame/ChunkMeshEntity.h"
-#include "HexaGame/HexaMath.h"
+#include "HexaGame/HexaCollisionMaskBits.h"
 #include "HexaGame/HexaWorld.h"
 #include "HexaGame/TileIndex.h"
 #include "HexaGame/Tiles.h"
@@ -89,12 +93,15 @@ void GamePlayer::tick(float delta_time)
 
     if (auto world = cast<HexaWorld>(get_world()))
     {
-        if (auto hit = world->raycast(get_position(), get_position() + Game::get_un_projected_mouse() * 10))
+        if (auto hit = world->raycast(get_position(), get_position() + Game::get_un_projected_mouse() * 10, HexaCollisionMaskBits::GROUND | HexaCollisionMaskBits::ITEM))
         {
             tile_under_mouse_ = TileIndex::from_vector(hit->location - hit->normal * 0.1f);
             if (auto character = get_character())
             {
-                character->rotate_to_tile(tile_under_mouse_);
+                if (!(character->get_tile_position().x == tile_under_mouse_.x && character->get_tile_position().y == tile_under_mouse_.y))
+                {
+                    character->rotate_to_tile(tile_under_mouse_);
+                }
             }
         }
     }

@@ -64,6 +64,41 @@ public:
         return data_.find(key);
     }
 
+    FORCEINLINE Value find_or_default(const Key& key) const
+    {
+        if (auto found = data_.find(key))
+        {
+            return *found;
+        }
+        else
+        {
+            return Value();
+        }
+    }
+
+    FORCEINLINE Value find_or_default(const Key& key, const Value& default_value) const
+    {
+        if (auto found = data_.find(key))
+        {
+            return *found;
+        }
+        else
+        {
+            return default_value;
+        }
+    }
+
+    List<Key> get_keys() const
+    {
+        List<Key> result;
+        for (auto entry : data_)
+        {
+            result.Add(entry.x);
+        }
+
+        return result;
+    }
+
     FORCEINLINE uint size() const
     {
         return data_.size();

@@ -9,6 +9,7 @@
 #include "Engine/ui/Image.h"
 #include "Engine/ui/Panel.h"
 #include "Engine/ui/TextBlock.h"
+#include "HexaGame/Paths.h"
 
 void DialoguePanel::on_size_changed()
 {
@@ -17,7 +18,7 @@ void DialoguePanel::on_size_changed()
 
 void DialoguePanel::on_parent_size_changed()
 {
-    if (auto parent = get_parent().lock())
+    if (const auto parent = get_parent())
     {
         set_size(Vector2(Math::min(500.0f, parent->get_size().x - 20), 100));
         set_position(Vector2((parent->get_size().x - get_size().x) / 2, parent->get_size().y - 110));
@@ -26,16 +27,16 @@ void DialoguePanel::on_parent_size_changed()
 
 void DialoguePanel::on_construct()
 {    
-    panel_ = MakeShared<Panel>(Texture::load_png("resources/hexagame/textures/ui/panel.png"), Margins(4, 4, 4, 4));
+    panel_ = MakeShared<Panel>();
     add_child(panel_);
     
-    frame_ = MakeShared<Image>(Texture::load_png("resources/hexagame/textures/ui/frame.png"));
+    frame_ = MakeShared<Image>(Texture::load_png(RESOURCES_HEXA_TEXTURES_UI +  "frame.png"));
     frame_->set_position(Vector2(10.0f, 10.0f));
     frame_->set_size(Vector2(38.0f, 38.0f) * 2.0f);
     frame_->set_z(0.1f);
     panel_->add_child(frame_);
     
-    avatar_ = MakeShared<Image>(Texture::load_png("resources/hexagame/textures/ui/dragon.png"));
+    avatar_ = MakeShared<Image>(Texture::load_png(RESOURCES_HEXA_TEXTURES_UI + "dragon.png"));
     avatar_->set_position(Vector2(3.0f, 3.0f) * 2.0f);
     avatar_->set_size(Vector2(32.0f, 32.0f) * 2.0f);
     frame_->add_child(avatar_);
@@ -57,8 +58,6 @@ void DialoguePanel::on_construct()
     button_->set_size(Vector2(75.0f, 20.0f));
     button_->on_click.bind(this, &DialoguePanel::push_button);
     panel_->add_child(button_);
-    
-    on_parent_size_changed();
 }
 
 void DialoguePanel::update_geometry()
@@ -77,5 +76,5 @@ void DialoguePanel::update_geometry()
 
 void DialoguePanel::push_button(const Weak<Button>& btn)
 {
-    message_->set_text(StringFormat("Well, well, well... Someone pushed the button %i times?", ++push_counter_));
+    message_->set_text(String::format("Well, well, well... Someone pushed the button %i times?", ++push_counter_));
 }

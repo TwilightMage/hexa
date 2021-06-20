@@ -67,7 +67,7 @@ public:
     template<typename T>
     FORCEINLINE static T sign(T in)
     {
-        return in / abs(in);
+        return in == 0 ? 0 : in / abs(in);
     }
 
     template<typename T>

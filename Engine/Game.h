@@ -14,6 +14,8 @@
 #include "Vector2.h"
 #include "Version.h"
 
+class UIInputElement;
+class SystemIO;
 class Collision;
 class ConvexMeshCollision;
 class SaveGame;
@@ -41,7 +43,7 @@ enum class ELogLevel
     Error
 };
 
-EXTERN class EXPORT Game
+class EXPORT Game
 {
     friend World;
     friend Shader;
@@ -50,6 +52,7 @@ EXTERN class EXPORT Game
     friend Entity;
     friend UIElement;
     friend Collision;
+    friend SystemIO;
     
 public:
     Game(int argc, char* argv[]);
@@ -58,6 +61,7 @@ public:
     void launch();
 
     static void possess(const Weak<IControllable>& controllable);
+    static void focus_ui(const Shared<UIInputElement>& ui_input_reciever);
     static void use_camera(const Weak<Camera>& camera);
     
     static void open_world(const Weak<World>& world);
@@ -95,7 +99,7 @@ public:
     static void unlock_mouse();
     static void hide_mouse();
     static void show_mouse();
-    static void add_ui(const Weak<UIElement>& ui);
+    static void add_ui(const Shared<UIElement>& ui);
     static float get_ui_scale();
     static Vector3 get_un_projected_mouse();
 
@@ -122,7 +126,9 @@ private:
 
     static void error_callback(int error, const char* description);
     static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+    static void character_callback(GLFWwindow* window, uint codepoint);
     static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+    static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
     static void cursor_position_callback(GLFWwindow* window, double x_pos, double y_pos);
     static void window_size_callback(GLFWwindow* window, int width, int height);
 
@@ -169,6 +175,7 @@ private:
     // Game Play
     Shared<Camera> current_camera_;
     Shared<IControllable> current_controllable_;
+    Shared<UIInputElement> ui_input_element_;
     Shared<World> world_;
 
     // Core

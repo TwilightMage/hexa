@@ -192,12 +192,26 @@
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Animated.h" />
+    <ClInclude Include="AnimatedField.h" />
+    <ClInclude Include="AnimatedFieldBase.h" />
+    <ClInclude Include="Animation.h" />
+    <ClInclude Include="AnimationEditor\AnimationEditorUI.h" />
+    <ClInclude Include="AnimationEditor\AnimationEditorWorld.h" />
+    <ClInclude Include="AnimationEditor\CurveSegmentWidget.h" />
+    <ClInclude Include="AnimationHandle.h" />
+    <ClInclude Include="AnimationInstance.h" />
+    <ClInclude Include="AnimatorComponent.h" />
+    <ClInclude Include="ConversionPointer.h" />
+    <ClInclude Include="EditorPlayer.h" />
+    <ClInclude Include="EntityComponent.h" />
     <ClInclude Include="Array.h" />
     <ClInclude Include="Array2D.h" />
     <ClInclude Include="Assert.h" />
     <ClInclude Include="BasicTypes.h" />
     <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
+    <ClInclude Include="Curve.h" />
     <ClInclude Include="Database.h" />
     <ClInclude Include="DatabaseBase.h" />
     <ClInclude Include="DatabaseEntry.h" />
@@ -211,6 +225,7 @@
     <ClInclude Include="GeometryEditor.h" />
     <ClInclude Include="IControllable.h" />
     <ClInclude Include="ImageEditor.h" />
+    <ClInclude Include="Interpolators.h" />
     <ClInclude Include="IRenderable.h" />
     <ClInclude Include="IRenderer.h" />
     <ClInclude Include="ITexture.h" />
@@ -228,6 +243,7 @@
     <ClInclude Include="Mod.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Path.h" />
+    <ClInclude Include="Paths.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="PerlinNoise.h" />
     <ClInclude Include="Physics\BoxCollision.h" />
@@ -237,6 +253,7 @@
     <ClInclude Include="Physics\RaycastCallback.h" />
     <ClInclude Include="Physics\RaycastResult.h" />
     <ClInclude Include="Physics\SphereCollision.h" />
+    <ClInclude Include="Player.h" />
     <ClInclude Include="Quaternion.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="Regex.h" />
@@ -248,7 +265,9 @@
     <ClInclude Include="Shader.h" />
     <ClInclude Include="SlotBase.h" />
     <ClInclude Include="SpriteFont.h" />
+    <ClInclude Include="stb.h" />
     <ClInclude Include="String.h" />
+    <ClInclude Include="SystemIO.h" />
     <ClInclude Include="TeeBuf.h" />
     <ClInclude Include="Texture.h" />
     <ClInclude Include="TextureAtlas.h" />
@@ -259,14 +278,19 @@
     <ClInclude Include="Tree2D.h" />
     <ClInclude Include="UIRenderer.h" />
     <ClInclude Include="ui\ButtonImage.h" />
+    <ClInclude Include="ui\ButtonImagePanel.h" />
     <ClInclude Include="ui\ButtonTextPanel.h" />
     <ClInclude Include="ui\Button.h" />
     <ClInclude Include="ui\DatabaseViewer.h" />
     <ClInclude Include="ui\HorizontalList.h" />
     <ClInclude Include="ui\Image.h" />
+    <ClInclude Include="ui\ModalEnumFrame.h" />
+    <ClInclude Include="ui\ModalFrame.h" />
     <ClInclude Include="ui\Panel.h" />
     <ClInclude Include="ui\TextBlock.h" />
+    <ClInclude Include="ui\TextInputField.h" />
     <ClInclude Include="ui\UIElement.h" />
+    <ClInclude Include="ui\UIInputElement.h" />
     <ClInclude Include="ui\UIList.h" />
     <ClInclude Include="ui\VerticalList.h" />
     <ClInclude Include="UsageCounter.h" />
@@ -279,6 +303,14 @@
     <ClInclude Include="Entity.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="AnimatedFieldBase.cpp" />
+    <ClCompile Include="Animation.cpp" />
+    <ClCompile Include="AnimationEditor\AnimationEditorUI.cpp" />
+    <ClCompile Include="AnimationEditor\AnimationEditorWorld.cpp" />
+    <ClCompile Include="AnimationEditor\CurveSegmentWidget.cpp" />
+    <ClCompile Include="AnimationHandle.cpp" />
+    <ClCompile Include="AnimationInstance.cpp" />
+    <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClInclude Include="Database.cpp">
@@ -436,6 +468,8 @@
       </ImpLibCompiled>
     </ClInclude>
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="EditorPlayer.cpp" />
+    <ClCompile Include="EntityComponent.cpp" />
     <ClCompile Include="EventBus.cpp" />
     <ClCompile Include="File.cpp" />
     <ClCompile Include="Game.cpp" />
@@ -722,6 +756,7 @@
       <SDLCheck>true</SDLCheck>
       <LinkCompiled>true</LinkCompiled>
     </ClCompile>
+    <ClCompile Include="Player.cpp" />
     <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="Rect.cpp" />
     <ClCompile Include="Regex.cpp" />
@@ -730,7 +765,9 @@
     <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SlotBase.cpp" />
     <ClCompile Include="SpriteFont.cpp" />
+    <ClCompile Include="stb.cpp" />
     <ClCompile Include="String.cpp" />
+    <ClCompile Include="SystemIO.cpp" />
     <ClCompile Include="TeeBuf.cpp" />
     <ClCompile Include="Texture.cpp" />
     <ClCompile Include="TextureAtlas.cpp" />
@@ -739,12 +776,81 @@
     <ClCompile Include="UIRenderer.cpp" />
     <ClCompile Include="ui\Button.cpp" />
     <ClCompile Include="ui\ButtonImage.cpp" />
+    <ClCompile Include="ui\ButtonImagePanel.cpp">
+      <RuntimeLibrary>MultiThreadedDebugDll</RuntimeLibrary>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <Optimization>Disabled</Optimization>
+      <SupportJustMyCode>true</SupportJustMyCode>
+      <AssemblerOutput>NoListing</AssemblerOutput>
+      <AssemblerListingLocation>x64\Debug\</AssemblerListingLocation>
+      <UndefineAllPreprocessorDefinitions>false</UndefineAllPreprocessorDefinitions>
+      <BrowseInformation>false</BrowseInformation>
+      <BrowseInformationFile>x64\Debug\</BrowseInformationFile>
+      <CompileAs>Default</CompileAs>
+      <ConformanceMode>true</ConformanceMode>
+      <DiagnosticsFormat>Column</DiagnosticsFormat>
+      <DisableLanguageExtensions>false</DisableLanguageExtensions>
+      <ErrorReporting>Prompt</ErrorReporting>
+      <ExpandAttributedSource>false</ExpandAttributedSource>
+      <ExceptionHandling>Sync</ExceptionHandling>
+      <EnableASAN>false</EnableASAN>
+      <EnableFiberSafeOptimizations>false</EnableFiberSafeOptimizations>
+      <EnableEnhancedInstructionSet>NotSet</EnableEnhancedInstructionSet>
+      <FloatingPointModel>Precise</FloatingPointModel>
+      <ForceConformanceInForLoopScope>true</ForceConformanceInForLoopScope>
+      <GenerateModuleDependencies>false</GenerateModuleDependencies>
+      <GenerateSourceDependencies>false</GenerateSourceDependencies>
+      <GenerateXMLDocumentationFiles>false</GenerateXMLDocumentationFiles>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <IntrinsicFunctions>false</IntrinsicFunctions>
+      <IgnoreStandardIncludePath>false</IgnoreStandardIncludePath>
+      <LanguageStandard>stdcpplatest</LanguageStandard>
+      <LanguageStandard_C>Default</LanguageStandard_C>
+      <MinimalRebuild>false</MinimalRebuild>
+      <ModuleDependenciesFile>x64\Debug\</ModuleDependenciesFile>
+      <ModuleOutputFile>x64\Debug\</ModuleOutputFile>
+      <OmitDefaultLibName>false</OmitDefaultLibName>
+      <FavorSizeOrSpeed>Neither</FavorSizeOrSpeed>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <ObjectFileName>x64\Debug\</ObjectFileName>
+      <CallingConvention>Cdecl</CallingConvention>
+      <ProgramDataBaseFileName>x64\Debug\vc142.pdb</ProgramDataBaseFileName>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>x64\Debug\Engine.pch</PrecompiledHeaderOutputFile>
+      <PreprocessToFile>false</PreprocessToFile>
+      <PreprocessKeepComments>false</PreprocessKeepComments>
+      <PreprocessSuppressLineNumbers>false</PreprocessSuppressLineNumbers>
+      <RemoveUnreferencedCodeData>true</RemoveUnreferencedCodeData>
+      <ShowIncludes>false</ShowIncludes>
+      <SourceDependenciesFile>x64\Debug\</SourceDependenciesFile>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <SmallerTypeCheck>false</SmallerTypeCheck>
+      <SpectreMitigation>false</SpectreMitigation>
+      <StructMemberAlignment>Default</StructMemberAlignment>
+      <TrackerLogDirectory>x64\Debug\Engine.tlog\</TrackerLogDirectory>
+      <MinimalRebuildFromTracking>true</MinimalRebuildFromTracking>
+      <TreatWarningAsError>false</TreatWarningAsError>
+      <TreatWChar_tAsBuiltInType>true</TreatWChar_tAsBuiltInType>
+      <UseFullPaths>true</UseFullPaths>
+      <WarningLevel>Level3</WarningLevel>
+      <XMLDocumentationFileName>x64\Debug\</XMLDocumentationFileName>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <IntelJCCErratum>false</IntelJCCErratum>
+      <PreprocessorDefinitions>_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;_WINDLL;_UNICODE;UNICODE;</PreprocessorDefinitions>
+      <SDLCheck>true</SDLCheck>
+      <LinkCompiled>true</LinkCompiled>
+    </ClCompile>
     <ClCompile Include="ui\ButtonTextPanel.cpp" />
     <ClCompile Include="ui\DatabaseViewer.cpp" />
     <ClCompile Include="ui\HorizontalList.cpp" />
     <ClCompile Include="ui\Image.cpp" />
+    <ClCompile Include="ui\ModalEnumFrame.cpp" />
+    <ClCompile Include="ui\ModalFrame.cpp" />
     <ClCompile Include="ui\Panel.cpp" />
     <ClCompile Include="ui\TextBlock.cpp" />
+    <ClCompile Include="ui\TextInputField.cpp" />
     <ClCompile Include="ui\UIElement.cpp" />
     <ClCompile Include="ui\UIList.cpp" />
     <ClCompile Include="ui\VerticalList.cpp" />
@@ -759,13 +865,13 @@
     <Natvis Include="Engine.natvis" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="CollisionMaskBits.h" />
+    <ClInclude Include="BinaryStream.h" />
     <Content Include="resources\engine\meshes\axis_arrows.obj" />
     <Content Include="resources\engine\meshes\icosphere.obj" />
     <Content Include="resources\engine\meshes\monkey.obj" />
     <Content Include="resources\engine\meshes\sphere.obj" />
     <Content Include="resources\engine\meshes\square.obj" />
-    <Content Include="resources\engine\shaders\basic_font.frag" />
-    <Content Include="resources\engine\shaders\basic_font.vert" />
     <Content Include="resources\engine\shaders\basic_ui.frag" />
     <Content Include="resources\engine\shaders\basic_ui.vert" />
     <Content Include="resources\engine\shaders\basic.frag" />

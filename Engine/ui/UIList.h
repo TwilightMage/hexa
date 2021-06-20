@@ -2,7 +2,7 @@
 
 #include "UIElement.h"
 
-EXTERN class EXPORT UIList : public UIElement
+class EXPORT UIList : public UIElement
 {
 public:
     float get_spacing() const;

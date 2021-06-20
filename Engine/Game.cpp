@@ -9,6 +9,7 @@
 #include "IControllable.h"
 #include "Mod.h"
 #include "Path.h"
+#include "Paths.h"
 #include "Quaternion.h"
 #include "Renderer.h"
 #include "SaveGame.h"
@@ -19,6 +20,7 @@
 #include "UIRenderer.h"
 #include "World.h"
 #include "ui/Image.h"
+#include "ui/UIInputElement.h"
 #include "ui/Panel.h"
 
 Game* Game::instance_ = nullptr;
@@ -76,6 +78,21 @@ void Game::possess(const Weak<IControllable>& controllable)
 	}
 	instance_->current_controllable_ = controllable.lock();
 	instance_->current_controllable_->on_possess();
+}
+
+void Game::focus_ui(const Shared<UIInputElement>& ui_input_reciever)
+{
+	if (instance_->ui_input_element_)
+	{
+		instance_->ui_input_element_->on_unfocus();
+	}
+	
+	instance_->ui_input_element_ = ui_input_reciever;
+
+	if (instance_->ui_input_element_)
+	{
+		instance_->ui_input_element_->on_focus();
+	}
 }
 
 void Game::use_camera(const Weak<Camera>& camera)
@@ -239,7 +256,7 @@ void Game::show_mouse()
 	glfwSetInputMode(instance_->window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
 }
 
-void Game::add_ui(const Weak<UIElement>& ui)
+void Game::add_ui(const Shared<UIElement>& ui)
 {
 	instance_->ui_root_->add_child(ui);
 }
@@ -294,6 +311,7 @@ void Game::setup_window()
 	ui_root_->set_size(Vector2(800 / get_ui_scale(), 600 / get_ui_scale()));
 	ui_root_->mouse_detection_ = false;
 	ui_root_->constructed_ = true;
+	ui_root_->is_in_hierarchy_ = true;
 	
 	window_ = glfwCreateWindow(800, 600, get_info().title.c(), nullptr, nullptr);
 	if (!window_)
@@ -313,7 +331,9 @@ void Game::prepare()
 	glfwSetErrorCallback(error_callback);
 	glfwSetWindowSizeLimits(window_, 800, 600, GLFW_DONT_CARE, GLFW_DONT_CARE);
 	glfwSetKeyCallback(window_, key_callback);
+	glfwSetCharCallback(window_, character_callback);
 	glfwSetMouseButtonCallback(window_, mouse_button_callback);
+	glfwSetScrollCallback(window_, scroll_callback);
 	glfwSetCursorPosCallback(window_, cursor_position_callback);
 	glfwSetWindowSizeCallback(window_, window_size_callback);
 }
@@ -371,16 +391,16 @@ void Game::render_loop()
 		{"vCol", sizeof(float) * 5, 3, GL_FLOAT}
 	};
 	basic_shader_meta.instance_count = 230;
-	basic_shader_ = Shader::compile("resources/engine/shaders/basic", basic_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
+	basic_shader_ = Shader::compile(RESOURCES_ENGINE_SHADERS + "basic", basic_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
 
 	Shader::Meta basic_ui_shader_meta;
 	basic_ui_shader_meta.instance_count = 146;
 	basic_ui_shader_meta.transparency = true;
-	basic_ui_shader_ = Shader::compile("resources/engine/shaders/basic_ui", basic_ui_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
+	basic_ui_shader_ = Shader::compile(RESOURCES_ENGINE_SHADERS + "basic_ui", basic_ui_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
 
-	white_pixel_ = MakeShared<Texture>("White Pixel", 1, 1, List<Color>::of(Color::white));
+	white_pixel_ = MakeShared<Texture>("White Pixel", 1, 1, List<Color>::of(Color::white()));
 
-	default_font_ = SpriteFont::load_fnt("resources/hexagame/fonts/berkshire_swash.fnt");
+	default_font_ = SpriteFont::load_fnt(RESOURCES_ENGINE_FONTS + "arial.fnt"); // courgette.fnt
 	
 	loading_stage();
 	
@@ -454,16 +474,16 @@ void Game::render_loop()
 		{
 			last_mouse_pos_ = mouse_pos_;
 		}
-		
-		if (current_camera_ && current_camera_->owner)
-		{
-			// ticking
-			if (last_delta_time > 0.0f)
-			{
-				tick(last_delta_time);
-				world_->tick(last_delta_time);
-			}
 
+		// ticking
+		if (last_delta_time > 0.0f)
+		{
+			tick(last_delta_time);
+			world_->tick(last_delta_time);
+		}
+		
+		if (current_camera_ && current_camera_->owner && width > 0 && height > 0)
+		{
 			// 3d matrix
 			auto cam_from = current_camera_->owner->get_position();
 			auto cam_to = current_camera_->owner->get_position() + current_camera_->owner->get_rotation().forward();
@@ -551,7 +571,22 @@ void Game::key_callback(GLFWwindow* window, int key, int scancode, int action, i
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
 	else
 	{
-		if (instance_->current_controllable_)
+		if (instance_->ui_input_element_)
+		{
+			if (action == GLFW_PRESS)
+			{
+				instance_->ui_input_element_->key_down(key);
+			}
+			else if (action == GLFW_RELEASE)
+			{
+				instance_->ui_input_element_->key_up(key);
+			}
+			else if (action == GLFW_REPEAT)
+			{
+				instance_->ui_input_element_->key_hold(key);
+			}
+		}
+		else if (instance_->current_controllable_)
 		{
 			if (action == GLFW_PRESS)
 			{
@@ -565,6 +600,14 @@ void Game::key_callback(GLFWwindow* window, int key, int scancode, int action, i
 	}
 }
 
+void Game::character_callback(class GLFWwindow* window, uint codepoint)
+{
+	if (instance_->ui_input_element_)
+	{
+		instance_->ui_input_element_->text_input(codepoint);
+	}
+}
+
 void Game::mouse_button_callback(class GLFWwindow* window, int button, int action, int mods)
 {
 	if (instance_->current_controllable_)
@@ -573,12 +616,24 @@ void Game::mouse_button_callback(class GLFWwindow* window, int button, int actio
 		{
 			if (auto ui_under_mouse = instance_->ui_under_mouse_.lock())
 			{
+				if (instance_->ui_input_element_ && instance_->ui_input_element_ != ui_under_mouse)
+				{
+					instance_->ui_input_element_->on_unfocus();
+					instance_->ui_input_element_ = nullptr;
+				}
+				
 				ui_under_mouse->on_press();
 				ui_under_mouse->is_pressed_ = true;
 				instance_->pressed_ui_ = ui_under_mouse;
 			}
 			else
 			{
+				if (instance_->ui_input_element_)
+				{
+					instance_->ui_input_element_->on_unfocus();
+					instance_->ui_input_element_ = nullptr;
+				}
+				
 				instance_->current_controllable_->mouse_button_down(button);
 			}
 		}
@@ -595,6 +650,14 @@ void Game::mouse_button_callback(class GLFWwindow* window, int button, int actio
 				instance_->current_controllable_->mouse_button_up(button);
 			}
 		}
+	}
+}
+
+void Game::scroll_callback(class GLFWwindow* window, double xoffset, double yoffset)
+{
+	if (instance_->ui_input_element_ == nullptr && instance_->current_controllable_)
+	{
+		instance_->current_controllable_->scroll(Vector2(xoffset, yoffset));
 	}
 }
 

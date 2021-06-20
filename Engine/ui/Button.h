@@ -3,7 +3,7 @@
 #include "Engine/BasicTypes.h"
 #include "Engine/Delegate.h"
 
-EXTERN class EXPORT Button : public UIElement
+class EXPORT Button : public UIElement
 {
 public:
     Delegate<const Weak<Button>&> on_click;

@@ -1,7 +1,7 @@
 ﻿#pragma once
 #include "UIList.h"
 
-EXTERN class EXPORT VerticalList : public UIList
+class EXPORT VerticalList : public UIList
 {
 protected:
     void on_parent_size_changed() override;

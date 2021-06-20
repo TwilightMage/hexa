@@ -9,7 +9,7 @@
 class WorldChunk;
 class WorldChunkObserver;
 
-EXTERN class EXPORT GamePlayer : public Entity, public CharacterController, public IControllable, public ITickable
+class EXPORT GamePlayer : public Entity, public CharacterController, public IControllable, public ITickable
 {
 public:
     void on_start() override;

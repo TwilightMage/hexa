@@ -2,19 +2,47 @@
 
 #include "Panel.h"
 #include "TextBlock.h"
+#include "Engine/Paths.h"
 #include "Engine/Rect.h"
 #include "Engine/SpriteFont.h"
 #include "Engine/Texture.h"
 
 ButtonTextPanel::ButtonTextPanel()
-    : texture_(Texture::load_png("resources/hexagame/textures/ui/button_panel.png"))
+    : ButtonTextPanel("")
 {
+}
+
+ButtonTextPanel::ButtonTextPanel(const String& text)
+    : texture_(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI + "button_panel.png"))
+    , text_(text)
+{
+}
+
+void ButtonTextPanel::set_panel_texture(const Shared<Texture>& panel_texture)
+{
+    texture_ = panel_texture;
+    if (is_started_construction())
+    {
+        panel_->use_texture(panel_texture);
+    }
+}
+
+const String& ButtonTextPanel::get_text() const
+{
+    return text_;
 }
 
 void ButtonTextPanel::set_text(const String& text)
 {
+    if (text_ == text) return;
+    
     text_ = text;
-    update_geometry();
+
+    if (is_started_construction())
+    {
+        text_block_->set_text(text);
+        update_geometry();
+    }
 }
 
 void ButtonTextPanel::on_construct()
@@ -25,8 +53,7 @@ void ButtonTextPanel::on_construct()
 
     text_block_ = MakeShared<TextBlock>(text_);
     text_block_->set_font_size(12);
-    text_block_->set_z(0.01f);
-    add_child(text_block_);
+    panel_->add_child(text_block_);
 
     state_updated(get_state());
     update_geometry();

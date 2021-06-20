@@ -2,6 +2,7 @@
 
 #include <map>
 
+#include "Array2D.h"
 #include "Color.h"
 #include "Game.h"
 #include "ITexture.h"
@@ -15,7 +16,7 @@
 class UIElement;
 class Image;
 
-EXTERN class EXPORT Texture : public Object, public ITexture, public IUsageCountable<Texture>, public std::enable_shared_from_this<Texture>
+class EXPORT Texture : public Object, public ITexture, public IUsageCountable<Texture>, public std::enable_shared_from_this<Texture>
 {
     IMPLEMENT_USAGE_COUNTER(Texture);
     
@@ -46,7 +47,8 @@ public:
     };
     
     Texture(const String& name);
-    Texture(const String& name, uint width, uint height, List<Color> pixels);
+    Texture(const String& name, const Array2D<Color>& pixels);
+    Texture(const String& name, uint width, uint height, const List<Color>& pixels);
     
     static Shared<Texture> load_png(const Path& path);
 
@@ -56,6 +58,11 @@ public:
     uint get_height() const;
     Vector2 get_size() const;
     Color get_pixel(uint x, uint y) const;
+
+    void save_to_file(const Path& path) override;
+    
+    FORCEINLINE void put_pixels(const Array2D<Color>& pixels);
+    void put_pixels(uint width, uint height, const List<Color>& pixels);
 
     Shared<Editor> edit();
 

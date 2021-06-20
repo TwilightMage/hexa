@@ -11,6 +11,7 @@
 #include "HexaGame/WorldChunkObserver.h"
 #include "Engine/ui/TextBlock.h"
 #include "HexaGame/HexaWorld.h"
+#include "HexaGame/Paths.h"
 
 void DebugPlayer::on_start()
 {
@@ -24,7 +25,7 @@ void DebugPlayer::on_start()
     
     if (auto world = get_world())
     {
-        auto arrows_mesh = Mesh::load_obj("resources/engine/meshes/axis_arrows.obj");
+        const auto arrows_mesh = Mesh::load_obj(RESOURCES_HEXA_MESHES + "axis_arrows.obj");
         auto arrows_vertices = arrows_mesh->get_vertices();
         auto arrows_indices = arrows_mesh->get_indices();
         for (auto& vertex : arrows_vertices)
@@ -107,7 +108,7 @@ void DebugPlayer::tick(float delta_time)
         if (observer_)
         {
             observer_->move(current_chunk, load_distance_);
-            debug_text_->set_text(StringFormat("Chunk: %i, %i", current_chunk.x, current_chunk.y));
+            debug_text_->set_text(String::format("Chunk: %i, %i", current_chunk.x, current_chunk.y));
         }
         old_chunk_ = current_chunk;
     }

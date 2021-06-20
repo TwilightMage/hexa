@@ -67,8 +67,10 @@ void UIRenderer::render(const Matrix4x4& view_projection_matrix) const
 {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
+    
     glEnable(GL_CULL_FACE);
-
+    glCullFace(GL_FRONT);
+    
     auto& db = *database_;
     for (const auto& shader_meshes : db)
     {
@@ -103,7 +105,7 @@ void UIRenderer::render(const Matrix4x4& view_projection_matrix) const
                     const auto& object = mesh_objects.value[rendered_instance_count + i];
                     mvp_array[i] = view_projection_matrix * object->get_matrix();
                     uv_array[i] = object->get_uv_rect();
-                    color_array[i] = Quaternion(1.0f, 1.0f, 1.0f, 1.0f);
+                    color_array[i] = object->get_color().to_quaternion();
                     texture_handle_array[i] = object->get_texture()->get_handle_arb();
                 }
 

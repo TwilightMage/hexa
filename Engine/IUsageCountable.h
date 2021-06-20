@@ -41,8 +41,8 @@ protected:
         List<String> result;\
         for (const auto& kvp : dump)\
         {\
-            result.Add(StringFormat("  [%s]: %i", kvp.first.c(), kvp.second));\
+            result.Add(String::format("  [%s]: %i", kvp.first.c(), kvp.second));\
         }\
-        print_debug(#Type, "Usage dump:\n%s", StringJoin(result, '\n').c());\
+        print_debug(#Type, "Usage dump:\n%s", String::join(result, '\n').c());\
     }\
     private:\

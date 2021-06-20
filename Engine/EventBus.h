@@ -6,7 +6,7 @@
 
 class World;
 
-EXTERN class EXPORT EventBus
+class EXPORT EventBus
 {
 public:
     Delegate<const Weak<World>&> world_opened;

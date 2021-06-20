@@ -3,7 +3,7 @@
 #include "framework.h"
 #include "String.h"
 
-EXTERN struct EXPORT GameInfo
+struct EXPORT GameInfo
 {
     String title;
 };

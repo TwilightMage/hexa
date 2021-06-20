@@ -156,7 +156,7 @@ public:
         Add(item);
     }
 
-    bool Contains(const T& item)
+    bool Contains(const T& item) const
     {
         if (length_ == 0) return false;
         
@@ -167,13 +167,24 @@ public:
         return false;
     }
 
-    int IndexOf(const T& item)
+    int IndexOf(const T& item) const
     {
         if (length_ == 0) return -1;
         
         for (uint i = 0; i < length_; i++)
         {
             if (inner_[i] == item) return i;
+        }
+        return -1;
+    }
+
+    int IndexOf(std::function<bool(const T& item)> predicate) const
+    {
+        if (length_ == 0) return -1;
+        
+        for (uint i = 0; i < length_; i++)
+        {
+            if (predicate(inner_[i])) return i;
         }
         return -1;
     }
@@ -360,7 +371,7 @@ public:
         return  counter;
     }
 
-    List<T> select(bool(* predicate)(const T&)) const
+    List<T> where(std::function<bool(const T& item)> predicate) const
     {
         List<T> result;
         for (uint i = 0; i < length_; i++)
@@ -371,6 +382,19 @@ public:
             }
         }
         
+        return result;
+    }
+
+    template<typename ResultType>
+    List<ResultType> select(std::function<ResultType(const T& item)> fetcher)
+    {
+        List<ResultType> result(length_);
+
+        for (uint i = 0; i < length_; i++)
+        {
+            result[i] = fetcher(operator[](i));
+        }
+
         return result;
     }
 
@@ -469,6 +493,21 @@ public:
                 }
             }
         }
+    }
+
+    List operator+(const T& rhs)
+    {
+        List result = *this;
+        result.Add(rhs);
+
+        return result;
+    }
+
+    List& operator+=(const T& rhs)
+    {
+        Add(rhs);
+
+        return *this;
     }
 
     List operator+(const List& rhs)

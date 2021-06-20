@@ -7,7 +7,7 @@ namespace reactphysics3d {
     class BoxShape;
 }
 
-EXTERN class EXPORT BoxCollision : public Collision
+class EXPORT BoxCollision : public Collision
 {
 public:
     BoxCollision(const Vector3& extent);

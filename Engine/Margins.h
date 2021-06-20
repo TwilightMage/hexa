@@ -2,7 +2,7 @@
 
 #include "framework.h"
 
-EXTERN class EXPORT Margins
+class EXPORT Margins
 {
 public:
     Margins();

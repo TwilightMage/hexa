@@ -2,7 +2,7 @@
 
 #include "String.h"
 
-EXTERN struct EXPORT TimeInterval
+struct EXPORT TimeInterval
 {
 	int day;
 	int hour;
@@ -18,7 +18,7 @@ EXTERN struct EXPORT TimeInterval
 	[[nodiscard]] String to_string() const;
 };
 
-EXTERN struct EXPORT DateTime
+struct EXPORT DateTime
 {
 	DateTime(int year, int month, int day, int hour, int minute, int second, int millisecond = 0);
 	DateTime();

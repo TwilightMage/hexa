@@ -5,9 +5,15 @@
 #include "Engine/Math.h"
 #include "Engine/SpriteFont.h"
 
+TextBlock::TextBlock()
+    : TextBlock("")
+{
+}
+
 TextBlock::TextBlock(const String& string)
     : text_(string)
     , font_size_(12)
+    , wrap_(false)
 {
     font_ = Game::get_default_font();
     font_scale_ = font_size_ / font_->get_line_height();
@@ -96,7 +102,8 @@ void TextBlock::update_geometry()
             {
                 auto letters = font_->arrange_line(text_to_arrange, static_cast<uint>(get_size().x / font_scale_));
                 float z = get_position().z;
-                
+
+                bool ping_pong = true;
                 for (const auto& let : letters)
                 {
                     auto ui_let = MakeShared<Image>();
@@ -106,7 +113,9 @@ void TextBlock::update_geometry()
                     ui_let->set_rect(let.atlas_entry->rect);
                     ui_let->set_mouse_detection(false);
                     add_child(ui_let);
-                    z += 0.0001f;
+
+                    z += ping_pong ? 0.0001f : -0.0001f;
+                    ping_pong = !ping_pong;
 
                     text_offset_ = Math::min(text_offset_, ui_let->get_position().y);
                     text_height = Math::max(text_height, ui_let->get_position().y + ui_let->get_size().y);
@@ -124,7 +133,8 @@ void TextBlock::update_geometry()
             uint len;
             auto letters = font_->arrange_string(text_, len);
             float z = get_position().z;
-            
+
+            bool ping_pong = true;
             for (const auto& let : letters)
             {
                 auto ui_let = MakeShared<Image>();
@@ -134,7 +144,9 @@ void TextBlock::update_geometry()
                 ui_let->set_rect(let.atlas_entry->rect);
                 ui_let->set_mouse_detection(false);
                 add_child(ui_let);
-                z += 0.0001f;
+                
+                z += ping_pong ? 0.0001f : -0.0001f;
+                ping_pong = !ping_pong;
 
                 text_offset_ = Math::min(text_offset_, ui_let->get_position().y);
                 text_size.x = Math::max(text_size.x, ui_let->get_position().x + ui_let->get_size().x);

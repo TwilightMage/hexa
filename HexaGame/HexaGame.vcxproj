@@ -189,9 +189,9 @@
     <ClInclude Include="HexaWorld.h" />
     <ClInclude Include="HexaSaveGame.h" />
     <ClInclude Include="CharacterController.h" />
+    <ClInclude Include="Paths.h" />
     <ClInclude Include="WorldChunkDataState.h" />
     <ClInclude Include="WorldChunkMesh.h" />
-    <ClInclude Include="CollisionEditor\CollisionEditorPlayer.h" />
     <ClInclude Include="CollisionEditor\CollisionEditorWorld.h" />
     <ClInclude Include="DefaultWorldGenerator.h" />
     <ClInclude Include="Entities\Arrow.h" />
@@ -233,7 +233,6 @@
     <ClCompile Include="HexaWorld.cpp" />
     <ClCompile Include="HexaSaveGame.cpp" />
     <ClCompile Include="WorldChunkMesh.cpp" />
-    <ClCompile Include="CollisionEditor\CollisionEditorPlayer.cpp" />
     <ClCompile Include="CollisionEditor\CollisionEditorWorld.cpp" />
     <ClCompile Include="DefaultWorldGenerator.cpp" />
     <ClCompile Include="dllmain.cpp" />
@@ -271,6 +270,7 @@
     <Natvis Include="HexaGame.natvis" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="HexaCollisionMaskBits.h" />
     <Content Include="resources\hexagame\fonts\arial.fnt" />
     <Content Include="resources\hexagame\fonts\arial_0.png" />
     <Content Include="resources\hexagame\fonts\berkshire_swash.fnt" />

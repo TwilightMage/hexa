@@ -4,7 +4,7 @@
 #include "Engine/ui/DatabaseViewer.h"
 #include "HexaGame/TileInfo.h"
 
-EXTERN class EXPORT TileDatabaseViewer : public DatabaseViewer
+class EXPORT TileDatabaseViewer : public DatabaseViewer
 {
 public:
     explicit TileDatabaseViewer(const Shared<Database<TileInfo>>& database);

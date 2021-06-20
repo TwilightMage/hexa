@@ -13,10 +13,27 @@ public:
         : size_x_(size_x)
         , size_y_(size_y)
     {
-        data_ = new T[size()];
-        for (uint i = 0; i < size(); i++)
+        if (size() > 0)
         {
-            data_[i] = T();
+            data_ = new T[size()];
+            for (uint i = 0; i < size(); i++)
+            {
+                data_[i] = T();
+            }
+        }
+    }
+
+    Array2D(uint size_x, uint size_y, const T& fill)
+        : size_x_(size_x)
+        , size_y_(size_y)
+    {
+        if (size() > 0)
+        {
+            data_ = new T[size()];
+            for (uint i = 0; i < size(); i++)
+            {
+                data_[i] = fill;
+            }
         }
     }
 
@@ -80,6 +97,11 @@ public:
     FORCEINLINE uint size() const
     {
         return size_x_ * size_y_;
+    }
+
+    FORCEINLINE List<T> to_list() const
+    {
+        return size() > 0 ? List<T>(data_, size_x_ * size_y_) : List<T>();
     }
 
 private:

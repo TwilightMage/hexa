@@ -44,8 +44,13 @@ void World::spawn_entity(const Shared<Entity>& entity)
 
 Shared<const RaycastResult> World::raycast(const Vector3& from, const Vector3& to) const
 {
+    return raycast(from, to, CollisionMaskBits::ALL);
+}
+
+Shared<const RaycastResult> World::raycast(const Vector3& from, const Vector3& to, byte16 collision_mask) const
+{
     RaycastCallback callback;
-    physics_world_->raycast(reactphysics3d::Ray(cast_object<reactphysics3d::Vector3>(from), cast_object<reactphysics3d::Vector3>(to)), &callback);
+    physics_world_->raycast(reactphysics3d::Ray(cast_object<reactphysics3d::Vector3>(from), cast_object<reactphysics3d::Vector3>(to)), &callback, collision_mask);
     callback.results.sort([&](const RaycastResult& a, const RaycastResult& b)->bool
     {
         return Vector3::distance(from, a.location) > Vector3::distance(from, b.location);
@@ -101,11 +106,14 @@ void World::tick(float delta_time)
             if (auto tickable = cast<ITickable>(entity))
             {
                 tickable->tick(delta_time);
+                for (auto component : entity->components_)
+                {
+                    component->on_tick(delta_time);
+                }
             }
 
-            if (entity->rigid_body_)
+            if (entity->rigid_body_ && !entity->rigid_body_->isSleeping() || entity->is_matrix_dirty_)
             {
-                auto t = entity->rigid_body_->getTransform();
                 entity->cache_matrix();
             }
         }
@@ -216,6 +224,7 @@ void World::close()
 
 void World::spawn_entity_internal(const Shared<Entity>& entity)
 {
+    entity->generate_components();
     entity->world_ = weak_from_this();
     if (entity->is_rigid_body())
     {

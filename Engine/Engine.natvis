@@ -102,6 +102,14 @@
         </Expand>
     </Type>
 
+    <Type Name="std::unique_ptr&lt;*&gt;">
+        <DisplayString Condition="_Ptr != nullptr">Unique {{ {_Ptr} }}</DisplayString>
+        <DisplayString>Unique {{ nullptr }}</DisplayString>
+        <Expand>
+            <ExpandedItem Condition="_Ptr != nullptr">*_Ptr</ExpandedItem>
+        </Expand>
+    </Type>
+
     <Type Name="DateTime::Interval">
         <DisplayString>{{ {day}d, {hour}h, {minute}m, {second}s, {millisecond}ms }}</DisplayString>
     </Type>

@@ -3,7 +3,7 @@
 #include "Engine/Entity.h"
 #include "Engine/ITickable.h"
 
-EXTERN class EXPORT Arrow : public Entity, public ITickable
+class EXPORT Arrow : public Entity, public ITickable
 {
 public:
     Arrow();

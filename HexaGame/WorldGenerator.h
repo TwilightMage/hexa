@@ -10,7 +10,7 @@
 #include "Engine/JSON.h"
 #include "Engine/Mesh.h"
 
-EXTERN class EXPORT WorldGenerator
+class EXPORT WorldGenerator
 {
 public:
     ~WorldGenerator();

@@ -2,7 +2,7 @@
 
 #include "String.h"
 
-EXTERN class EXPORT Object
+class EXPORT Object
 {
 public:
     Object(const String& name);

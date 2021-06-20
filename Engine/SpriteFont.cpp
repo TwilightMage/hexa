@@ -98,10 +98,10 @@ Shared<SpriteFont> SpriteFont::load_fnt(const Path& path)
                     assert_error(!info_params.contains("pages") || info_params["pages"] == "1", nullptr, "Sprite Font Loader", "Unsupported number of pages in font %s", path.get_absolute_string().c());
 
                     assert_error(info_params.contains("lineHeight"), nullptr, "Sprite Font Loader", "Missing parameter lineHeight in font %s", path.get_absolute_string().c());
-                    result->line_height_ = StringParse<uint>(info_params["lineHeight"]);
+                    result->line_height_ = String::parse<uint>(info_params["lineHeight"]);
 
                     assert_error(info_params.contains("base"), nullptr, "Sprite Font Loader", "Missing parameter base in font %s", path.get_absolute_string().c());
-                    result->base_ = StringParse<uint>(info_params["base"]);
+                    result->base_ = String::parse<uint>(info_params["base"]);
                 }
                 else if (line.starts_with("page "))
                 {
@@ -123,14 +123,14 @@ Shared<SpriteFont> SpriteFont::load_fnt(const Path& path)
                     assert_error(info_params.contains("xadvance"), nullptr, "Sprite Font Loader", "Missing parameter xadvance in font %s", path.get_absolute_string().c());
 
                     Letter letter;
-                    const auto ch = static_cast<char>(StringParse<int>(info_params["id"]));
-                    letter.atlas_entry_id_ = result->atlas_->claim_rect({StringParse<int>(info_params["x"]), StringParse<int>(info_params["y"]), StringParse<int>(info_params["width"]), StringParse<int>(info_params["height"])});
+                    const auto ch = static_cast<char>(String::parse<int>(info_params["id"]));
+                    letter.atlas_entry_id_ = result->atlas_->claim_rect({String::parse<int>(info_params["x"]), String::parse<int>(info_params["y"]), String::parse<int>(info_params["width"]), String::parse<int>(info_params["height"])});
                     assert_error(letter.atlas_entry_id_ != -1, nullptr, "Sprite Font Loader", "Unable to claim rect on atlas for letter %c in font %s", ch, path.get_absolute_string().c());
-                    letter.advance = StringParse<int>(info_params["xadvance"]);
-                    letter.offset_x = StringParse<int>(info_params["xoffset"]);
-                    letter.offset_y = StringParse<int>(info_params["yoffset"]);
-                    letter.width = StringParse<int>(info_params["width"]);
-                    letter.height = StringParse<int>(info_params["height"]);
+                    letter.advance = String::parse<int>(info_params["xadvance"]);
+                    letter.offset_x = String::parse<int>(info_params["xoffset"]);
+                    letter.offset_y = String::parse<int>(info_params["yoffset"]);
+                    letter.width = String::parse<int>(info_params["width"]);
+                    letter.height = String::parse<int>(info_params["height"]);
 
                     result->entries_[ch] = letter;
                 }
@@ -151,21 +151,21 @@ Shared<SpriteFont> SpriteFont::load_fnt(const Path& path)
     return nullptr;
 }
 
-uint SpriteFont::measure_string(const String& string) const
+uint SpriteFont::measure_string(const String& string, float font_size) const
 {
-    uint result = 0;
+    float result = 0;
     for (auto ch : string)
     {
         const auto letter = entries_.contains(ch) ? entries_.at(ch) : entries_.at('?');
-        result += letter.advance + 1;
+        result += (letter.advance + 1) * font_size / line_height_;
     }
 
-    return result;
+    return static_cast<uint>(result);
 }
 
-uint SpriteFont::measure_char(char ch) const
+uint SpriteFont::measure_char(char ch, float font_size) const
 {
-    return (entries_.contains(ch) ? entries_.at(ch) : entries_.at('?')).advance + 1;
+    return static_cast<uint>(((entries_.contains(ch) ? entries_.at(ch) : entries_.at('?')).advance + 1) * font_size / line_height_);
 }
 
 List<SpriteFont::UILetter> SpriteFont::arrange_string(const String& string, uint& out_length) const

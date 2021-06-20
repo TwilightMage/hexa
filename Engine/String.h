@@ -7,7 +7,7 @@
 #include "framework.h"
 #include "List.h"
 
-EXTERN class EXPORT String
+class EXPORT String
 {
 public:
 	String();
@@ -62,6 +62,58 @@ public:
 
 	static bool replace_single(String& src, const String& from, const String& to);
 
+	template<typename T>
+	static String join(List<T> items, const String& glue)
+	{
+		if (items.Length() == 0) return "";
+
+		std::stringstream str;
+
+		for (uint i = 0; i < items.Length(); i++)
+		{
+			if (i > 0) str << glue.std();
+			str << items[i];
+		}
+
+		return str.str();
+	}
+
+	template<typename T>
+	static String make(T val)
+	{
+		std::stringstream str;
+		str << val;
+		return str.str();
+	}
+
+	template<typename... Args>
+	static String format(const String& format, Args... args)
+	{
+		const int size = snprintf(nullptr, 0, format.c(), std::forward<Args>(args)...);
+		char* buffer = new char[size + 1];
+		sprintf_s(buffer, size + 1, format.c(), std::forward<Args>(args)...);
+
+		return String(buffer, size);
+	}
+
+	template<typename T>
+	static T parse(const String& string)
+	{
+		std::stringstream str;
+		str << string.c();
+		T result;
+		str >> result;
+		return result;
+	}
+	
+	template<class C>
+	static String from_ptr(C* ptr)
+	{
+		char hexString[20];
+		sprintf_s(hexString, 20, "0x%p", ptr);
+		return String(hexString).to_lower();
+	}
+
 	String operator*(uint rhs) const;
 
 	String operator+(const String& rhs) const;
@@ -82,6 +134,22 @@ private:
 	uint allocated_length_;
 };
 
+template<>
+inline String String::join<String>(List<String> items, const String& glue)
+{
+	if (items.length() == 0) return "";
+
+	String result;
+
+	for (uint i = 0; i < items.length(); i++)
+	{
+		if (i > 0) result += glue;
+		result += items[i];
+	}
+
+	return result;
+}
+
 inline String operator+(const char* const l, const String& r)
 {
 	return String(l) + r.std();
@@ -97,80 +165,4 @@ inline std::basic_ostream<Elem, Traits>& operator<<(std::basic_ostream<Elem, Tra
 {
 	o_stream << str.c();
 	return (o_stream);
-}
-
-
-// GLOBAL functions
-
-template<typename T>
-static String StringJoin(List<T> items, const String& glue)
-{
-	if (items.Length() == 0) return "";
-
-	std::stringstream str;
-
-	for (uint i = 0; i < items.Length(); i++)
-	{
-		if (i > 0) str << glue.std();
-		str << items[i];
-	}
-
-	return str.str();
-}
-
-static String StringJoin(List<String> items, const String& glue)
-{
-	if (items.length() == 0) return "";
-
-	String result;
-
-	for (uint i = 0; i < items.length(); i++)
-	{
-		if (i > 0) result += glue;
-		result += items[i];
-	}
-
-	return result;
-}
-
-template<typename T>
-static String StringMake(T val)
-{
-	std::stringstream str;
-	str << val;
-	return str.str();
-}
-
-template<typename... Args>
-static String StringFormat(const String& format, Args... args)
-{
-    const int size = snprintf(nullptr, 0, format.c(), std::forward<Args>(args)...);
-	char* buffer = new char[size + 1];
-	sprintf_s(buffer, size + 1, format.c(), std::forward<Args>(args)...);
-
-	return String(buffer, size);
-}
-
-template<typename T>
-T StringParse(const String& string)
-{
-	std::stringstream str;
-	str << string.c();
-	T result;
-	str >> result;
-	return result;
-}
-
-/*template<>
-bool StringParse() const
-{
-	return ToLower() == "true";
-}*/
-
-template<class C>
-static String StringFromPtr(C* ptr)
-{
-	char hexString[20];
-	sprintf_s(hexString, 20, "0x%p", ptr);
-	return String(hexString).to_lower();
 }

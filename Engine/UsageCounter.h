@@ -80,7 +80,7 @@ public:
                 String alt;
                 do
                 {
-                    alt = StringFormat("%s (%i)", kvp.first->get_name().c(), i++);
+                    alt = String::format("%s (%i)", kvp.first->get_name().c(), i++);
                 } while (result.count(alt) == 1);
                 result[alt] = kvp.second;
             }

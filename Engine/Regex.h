@@ -2,7 +2,7 @@
 
 #include "String.h"
 
-EXTERN class EXPORT Regex
+class EXPORT Regex
 {
 public:
     Regex(const String& expression);

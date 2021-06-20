@@ -27,7 +27,7 @@ void TilePresentationWorld::on_start()
         WorldGenerator::generate_tile_mesh(TileSide::All, entry.second, vertices, indices, pos.x + pos.y + pos.z);
         GeometryEditor::remove_indices(vertices, indices);
 
-        Shared<Mesh> mesh = MakeShared<Mesh>(StringFormat("tile %s", entry.second->key.c()), vertices);
+        Shared<Mesh> mesh = MakeShared<Mesh>(String::format("tile %s", entry.second->key.c()), vertices);
         
         const auto entity = MakeShared<SingleTile>();
         entity->use_mesh(mesh);

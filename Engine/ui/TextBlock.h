@@ -5,9 +5,10 @@
 
 class SpriteFont;
 
-EXTERN class EXPORT TextBlock : public UIElement
+class EXPORT TextBlock : public UIElement
 {
 public:
+    TextBlock();
     TextBlock(const String& string);
 
     float get_font_size() const;

@@ -5,7 +5,7 @@
 
 class WorldGenerator;
 
-EXTERN class EXPORT WorldGeneratorInfo
+class EXPORT WorldGeneratorInfo
 {
 public:
     virtual String get_name() const = 0;

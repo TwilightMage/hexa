@@ -4,7 +4,7 @@
 
 #include "String.h"
 
-EXTERN class EXPORT JSON
+class EXPORT JSON
 {
 public:
     JSON();

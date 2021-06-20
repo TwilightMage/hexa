@@ -4,7 +4,7 @@
 #include "Engine/BasicTypes.h"
 #include "Engine/Vector3.h"
 
-EXTERN class EXPORT TileIndex
+class EXPORT TileIndex
 {
 public:
     TileIndex();

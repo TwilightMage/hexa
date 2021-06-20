@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include "BasicTypes.h"
+#include "CollisionMaskBits.h"
+#include "EntityComponent.h"
 #include "framework.h"
 #include "IRenderable.h"
 #include "Object.h"
@@ -15,7 +17,7 @@ namespace reactphysics3d
     class Collider;
 }
 
-EXTERN class EXPORT Entity : public Object, public IRenderable, public std::enable_shared_from_this<Entity>
+class EXPORT Entity : public Object, public IRenderable, public std::enable_shared_from_this<Entity>
 {
     friend class World;
 
@@ -38,6 +40,8 @@ public:
     Shared<Mesh> get_mesh() const override;
     Shared<Shader> get_shader() const override;
     Shared<Texture> get_texture() const override;
+
+    void mark_matrix_dirty();
     
     Matrix4x4 get_matrix() const override;
     
@@ -54,16 +58,40 @@ public:
     void use_collision(const Shared<Collision>& collision, const Vector3& offset = Vector3::zero());
     void remove_collision();
 
+    void use_collision_mask(byte16 bits);
+    byte16 get_collision_mask() const;
+
     void set_gravity_enabled(bool state) const;
 
     void make_body_static() const;
     void make_body_dynamic() const;
     void make_body_kinematic() const;
 
+    void add_component(const Shared<EntityComponent>& component);
+    void remove_component(const Shared<EntityComponent>& component);
+    void remove_all_components();
+    template<class Class>
+    Shared<Class> find_component()
+    {
+        for (auto& component : components_)
+        {
+            if (auto casted = cast<Class>(component))
+            {
+                return casted;
+            }
+        }
+
+        return nullptr;
+    }
+
     Delegate<const Shared<Entity>&> on_destroyed;
     
 protected:
     virtual bool is_rigid_body();
+
+    virtual void generate_components();
+
+    virtual void modify_matrix_params(Vector3& position, Quaternion& rotation, Vector3& scale);
     
 private:
     void cache_matrix();
@@ -74,6 +102,7 @@ private:
     Quaternion rotation_;
     Vector3 scale_ = Vector3::one();
     Matrix4x4 cached_matrix_;
+    bool is_matrix_dirty_;
     
     Weak<World> world_;
     Shared<Mesh> mesh_;
@@ -84,4 +113,6 @@ private:
     reactphysics3d::RigidBody* rigid_body_;
     reactphysics3d::Collider* collider_;
     Shared<Collision> collision_;
+    byte16 collision_mask_ = CollisionMaskBits::ALL;
+    List<Shared<EntityComponent>> components_;
 };

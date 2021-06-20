@@ -10,7 +10,7 @@ class TextBlock;
 class WorldChunkObserver;
 class Camera;
 
-EXTERN class EXPORT DebugPlayer : public Entity, public IControllable, public ITickable
+class EXPORT DebugPlayer : public Entity, public IControllable, public ITickable
 {
 public:
     void on_start() override;

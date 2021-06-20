@@ -4,7 +4,7 @@
 
 class IUsageCountableBase;
 
-EXTERN class EXPORT SlotBase
+class EXPORT SlotBase
 {
 protected:
     static void inc_ref(IUsageCountableBase* countable);

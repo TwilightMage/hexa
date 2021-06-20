@@ -5,7 +5,7 @@
 class GamePlayer;
 class DebugPlayer;
 
-EXTERN class EXPORT GameWorld : public HexaWorld
+class EXPORT GameWorld : public HexaWorld
 {
 public:
     explicit GameWorld(const Shared<WorldGenerator>& generator);

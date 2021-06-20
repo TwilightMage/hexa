@@ -1,6 +1,7 @@
 ﻿#include "AxisArrows.h"
 
 #include "Engine/Mesh.h"
+#include "HexaGame/Paths.h"
 
 AxisArrows::AxisArrows()
     : Entity()
@@ -9,6 +10,6 @@ AxisArrows::AxisArrows()
 
 void AxisArrows::on_start()
 {
-    static auto arrows_mesh = Mesh::load_obj("resources/engine/meshes/axis_arrows.obj");
+    static auto arrows_mesh = Mesh::load_obj(RESOURCES_HEXA_MESHES + "axis_arrows.obj");
     use_mesh(arrows_mesh);
 }

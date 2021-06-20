@@ -10,7 +10,7 @@ class Mesh;
 class Texture;
 class Shader;
 
-EXTERN class EXPORT IRenderable
+class EXPORT IRenderable
 {
 public:
     virtual Shared<Mesh> get_mesh() const = 0;

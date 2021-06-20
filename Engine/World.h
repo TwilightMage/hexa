@@ -14,7 +14,7 @@ namespace reactphysics3d
     class PhysicsWorld;
 }
 
-EXTERN class EXPORT World : public std::enable_shared_from_this<World>
+class EXPORT World : public std::enable_shared_from_this<World>
 {
     friend Game;
     
@@ -25,6 +25,7 @@ public:
     void spawn_entity(const Shared<Entity>& entity);
 
     Shared<const RaycastResult> raycast(const Vector3& from, const Vector3& to) const;
+    Shared<const RaycastResult> raycast(const Vector3& from, const Vector3& to, byte16 collision_mask) const;
 
     void start();
     void tick(float delta_time);

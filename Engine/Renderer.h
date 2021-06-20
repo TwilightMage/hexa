@@ -4,7 +4,7 @@
 #include "IRenderer.h"
 #include "RendererUtils.h"
 
-EXTERN class EXPORT Renderer : public IRenderer
+class EXPORT Renderer : public IRenderer
 {
 public:
     Renderer();

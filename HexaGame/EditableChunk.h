@@ -7,7 +7,7 @@ class WorldChunk;
 class WorldGenerator;
 class TileInfo;
 
-EXTERN class EXPORT EditableChunk
+class EXPORT EditableChunk
 {
     friend WorldGenerator;
     

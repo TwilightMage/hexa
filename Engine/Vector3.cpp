@@ -75,7 +75,7 @@ void Vector3::normalize()
 
 String Vector3::to_string() const
 {
-    return StringFormat("{ x=%f, y=%f, z=%f}", x, y, z);
+    return String::format("{ x=%f, y=%f, z=%f}", x, y, z);
 }
 
 float Vector3::angle_deg(const Vector3& a, const Vector3& b)

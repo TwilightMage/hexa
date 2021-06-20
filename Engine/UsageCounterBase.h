@@ -2,7 +2,7 @@
 
 #include "BasicTypes.h"
 
-EXTERN class EXPORT UsageCounterBase
+class EXPORT UsageCounterBase
 {
 public:
     virtual bool increase(IUsageCountableBase* ptr) = 0;

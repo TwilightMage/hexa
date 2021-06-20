@@ -2,7 +2,7 @@
 
 #include "framework.h"
 
-EXTERN class EXPORT Settings
+class EXPORT Settings
 {
 public:
     virtual ~Settings() {}

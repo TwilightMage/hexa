@@ -2,7 +2,7 @@
 
 #include "WorldGeneratorInfo.h"
 
-EXTERN class EXPORT DefaultWorldGeneratorInfo : public WorldGeneratorInfo
+class EXPORT DefaultWorldGeneratorInfo : public WorldGeneratorInfo
 {
 public:
     String get_name() const override;

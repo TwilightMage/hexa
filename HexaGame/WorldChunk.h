@@ -14,7 +14,7 @@ class TileInfo;
 class HexaWorld;
 class WorldChunkMesh;
 
-EXTERN class EXPORT WorldChunk : public std::enable_shared_from_this<WorldChunk>
+class EXPORT WorldChunk : public std::enable_shared_from_this<WorldChunk>
 {
     friend EditableChunk;
     friend WorldGenerator;

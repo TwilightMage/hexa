@@ -616,7 +616,7 @@ char& String::operator[](uint index)
 {
 	if (index >= length_)
 	{
-		throw new std::out_of_range(StringFormat("Parameter \"index\" is greater than last character index - %i", length_ - 1).c());
+		throw new std::out_of_range(String::format("Parameter \"index\" is greater than last character index - %i", length_ - 1).c());
 	}
 
 	return inner_[index];
@@ -626,7 +626,7 @@ const char& String::operator[](uint index) const
 {
 	if (index >= length_)
 	{
-		throw new std::out_of_range(StringFormat("Parameter \"index\" is greater than last character index - %i", length_ - 1).c());
+		throw new std::out_of_range(String::format("Parameter \"index\" is greater than last character index - %i", length_ - 1).c());
 	}
 
 	return inner_[index];

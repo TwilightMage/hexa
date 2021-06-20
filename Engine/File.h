@@ -5,7 +5,7 @@
 
 #include "Path.h"
 
-EXTERN class EXPORT File
+class EXPORT File
 {
 public:
 	class EXPORT Reader

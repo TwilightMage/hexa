@@ -1,15 +1,11 @@
 ﻿#include "TextureAtlas.h"
 
-#define STB_IMAGE_STATIC
-#define STB_IMAGE_IMPLEMENTATION
-#include <stb/stb_image.h>
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include <glad/glad.h>
-#include <stb/stb_image_write.h>
 
 #include "File.h"
 #include "Game.h"
 #include "ImageEditor.h"
+#include "stb.h"
 
 int TextureAtlas::max_size_ = 0;
 
@@ -47,9 +43,9 @@ uint TextureAtlas::put(const Path& path)
     
     if (path.exists())
     {
-        int tex_width, tex_height, tex_channels;
-        const auto pixels = stbi_load(path.get_absolute_string().c(), &tex_width, &tex_height, &tex_channels, STBI_rgb_alpha);
-        if (pixels)
+        uint tex_width, tex_height, tex_channels;
+        const auto pixels = stb::load(path, tex_width, tex_height);
+        if (pixels.length() > 0)
         {
             auto image_rect = Rect(0, 0, tex_width, tex_height);
 
@@ -119,8 +115,7 @@ uint TextureAtlas::put(const Path& path)
                     }
                 }
 
-                ImageEditor::copy_rect(reinterpret_cast<Color*>(pixels), 0, 0, tex_width, pixels_.get_data(), image_rect.x, image_rect.y, size_, image_rect.w, image_rect.h);
-                stbi_image_free(pixels);
+                ImageEditor::copy_rect(pixels.get_data(), 0, 0, tex_width, pixels_.get_data(), image_rect.x, image_rect.y, size_, image_rect.w, image_rect.h);
 
                 const Entry new_entry = {image_rect, this};
                 entries_.Add(new_entry);
@@ -128,7 +123,6 @@ uint TextureAtlas::put(const Path& path)
                 return entries_.length() - 1;
             }            
         }
-        stbi_image_free(pixels);
     }
 
     return -1;
@@ -170,9 +164,9 @@ const TextureAtlas::Entry* TextureAtlas::get_entry(uint index) const
     return &entries_[index];
 }
 
-void TextureAtlas::dump(const Path& path)
+void TextureAtlas::save_to_file(const Path& path)
 {
-    stbi_write_bmp(path.get_absolute_string().c(), size_, size_, 4, pixels_.get_data());
+    stb::write_bmp(path, size_, size_, pixels_);
 }
 
 Shared<Texture> TextureAtlas::to_texture() const
@@ -196,9 +190,9 @@ uint TextureAtlas::get_gl_texture_id()
 
 Shared<TextureAtlas> TextureAtlas::load_png(const Path& path)
 {
-    int tex_width, tex_height, tex_channels;
-    const auto pixels = stbi_load(path.get_absolute_string().c(), &tex_width, &tex_height, &tex_channels, STBI_rgb_alpha);
-    if (pixels)
+    uint tex_width, tex_height, tex_channels;
+    const auto pixels = stb::load(path, tex_width, tex_height);
+    if (pixels.length() > 0)
     {
         if (tex_width * tex_height > 0)
         {
@@ -206,9 +200,7 @@ Shared<TextureAtlas> TextureAtlas::load_png(const Path& path)
             {
                 const uint size = tex_width * tex_height;
                 auto result = MakeShared<TextureAtlas>(path.get_absolute_string());
-                result->pixels_ = List(new Color[size], size);
-                memcpy(result->pixels_.get_data(), pixels, sizeof(Color) * size);
-                stbi_image_free(pixels);
+                result->pixels_ = pixels;
                 result->size_ = tex_width;
 
                 verbose("Texture Atlas", "Loaded texture atlas %i %s", tex_width, path.get_absolute_string().c());
@@ -229,7 +221,6 @@ Shared<TextureAtlas> TextureAtlas::load_png(const Path& path)
     {
         print_error("Texture Atlas", "Unknown error on loading texture %s", path.get_absolute_string().c());
     }
-    stbi_image_free(pixels);
     return nullptr;
 }
 

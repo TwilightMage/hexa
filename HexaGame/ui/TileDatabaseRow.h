@@ -4,7 +4,7 @@
 #include "Engine/Texture.h"
 #include "Engine/ui/UIElement.h"
 
-EXTERN class EXPORT TileDatabaseRow : public UIElement
+class EXPORT TileDatabaseRow : public UIElement
 {
 public:
     TileDatabaseRow(const String& key, const Shared<Texture>& texture);

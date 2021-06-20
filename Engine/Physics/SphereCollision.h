@@ -7,7 +7,7 @@ namespace reactphysics3d {
     class SphereShape;
 }
 
-EXTERN class EXPORT SphereCollision : public Collision
+class EXPORT SphereCollision : public Collision
 {
 public:
     SphereCollision(float radius);

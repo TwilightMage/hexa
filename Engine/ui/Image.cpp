@@ -64,13 +64,12 @@ void Image::clear_rect()
     update_uv_rect();
 }
 
-void Image::use_shader(const Weak<Shader>& shader)
+void Image::use_shader(const Shared<Shader>& shader)
 {
-    const auto new_shader = shader.expired() ? Game::get_basic_shader() : shader.lock();
-    if (shader_ != new_shader)
+    if (shader_ != shader)
     {
         const auto old = shader_;
-        shader_ = new_shader;
+        shader_ = shader;
         
         /*if (auto world_ptr = world_.lock())
         {
@@ -79,12 +78,11 @@ void Image::use_shader(const Weak<Shader>& shader)
     }
 }
 
-void Image::use_texture(const Weak<Texture>& texture)
+void Image::use_texture(const Shared<Texture>& texture)
 {
-    const auto new_texture = texture.expired() ? Game::get_white_pixel() : texture.lock();
-    if (*texture_ != new_texture)
+    if (*texture_ != texture)
     {
-        texture_ = new_texture;
+        texture_ = texture;
         update_uv_rect();
     }
 }

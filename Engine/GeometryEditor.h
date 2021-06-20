@@ -6,7 +6,7 @@
 #include "Mesh.h"
 #include "Quaternion.h"
 
-EXTERN class EXPORT GeometryEditor
+class EXPORT GeometryEditor
 {
 public:
     struct Face

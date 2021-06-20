@@ -7,7 +7,7 @@
 
 #include <glad/glad.h>
 
-EXTERN class EXPORT Shader : public Object
+class EXPORT Shader : public Object
 {
 public:
     struct Meta

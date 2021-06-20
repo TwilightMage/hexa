@@ -5,7 +5,7 @@
 #include "Path.h"
 #include "TextureAtlas.h"
 
-EXTERN class EXPORT SpriteFont : public Object
+class EXPORT SpriteFont : public Object
 {
 public:
     struct UILetter
@@ -19,8 +19,8 @@ public:
 
     static Shared<SpriteFont> load_fnt(const Path& path);
 
-    uint measure_string(const String& string) const;
-    uint measure_char(char ch) const;
+    uint measure_string(const String& string, float font_size) const;
+    uint measure_char(char ch, float font_size) const;
     List<UILetter> arrange_string(const String& string, uint& out_length) const;
     List<UILetter> arrange_line(const String& whole_text, uint line_width) const;
 

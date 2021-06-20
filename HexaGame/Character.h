@@ -2,13 +2,15 @@
 
 #include "Direction.h"
 #include "TileIndex.h"
+#include "Engine/AnimatedField.h"
 #include "Engine/Entity.h"
 #include "Engine/ITickable.h"
 
+class AnimatorComponent;
 class HexaWorld;
 class CharacterController;
 
-EXTERN class EXPORT Character : public Entity, public ITickable
+class EXPORT Character : public Entity, public ITickable, public Animated
 {
     friend CharacterController;
     friend HexaWorld;
@@ -25,12 +27,21 @@ public:
     virtual void on_character_possesed();
     virtual void on_character_un_possesed();
 
-    FORCEINLINE const TileIndex& get_tile_position() const;
+    FORCEINLINE const TileIndex& get_tile_position() const { return tile_position_; }
 
+    FORCEINLINE const Shared<AnimatorComponent> get_animator() const { return animator_; }
+
+protected:
+    void generate_components() override;
+
+    void modify_matrix_params(Vector3& position, Quaternion& rotation, Vector3& scale) override;
+    
 private:
     void set_tile_position(const TileIndex& tile_position);
 
     float get_desired_rotation_angle() const;
+
+    Vector3 animation_position_offset_;
     
     TileIndex tile_position_;
     Direction looking_direction_;
@@ -40,4 +51,59 @@ private:
     uint camera_travel_distance_ = 10;
 
     Weak<CharacterController> controller_;
+
+    Shared<AnimatorComponent> animator_;
+
+public:
+    ANIMATED_FIELD(float, scale_x, 1,
+        [this]() -> float{ return get_scale().x; },
+        [this](float val) -> void
+        {
+            Vector3 scale = get_scale();
+            scale.x = val;
+            set_scale(scale);
+        }
+    );
+    ANIMATED_FIELD(float, scale_y, 1,
+        [this]() -> float{ return get_scale().y; },
+        [this](float val) -> void
+        {
+            Vector3 scale = get_scale();
+            scale.y = val;
+            set_scale(scale);
+        }
+    );
+    ANIMATED_FIELD(float, scale_z, 1,
+        [this]() -> float{ return get_scale().z; },
+        [this](float val) -> void
+        {
+            Vector3 scale = get_scale();
+            scale.z = val;
+            set_scale(scale);
+        }
+    );
+    ANIMATED_FIELD(float, offset_x, 0,
+        [this]() -> float{ return animation_position_offset_.x; },
+        [this](float val) -> void
+        {
+            animation_position_offset_.x = val;
+            mark_matrix_dirty();
+        }
+    );
+    ANIMATED_FIELD(float, offset_y, 0,
+        [this]() -> float{ return animation_position_offset_.y; },
+        [this](float val) -> void
+        {
+            animation_position_offset_.y = val;
+            mark_matrix_dirty();
+        }
+    );
+    ANIMATED_FIELD(float, offset_z, 0,
+        [this]() -> float{ return animation_position_offset_.z; },
+        [this](float val) -> void
+        {
+            animation_position_offset_.z = val;
+            mark_matrix_dirty();
+        }
+    );
 };

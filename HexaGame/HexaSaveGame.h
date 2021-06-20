@@ -9,7 +9,7 @@
 class JSON;
 class TileInfo;
 
-EXTERN class EXPORT HexaSaveGame : public SaveGame
+class EXPORT HexaSaveGame : public SaveGame
 {
 public:
     HexaSaveGame(const String& profile_name);

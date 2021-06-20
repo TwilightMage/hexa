@@ -3,7 +3,7 @@
 #include "WorldGenerator.h"
 #include "Engine/PerlinNoise.h"
 
-EXTERN class EXPORT DefaultWorldGenerator : public WorldGenerator
+class EXPORT DefaultWorldGenerator : public WorldGenerator
 {
 public:
     void init(uint seed) override;

@@ -4,7 +4,7 @@
 
 class String;
 
-EXTERN class EXPORT SaveGame
+class EXPORT SaveGame
 {
 public:
     explicit SaveGame(const String& profile_name);

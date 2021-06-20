@@ -4,7 +4,7 @@
 #include "framework.h"
 #include "String.h"
 
-EXTERN struct EXPORT Version
+struct EXPORT Version
 {
     Version();
     Version(uint version_number, uint patch_number, uint fix_number);

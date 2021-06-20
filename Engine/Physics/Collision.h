@@ -8,7 +8,7 @@ namespace reactphysics3d {
     class Collider;
 }
 
-EXTERN class EXPORT Collision
+class EXPORT Collision
 {
 public:
     virtual reactphysics3d::CollisionShape* get_collider_shape() const = 0;

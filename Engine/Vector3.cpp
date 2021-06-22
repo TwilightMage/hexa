@@ -1,7 +1,5 @@
 ﻿#include "Vector3.h"
 
-#include "Math.h"
-
 Vector3::Vector3()
     : x(0.0f)
     , y(0.0f)
@@ -76,21 +74,6 @@ void Vector3::normalize()
 String Vector3::to_string() const
 {
     return String::format("{ x=%f, y=%f, z=%f}", x, y, z);
-}
-
-float Vector3::angle_deg(const Vector3& a, const Vector3& b)
-{
-    return Math::acos_deg(a.normalized().dot_product(b.normalized()));
-}
-
-float Vector3::angle_rad(const Vector3& a, const Vector3& b)
-{
-    return Math::acos_rad(a.normalized().dot_product(b.normalized()));
-}
-
-float Vector3::distance(const Vector3& a, const Vector3& b)
-{
-    return (a - b).magnitude();
 }
 
 Vector3 Vector3::operator+(const Vector3& rhs) const

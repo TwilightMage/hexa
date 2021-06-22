@@ -2,21 +2,25 @@
 
 #include <GLFW/glfw3.h>
 
+#include "MeshEntity.h"
 #include "Characters/Slime.h"
 #include "Engine/Animation.h"
 #include "Engine/AnimatorComponent.h"
 #include "Engine/Camera.h"
 #include "Engine/Curve.h"
+#include "Engine/GeometryEditor.h"
 #include "Engine/SystemIO.h"
 #include "Engine/Physics/RaycastResult.h"
 #include "HexaGame/Character.h"
 #include "HexaGame/ChunkMeshEntity.h"
 #include "HexaGame/HexaCollisionMaskBits.h"
-#include "HexaGame/HexaWorld.h"
+#include "HexaGame/HexaMath.h"
 #include "HexaGame/TileIndex.h"
 #include "HexaGame/Tiles.h"
 #include "HexaGame/WorldChunk.h"
 #include "HexaGame/WorldChunkObserver.h"
+#include "HexaGame/WorldPath.h"
+#include "HexaGame/Worlds/HexaWorld.h"
 
 void GamePlayer::on_start()
 {
@@ -61,17 +65,52 @@ void GamePlayer::key_up(int key)
     else if (key == GLFW_KEY_A) move_.y += 1;
 }
 
+float weight_calc(const TileIndex& from, const TileIndex& to)
+{
+    return Vector3::distance(from.to_vector(), to.to_vector()) * 2;
+}
+
+List<Shared<Entity>> markers;
 void GamePlayer::mouse_button_down(int button)
 {
     if (button == 0)
     {
         if (auto world = cast<HexaWorld>(get_world()))
         {
+            for (auto& marker : markers)
+            {
+                marker->destroy();
+            }
+            markers.Clear();
+            
             if (auto hit = world->raycast(get_position(), get_position() + Game::get_un_projected_mouse() * 10))
             {
-                if (cast<ChunkMeshEntity>(hit->entity))
+                TileIndex target_tile = TileIndex::from_vector(hit->location + hit->normal * 0.1f);
+                if (target_tile != get_character()->get_tile_position())
                 {
-                    world->set_tile(TileIndex::from_vector(hit->location - hit->normal * 0.1f), Tiles::air);
+                    if (cast<ChunkMeshEntity>(hit->entity))
+                    {
+                        get_character()->go_to(target_tile);
+                        PathConfig config;
+                        config.from = get_character()->get_tile_position();
+                        config.to = target_tile;
+                        config.agent_height = 2;
+                        if (auto path = world->FindPath(config))
+                        {
+                            auto marker_mesh = GeometryEditor::get_unit_cube();
+                            auto marker = MakeShared<MeshEntity>(marker_mesh);
+                            marker->set_scale(Vector3(0.1f));
+                            world->spawn_entity(marker, path->segments.first().from.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
+                            markers.Add(marker);
+                            for (const auto& segment : path->segments)
+                            {
+                                marker = MakeShared<MeshEntity>(marker_mesh);
+                                marker->set_scale(Vector3(0.1f));
+                                world->spawn_entity(marker, segment.to.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
+                                markers.Add(marker);
+                            }
+                        }
+                    }
                 }
             }
         }

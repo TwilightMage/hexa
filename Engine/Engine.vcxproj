@@ -201,6 +201,7 @@
     <ClInclude Include="AnimationEditor\CurveSegmentWidget.h" />
     <ClInclude Include="AnimationHandle.h" />
     <ClInclude Include="AnimationInstance.h" />
+    <ClInclude Include="AnimationSlot.h" />
     <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="ConversionPointer.h" />
     <ClInclude Include="EditorPlayer.h" />

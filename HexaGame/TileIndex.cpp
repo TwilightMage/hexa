@@ -11,7 +11,7 @@ TileIndex::TileIndex()
 {
 }
 
-TileIndex::TileIndex(int x, int y, uint z)
+TileIndex::TileIndex(int x, int y, int z)
     : x(x)
     , y(y)
     , z(z)
@@ -42,6 +42,11 @@ TileIndex TileIndex::offset(int x, int y, int z) const
     return TileIndex(this->x + x, this->y + y, this->z + z);
 }
 
+TileIndex TileIndex::offset(TileSide direction) const
+{
+    return *this + offset_from_side(direction);
+}
+
 TileIndex TileIndex::cycle_chunk() const
 {
     return TileIndex(Math::mod(x, WorldChunk::chunk_size), Math::mod(y, WorldChunk::chunk_size), z);
@@ -49,7 +54,79 @@ TileIndex TileIndex::cycle_chunk() const
 
 ChunkIndex TileIndex::get_chunk() const
 {
-    return ChunkIndex(x / WorldChunk::chunk_size, y / WorldChunk::chunk_size);
+    return ChunkIndex((x - static_cast<int>(Math::mod(x, WorldChunk::chunk_size))) / static_cast<int>(WorldChunk::chunk_size), (y - static_cast<int>(Math::mod(y, WorldChunk::chunk_size))) / static_cast<int>(WorldChunk::chunk_size));
+}
+
+TileIndex TileIndex::offset_from_side(TileSide side)
+{
+    switch (side)
+    {
+    case TileSide::Front:
+        return TileIndex(1, 0, 0);
+    case TileSide::FrontRight:
+        return TileIndex(1, 1, 0);
+    case TileSide::BackRight:
+        return TileIndex(0, 1, 0);
+    case TileSide::Back:
+        return TileIndex(-1, 0, 0);
+    case TileSide::BackLeft:
+        return TileIndex(-1, -1, 0);
+    case TileSide::FrontLeft:
+        return TileIndex(0, -1, 0);
+    case TileSide::Up:
+        return TileIndex(0, 0, 1);
+    case TileSide::Down:
+        return TileIndex(0, 0, -1);
+    default:
+        return TileIndex(0, 0, 0);
+    }
+}
+
+TileSide TileIndex::offset_to_side(const TileIndex& offset)
+{
+    if (offset == TileIndex( 1,  0,  0)) return TileSide::Front;
+    if (offset == TileIndex( 1,  1,  0)) return TileSide::FrontRight;
+    if (offset == TileIndex( 0,  1,  0)) return TileSide::BackRight;
+    if (offset == TileIndex(-1,  0,  0)) return TileSide::Back;
+    if (offset == TileIndex(-1, -1,  0)) return TileSide::BackLeft;
+    if (offset == TileIndex( 0, -1,  0)) return TileSide::FrontLeft;
+    if (offset == TileIndex( 0,  0,  1)) return TileSide::Up;
+    if (offset == TileIndex( 0,  0, -1)) return TileSide::Down;
+
+    return TileSide::None;
+}
+
+uint TileIndex::distance_xy(const TileIndex& a, const TileIndex& b)
+{
+    return (Math::abs(a.x - b.x) + Math::abs(a.x + b.y - a.y - b.x) + Math::abs(a.y - b.y)) / 2;
+}
+
+TileIndex TileIndex::operator+(const TileIndex& rhs) const
+{
+    return TileIndex(x + rhs.x, y + rhs.y, z + rhs.z);
+}
+
+TileIndex TileIndex::operator-(const TileIndex& rhs) const
+{
+    return TileIndex(x - rhs.x, y - rhs.y, z - rhs.z);
+}
+
+TileIndex& TileIndex::operator+=(const TileIndex& rhs)
+{
+    x += rhs.x;
+    y += rhs.y;
+    z += rhs.z;
+
+    return *this;
+}
+
+TileIndex& TileIndex::operator-=(const TileIndex& rhs)
+{
+    x -= rhs.x;
+    y -= rhs.y;
+    z -= rhs.z;
+
+    return *this;
 }
 
 bool TileIndex::operator<(const TileIndex& rhs) const

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "HexaGame/HexaWorld.h"
+#include "HexaGame/Worlds/HexaWorld.h"
 
 class EXPORT TilePresentationWorld : public World
 {

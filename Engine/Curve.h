@@ -205,14 +205,13 @@ public:
             return points_.first().value;
         }
         
-        for (uint i = point_from; i < points_.length() - 1; i++)
+        for (; point_from < points_.length() - 1; point_from++)
         {
-            const auto& p1 = points_[i];
-            const auto& p2 = points_[i + 1];
-            if (p1.time <= time && p2.time > time)
+            const auto& p1 = points_[point_from];
+            const auto& p2 = points_[point_from + 1];
+            if (p1.time <= time && p2.time >= time)
             {
-                point_from = i;
-                return segments_[i].interpolate(p1.value, p2.value, (time - p1.time) / (p2.time - p1.time));
+                return segments_[point_from].interpolate(p1.value, p2.value, (time - p1.time) / (p2.time - p1.time));
             }
         }
 
@@ -226,14 +225,13 @@ public:
             return points_.first().value;
         }
 
-        for (uint i = point_from; i > 0; i--)
+        for (; point_from > 0; point_from--)
         {
-            const auto& p1 = points_[i - 1];
-            const auto& p2 = points_[i];
-            if (p1.time <= time && p2.time > time)
+            const auto& p1 = points_[point_from - 1];
+            const auto& p2 = points_[point_from];
+            if (p1.time <= time && p2.time >= time)
             {
-                point_from = i;
-                return segments_[i - 1].interpolate(p1.value, p2.value, (time - p1.time) / (p2.time - p1.time));
+                return segments_[point_from - 1].interpolate(p1.value, p2.value, (time - p1.time) / (p2.time - p1.time));
             }
         }
 

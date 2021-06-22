@@ -1,12 +1,14 @@
 ﻿#pragma once
 
-#include "ChunkIndex.h"
-#include "TileIndex.h"
+#include "HexaGame/ChunkIndex.h"
+#include "HexaGame/TileIndex.h"
 #include "Engine/Tree2D.h"
 #include "Engine/Array2D.h"
 #include "Engine/Rect.h"
 #include "Engine/World.h"
+#include "HexaGame/PathConfig.h"
 
+class WorldPath;
 class Character;
 class TileInfo;
 class WorldChunkObserver;
@@ -27,11 +29,14 @@ public:
     
     Shared<WorldChunk> get_chunk(const ChunkIndex& chunk_index) const;
 
+    Shared<WorldPath> FindPath(const PathConfig& config);
+
     bool spawn_character(const Shared<Character>& character, const TileIndex& tile_index);
 
     void set_tile(const TileIndex& index, const Shared<const TileInfo>& id) const;
+    Shared<const TileInfo> get_tile_id(const TileIndex& index) const;
     
-    void dump_observable_area(); 
+    void dump_observable_area();
 
 private:
     void character_destroyed_callback(const Shared<Entity>& character);

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "HexaGame/HexaWorld.h"
+#include "HexaWorld.h"
 
 class GamePlayer;
 class DebugPlayer;

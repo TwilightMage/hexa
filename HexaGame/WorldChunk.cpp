@@ -4,13 +4,13 @@
 
 #include "ChunkMeshEntity.h"
 #include "HexaSaveGame.h"
-#include "HexaWorld.h"
 #include "Tiles.h"
 #include "WorldChunkMesh.h"
 #include "WorldGenerator.h"
 #include "Engine/GeometryEditor.h"
 #include "Engine/World.h"
 #include "Engine/Physics/ConcaveMeshCollision.h"
+#include "Worlds/HexaWorld.h"
 
 WorldChunk::WorldChunk(const ChunkIndex& index, const Weak<HexaWorld>& world)
     : index_(index)

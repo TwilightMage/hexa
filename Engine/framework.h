@@ -176,11 +176,13 @@ inline type operator-(type in, int delta)							\
 }
 
 #define IMPLEMENT_ENUM_FLAGS(Type)																											 \
-inline           Type& operator|=(Type& Lhs, Type rhs) { return Lhs = (Type)((__underlying_type(Type))Lhs | (__underlying_type(Type))rhs); } \
-inline           Type& operator&=(Type& Lhs, Type rhs) { return Lhs = (Type)((__underlying_type(Type))Lhs & (__underlying_type(Type))rhs); } \
-inline           Type& operator^=(Type& Lhs, Type rhs) { return Lhs = (Type)((__underlying_type(Type))Lhs ^ (__underlying_type(Type))rhs); } \
-inline constexpr Type  operator| (Type  Lhs, Type rhs) { return (Type)((__underlying_type(Type))Lhs | (__underlying_type(Type))rhs); }		 \
-inline constexpr Type  operator& (Type  Lhs, Type rhs) { return (Type)((__underlying_type(Type))Lhs & (__underlying_type(Type))rhs); }		 \
-inline constexpr Type  operator^ (Type  Lhs, Type rhs) { return (Type)((__underlying_type(Type))Lhs ^ (__underlying_type(Type))rhs); }		 \
-inline constexpr bool  operator! (Type  e)             { return !(__underlying_type(Type))e; }												 \
-inline constexpr Type  operator~ (Type  e)             { return (Type)~(__underlying_type(Type))e; }
+inline           Type& operator|=(Type& lhs, Type rhs)   { return lhs = (Type)((__underlying_type(Type))lhs | (__underlying_type(Type))rhs); } \
+inline           Type& operator&=(Type& lhs, Type rhs)   { return lhs = (Type)((__underlying_type(Type))lhs & (__underlying_type(Type))rhs); } \
+inline           Type& operator^=(Type& lhs, Type rhs)   { return lhs = (Type)((__underlying_type(Type))lhs ^ (__underlying_type(Type))rhs); } \
+inline constexpr Type  operator| (Type  lhs, Type rhs)   { return (Type)((__underlying_type(Type))lhs | (__underlying_type(Type))rhs); }       \
+inline constexpr Type  operator& (Type  lhs, Type rhs)   { return (Type)((__underlying_type(Type))lhs & (__underlying_type(Type))rhs); }       \
+inline constexpr Type  operator^ (Type  lhs, Type rhs)   { return (Type)((__underlying_type(Type))lhs ^ (__underlying_type(Type))rhs); }       \
+inline constexpr bool  operator! (Type  e)               { return !(__underlying_type(Type))e; }                                               \
+inline constexpr Type  operator~ (Type  e)               { return (Type)~(__underlying_type(Type))e; }                                         \
+inline constexpr Type operator<< (Type  lhs, int offset) { return (Type)((__underlying_type(Type))lhs << offset); }                            \
+inline constexpr Type operator>> (Type  lhs, int offset) { return (Type)((__underlying_type(Type))lhs >> offset); }

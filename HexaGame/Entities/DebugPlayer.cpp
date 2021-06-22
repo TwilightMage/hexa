@@ -8,10 +8,10 @@
 #include "Engine/Game.h"
 #include "Engine/World.h"
 #include "Engine/Physics/RaycastResult.h"
-#include "HexaGame/WorldChunkObserver.h"
 #include "Engine/ui/TextBlock.h"
-#include "HexaGame/HexaWorld.h"
 #include "HexaGame/Paths.h"
+#include "HexaGame/WorldChunkObserver.h"
+#include "HexaGame/Worlds/HexaWorld.h"
 
 void DebugPlayer::on_start()
 {

@@ -113,7 +113,13 @@ public:
     {
         return std::pow(in, pow);
     }
-    
+
+    template<typename T>
+    static T log2(T from)
+    {
+        return std::log2(from);
+    }
+
     template<typename T>
     static T sqrt(T in)
     {
@@ -183,4 +189,3 @@ public:
         return static_cast<int>(::round(in));
     }
 };
-

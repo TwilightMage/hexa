@@ -1,8 +1,8 @@
 ﻿#include "WorldChunkObserver.h"
 
 
-#include "HexaWorld.h"
 #include "WorldChunk.h"
+#include "Worlds/HexaWorld.h"
 
 WorldChunkObserver::~WorldChunkObserver()
 {

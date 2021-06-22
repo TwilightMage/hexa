@@ -11,7 +11,8 @@ AnimationHandle AnimatorComponent::play_animation(const Shared<Animation>& anima
             if (instance.value->animation == animation)
             {
                 instance.value->is_playing = false;
-                instances_.remove(instance.x);
+                instance.value->is_finished = true;
+                break;
             }
         }
 
@@ -49,9 +50,15 @@ void AnimatorComponent::on_tick(float delta_time)
 
     for (auto instance : instances_)
     {
-        instance.value->tick(delta_time);
+        if (!instance.value->is_finished)
+        {
+            instance.value->tick(delta_time);
+        }
+        
         if (instance.value->is_finished)
         {
+            instance.value->revert();
+            instance.value->on_end();
             instance.value->is_playing = false;
             instances_to_remove.Add(instance.x);
         }

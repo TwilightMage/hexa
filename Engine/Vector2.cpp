@@ -2,6 +2,7 @@
 
 #include <glm/glm.hpp>
 
+#include "Math.h"
 #include "Vector3.h"
 
 Vector2::Vector2()
@@ -55,6 +56,17 @@ void Vector2::normalize()
     const auto m = magnitude();
     x /= m;
     y /= m;
+}
+
+float Vector2::angle_global(const Vector2& from, const Vector2& to)
+{
+    Vector2 delta_norm = (to - from).normalized();
+    float dot_right = right().dot_product(delta_norm);
+    float dot_up = up().dot_product(delta_norm);
+
+    float angle = Math::acos_deg(dot_right);
+    if (dot_up > 0) angle *= -1;
+    return angle;
 }
 
 Vector2 Vector2::operator+(const Vector2& rhs) const

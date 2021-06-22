@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "framework.h"
+#include "Math.h"
 #include "String.h"
 #include "Vector2.h"
 
@@ -21,9 +22,9 @@ public:
     void normalize();
     String to_string() const;
 
-    FORCEINLINE static float angle_deg(const Vector3& a, const Vector3& b);
-    FORCEINLINE static float angle_rad(const Vector3& a, const Vector3& b);
-    FORCEINLINE static float distance(const Vector3& a, const Vector3& b);
+    FORCEINLINE static float angle_deg(const Vector3& a, const Vector3& b) { return Math::acos_deg(a.normalized().dot_product(b.normalized())); }
+    FORCEINLINE static float angle_rad(const Vector3& a, const Vector3& b) { return Math::acos_rad(a.normalized().dot_product(b.normalized())); }
+    FORCEINLINE static float distance(const Vector3& a, const Vector3& b) { return (a - b).magnitude(); }
     
     Vector3 operator+(const Vector3& rhs) const;
     Vector3 operator-(const Vector3& rhs) const;

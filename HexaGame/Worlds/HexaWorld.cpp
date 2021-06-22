@@ -1,12 +1,13 @@
 ﻿#include "HexaWorld.h"
 
-#include "Character.h"
-#include "HexaSaveGame.h"
-#include "Engine/Rect.h"
-#include "WorldChunk.h"
-#include "WorldChunkObserver.h"
-#include "WorldGenerator.h"
 #include "Engine/Math.h"
+#include "Engine/Rect.h"
+#include "HexaGame/Character.h"
+#include "HexaGame/HexaSaveGame.h"
+#include "HexaGame/WorldPath.h"
+#include "HexaGame/WorldChunk.h"
+#include "HexaGame/WorldChunkObserver.h"
+#include "HexaGame/WorldGenerator.h"
 
 HexaWorld::HexaWorld(const Shared<WorldGenerator>& generator)
     : World()
@@ -48,6 +49,151 @@ Shared<WorldChunkObserver> HexaWorld::register_chunk_observer(const ChunkIndex& 
 Shared<WorldChunk> HexaWorld::get_chunk(const ChunkIndex& chunk_index) const
 {
     return get_chunk_internal(chunk_index);
+}
+
+bool build_path_recursive(std::stack<WorldPath::Segment>& moves, const WorldPath::Segment& current_move, bool is_first, const PathConfig& config, const Vector3& calculated_to_vector, HexaWorld* world)
+{
+    TileIndex back = moves.size() > 0 ? moves.top().from : config.from;
+    
+    for (uint i = 0; i < config.agent_height; i++)
+    {
+        if (world->get_tile_id(current_move.to.offset(0, 0, i))->type != TileType::Air) return false;
+    }
+    if (world->get_tile_id(current_move.to.offset(0, 0, -1))->type != TileType::Solid) return false;
+
+    if (!is_first)
+    {
+        moves.push(current_move);
+    }
+
+    if (current_move.to == config.to)
+    {
+        return true;
+    }
+    
+    const float angle_to = -Vector2::angle_global(current_move.to.to_vector(), calculated_to_vector);
+    TileSide side_try_order[6] = { tile_side_from_angle_xy(angle_to) };
+    side_try_order[1] = tile_side_right(side_try_order[0]);
+    side_try_order[2] = tile_side_left(side_try_order[0]);
+    side_try_order[3] = tile_side_right(side_try_order[1]);
+    side_try_order[4] = tile_side_left(side_try_order[2]);
+    side_try_order[5] = tile_side_right(side_try_order[3]);
+
+    const bool vertical_priority = config.to.z > current_move.to.z;
+
+    for (uint i = 0; i < 6; i++)
+    {
+        const TileIndex next_index = current_move.to.offset(side_try_order[i]);
+
+        if (build_path_recursive(moves, {current_move.to, next_index}, false, config, calculated_to_vector, world)) return true;
+
+        // try to jump down/climb
+        for (byte v = 0; v < 2; v++)
+        {
+            // try to jump down
+            if (v == (byte)vertical_priority && (is_first || back.x != next_index.x || back.y != next_index.y || back.z > current_move.to.z))
+            {
+                bool enough_space_to_jump_down = true;
+                for (uint j = 0; j < config.agent_height; j++)
+                {
+                    if (world->get_tile_id(next_index.offset(0, 0, config.agent_height - j))->type != TileType::Air)
+                    {
+                        enough_space_to_jump_down = false;
+                    }
+                }
+
+                if (enough_space_to_jump_down)
+                {
+                    TileIndex jump_to;
+                    bool has_land_to_jump_down = false;
+                    
+                    for (int j = 1; j < (int)config.allowed_fall + 1; j++)
+                    {
+                        jump_to = next_index.offset(0, 0, -j);
+                        if (world->get_tile_id(jump_to)->type == TileType::Solid)
+                        {
+                            has_land_to_jump_down = true;
+                            jump_to = jump_to.offset(0, 0, 1);
+                            break;
+                        }
+                    }
+
+                    if (has_land_to_jump_down)
+                    {
+                        if (build_path_recursive(moves, {current_move.to, jump_to}, false, config, calculated_to_vector, world)) return true;
+                    }
+                }
+            }
+
+            // try to climb
+            if (v != (byte)vertical_priority && (is_first || back.x != next_index.x || back.y != next_index.y || back.z < current_move.to.z))
+            {
+                TileIndex climb_on;
+                bool has_land_to_climb_on = false;
+                uint space = 0;
+                for (uint j = 1; j < config.allowed_climb + config.agent_height; j++)
+                {
+                    auto type = world->get_tile_id(next_index.offset(0, 0, j))->type;
+                    if (type == TileType::Air)
+                    {
+                        if (++space == config.agent_height)
+                        {
+                            climb_on = next_index.offset(0, 0, j - config.agent_height + 1);
+                            has_land_to_climb_on = true;
+                            break;
+                        }
+                    }
+                    else if (type == TileType::Solid && space > 0)
+                    {
+                        break;
+                    }
+                }
+
+                if (has_land_to_climb_on)
+                {
+                    for (uint j = 1; j < config.allowed_climb + config.agent_height; j++)
+                    {
+                        if (world->get_tile_id(current_move.to.offset(0, 0, j))->type != TileType::Air) break;
+
+                        if (current_move.to.z + j == climb_on.z + config.agent_height - 1)
+                        {
+                            if (build_path_recursive(moves, {current_move.to, climb_on}, false, config, calculated_to_vector, world)) return true;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    moves.pop();
+    return false;
+}
+
+Shared<WorldPath> HexaWorld::FindPath(const PathConfig& config)
+{
+    const ChunkIndex chunk_from = config.from.get_chunk();
+    const ChunkIndex chunk_to = config.to.get_chunk();
+
+    if ((uint)Math::abs(chunk_to.x - chunk_from.x) <= config.domain_size || (uint)Math::abs(chunk_to.y - chunk_from.y) <= config.domain_size)
+    {
+        for (uint i = 0; i < config.agent_height; i++)
+        {
+            if (get_tile_id(config.to.offset(0, 0, i))->type != TileType::Air) return nullptr;
+        }
+        if (get_tile_id(config.to.offset(0, 0, -1))->type != TileType::Solid) return nullptr;
+        
+        std::stack<WorldPath::Segment> path;
+        build_path_recursive(path, {config.from, config.from}, true, config, config.to.to_vector(), this);
+        List<WorldPath::Segment> path_list((uint)path.size());
+        for (uint i = 0; i < path_list.length(); i++)
+        {
+            path_list[path_list.length() - 1 - i] = path.top();
+            path.pop();
+        }
+        return MakeShared<WorldPath>(path_list);
+    }
+
+    return nullptr;
 }
 
 bool HexaWorld::spawn_character(const Shared<Character>& character, const TileIndex& tile_index)
@@ -93,6 +239,18 @@ void HexaWorld::set_tile(const TileIndex& index, const Shared<const TileInfo>& i
             }
         }
     }
+}
+
+Shared<const TileInfo> HexaWorld::get_tile_id(const TileIndex& index) const
+{
+    const auto chunk_index = index.get_chunk();
+    if (const auto chunk = get_chunk_internal(chunk_index))
+    {
+        return chunk->get_tile(index.cycle_chunk());
+    }
+
+    print_debug("World", "Unable to get tile {$i;$i;$i}, chunk {$i;$i} is not loaded", index.x, index.y, index.z, chunk_index.x, chunk_index.y);
+    return nullptr;
 }
 
 void HexaWorld::dump_observable_area()

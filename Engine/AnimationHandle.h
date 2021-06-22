@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "BasicTypes.h"
+#include "Delegate.h"
 #include "framework.h"
 
 class AnimationInstance;
@@ -21,6 +22,8 @@ public:
     bool is_valid() const;
 
     void stop() const;
+
+    Delegate<>* on_end() const;
 
 private:
     Shared<AnimationInstance> get_instance() const;

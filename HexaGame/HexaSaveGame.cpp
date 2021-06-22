@@ -2,6 +2,7 @@
 
 
 #include "HexaGame.h"
+#include "Tiles.h"
 #include "WorldChunk.h"
 #include "Engine/File.h"
 #include "Engine/JSON.h"
@@ -54,6 +55,13 @@ Shared<Map<TileIndex, Shared<const TileInfo>>> HexaSaveGame::get_chunk_modificat
                 {
                     result->insert(TileIndex(x, y, z), tile_id);
                 }
+            }
+
+            if (index == ChunkIndex(0, 0))
+            {
+                result->insert(TileIndex(2, 2, 106), Tiles::stone_bricks);
+                result->insert(TileIndex(2, 2, 107), Tiles::stone_bricks);
+                result->insert(TileIndex(2, 0, 105), Tiles::stone_bricks);
             }
 
             return result;

@@ -290,13 +290,29 @@ Shared<Mesh> GeometryEditor::get_unit_cube()
     if (result == nullptr)
     {
         List<Mesh::Vertex> vertices = {
-            {{0, 0, 0}, {0, 1}, Vector3::one()}, {{0, 1, 0}, {1, 1}, Vector3::one()}, {{1, 0, 0}, {0, 0}, Vector3::one()},
-            {{1, 0, 0}, {0, 0}, Vector3::one()}, {{0, 1, 0}, {1, 1}, Vector3::one()}, {{1, 1, 0}, {1, 0}, Vector3::one()}, 
+            {{0, 0, 0}, {0.5f, 0.5f}, Vector3::one()},
+            {{1, 0, 0}, {0.5f, 0.5f}, Vector3::one()},
+            {{0, 1, 0}, {0.5f, 0.5f}, Vector3::one()},
+            {{1, 1, 0}, {0.5f, 0.5f}, Vector3::one()},
+            {{0, 0, 1}, {0.5f, 0.5f}, Vector3::one()},
+            {{1, 0, 1}, {0.5f, 0.5f}, Vector3::one()},
+            {{0, 1, 1}, {0.5f, 0.5f}, Vector3::one()},
+            {{1, 1, 1}, {0.5f, 0.5f}, Vector3::one()}
+        };
+
+        List<uint> indices = {
+            0, 2, 1,   3, 1, 2,
+            4, 5, 6,   7, 6, 5,
+            0, 4, 2,   6, 2, 4,
+            1, 3, 5,   7, 5, 3,
+            1, 5, 0,   4, 0, 5,
+            2, 6, 3,   7, 3, 6
         };
 
         translate(vertices, Vector3::one() * -0.5f);
+        remove_indices(vertices, indices);
         
-        result = MakeShared<Mesh>("Unit Cube", vertices);
+        result = MakeShared<Mesh>("Unit Cube", vertices, indices);
     }
     
     return result;

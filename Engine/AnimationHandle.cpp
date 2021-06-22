@@ -78,6 +78,16 @@ void AnimationHandle::stop() const
     }
 }
 
+Delegate<>* AnimationHandle::on_end() const
+{
+    if (const auto instance = get_instance())
+    {
+        return &instance->on_end;
+    }
+
+    return nullptr;
+}
+
 Shared<AnimationInstance> AnimationHandle::get_instance() const
 {
     if (const auto animator = animator_.lock())

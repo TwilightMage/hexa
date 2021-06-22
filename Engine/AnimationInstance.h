@@ -2,6 +2,7 @@
 
 #include "AnimatedField.h"
 #include "BasicTypes.h"
+#include "Delegate.h"
 #include "List.h"
 
 class Animation;
@@ -25,4 +26,6 @@ public:
     Shared<Animation> animation;
     List<AnimatedField<float>*> fields;
     List<uint> playing_point_indices;
+
+    Delegate<> on_end;
 };

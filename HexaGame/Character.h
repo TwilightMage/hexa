@@ -3,9 +3,12 @@
 #include "Direction.h"
 #include "TileIndex.h"
 #include "Engine/AnimatedField.h"
+#include "Engine/AnimationSlot.h"
 #include "Engine/Entity.h"
 #include "Engine/ITickable.h"
 
+class Animation;
+class WorldPath;
 class AnimatorComponent;
 class HexaWorld;
 class CharacterController;
@@ -35,9 +38,13 @@ protected:
     void generate_components() override;
 
     void modify_matrix_params(Vector3& position, Quaternion& rotation, Vector3& scale) override;
+
+    AnimationSlot step_animation;
     
 private:
     void set_tile_position(const TileIndex& tile_position);
+    void start_next_path_segment();
+    void path_segment_finished();
 
     float get_desired_rotation_angle() const;
 
@@ -47,6 +54,13 @@ private:
     Direction looking_direction_;
     TileIndex looking_to_tile_;
     bool has_looking_to_tile_ = false;
+
+    Shared<WorldPath> current_path_;
+    uint path_segment_index_ = 0;
+    Shared<WorldPath> new_path_to_use_;
+    bool is_in_path_segment_ = false;
+
+    float move_x, move_y;
     
     uint camera_travel_distance_ = 10;
 
@@ -105,5 +119,13 @@ public:
             animation_position_offset_.z = val;
             mark_matrix_dirty();
         }
+    );
+    ANIMATED_FIELD(float, move_x, 0,
+        [this]() -> float{ return move_x; },
+        [this](float val) -> void { move_x = val; }
+    );
+    ANIMATED_FIELD(float, move_y, 0,
+        [this]() -> float{ return move_y; },
+        [this](float val) -> void { move_y = val; }
     );
 };

@@ -1,9 +1,14 @@
 ﻿#pragma once
 
-#include "HexaGame/Character.h"
+#include "HexaGame/Entities/Character.h"
 
 class Slime : public Character
 {
 public:
-    void on_start() override;    
+    Slime();
+
+protected:
+    void on_start() override;
+
+    void tick(float delta_time) override;
 };

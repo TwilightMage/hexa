@@ -79,6 +79,7 @@ void GeometryEditor::remove_indices(List<Mesh::Vertex>& vertices, List<uint>& in
     }
 
     vertices = result;
+    indices = List<uint>::generate(indices.length(), [](uint i)->uint{ return i; });
 }
 
 void GeometryEditor::invert_vertices(List<Mesh::Vertex>& vertices)

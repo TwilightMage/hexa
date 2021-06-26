@@ -9,17 +9,17 @@ Database<T>::Database(const String& name)
 }
 
 template <class T>
-Shared<const T> Database<T>::add(const T& record)
+template<class SubT>
+Shared<const SubT> Database<T>::add(SubT* record)
 {
     if (Game::is_loading_stage())
     {
-        auto& data_record = data_[record.key];
+        auto& data_record = data_[record->key];
         if (!data_record)
         {
-            data_record = MakeShared<T>();
-            *data_record = record;
+            data_record = Shared<SubT>(record);
 
-            return data_record;
+            return cast<SubT>(data_record);
         }
         else
         {
@@ -37,17 +37,16 @@ Shared<const T> Database<T>::add(const T& record)
 template <class T>
 Shared<const T> Database<T>::get(const String& key) const
 {
-    auto found = data_.find(key);
-    if (found != data_.end())
+    if (auto found = data_.find(key))
     {
-        return found->second;
+        return *found;
     }
         
     return nullptr;
 }
 
 template <class T>
-const std::map<String, Shared<T>>& Database<T>::records() const
+const Map<String, Shared<T>>& Database<T>::records() const
 {
     return data_;
 }

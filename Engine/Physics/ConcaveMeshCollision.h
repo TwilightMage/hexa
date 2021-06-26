@@ -13,6 +13,8 @@ namespace reactphysics3d {
 
 class EXPORT ConcaveMeshCollision : public Collision
 {
+    friend World;
+    
     struct DataBlock
     {
         ~DataBlock();

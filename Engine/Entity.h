@@ -87,7 +87,7 @@ public:
     Delegate<const Shared<Entity>&> on_destroyed;
     
 protected:
-    virtual bool is_rigid_body();
+    virtual bool is_rigid_body() const { return false; }
 
     virtual void generate_components();
 
@@ -113,6 +113,6 @@ private:
     reactphysics3d::RigidBody* rigid_body_;
     reactphysics3d::Collider* collider_;
     Shared<Collision> collision_;
-    byte16 collision_mask_ = CollisionMaskBits::ALL;
+    byte16 collision_mask_ = CollisionMaskBits::NONE;
     List<Shared<EntityComponent>> components_;
 };

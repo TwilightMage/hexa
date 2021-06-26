@@ -1,28 +1,31 @@
 ﻿#pragma once
 
-#include "HexaGame.h"
 #include "Paths.h"
+#include "TileInfo.h"
+#include "Engine/DatabaseHelpers.h"
 #include "Engine/Texture.h"
+
+#define INIT_TILE_DATABASE_ENTRY(name, type, resources_path_root, ...)  INIT_DATABASE_ENTRY(name, type, Texture::load_png(resources_path_root##_TEXTURES_TILES + #name + ".png"), __VA_ARGS__);
 
 class EXPORT Tiles
 {
 public:
-    inline static Shared<const TileInfo> air = nullptr;
-    inline static Shared<const TileInfo> dirt = nullptr;
-    inline static Shared<const TileInfo> grass = nullptr;
-    inline static Shared<const TileInfo> stone = nullptr;
-    inline static Shared<const TileInfo> sand = nullptr;
-    inline static Shared<const TileInfo> iron_ore = nullptr;
-    inline static Shared<const TileInfo> stone_bricks = nullptr;
+    DECLARE_DATABASE_ENTRY(TileInfo, air);
+    DECLARE_DATABASE_ENTRY(TileInfo, dirt);
+    DECLARE_DATABASE_ENTRY(TileInfo, grass);
+    DECLARE_DATABASE_ENTRY(TileInfo, stone);
+    DECLARE_DATABASE_ENTRY(TileInfo, sand);
+    DECLARE_DATABASE_ENTRY(TileInfo, iron_ore);
+    DECLARE_DATABASE_ENTRY(TileInfo, stone_bricks);
 
-    static void init(const Shared<Database<TileInfo>>& database)
+    DATABASE_INIT_FUNC(TileInfo)
     {
-        air = database->add({ "air", TileType::Air, false, false, nullptr, "" });
-        dirt = database->add({ "dirt", TileType::Solid, true, true, Texture::load_png(RESOURCES_HEXA_TEXTURES_TILES + "dirt.png"), "" });
-        grass = database->add({ "grass", TileType::Solid, true, true, Texture::load_png(RESOURCES_HEXA_TEXTURES_TILES + "grass.png"), "" });
-        stone = database->add({ "stone", TileType::Solid, true, true, Texture::load_png(RESOURCES_HEXA_TEXTURES_TILES + "stone.png"), "" });
-        sand = database->add({ "sand", TileType::Solid, true, true, Texture::load_png(RESOURCES_HEXA_TEXTURES_TILES + "sand.png"), "" });
-        iron_ore = database->add({ "iron_ore", TileType::Solid, true, true, Texture::load_png(RESOURCES_HEXA_TEXTURES_TILES + "iron_ore.png"), "" });
-        stone_bricks = database->add({ "stone_bricks", TileType::Solid, true, true, Texture::load_png(RESOURCES_HEXA_TEXTURES_TILES + "stone_bricks.png"), "" });
+        INIT_DATABASE_ENTRY(air, TileInfo, nullptr, TileType::Air, false, false, "");
+        INIT_TILE_DATABASE_ENTRY(dirt, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true, "");
+        INIT_TILE_DATABASE_ENTRY(grass, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true, "");
+        INIT_TILE_DATABASE_ENTRY(stone, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true, "");
+        INIT_TILE_DATABASE_ENTRY(sand, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true, "");
+        INIT_TILE_DATABASE_ENTRY(iron_ore, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true, "");
+        INIT_TILE_DATABASE_ENTRY(stone_bricks, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true, "");
     }
 };

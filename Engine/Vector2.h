@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "framework.h"
+#include "String.h"
 
 class Vector3;
 
@@ -17,6 +18,7 @@ public:
     float dot_product(const Vector2& rhs) const;
     Vector2 normalized() const;
     void normalize();
+    String to_string() const;
     
     static float angle_global(const Vector2& from, const Vector2& to);
 

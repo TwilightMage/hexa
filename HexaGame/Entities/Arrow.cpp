@@ -25,8 +25,3 @@ void Arrow::tick(float delta_time)
     //position_ += rotation_.forward() * delta_time * 10;
     //translate(get_rotation().forward() * delta_time * 10);
 }
-
-bool Arrow::is_rigid_body()
-{
-    return true;
-}

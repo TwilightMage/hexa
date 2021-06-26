@@ -14,6 +14,7 @@
 #include "Vector2.h"
 #include "Version.h"
 
+class Animation;
 class UIInputElement;
 class SystemIO;
 class Collision;
@@ -53,6 +54,7 @@ class EXPORT Game
     friend UIElement;
     friend Collision;
     friend SystemIO;
+    friend Animation;
     
 public:
     Game(int argc, char* argv[]);
@@ -161,6 +163,7 @@ private:
     Map<String, Shared<Shader>> shaders_;
     Map<String, Shared<Mesh>> meshes_;
     Map<String, Shared<Texture>> textures_;
+    Map<String, Shared<Animation>> animations_;
 
     // Game
     Version game_version_ = {0, 1, 0};

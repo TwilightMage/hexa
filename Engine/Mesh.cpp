@@ -17,12 +17,15 @@ Mesh::Mesh(const String& name)
 Mesh::Mesh(const String& name, const List<Vertex>& vertices)
     : Object(name)
     , vertices_(vertices)
+    , indices_(vertices.length())
     , usage_count_(0)
 {
     for (uint i = 0; i < vertices.length(); i++)
     {
-        indices_.Add(i);
+        indices_[i] = i;
     }
+
+    calculate_bbox();
 }
 
 Mesh::Mesh(const String& name, const List<Vertex>& vertices, const List<uint>& indices)
@@ -31,6 +34,7 @@ Mesh::Mesh(const String& name, const List<Vertex>& vertices, const List<uint>& i
     , indices_(indices)
     , usage_count_(0)
 {
+    calculate_bbox();
 }
 
 Shared<Mesh> Mesh::load_obj(const Path& path)
@@ -53,7 +57,7 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
         
     for (auto& vert : loader->LoadedVertices)
     {
-        result->vertices_.Add({{vert.Position.X, vert.Position.Y, vert.Position.Z}, {vert.TextureCoordinate.X, 1 - vert.TextureCoordinate.Y}, {1.0f, 1.0f, 1.0f}});
+        result->vertices_.Add({cast_object<Vector3>(vert.Position), {vert.TextureCoordinate.X, 1 - vert.TextureCoordinate.Y}, Vector3::one()});
     }
     loader->LoadedVertices.clear();
 
@@ -64,6 +68,8 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
     GeometryEditor::remove_indices(result->vertices_, result->indices_);
     GeometryEditor::rotate(result->vertices_, Quaternion(Vector3(90.0f, 0.0f, 180.0f)));
     GeometryEditor::mirror_y(result->vertices_);
+
+    result->calculate_bbox();
 
     Game::instance_->meshes_[path.get_absolute_string()] = result;
     verbose("Mesh", "Loaded mesh v%i i%i %s", result->vertices_.length(), result->indices_.length(), path.get_absolute_string().c());
@@ -90,4 +96,34 @@ bool Mesh::is_empty() const
 {
     // TODO: Update after implementing index buffers
     return vertices_.length() == 0;// || indices_.length() == 0;
+}
+
+void Mesh::calculate_bbox()
+{
+    float min_x = 0;
+    float max_x = 0;
+    float min_y = 0;
+    float max_y = 0;
+    float min_z = 0;
+    float max_z = 0;
+
+    if (vertices_.length() > 0)
+    {
+        min_x = max_x = vertices_.first().pos.x;
+        min_y = max_y = vertices_.first().pos.y;
+        min_z = max_z = vertices_.first().pos.z;
+        
+        for (auto& vertex : vertices_)
+        {
+            min_x = Math::min(min_x, vertex.pos.x);
+            max_x = Math::max(max_x, vertex.pos.x);
+            min_y = Math::min(min_y, vertex.pos.y);
+            max_y = Math::max(max_y, vertex.pos.y);
+            min_z = Math::min(min_z, vertex.pos.z);
+            max_z = Math::max(max_z, vertex.pos.z);
+        }
+    }
+
+    bbox_center_ = Vector3((max_x + min_x) / 2, (max_y + min_y) / 2, (max_z + min_z) / 2);
+    bbox_half_size_ = Vector3((max_x - min_x) / 2, (max_y - min_y) / 2, (max_z - min_z) / 2);
 }

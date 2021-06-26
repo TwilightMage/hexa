@@ -58,6 +58,11 @@ void Vector2::normalize()
     y /= m;
 }
 
+String Vector2::to_string() const
+{
+    return String::format("{ x=%f, y=%f }", x, y);
+}
+
 float Vector2::angle_global(const Vector2& from, const Vector2& to)
 {
     Vector2 delta_norm = (to - from).normalized();

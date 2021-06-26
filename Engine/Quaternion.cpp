@@ -109,6 +109,11 @@ void Quaternion::normalize()
     w /= m;
 }
 
+String Quaternion::to_string() const
+{
+    return String::format("{ x=%f, y=%f, z=%f, q=%f }", x, y, z, w);
+}
+
 Quaternion Quaternion::conjugate() const
 {
     return Quaternion(-x, -y, -z, w);
@@ -156,6 +161,11 @@ Quaternion Quaternion::look_at(const Vector3& normal)
     return from_axis_angle(rotAxis, rotAngle);
 }
 
+Quaternion Quaternion::slerp(const Quaternion& a, const Quaternion& b, float alpha)
+{
+    return cast_object<Quaternion>(glm::slerp(cast_object<glm::quat>(a), cast_object<glm::quat>(b), alpha));
+}
+
 Quaternion Quaternion::lerp(const Quaternion& from, const Quaternion& to, float alpha)
 {
     return Quaternion(Math::lerp(from.x, to.x, alpha), Math::lerp(from.y, to.y, alpha), Math::lerp(from.z, to.z, alpha), Math::lerp(from.w, to.w, alpha));
@@ -186,7 +196,7 @@ Quaternion Quaternion::operator*(const Quaternion& rhs) const
     return Quaternion(x * rhs.w + y * rhs.z - z * rhs.y + w * rhs.x, -x * rhs.z + y * rhs.w + z * rhs.x + w * rhs.y, x * rhs.y - y * rhs.x + z * rhs.w + w * rhs.z, -x * rhs.x - y * rhs.y - z * rhs.z + w * rhs.w);
 }
 
-void Quaternion::operator*=(const Quaternion& rhs)
+Quaternion& Quaternion::operator*=(const Quaternion& rhs)
 {
     const auto x_ = x;
     const auto y_ = y;
@@ -196,6 +206,8 @@ void Quaternion::operator*=(const Quaternion& rhs)
     y = -x_ * rhs.z + y_ * rhs.w + z_ * rhs.x + w_ * rhs.y;
     z =  x_ * rhs.y - y_ * rhs.x + z_ * rhs.w + w_ * rhs.z;
     w = -x_ * rhs.x - y_ * rhs.y - z_ * rhs.z + w_ * rhs.w;
+
+    return *this;
 }
 
 bool Quaternion::operator==(const Quaternion& rhs) const
@@ -206,4 +218,9 @@ bool Quaternion::operator==(const Quaternion& rhs) const
 bool Quaternion::operator!=(const Quaternion& rhs) const
 {
     return x != rhs.x || y != rhs.y || z != rhs.z || w != rhs.w;
+}
+
+Quaternion Quaternion::operator-() const
+{
+    return Quaternion(-x, -y, -z, -w);
 }

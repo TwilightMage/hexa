@@ -2,16 +2,15 @@
 
 #include <GLFW/glfw3.h>
 
+#include "ItemDrop.h"
 #include "MeshEntity.h"
 #include "Characters/Slime.h"
 #include "Engine/Animation.h"
 #include "Engine/AnimatorComponent.h"
 #include "Engine/Camera.h"
-#include "Engine/Curve.h"
 #include "Engine/GeometryEditor.h"
 #include "Engine/SystemIO.h"
 #include "Engine/Physics/RaycastResult.h"
-#include "HexaGame/Character.h"
 #include "HexaGame/ChunkMeshEntity.h"
 #include "HexaGame/HexaCollisionMaskBits.h"
 #include "HexaGame/HexaMath.h"
@@ -20,6 +19,7 @@
 #include "HexaGame/WorldChunk.h"
 #include "HexaGame/WorldChunkObserver.h"
 #include "HexaGame/WorldPath.h"
+#include "HexaGame/Entities/Character.h"
 #include "HexaGame/Worlds/HexaWorld.h"
 
 void GamePlayer::on_start()
@@ -83,34 +83,37 @@ void GamePlayer::mouse_button_down(int button)
             }
             markers.Clear();
             
-            if (auto hit = world->raycast(get_position(), get_position() + Game::get_un_projected_mouse() * 10))
+            if (auto hit = world->raycast(get_position(), get_position() + Game::get_un_projected_mouse() * 10, HexaCollisionMaskBits::GROUND | HexaCollisionMaskBits::ITEM))
             {
-                TileIndex target_tile = TileIndex::from_vector(hit->location + hit->normal * 0.1f);
-                if (target_tile != get_character()->get_tile_position())
+                if (cast<ChunkMeshEntity>(hit->entity))
                 {
-                    if (cast<ChunkMeshEntity>(hit->entity))
+                    const TileIndex tile_index = TileIndex::from_vector(hit->location + hit->normal * 0.1f);
+                    if (tile_index != get_character()->get_tile_position())
                     {
-                        get_character()->go_to(target_tile);
-                        PathConfig config;
-                        config.from = get_character()->get_tile_position();
-                        config.to = target_tile;
-                        config.agent_height = 2;
-                        if (auto path = world->FindPath(config))
+                        if (cast<ChunkMeshEntity>(hit->entity))
                         {
-                            auto marker_mesh = GeometryEditor::get_unit_cube();
-                            auto marker = MakeShared<MeshEntity>(marker_mesh);
-                            marker->set_scale(Vector3(0.1f));
-                            world->spawn_entity(marker, path->segments.first().from.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
-                            markers.Add(marker);
-                            for (const auto& segment : path->segments)
+                            get_character()->go_to(tile_index);
+                            if (auto path = world->FindPath(get_character()->get_path_config(tile_index)))
                             {
-                                marker = MakeShared<MeshEntity>(marker_mesh);
+                                auto marker_mesh = GeometryEditor::get_unit_cube();
+                                auto marker = MakeShared<MeshEntity>(marker_mesh);
                                 marker->set_scale(Vector3(0.1f));
-                                world->spawn_entity(marker, segment.to.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
+                                world->spawn_entity(marker, path->segments.first().from.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
                                 markers.Add(marker);
+                                for (const auto& segment : path->segments)
+                                {
+                                    marker = MakeShared<MeshEntity>(marker_mesh);
+                                    marker->set_scale(Vector3(0.1f));
+                                    world->spawn_entity(marker, segment.to.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
+                                    markers.Add(marker);
+                                }
                             }
                         }
                     }
+                }
+                else if (auto item_drop = cast<ItemDrop>(hit->entity))
+                {
+                    auto item = item_drop->get_item();
                 }
             }
         }
@@ -132,14 +135,14 @@ void GamePlayer::tick(float delta_time)
 
     if (auto world = cast<HexaWorld>(get_world()))
     {
-        if (auto hit = world->raycast(get_position(), get_position() + Game::get_un_projected_mouse() * 10, HexaCollisionMaskBits::GROUND | HexaCollisionMaskBits::ITEM))
+        if (auto hit = world->raycast(get_position(), get_position() + Game::get_un_projected_mouse() * 10, HexaCollisionMaskBits::GROUND))
         {
-            tile_under_mouse_ = TileIndex::from_vector(hit->location - hit->normal * 0.1f);
+            const TileIndex tile_index = TileIndex::from_vector(hit->location - hit->normal * 0.01f);
             if (auto character = get_character())
             {
-                if (!(character->get_tile_position().x == tile_under_mouse_.x && character->get_tile_position().y == tile_under_mouse_.y))
+                if (!(character->get_tile_position().x == tile_index.x && character->get_tile_position().y == tile_index.y))
                 {
-                    character->rotate_to_tile(tile_under_mouse_);
+                    character->rotate_to_tile(tile_index);
                 }
             }
         }

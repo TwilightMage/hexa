@@ -13,7 +13,7 @@
 #include "Physics/Collision.h"
 
 Entity::Entity()
-    : Object(typeid(this).name() + String(" entity"))
+    : Object(typeid(this).raw_name() + String(" entity"))
     , shader_(Game::get_basic_shader())
     , texture_(Game::get_white_pixel(), false)
     , pending_kill_(false)
@@ -228,7 +228,13 @@ void Entity::use_collision(const Shared<Collision>& collision, const Vector3& of
 
     const auto collider_shape = collision->get_collider_shape();
 
-    Assert(collider_shape != nullptr);
+    Assert(collider_shape);
+
+    if (!rigid_body_)
+    {
+        print_warning("Physics", "Attempt to set collider for entity which is not a rigid body!");
+        return;
+    }
     
     collision_ = collision;
     collider_ = rigid_body_->addCollider(collider_shape, reactphysics3d::Transform(cast_object<reactphysics3d::Vector3>(offset), reactphysics3d::Quaternion::identity()));
@@ -237,6 +243,12 @@ void Entity::use_collision(const Shared<Collision>& collision, const Vector3& of
 
 void Entity::remove_collision()
 {
+    if (!rigid_body_)
+    {
+        print_warning("Physics", "Attempt to remove collider from entity which is not a rigid body!");
+        return;
+    }
+    
     if (collider_)
     {
         rigid_body_->removeCollider(collider_);
@@ -263,21 +275,45 @@ byte16 Entity::get_collision_mask() const
 
 void Entity::set_gravity_enabled(bool state) const
 {
+    if (!rigid_body_)
+    {
+        print_warning("Physics", "Attempt to set gravity for entity which is not a rigid body!");
+        return;
+    }
+    
     rigid_body_->enableGravity(state);
 }
 
 void Entity::make_body_static() const
 {
+    if (!rigid_body_)
+    {
+        print_warning("Physics", "Attempt to make entity static which is not a rigid body!");
+        return;
+    }
+    
     rigid_body_->setType(reactphysics3d::BodyType::STATIC);
 }
 
 void Entity::make_body_dynamic() const
 {
+    if (!rigid_body_)
+    {
+        print_warning("Physics", "Attempt to make entity dynamic which is not a rigid body!");
+        return;
+    }
+    
     rigid_body_->setType(reactphysics3d::BodyType::DYNAMIC);
 }
 
 void Entity::make_body_kinematic() const
 {
+    if (!rigid_body_)
+    {
+        print_warning("Physics", "Attempt to make entity kinematic which is not a rigid body!");
+        return;
+    }
+    
     rigid_body_->setType(reactphysics3d::BodyType::KINEMATIC);
 }
 
@@ -307,11 +343,6 @@ void Entity::remove_all_components()
         component->owner = null_weak(Entity);
     }
     components_.Clear();
-}
-
-bool Entity::is_rigid_body()
-{
-    return false;
 }
 
 void Entity::generate_components()

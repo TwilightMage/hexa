@@ -73,7 +73,7 @@ void Vector3::normalize()
 
 String Vector3::to_string() const
 {
-    return String::format("{ x=%f, y=%f, z=%f}", x, y, z);
+    return String::format("{ x=%f, y=%f, z=%f }", x, y, z);
 }
 
 Vector3 Vector3::operator+(const Vector3& rhs) const

@@ -13,5 +13,5 @@ public:
     void tick(float delta_time) override;
 
 protected:
-    bool is_rigid_body() override;
+    bool is_rigid_body() const override { return false; }
 };

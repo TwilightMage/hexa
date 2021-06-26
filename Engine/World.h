@@ -3,6 +3,7 @@
 #include "List.h"
 #include "Entity.h"
 #include "Quaternion.h"
+#include "TimerHandle.h"
 #include "Vector3.h"
 
 struct RaycastResult;
@@ -17,12 +18,18 @@ namespace reactphysics3d
 class EXPORT World : public std::enable_shared_from_this<World>
 {
     friend Game;
+
+    struct TimerEntry
+    {
+        float time;
+        std::function<void()> func;
+    };
     
 public:
-    void spawn_entity(const Shared<Entity>& entity, const Vector3& pos, const Quaternion& rot);
-    void spawn_entity(const Shared<Entity>& entity, const Vector3& pos);
-    void spawn_entity(const Shared<Entity>& entity, const Quaternion& rot);
-    void spawn_entity(const Shared<Entity>& entity);
+    bool spawn_entity(const Shared<Entity>& entity, const Vector3& pos, const Quaternion& rot);
+    bool spawn_entity(const Shared<Entity>& entity, const Vector3& pos);
+    bool spawn_entity(const Shared<Entity>& entity, const Quaternion& rot);
+    bool spawn_entity(const Shared<Entity>& entity);
 
     Shared<const RaycastResult> raycast(const Vector3& from, const Vector3& to) const;
     Shared<const RaycastResult> raycast(const Vector3& from, const Vector3& to, byte16 collision_mask) const;
@@ -43,6 +50,8 @@ public:
     Vector3 get_gravity() const;
     void set_gravity(const Vector3& val) const;
 
+    TimerHandle delay(float time, std::function<void()> func);
+
 protected:
     virtual void on_start();
     virtual void on_tick();
@@ -59,4 +68,6 @@ private:
     reactphysics3d::PhysicsWorld* physics_world_;
     float physics_tick_accum_;
     float time_scale_ = 1.0f;
+
+    Map<TimerHandle, TimerEntry> timer_entries_;
 };

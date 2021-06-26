@@ -8,38 +8,44 @@
 #include "Quaternion.h"
 #include "Renderer.h"
 #include "Settings.h"
+#include "Physics/ConcaveMeshCollision.h"
+#include "Physics/ConvexMeshCollision.h"
 #include "Physics/RaycastCallback.h"
 
-void World::spawn_entity(const Shared<Entity>& entity, const Vector3& pos, const Quaternion& rot)
+bool World::spawn_entity(const Shared<Entity>& entity, const Vector3& pos, const Quaternion& rot)
 {
-    if (ensure_child_not_exist(entity)) return;
+    if (!ensure_child_not_exist(entity)) return false;
     
     entity->position_ = pos;
     entity->rotation_ = rot;
     spawn_entity_internal(entity);
+    return true;
 }
 
-void World::spawn_entity(const Shared<Entity>& entity, const Vector3& pos)
+bool World::spawn_entity(const Shared<Entity>& entity, const Vector3& pos)
 {
-    if (ensure_child_not_exist(entity)) return;
+    if (!ensure_child_not_exist(entity)) return false;
     
     entity->position_ = pos;
     spawn_entity_internal(entity);
+    return true;
 }
 
-void World::spawn_entity(const Shared<Entity>& entity, const Quaternion& rot)
+bool World::spawn_entity(const Shared<Entity>& entity, const Quaternion& rot)
 {
-    if (ensure_child_not_exist(entity)) return;
+    if (!ensure_child_not_exist(entity)) return false;
     
     entity->rotation_ = rot;
     spawn_entity_internal(entity);
+    return true;
 }
 
-void World::spawn_entity(const Shared<Entity>& entity)
+bool World::spawn_entity(const Shared<Entity>& entity)
 {
-    if (ensure_child_not_exist(entity)) return;
+    if (!ensure_child_not_exist(entity)) return false;
     
     spawn_entity_internal(entity);
+    return true;
 }
 
 Shared<const RaycastResult> World::raycast(const Vector3& from, const Vector3& to) const
@@ -76,6 +82,7 @@ void World::tick(float delta_time)
 {
     delta_time *= time_scale_;
 
+    // fixed tick for physics
     if (delta_time != 0.0f)
     {
         physics_tick_accum_ += delta_time;
@@ -87,9 +94,29 @@ void World::tick(float delta_time)
         }
     }
 
-    List<uint> to_delete;
-    
+    // tick timers
+    List<TimerHandle> expired_timers;
+    for (auto& timer_entry : timer_entries_)
+    {
+        timer_entry.value.time -= delta_time;
+        if (timer_entry.value.time <= 0)
+        {
+            timer_entry.value.func();
+            expired_timers.Add(timer_entry.x);
+        }
+    }
+
+    // cleanup timers
+    for (const auto& expired_timer : expired_timers)
+    {
+        timer_entries_.remove(expired_timer);
+    }
+
+    // tick in child
     on_tick();
+
+    // tick entities
+    List<uint> to_delete;
     
     for (uint i = 0; i < entities_.length(); i++)
     {
@@ -119,6 +146,7 @@ void World::tick(float delta_time)
         }
     }
 
+    // cleanup entities
     for (uint i = 0; i < to_delete.length(); i++)
     {
         entities_.RemoveAt(to_delete[to_delete.length() - 1 - i]);
@@ -197,6 +225,13 @@ void World::set_gravity(const Vector3& val) const
     physics_world_->setGravity(gravity);
 }
 
+TimerHandle World::delay(float time, std::function<void()> func)
+{
+    const TimerHandle handle = { TimerHandle::id_generator++ };
+    timer_entries_.insert(handle, { time, func });
+    return handle;
+}
+
 void World::on_start()
 {
 }
@@ -217,6 +252,9 @@ void World::close()
     {
         do_destroy(entity);
     }
+
+    ConcaveMeshCollision::data_blocks_.clear();
+    ConvexMeshCollision::data_blocks_.clear();
     
     Game::instance_->physics_->destroyPhysicsWorld(physics_world_);
     physics_world_ = nullptr;
@@ -255,10 +293,10 @@ bool World::ensure_child_not_exist(const Shared<Entity>& entity)
 {
     for (auto& existing_entity : entities_)
     {
-        if (existing_entity == entity) return true;
+        if (existing_entity == entity) return false;
     }
 
-    return false;
+    return true;
 }
 
 void World::do_destroy(const Shared<Entity>& entity)

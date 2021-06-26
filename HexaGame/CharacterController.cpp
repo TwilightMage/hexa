@@ -1,6 +1,6 @@
 ﻿#include "CharacterController.h"
 
-#include "Character.h"
+#include "Entities/Character.h"
 
 void CharacterController::posses_character(const Shared<Character>& character)
 {

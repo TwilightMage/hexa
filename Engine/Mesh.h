@@ -28,8 +28,9 @@ public:
 
     const List<Vertex>& get_vertices() const;
     const List<uint>& get_indices() const;
-    
     uint get_usage_count() const;
+    FORCEINLINE const Vector3& get_bounds_center() const { return bbox_center_; }
+    FORCEINLINE const Vector3& get_bounds_half_size() const { return bbox_half_size_; }
     bool is_empty() const;
 
     static Shared<Mesh> empty;
@@ -38,4 +39,8 @@ private:
     List<Vertex> vertices_;
     List<uint> indices_;
     uint usage_count_;
+    Vector3 bbox_center_;
+    Vector3 bbox_half_size_;
+
+    void calculate_bbox();
 };

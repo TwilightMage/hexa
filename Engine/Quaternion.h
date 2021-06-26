@@ -21,6 +21,7 @@ public:
     Vector3 euler() const;
     Quaternion normalized() const;
     void normalize();
+    String to_string() const;
     Quaternion conjugate() const;
     Vector3 axis() const;
     float axis_angle() const;
@@ -28,7 +29,7 @@ public:
     static Quaternion from_axis_angle(const Vector3& axis, float angle);
     FORCEINLINE static Quaternion look_at(const Vector3& from, const Vector3& to);
     static Quaternion look_at(const Vector3& normal);
-
+    static Quaternion slerp(const Quaternion& a, const Quaternion& b, float alpha);
     static Quaternion lerp(const Quaternion& from, const Quaternion& to, float alpha);
     
     Quaternion rotate_around(const Vector3& axis, float angle) const;
@@ -37,9 +38,10 @@ public:
     Quaternion rotate_around_z(float angle) const;
 
     Quaternion operator*(const Quaternion& rhs) const;
-    void operator*=(const Quaternion& rhs);
+    Quaternion& operator*=(const Quaternion& rhs);
     bool operator==(const Quaternion& rhs) const;
     bool operator!=(const Quaternion& rhs) const;
+    Quaternion operator-() const;
     
     float x;
     float y;

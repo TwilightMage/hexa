@@ -1,6 +1,7 @@
 ﻿#include "Animation.h"
 
 #include "BinaryStream.h"
+#include "Game.h"
 
 Animation::Animation(List<NamedCurve> named_curves)
     : named_curves_(named_curves)
@@ -56,6 +57,11 @@ void Animation::save_to_file(const Path& path) const
 
 Shared<Animation> Animation::load_from_file(const Path& path)
 {
+    if (auto found = Game::instance_->animations_.find(path.get_absolute_string()))
+    {
+        return *found;
+    }
+    
     try
     {
         if (path.exists())
@@ -96,7 +102,9 @@ Shared<Animation> Animation::load_from_file(const Path& path)
                     named_curve.curve = MakeShared<Curve<float>>(points, segments);
                 }
 
-                return MakeShared<Animation>(named_curves);
+                auto animation = MakeShared<Animation>(named_curves);
+                Game::instance_->animations_.insert(path.get_absolute_string(), animation);
+                return animation;
             }
         }
 

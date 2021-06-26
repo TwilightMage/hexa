@@ -1,9 +1,7 @@
 ﻿#pragma once
 
-#include <map>
-
-
 #include "DatabaseBase.h"
+#include "Map.h"
 #include "String.h"
 
 template<class T>
@@ -11,13 +9,14 @@ class Database : public DatabaseBase
 {
 public:
     explicit Database(const String& name);
-    
-    Shared<const T> add(const T& record);
+
+    template<class SubT>
+    Shared<const SubT> add(SubT* record);
     Shared<const T> get(const String& key) const;
-    const std::map<String, Shared<T>>& records() const;
+    const Map<String, Shared<T>>& records() const;
 
 private:
-    std::map<String, Shared<T>> data_;
+    Map<String, Shared<T>> data_;
 };
 
 #include "Database.cpp"

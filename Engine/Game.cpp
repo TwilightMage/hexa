@@ -501,7 +501,7 @@ void Game::render_loop()
 			
 			auto vp = proj * view;
 
-			un_projected_mouse_ = Matrix4x4::un_project(Vector2(mouse_pos_.x, mouse_pos_.y), Vector2(width, height), Matrix4x4().translate(current_camera_->owner->get_position()), view, proj);
+			un_projected_mouse_ = Matrix4x4::un_project(Vector2(mouse_pos_.x, mouse_pos_.y), Vector2(static_cast<float>(width), static_cast<float>(height)), Matrix4x4().translate(current_camera_->owner->get_position()), view, proj);
 				
 			// UI matrix
 			auto ui_vp = Matrix4x4::ortho(0.0f, static_cast<float>(width), static_cast<float>(-height), 0.0f, -1000.0f, 0.0001f);

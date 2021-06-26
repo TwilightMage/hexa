@@ -24,16 +24,16 @@ void TilePresentationWorld::on_start()
         
         List<Mesh::Vertex> vertices;
         List<uint> indices;
-        WorldGenerator::generate_tile_mesh(TileSide::All, entry.second, vertices, indices, pos.x + pos.y + pos.z);
+        WorldGenerator::generate_tile_mesh(TileSide::All, entry.value, vertices, indices, pos.x + pos.y + pos.z);
         GeometryEditor::remove_indices(vertices, indices);
 
-        Shared<Mesh> mesh = MakeShared<Mesh>(String::format("tile %s", entry.second->key.c()), vertices);
+        Shared<Mesh> mesh = MakeShared<Mesh>(String::format("tile %s", entry.value->key.c()), vertices);
         
         const auto entity = MakeShared<SingleTile>();
         entity->use_mesh(mesh);
         spawn_entity(entity, pos);
         entity->use_collision(MakeShared<ConvexMeshCollision>(mesh));
-        entity->use_texture(entry.second->texture);
+        entity->use_texture(entry.value->texture);
 
         if (i++ == 3)
         {

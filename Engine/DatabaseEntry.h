@@ -5,5 +5,6 @@
 class EXPORT DatabaseEntry
 {
 public:
+    
     String key = "";
 };

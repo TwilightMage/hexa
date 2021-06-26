@@ -1,5 +1,7 @@
 ﻿#pragma once
 
+#include "CharacterInfo.h"
+#include "ItemInfo.h"
 #include "TileInfo.h"
 #include "Engine/Database.h"
 #include "Engine/Game.h"
@@ -12,7 +14,9 @@ class EXPORT HexaGame : public Game
 public:
     HexaGame(int argc, char* argv[]);
 
-    static Shared<Database<TileInfo>> tile_database;
+    inline const static Shared<Database<TileInfo>> tile_database = MakeShared<Database<TileInfo>>("Tile Database");
+    inline const static Shared<Database<ItemInfo>> item_database = MakeShared<Database<ItemInfo>>("Item Database");
+    inline const static Shared<Database<CharacterInfo>> character_database = MakeShared<Database<CharacterInfo>>("Character Database");
 
     static void register_world_generator(const Shared<WorldGeneratorInfo>& generator_info);
     
@@ -24,5 +28,8 @@ protected:
     void loading_stage() override;
 
 private:
+    bool open_animation_editor(const String& entity_type, const String& entity_name);
+    void open_game_world();
+    
     Map<String, Shared<WorldGeneratorInfo>> generator_infos_;
 };

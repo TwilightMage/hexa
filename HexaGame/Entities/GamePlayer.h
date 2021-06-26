@@ -31,6 +31,4 @@ public:
 
 private:
     void spawn_chunk_loaded(const Shared<WorldChunk>& sender);
-
-    TileIndex tile_under_mouse_;
 };

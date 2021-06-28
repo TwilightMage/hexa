@@ -2,15 +2,15 @@
 
 #include "MeshEntity.h"
 #include "Engine/Entity.h"
-#include "Engine/IControllable.h"
 #include "Engine/ITickable.h"
+#include "Engine/Player.h"
 #include "HexaGame/ChunkIndex.h"
 
 class TextBlock;
 class WorldChunkObserver;
 class Camera;
 
-class EXPORT DebugPlayer : public Entity, public IControllable, public ITickable
+class EXPORT DebugPlayer : public Player, public ITickable
 {
 public:
     void on_start() override;
@@ -28,7 +28,6 @@ private:
     float move_right_ = 0;
     float move_up_ = 0;
 
-    Shared<Camera> camera_;
     Shared<MeshEntity> arrows_;
 
     Shared<WorldChunkObserver> observer_;

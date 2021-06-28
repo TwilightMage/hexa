@@ -30,7 +30,7 @@ public:
     Delegate<const Weak<CurveSegmentWidget>&> on_click;
 
 protected:
-    void on_press() override;
+    void on_press(const Vector2& point) override;
 
 private:
     void update_geometry();

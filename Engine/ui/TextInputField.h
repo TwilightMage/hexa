@@ -40,7 +40,7 @@ public:
     static bool FloatInputVerifier(String& new_input, char new_char);
 
 protected:
-    void on_press() override;
+    void on_press(const Vector2& point) override;
     void on_size_changed() override;
     void on_construct() override;
 

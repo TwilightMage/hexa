@@ -35,6 +35,13 @@ Vector3::Vector3(const Vector2& rhs)
 {
 }
 
+Vector3::Vector3(const Vector2& vec2, float z)
+    : x(vec2.x)
+    , y(vec2.y)
+    , z(z)
+{
+}
+
 Vector3::Vector3(const Vector3& rhs)
     : x(rhs.x)
     , y(rhs.y)

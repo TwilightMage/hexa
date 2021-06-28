@@ -6,6 +6,24 @@ template<typename Key, typename Value>
 class Map
 {
 public:
+    struct Pair
+    {
+        Key key;
+        Value value;
+    };
+    
+    Map()
+    {
+    }
+
+    Map(const std::initializer_list<Pair>& initializer_list)
+    {
+        for (const auto& pair : initializer_list)
+        {
+            insert(pair.key, pair.value);
+        }
+    }
+    
     FORCEINLINE void insert(const Key& key, const Value& new_value)
     {
         data_.insert(key, new_value);

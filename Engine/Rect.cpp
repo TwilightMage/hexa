@@ -55,6 +55,11 @@ bool Rect::contains(int p_x, int p_y) const
     return p_x >= x && p_x < x + w && p_y >= y && p_y < y + h;
 }
 
+bool Rect::contains(const Vector2& point) const
+{
+    return contains(static_cast<int>(point.x), static_cast<int>(point.y));
+}
+
 int Rect::left() const
 {
     return x;

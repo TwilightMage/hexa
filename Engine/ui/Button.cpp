@@ -17,7 +17,7 @@ void Button::on_mouse_leave()
     set_state(STATE_DEFAULT);
 }
 
-void Button::on_press()
+void Button::on_press(const Vector2& point)
 {
     set_state(STATE_PRESSED);
     on_click(cast<Button>(weak_from_this()));

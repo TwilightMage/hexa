@@ -98,6 +98,7 @@
         <DisplayString>Shared {{ nullptr }}</DisplayString>
         <Expand>
             <Item Name="[reference count]">_Rep-&gt;_Uses</Item>
+            <Item Name="[weak reference count]">_Rep-&gt;_Weaks</Item>
             <ExpandedItem Condition="_Ptr != nullptr">*_Ptr</ExpandedItem>
         </Expand>
     </Type>
@@ -106,6 +107,18 @@
         <DisplayString Condition="_Ptr != nullptr">Unique {{ {_Ptr} }}</DisplayString>
         <DisplayString>Unique {{ nullptr }}</DisplayString>
         <Expand>
+            <Item Name="[reference count]">_Rep-&gt;_Uses</Item>
+            <Item Name="[weak reference count]">_Rep-&gt;_Weaks</Item>
+            <ExpandedItem Condition="_Ptr != nullptr">*_Ptr</ExpandedItem>
+        </Expand>
+    </Type>
+
+    <Type Name="std::weak_ptr&lt;*&gt;">
+        <DisplayString Condition="_Ptr != nullptr">Weak {{ {_Ptr} }}</DisplayString>
+        <DisplayString>Weak {{ nullptr }}</DisplayString>
+        <Expand>
+            <Item Name="[reference count]">_Rep-&gt;_Uses</Item>
+            <Item Name="[weak reference count]">_Rep-&gt;_Weaks</Item>
             <ExpandedItem Condition="_Ptr != nullptr">*_Ptr</ExpandedItem>
         </Expand>
     </Type>

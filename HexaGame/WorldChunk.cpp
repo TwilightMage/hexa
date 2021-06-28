@@ -83,6 +83,8 @@ void WorldChunk::set_tile(const TileIndex& index, const Shared<const TileInfo>& 
     modifications_[index] = tile;
     data[index.x][index.y][index.z] = tile;
     dirty_ = true;
+    on_tile_change(index_, index.to_absolute(index_));
+    regenerate_mesh();
 }
 
 TileSide WorldChunk::get_tile_face_flags(const TileIndex& tile_index) const

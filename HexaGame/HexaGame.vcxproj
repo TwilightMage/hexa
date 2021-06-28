@@ -176,6 +176,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="CharacterInfo.h" />
+    <ClInclude Include="CharacterInventory.h" />
     <ClInclude Include="Characters.h" />
     <ClInclude Include="ChunkIndex.h" />
     <ClInclude Include="ChunkMeshEntity.h" />
@@ -188,13 +189,18 @@
     <ClInclude Include="Entities\ItemDrop.h" />
     <ClInclude Include="Entities\SingleTile.h" />
     <ClInclude Include="Entities\TileDemoDomainEntity.h" />
+    <ClInclude Include="HexaEventBus.h" />
     <ClInclude Include="HexaSettings.h" />
     <ClInclude Include="HexaSaveGame.h" />
     <ClInclude Include="CharacterController.h" />
+    <ClInclude Include="Inventory.h" />
     <ClInclude Include="ItemContainer.h" />
     <ClInclude Include="ItemInfo.h" />
     <ClInclude Include="Items.h" />
+    <ClInclude Include="ItemTileInfo.h" />
+    <ClInclude Include="ItemToolInfo.h" />
     <ClInclude Include="ItemType.h" />
+    <ClInclude Include="ui\Toolbar.h" />
     <ClInclude Include="WorldPath.h" />
     <ClInclude Include="PathConfig.h" />
     <ClInclude Include="Paths.h" />
@@ -230,6 +236,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="CharacterController.cpp" />
+    <ClCompile Include="CharacterInventory.cpp" />
     <ClCompile Include="Characters.cpp" />
     <ClCompile Include="ChunkIndex.cpp" />
     <ClCompile Include="ChunkMeshEntity.cpp" />
@@ -307,6 +314,10 @@
     <ClCompile Include="Entities\SingleTile.cpp" />
     <ClCompile Include="Entities\TileDemoDomainEntity.cpp" />
     <ClCompile Include="HexaSaveGame.cpp" />
+    <ClCompile Include="Inventory.cpp" />
+    <ClCompile Include="ItemTileInfo.cpp" />
+    <ClCompile Include="ItemToolInfo.cpp" />
+    <ClCompile Include="ui\Toolbar.cpp" />
     <ClCompile Include="WorldPath.cpp" />
     <ClCompile Include="PathConfig.cpp" />
     <ClCompile Include="WorldChunkMesh.cpp" />

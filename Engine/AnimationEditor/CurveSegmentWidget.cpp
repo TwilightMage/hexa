@@ -117,9 +117,9 @@ void CurveSegmentWidget::update_texture()
     }
 }
 
-void CurveSegmentWidget::on_press()
+void CurveSegmentWidget::on_press(const Vector2& point)
 {
-    ButtonImage::on_press();
+    ButtonImage::on_press(point);
     
     on_click(cast<CurveSegmentWidget>(shared_from_this()));
 }

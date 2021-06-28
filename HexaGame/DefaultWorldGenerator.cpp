@@ -3,6 +3,7 @@
 #include "TileIndex.h"
 #include "Tiles.h"
 #include "WorldChunk.h"
+#include "Engine/Random.h"
 
 #define rest()  std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
@@ -12,7 +13,7 @@ void DefaultWorldGenerator::init(uint seed)
     std::array<byte, 256> permutation;
     for (uint i = 0; i < permutation.size(); i++)
     {
-        permutation[i] = rand() % std::numeric_limits<byte>::max();
+        permutation[i] = Random::global->number<byte>();
     }
     generator_.deserialize(permutation);
     generator_.reseed(seed);

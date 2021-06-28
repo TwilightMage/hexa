@@ -196,20 +196,12 @@ void UIElement::register_render()
 {
     should_render_ = true;
     on_register_render();
-    for (auto& child : children_)
-    {
-        child->register_render();
-    }
 }
 
 void UIElement::unregister_render()
 {
     should_render_ = false;
     on_unregister_render();
-    for (auto& child : children_)
-    {
-        child->unregister_render();
-    }
 }
 
 void UIElement::construct()
@@ -255,7 +247,7 @@ void UIElement::on_mouse_leave()
 {
 }
 
-void UIElement::on_press()
+void UIElement::on_press(const Vector2& point)
 {
 }
 
@@ -278,6 +270,7 @@ void UIElement::on_all_child_removed()
 void UIElement::set_size_internal(const Vector2& vec2_size)
 {
     size_ = vec2_size;
+    size_.z = 1.0f;
 
     update_matrix();
 }
@@ -381,9 +374,12 @@ void UIElement::update_matrix_child(const Matrix4x4& parent_matrix)
 
 void UIElement::remove_child_internal(const Shared<UIElement>& item)
 {
-    children_.Remove(item);
-    on_child_removed(item);
-    item->parent_ = null_weak(UIElement);
+    if (auto index = children_.IndexOf(item); index >= 0)
+    {
+        children_.RemoveAt(index);
+        on_child_removed(item);
+        item->parent_ = null_weak(UIElement);
 
-    item->removed_from_hierarchy();
+        item->removed_from_hierarchy();
+    }
 }

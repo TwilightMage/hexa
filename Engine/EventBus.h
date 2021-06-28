@@ -9,6 +9,6 @@ class World;
 class EXPORT EventBus
 {
 public:
-    Delegate<const Weak<World>&> world_opened;
-    Delegate<const Weak<World>&> world_closed;
+    Delegate<const Shared<World>&> world_opened;
+    Delegate<const Shared<World>&> world_closed;
 };

@@ -203,6 +203,7 @@
     <ClInclude Include="AnimationInstance.h" />
     <ClInclude Include="AnimationSlot.h" />
     <ClInclude Include="AnimatorComponent.h" />
+    <ClInclude Include="CameraInfo.h" />
     <ClInclude Include="ConversionPointer.h" />
     <ClInclude Include="DatabaseHelpers.h" />
     <ClInclude Include="EditorPlayer.h" />
@@ -225,6 +226,7 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameInfo.h" />
     <ClInclude Include="GeometryEditor.h" />
+    <ClInclude Include="ICamera.h" />
     <ClInclude Include="IControllable.h" />
     <ClInclude Include="ImageEditor.h" />
     <ClInclude Include="Interpolators.h" />
@@ -257,6 +259,7 @@
     <ClInclude Include="Physics\SphereCollision.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Quaternion.h" />
+    <ClInclude Include="Random.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="Regex.h" />
     <ClInclude Include="Renderer.h" />

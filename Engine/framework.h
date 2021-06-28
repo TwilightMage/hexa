@@ -105,6 +105,7 @@ FORCEINLINE Shared<To> cast(const Weak<From>& obj)
 }
 
 template<typename To, typename From>
+// use when you know what you're doing
 FORCEINLINE To& cast_object(From& rhs)
 {
 	static_assert(sizeof(To) == sizeof(From));
@@ -112,9 +113,24 @@ FORCEINLINE To& cast_object(From& rhs)
 }
 
 template<typename To, typename From>
+// use when you know what you're doing
 FORCEINLINE const To& cast_object(const From& rhs)
 {
 	static_assert(sizeof(To) == sizeof(From));
+	return *reinterpret_cast<const To*>(&rhs);
+}
+
+template<typename To, typename From>
+// use when you really know what you're doing
+FORCEINLINE To& cast_object_unsafe(From& rhs)
+{
+	return *reinterpret_cast<To*>(&rhs);
+}
+
+template<typename To, typename From>
+// use when you really know what you're doing
+FORCEINLINE const To& cast_object_unsafe(const From& rhs)
+{
 	return *reinterpret_cast<const To*>(&rhs);
 }
 
@@ -126,6 +142,7 @@ FORCEINLINE MemberType* hack_member(ObjectType* obj, uint byte_offset)
 	return reinterpret_cast<MemberType*>(reinterpret_cast<byte*>(obj) + byte_offset);
 }
 
+// check value, print error to log and return
 #define assert_error(cond, retval, category, message, ...) \
 if (!(cond))\
 {\
@@ -133,6 +150,7 @@ if (!(cond))\
 	return retval;\
 }\
 
+// check value, print warning to log and return
 #define assert_warning(cond, retval, category, message, ...) \
 if (!(cond))\
 {\

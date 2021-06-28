@@ -15,10 +15,8 @@
 
 void DebugPlayer::on_start()
 {
-    camera_ = MakeShared<Camera>();
-    camera_->owner = this;
-    camera_->fov = 45.0f;
-
+    Player::on_start();
+    
     debug_text_ = MakeShared<TextBlock>("qwerty");
     debug_text_->set_position(Vector2(5, 5));
     Game::add_ui(debug_text_);
@@ -49,6 +47,8 @@ void DebugPlayer::on_start()
 
 void DebugPlayer::key_down(int key)
 {
+    Player::key_down(key);
+    
     if (key == GLFW_KEY_W) move_forward_ += 1;
     else if (key == GLFW_KEY_S) move_forward_ -= 1;
     if (key == GLFW_KEY_D) move_right_ += 1;
@@ -59,6 +59,8 @@ void DebugPlayer::key_down(int key)
 
 void DebugPlayer::key_up(int key)
 {
+    Player::key_up(key);
+    
     if (key == GLFW_KEY_W) move_forward_ -= 1;
     else if (key == GLFW_KEY_S) move_forward_ += 1;
     if (key == GLFW_KEY_D) move_right_ -= 1;
@@ -69,6 +71,8 @@ void DebugPlayer::key_up(int key)
 
 void DebugPlayer::mouse_button_down(int button)
 {
+    Player::mouse_button_down(button);
+    
     if (button == 1)
     {
         if (auto world = get_world())
@@ -81,10 +85,10 @@ void DebugPlayer::mouse_button_down(int button)
 
 void DebugPlayer::on_possess()
 {
+    Player::on_possess();
+    
     Game::lock_mouse();
     Game::hide_mouse();
-    
-    Game::use_camera(camera_);
 }
 
 void DebugPlayer::tick(float delta_time)

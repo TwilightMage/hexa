@@ -30,7 +30,7 @@ void Mod::loading_stage()
 {
 }
 
-void Mod::on_loaded(EventBus* event_bus)
+void Mod::on_loaded(const Shared<EventBus>& event_bus)
 {
 }
 

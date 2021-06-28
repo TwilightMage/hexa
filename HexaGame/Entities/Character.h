@@ -8,6 +8,7 @@
 #include "HexaGame/PathConfig.h"
 #include "HexaGame/TileIndex.h"
 
+class CharacterInventory;
 class Animation;
 class WorldPath;
 class AnimatorComponent;
@@ -20,10 +21,15 @@ class EXPORT Character : public Entity, public ITickable, public Animated
     friend HexaWorld;
 
 public:
+    Character();
+
+    void on_start() override;
     void tick(float delta_time) override;
     
     bool go_to(const TileIndex& tile_position);
 
+    void kill();
+    
     void rotate_to(Direction direction);
     void rotate_to_tile(const TileIndex& tile_index);
     void undo_rotate_to_tile();
@@ -31,9 +37,12 @@ public:
     virtual void on_character_possesed();
     virtual void on_character_un_possesed();
 
+    virtual float get_reach_distance() const;
+
     TileIndex get_tile_position() const;
 
-    FORCEINLINE const Shared<AnimatorComponent> get_animator() const { return animator_; }
+    FORCEINLINE const Shared<CharacterInventory>& get_inventory() const { return inventory_; }
+    FORCEINLINE const Shared<AnimatorComponent>& get_animator() const { return animator_; }
 
     PathConfig get_path_config(const TileIndex& to) const;
 
@@ -50,6 +59,8 @@ protected:
     AnimationSlot step_animation;
 
     uint declared_height = 1;
+    uint initial_inventory_size = 40;
+    float basic_reach_distance = 1.0f;
     
 private:
     void set_tile_position(const TileIndex& tile_position);
@@ -57,6 +68,8 @@ private:
     void path_segment_finished();
 
     void update_target_rotation();
+
+    void parent_chunk_changed(const ChunkIndex& sender, const TileIndex& world_tile);
 
     Vector3 anim_offset_ = Vector3::zero();
     Vector3 anim_scale_ = Vector3::one();
@@ -77,6 +90,8 @@ private:
     uint camera_travel_distance_ = 10;
 
     Weak<CharacterController> controller_;
+
+    Shared<CharacterInventory> inventory_;
 
     Shared<AnimatorComponent> animator_;
 

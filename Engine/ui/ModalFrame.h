@@ -19,7 +19,7 @@ public:
     Delegate<> on_closed;
 
 protected:
-    void on_press() override;
+    void on_press(const Vector2& point) override;
     void on_size_changed() override;
     void on_parent_size_changed() override;
 

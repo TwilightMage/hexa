@@ -29,9 +29,24 @@ struct ItemContainer
         , count(count)
     {
     }
-    
-    Shared<const ItemInfo> item;
-    uint count;
 
-    FORCEINLINE bool is_empty() const { return item == nullptr || count == 0; }
+    bool operator==(const ItemContainer& rhs) const
+    {
+        return item == rhs.item && count == rhs.count;
+    }
+
+    bool operator!=(const ItemContainer& rhs) const
+    {
+        return item != rhs.item || count != rhs.count;
+    }
+
+    bool compare(const ItemContainer& rhs) const
+    {
+        return !is_empty() && !rhs.is_empty() && item == rhs.item;
+    }
+    
+    Shared<const ItemInfo> item = nullptr;
+    uint count = 0;
+
+    bool is_empty() const { return item == nullptr || count == 0; }
 };

@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include "ItemInfo.h"
+#include "ItemTileInfo.h"
+#include "ItemToolInfo.h"
 #include "Paths.h"
 #include "Engine/DatabaseHelpers.h"
 #include "Engine/Texture.h"
@@ -10,11 +12,12 @@
 class Items
 {
 public:
-    DECLARE_DATABASE_ENTRY(ItemInfo, iron_shovel);
+    DECLARE_DATABASE_ENTRY(ItemToolInfo, iron_shovel);
+    DECLARE_DATABASE_ENTRY(ItemTileInfo, stone_bricks);
 
     DATABASE_INIT_FUNC(ItemInfo)
     {
-        INIT_ITEM_DATABASE_ENTRY(iron_shovel, ItemInfo, RESOURCES_HEXA, "shovel", ItemType::Shovel, "Iron Shovel");
-        
+        INIT_ITEM_DATABASE_ENTRY(iron_shovel, ItemToolInfo, RESOURCES_HEXA, "shovel", ItemType::Shovel, "Iron Shovel", 1, 1.0f, TARGET_INSIDE);
+        INIT_ITEM_DATABASE_ENTRY(stone_bricks, ItemTileInfo, RESOURCES_HEXA, "bricks", ItemType::Tile, "Stone Bricks", 99, 1.0f, TARGET_OUTSIDE);
     }
 };

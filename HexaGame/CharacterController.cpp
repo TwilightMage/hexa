@@ -25,8 +25,3 @@ void CharacterController::un_posses_character()
         character_ = nullptr;
     }
 }
-
-Shared<Character> CharacterController::get_character() const
-{
-    return character_;
-}

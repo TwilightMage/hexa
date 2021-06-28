@@ -57,13 +57,6 @@ Shared<Map<TileIndex, Shared<const TileInfo>>> HexaSaveGame::get_chunk_modificat
                 }
             }
 
-            if (index == ChunkIndex(0, 0))
-            {
-                result->insert(TileIndex(2, 2, 106), Tiles::stone_bricks);
-                result->insert(TileIndex(2, 2, 107), Tiles::stone_bricks);
-                result->insert(TileIndex(2, 0, 105), Tiles::stone_bricks);
-            }
-
             return result;
         }
     }

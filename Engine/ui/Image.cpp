@@ -6,18 +6,18 @@
 Image::Image()
     : UIElement()
     , shader_(Game::get_basic_ui_shader())
-    , texture_(Game::get_white_pixel())
+    , texture_(Game::get_white_pixel(), false)
     , have_rect_(false)
-    , uv_rect_(Quaternion(1.0f, 1.0f, 0.0f, 0.0f))
+    , uv_rect_(Quaternion(0.0f, 0.0f, 1.0f, 1.0f))
 {
 }
 
 Image::Image(const Shared<Texture>& texture)
     : UIElement()
     , shader_(Game::get_basic_ui_shader())
-    , texture_(texture)
+    , texture_(texture, false)
     , have_rect_(false)
-    , uv_rect_(Quaternion(1.0f, 1.0f, 0.0f, 0.0f))
+    , uv_rect_(Quaternion(0.0f, 0.0f, 1.0f, 1.0f))
 {
 }
 
@@ -101,10 +101,10 @@ void Image::update_uv_rect()
 {
     if (!have_rect_)
     {
-        uv_rect_ = Quaternion(1.0f, 1.0f, 0.0f, 0.0f);
+        uv_rect_ = Quaternion(0.0f, 0.0f, 1.0f, 1.0f);
     }
     else
     {
-        uv_rect_ = Quaternion(rect_.w / static_cast<float>(texture_->get_width()), rect_.h / static_cast<float>(texture_->get_height()), rect_.x / static_cast<float>(texture_->get_width()), rect_.y / static_cast<float>(texture_->get_height()));
+        uv_rect_ = Quaternion(rect_.x / static_cast<float>(texture_->get_width()), rect_.y / static_cast<float>(texture_->get_height()), rect_.w / static_cast<float>(texture_->get_width()), rect_.h / static_cast<float>(texture_->get_height()));
     }
 }

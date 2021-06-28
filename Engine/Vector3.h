@@ -13,6 +13,7 @@ public:
     Vector3(float x, float y);
     Vector3(float x, float y, float z);
     Vector3(const Vector2& rhs);
+    Vector3(const Vector2& vec2, float z);
     Vector3(const Vector3& rhs);
 
     float magnitude() const;

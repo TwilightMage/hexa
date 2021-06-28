@@ -18,7 +18,7 @@ protected:
 
     void on_mouse_enter() override;
     void on_mouse_leave() override;
-    void on_press() override;
+    void on_press(const Vector2& point) override;
     void on_release() override;
     
     void set_state(State state);

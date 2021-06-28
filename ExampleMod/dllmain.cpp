@@ -17,7 +17,4 @@ BOOL APIENTRY DllMain(HMODULE hModule, DWORD  ul_reason_for_call, LPVOID lpReser
     return TRUE;
 }
 
-Mod EXPORT *get_mod()
-{
-    return new ExampleMod();
-}
+IMPLEMENT_MOD_ENTRY(ExampleMod)

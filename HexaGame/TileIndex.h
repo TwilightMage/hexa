@@ -17,7 +17,8 @@ public:
     FORCEINLINE TileIndex offset(int x, int y, int z) const;
     TileIndex offset(TileSide direction) const;
     FORCEINLINE TileIndex cycle_chunk() const;
-    FORCEINLINE ChunkIndex get_chunk() const;
+    ChunkIndex get_chunk() const;
+    TileIndex to_absolute(const ChunkIndex& parent_chunk) const;
 
     static TileIndex offset_from_side(TileSide side);
     static TileSide offset_to_side(const TileIndex& offset);

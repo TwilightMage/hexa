@@ -116,4 +116,7 @@ public:
 
     Matrix4x4 operator*(float rhs) const;
     Matrix4x4 operator/(float rhs) const;
+
+    Vector3 operator*(const Vector3& rhs) const;
+    Vector2 operator*(const Vector2& rhs) const;
 };

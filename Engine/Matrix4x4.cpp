@@ -138,6 +138,8 @@ Matrix4x4 Matrix4x4::inverse() const
 	float OneOverDeterminant = 1.0f / Dot1;
 
 	return Inverse * OneOverDeterminant;
+
+	//return cast_object<Matrix4x4>(glm::inverse(cast_object<glm::mat4>(*this)));
 }
 
 Matrix4x4 Matrix4x4::look_at(const Vector3& from, const Vector3& to)
@@ -240,4 +242,14 @@ Matrix4x4 Matrix4x4::operator*(float rhs) const
 Matrix4x4 Matrix4x4::operator/(float rhs) const
 {
 	return Matrix4x4(data[0] / rhs, data[1] / rhs, data[2] / rhs, data[3] / rhs);
+}
+
+Vector3 Matrix4x4::operator*(const Vector3& rhs) const
+{
+	return cast_object_unsafe<Vector3>(cast_object<glm::mat4>(*this) * glm::vec4(rhs.x, rhs.y, rhs.z, 0.0f));
+}
+
+Vector2 Matrix4x4::operator*(const Vector2& rhs) const
+{
+	return cast_object_unsafe<Vector2>(cast_object<glm::mat4>(*this) * glm::vec4(rhs.x, rhs.y, 0.0f, 0.0f));
 }

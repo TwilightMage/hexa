@@ -20,12 +20,12 @@ public:
 
     DATABASE_INIT_FUNC(TileInfo)
     {
-        INIT_DATABASE_ENTRY(air, TileInfo, nullptr, TileType::Air, false, false, "");
-        INIT_TILE_DATABASE_ENTRY(dirt, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true, "");
-        INIT_TILE_DATABASE_ENTRY(grass, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true, "");
-        INIT_TILE_DATABASE_ENTRY(stone, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true, "");
-        INIT_TILE_DATABASE_ENTRY(sand, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true, "");
-        INIT_TILE_DATABASE_ENTRY(iron_ore, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true, "");
-        INIT_TILE_DATABASE_ENTRY(stone_bricks, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true, "");
+        INIT_DATABASE_ENTRY(air, TileInfo, nullptr, TileType::Air, false, false);
+        INIT_TILE_DATABASE_ENTRY(dirt, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true);
+        INIT_TILE_DATABASE_ENTRY(grass, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true);
+        INIT_TILE_DATABASE_ENTRY(stone, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true);
+        INIT_TILE_DATABASE_ENTRY(sand, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true);
+        INIT_TILE_DATABASE_ENTRY(iron_ore, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true);
+        INIT_TILE_DATABASE_ENTRY(stone_bricks, TileInfo, RESOURCES_HEXA, TileType::Solid, true, true);
     }
 };

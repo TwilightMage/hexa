@@ -15,6 +15,8 @@ typedef uint8_t byte;
 typedef int16_t char16;
 typedef uint16_t byte16;
 
+#define KINDA_SMALL_NUMBER 0.0001f
+
 template<typename T, class Deleter = std::default_delete<T>>
 using Unique = std::unique_ptr<T, Deleter>;
 

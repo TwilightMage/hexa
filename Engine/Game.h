@@ -14,6 +14,7 @@
 #include "Vector2.h"
 #include "Version.h"
 
+class ICamera;
 class Animation;
 class UIInputElement;
 class SystemIO;
@@ -25,7 +26,6 @@ class SpriteFont;
 class UIElement;
 class Image;
 class Mod;
-class Camera;
 class GLFWwindow;
 class IControllable;
 class World;
@@ -62,11 +62,11 @@ public:
 
     void launch();
 
-    static void possess(const Weak<IControllable>& controllable);
+    static void possess(const Shared<IControllable>& controllable);
     static void focus_ui(const Shared<UIInputElement>& ui_input_reciever);
-    static void use_camera(const Weak<Camera>& camera);
+    static void use_camera(const Shared<ICamera>& camera);
     
-    static void open_world(const Weak<World>& world);
+    static void open_world(const Shared<World>& world);
     static void close_world();
 
     static const List<String>& get_args();
@@ -75,7 +75,14 @@ public:
 
     static const GameInfo& get_info();
     static const Shared<Settings>& get_settings();
+    template<typename T>
+    FORCEINLINE static T get_settings() { return cast<T>(get_settings()); }
     static const Shared<SaveGame>& get_save_game();
+    template<typename T>
+    FORCEINLINE static T get_save_game() { return cast<T>(get_save_game()); }
+    static const Shared<EventBus>& get_event_bus();
+    template<typename T>
+    FORCEINLINE static T get_event_bus() { return cast<T>(get_event_bus()); }
 
     static void new_log_record(ELogLevel level, const String& category, const String& message);
 
@@ -112,6 +119,7 @@ protected:
     virtual void init_game_info(GameInfo& out_info) = 0;
     virtual Shared<Settings> generate_settings_object();
     virtual Shared<SaveGame> generate_save_game_object(const String& profile_name);
+    virtual Shared<EventBus> generate_event_bus_object();
     virtual void loading_stage();
     virtual void start();
     virtual void tick(float delta_time);
@@ -141,6 +149,7 @@ private:
     GameInfo info_;
     Shared<Settings> settings_;
     Shared<SaveGame> save_game_;
+    Shared<EventBus> event_bus_;
 
     // Logging
     LogStream log_stream_;
@@ -168,7 +177,6 @@ private:
     // Game
     Version game_version_ = {0, 1, 0};
     float ui_scale_ = 2;
-    Unique<EventBus> event_bus_;
     Shared<Shader> basic_shader_;
     Shared<Shader> basic_ui_shader_;
     Shared<Texture> white_pixel_;
@@ -176,7 +184,7 @@ private:
     List<Shared<Mod>> mods_;
     
     // Game Play
-    Shared<Camera> current_camera_;
+    Shared<ICamera> current_camera_;
     Shared<IControllable> current_controllable_;
     Shared<UIInputElement> ui_input_element_;
     Shared<World> world_;

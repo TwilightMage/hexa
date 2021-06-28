@@ -57,6 +57,12 @@ ChunkIndex TileIndex::get_chunk() const
     return ChunkIndex((x - static_cast<int>(Math::mod(x, WorldChunk::chunk_size))) / static_cast<int>(WorldChunk::chunk_size), (y - static_cast<int>(Math::mod(y, WorldChunk::chunk_size))) / static_cast<int>(WorldChunk::chunk_size));
 }
 
+TileIndex TileIndex::to_absolute(const ChunkIndex& parent_chunk) const
+{
+    return TileIndex(parent_chunk.x * WorldChunk::chunk_size + x, parent_chunk.y * WorldChunk::chunk_size + y, z);
+    
+}
+
 TileIndex TileIndex::offset_from_side(TileSide side)
 {
     switch (side)

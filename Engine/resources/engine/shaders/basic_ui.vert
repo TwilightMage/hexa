@@ -25,5 +25,5 @@ void main()
     InstanceID = gl_InstanceID;
     gl_Position = instance_MVP[gl_InstanceID] * vec4(vertices[gl_VertexID].pos, 0.0, 1.0);
     color = instance_color[gl_InstanceID];
-    uv = vertices[gl_VertexID].uv * instance_uv[gl_InstanceID].xy + instance_uv[gl_InstanceID].zw;
+    uv = vertices[gl_VertexID].uv * instance_uv[gl_InstanceID].zw + instance_uv[gl_InstanceID].xy;
 }

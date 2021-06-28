@@ -1,13 +1,16 @@
 ﻿#include "HexaWorld.h"
 
 #include "Engine/Math.h"
+#include "Engine/Random.h"
 #include "Engine/Rect.h"
 #include "HexaGame/HexaSaveGame.h"
+#include "HexaGame/ItemInfo.h"
 #include "HexaGame/WorldChunk.h"
 #include "HexaGame/WorldChunkObserver.h"
 #include "HexaGame/WorldGenerator.h"
 #include "HexaGame/WorldPath.h"
 #include "HexaGame/Entities/Character.h"
+#include "HexaGame/Entities/ItemDrop.h"
 
 HexaWorld::HexaWorld(const Shared<WorldGenerator>& generator)
     : World()
@@ -342,10 +345,20 @@ bool HexaWorld::spawn_character(const Shared<Character>& character, const TileIn
 
         character->on_destroyed.bind(this, &HexaWorld::character_destroyed_callback);
 
+        on_character_spawned(character);
+
         return true;
     }
 
     return false;
+}
+
+Shared<Entity> HexaWorld::spawn_drop(const TileIndex& tile, const ItemContainer& item)
+{
+    Shared<Entity> entity = MakeShared<ItemDrop>(item);
+    auto random = Random::global;
+    spawn_entity(MakeShared<ItemDrop>(item), tile.to_vector() - Vector3(random->number<float>(-0.2f, 0.2f), random->number<float>(-0.2f, 0.2f), item.item ? (item.item->mesh->get_bounds_center().z - item.item->mesh->get_bounds_half_size().z) : 0.0f), Quaternion(Vector3(0, 0, Random::global->number(360.0f))));
+    return entity;
 }
 
 void HexaWorld::set_tile(const TileIndex& index, const Shared<const TileInfo>& id) const
@@ -591,10 +604,20 @@ void HexaWorld::fill_observer_array(Array2D<Shared<WorldChunk>>& array, int star
             if (chunk == nullptr)
             {
                 chunk = MakeShared<WorldChunk>(ChunkIndex(start_x + x, start_y + y), cast<HexaWorld>(shared_from_this()));
-                chunk->load();
                 added.Add(ChunkIndex(x, y));
             }
         }
+    }
+
+    Vector3 mid_chunk = ChunkIndex(array.get_size_x() / 2, array.get_size_y() / 2).to_vector();
+    added.sort([&](const ChunkIndex& a, const ChunkIndex& b) -> bool
+    {
+        return Vector3::distance(a.to_vector(), mid_chunk) > Vector3::distance(b.to_vector(), mid_chunk);
+    });
+
+    for (const auto& index : added)
+    {
+        array.at(index.x, index.y)->load();
     }
 
     for (auto& index : added)

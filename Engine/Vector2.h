@@ -21,6 +21,7 @@ public:
     String to_string() const;
     
     static float angle_global(const Vector2& from, const Vector2& to);
+    FORCEINLINE static float distance(const Vector2& a, const Vector2& b) { return (a - b).magnitude(); }
 
     Vector2 operator+(const Vector2& rhs) const;
     Vector2 operator-(const Vector2& rhs) const;

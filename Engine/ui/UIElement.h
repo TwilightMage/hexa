@@ -51,7 +51,7 @@ protected:
     virtual void on_parent_size_changed();
     virtual void on_mouse_enter();
     virtual void on_mouse_leave();
-    virtual void on_press();
+    virtual void on_press(const Vector2& point);
     virtual void on_release();
     virtual void on_child_added(const Shared<UIElement>& child);
     virtual void on_child_removed(const Shared<UIElement>& child);

@@ -5,12 +5,11 @@
 #include <GLFW/glfw3.h>
 #include <reactphysics3d/reactphysics3d.h>
 
-#include "Camera.h"
+#include "ICamera.h"
 #include "IControllable.h"
 #include "Mod.h"
 #include "Path.h"
 #include "Paths.h"
-#include "Quaternion.h"
 #include "Renderer.h"
 #include "SaveGame.h"
 #include "Settings.h"
@@ -21,7 +20,6 @@
 #include "World.h"
 #include "ui/Image.h"
 #include "ui/UIInputElement.h"
-#include "ui/Panel.h"
 
 Game* Game::instance_ = nullptr;
 
@@ -70,13 +68,13 @@ void Game::launch()
 	cleanup();
 }
 
-void Game::possess(const Weak<IControllable>& controllable)
+void Game::possess(const Shared<IControllable>& controllable)
 {
 	if (instance_->current_controllable_)
 	{
 		instance_->current_controllable_->on_unpossess();
 	}
-	instance_->current_controllable_ = controllable.lock();
+	instance_->current_controllable_ = controllable;
 	instance_->current_controllable_->on_possess();
 }
 
@@ -95,20 +93,24 @@ void Game::focus_ui(const Shared<UIInputElement>& ui_input_reciever)
 	}
 }
 
-void Game::use_camera(const Weak<Camera>& camera)
+void Game::use_camera(const Shared<ICamera>& camera)
 {
-	instance_->current_camera_ = camera.lock();
+	instance_->current_camera_ = camera;
 }
 
-void Game::open_world(const Weak<World>& world)
+void Game::open_world(const Shared<World>& world)
 {
 	close_world();
 
-	if (const auto world_ptr = world.lock())
+	instance_->world_ = world;
+	if (world)
 	{
-		instance_->world_ = world_ptr;
 		instance_->world_->start();
 		instance_->event_bus_->world_opened(world);
+	}
+	else
+	{
+		print_warning("Game", "Attempt to open nullptr world");
 	}
 }
 
@@ -145,6 +147,11 @@ const Shared<Settings>& Game::get_settings()
 const Shared<SaveGame>& Game::get_save_game()
 {
 	return instance_->save_game_;
+}
+
+const Shared<EventBus>& Game::get_event_bus()
+{
+	return instance_->event_bus_;
 }
 
 void Game::new_log_record(ELogLevel level, const String& category, const String& message)
@@ -291,6 +298,11 @@ Shared<SaveGame> Game::generate_save_game_object(const String& profile_name)
 	return MakeShared<SaveGame>(profile_name);
 }
 
+Shared<EventBus> Game::generate_event_bus_object()
+{
+	return MakeShared<EventBus>();
+}
+
 void Game::loading_stage()
 {
 }
@@ -427,7 +439,7 @@ void Game::render_loop()
 	{
 		try
 		{
-			mod->on_loaded(event_bus_.get());
+			mod->on_loaded(event_bus_);
 			verbose("Mod Loader", "Post-loaded mod %s", mod->info_.name.c());
 		}
 		catch (std::runtime_error err)
@@ -482,11 +494,12 @@ void Game::render_loop()
 			world_->tick(last_delta_time);
 		}
 		
-		if (current_camera_ && current_camera_->owner && width > 0 && height > 0)
+		if (current_camera_ && width > 0 && height > 0)
 		{
 			// 3d matrix
-			auto cam_from = current_camera_->owner->get_position();
-			auto cam_to = current_camera_->owner->get_position() + current_camera_->owner->get_rotation().forward();
+			auto camera_info = current_camera_->get_camera_info();
+			auto cam_from = camera_info.position;
+			auto cam_to = camera_info.position + camera_info.rotation.forward();
 			cam_from.y *= -1;
 			cam_to.y *= -1;
 
@@ -497,11 +510,11 @@ void Game::render_loop()
 					0.0, 0.0, 0.0, 1.0
 				);
 
-			auto proj = Matrix4x4::perspective(current_camera_->fov, static_cast<float>(width) / static_cast<float>(height), 0.01f, 1000.0f);
+			auto proj = Matrix4x4::perspective(camera_info.fov, static_cast<float>(width) / static_cast<float>(height), 0.01f, 1000.0f);
 			
 			auto vp = proj * view;
 
-			un_projected_mouse_ = Matrix4x4::un_project(Vector2(mouse_pos_.x, mouse_pos_.y), Vector2(static_cast<float>(width), static_cast<float>(height)), Matrix4x4().translate(current_camera_->owner->get_position()), view, proj);
+			un_projected_mouse_ = Matrix4x4::un_project(Vector2(mouse_pos_.x, mouse_pos_.y), Vector2(static_cast<float>(width), static_cast<float>(height)), Matrix4x4().translate(camera_info.position), view, proj);
 				
 			// UI matrix
 			auto ui_vp = Matrix4x4::ortho(0.0f, static_cast<float>(width), static_cast<float>(-height), 0.0f, -1000.0f, 0.0001f);
@@ -621,8 +634,16 @@ void Game::mouse_button_callback(class GLFWwindow* window, int button, int actio
 					instance_->ui_input_element_->on_unfocus();
 					instance_->ui_input_element_ = nullptr;
 				}
+
+				auto inv_mat = ui_under_mouse->get_ui_matrix().inverse();
+				auto q1 = inv_mat * ui_under_mouse->get_position();
+				auto q2 = inv_mat * (ui_under_mouse->get_position() + ui_under_mouse->get_size());
+				auto q = inv_mat * instance_->mouse_pos_ / instance_->ui_scale_;
+
+				const auto rel_pos_aspect = (q - q1) / (q2 - q1);
+				const auto rel_pos = rel_pos_aspect * ui_under_mouse->get_size();
 				
-				ui_under_mouse->on_press();
+				ui_under_mouse->on_press(rel_pos);
 				ui_under_mouse->is_pressed_ = true;
 				instance_->pressed_ui_ = ui_under_mouse;
 			}

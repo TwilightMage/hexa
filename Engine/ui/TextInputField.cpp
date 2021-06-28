@@ -156,7 +156,7 @@ bool TextInputField::FloatInputVerifier(String& new_input, char new_char)
     return false;
 }
 
-void TextInputField::on_press()
+void TextInputField::on_press(const Vector2& point)
 {
     Game::get_instance()->focus_ui(cast<UIInputElement>(shared_from_this()));
 }

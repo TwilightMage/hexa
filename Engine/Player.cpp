@@ -2,14 +2,15 @@
 
 #include "Camera.h"
 
-void Player::on_start()
-{
-    camera_ = MakeShared<Camera>();
-    camera_->owner = this;
-    camera_->fov = 45.0f;
-}
-
 void Player::on_possess()
 {
-    Game::use_camera(camera_);
+    Game::use_camera(cast<ICamera>(shared_from_this()));
+}
+
+CameraInfo Player::get_camera_info() const
+{
+    return {
+        get_position(),
+        get_rotation()
+    };
 }

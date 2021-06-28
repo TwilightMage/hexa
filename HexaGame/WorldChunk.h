@@ -50,6 +50,7 @@ public:
     Delegate<const Shared<WorldChunk>&, WorldChunkDataState> on_state_changed;
     Delegate<const Shared<WorldChunk>&> on_loaded;
     Delegate<const Shared<WorldChunk>&> on_loading;
+    Delegate<const ChunkIndex&, const TileIndex&> on_tile_change;
 
 private:
     void load();

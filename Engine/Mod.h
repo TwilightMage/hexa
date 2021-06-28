@@ -29,7 +29,7 @@ public:
     
 protected:
     virtual void loading_stage();
-    virtual void on_loaded(EventBus* event_bus);
+    virtual void on_loaded(const Shared<EventBus>& event_bus);
 
 private:
     static Shared<Mod> load(const Path& path);
@@ -38,3 +38,5 @@ private:
     Info info_;
     HINSTANCE dll_;
 };
+
+#define IMPLEMENT_MOD_ENTRY(ModTypeName, ...) extern "C" Mod EXPORT *get_mod() { return new ModTypeName(__VA_ARGS__); }

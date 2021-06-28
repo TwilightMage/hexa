@@ -22,7 +22,7 @@ void ModalFrame::close()
     remove_from_parent();
 }
 
-void ModalFrame::on_press()
+void ModalFrame::on_press(const Vector2& point)
 {
     close();
 }

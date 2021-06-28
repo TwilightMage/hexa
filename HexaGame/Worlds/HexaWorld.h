@@ -6,6 +6,7 @@
 #include "Engine/Array2D.h"
 #include "Engine/Rect.h"
 #include "Engine/World.h"
+#include "HexaGame/ItemContainer.h"
 #include "HexaGame/PathConfig.h"
 
 class WorldPath;
@@ -32,11 +33,14 @@ public:
     Shared<WorldPath> FindPath(const PathConfig& config);
 
     bool spawn_character(const Shared<Character>& character, const TileIndex& tile_index);
+    Shared<Entity> spawn_drop(const TileIndex& tile, const ItemContainer& item);
 
     void set_tile(const TileIndex& index, const Shared<const TileInfo>& id) const;
     Shared<const TileInfo> get_tile_id(const TileIndex& index) const;
     
     void dump_observable_area();
+
+    Delegate<const Shared<Character>&> on_character_spawned;
 
 private:
     void character_destroyed_callback(const Shared<Entity>& character);

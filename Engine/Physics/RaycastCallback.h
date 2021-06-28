@@ -5,7 +5,7 @@
 #include "RaycastResult.h"
 #include "Engine/List.h"
 
-class RaycastCallback : public reactphysics3d::RaycastCallback
+class EXPORT RaycastCallback : public reactphysics3d::RaycastCallback
 {
 public:
     reactphysics3d::decimal notifyRaycastHit(const reactphysics3d::RaycastInfo& raycastInfo) override;

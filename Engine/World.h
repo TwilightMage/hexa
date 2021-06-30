@@ -54,15 +54,14 @@ public:
 
     TimerHandle delay(float time, std::function<void()> func);
 
-    FORCEINLINE const Vector3& get_ambient_light() const { return ambient_light_; }
-    void set_ambient_light(const Vector3& ambient_light);
-
-    FORCEINLINE const Vector3& get_sun_light() const { return sun_light_; }
-    void set_sun_light(const Vector3& sun_light);
-
     FORCEINLINE const Quaternion& get_sun_angle() const { return sun_angle_; }
     void set_sun_pitch(float sun_pitch);
     void set_sun_yaw(float sun_yaw);
+
+    Color ambient_color_ = Color::white();
+    float ambient_intensity_ = 0.5f;
+    Color sun_color_ = Color::white();
+    float sun_intensity_ = 0.8f;
     
 protected:
     virtual void on_start();
@@ -83,7 +82,5 @@ private:
 
     Map<TimerHandle, TimerEntry> timer_entries_;
 
-    Vector3 ambient_light_ = Vector3(0.5f);
-    Vector3 sun_light_ = Vector3(0.8f);
     Quaternion sun_angle_ = Quaternion(Vector3(0, 45, 0));
 };

@@ -268,16 +268,6 @@ TimerHandle World::delay(float time, std::function<void()> func)
     return handle;
 }
 
-void World::set_ambient_light(const Vector3& ambient_light)
-{
-    ambient_light_ = ambient_light;
-}
-
-void World::set_sun_light(const Vector3& sun_light)
-{
-    sun_light_ = sun_light;
-}
-
 void World::set_sun_pitch(float sun_pitch)
 {
     sun_angle_ = Quaternion(Vector3(0, sun_pitch, sun_angle_.yaw()));

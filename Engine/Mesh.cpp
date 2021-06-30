@@ -73,7 +73,7 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
     GeometryEditor::remove_indices(result->vertices_, result->indices_);
     GeometryEditor::rotate(result->vertices_, Quaternion(Vector3(90.0f, 0.0f, 180.0f)));
     GeometryEditor::mirror_y(result->vertices_);
-    GeometryEditor::compute_normals(result->vertices_, result->indices_, true);
+    //GeometryEditor::compute_normals(result->vertices_, result->indices_, true);
 
     result->calculate_bbox();
 

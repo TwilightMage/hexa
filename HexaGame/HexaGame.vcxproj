@@ -306,6 +306,11 @@
     <Content Include="resources\hexagame\fonts\harrington_0.png" />
     <Content Include="resources\hexagame\meshes\arrow.obj" />
     <Content Include="resources\hexagame\meshes\hexagon_tile.obj" />
+    <Content Include="resources\hexagame\meshes\items\bricks.obj" />
+    <Content Include="resources\hexagame\meshes\items\pile.obj" />
+    <Content Include="resources\hexagame\meshes\items\shovel.obj" />
+    <Content Include="resources\hexagame\meshes\items\sword.obj" />
+    <Content Include="resources\hexagame\meshes\tiles\grass.obj" />
     <Content Include="resources\hexagame\textures\arrow.png" />
     <Content Include="resources\hexagame\textures\axis_arrows.png" />
     <Content Include="resources\hexagame\textures\tiles\dirt.png" />

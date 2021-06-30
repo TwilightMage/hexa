@@ -116,6 +116,7 @@ void GeometryEditor::mirror_x(List<Mesh::Vertex>& vertices)
     for (auto& vertex : vertices)
     {
         vertex.pos.x *= -1;
+        vertex.norm.x *= -1;
     }
 }
 
@@ -124,6 +125,7 @@ void GeometryEditor::mirror_y(List<Mesh::Vertex>& vertices)
     for (auto& vertex : vertices)
     {
         vertex.pos.y *= -1;
+        vertex.norm.y *= -1;
     }
 }
 
@@ -132,6 +134,7 @@ void GeometryEditor::mirror_z(List<Mesh::Vertex>& vertices)
     for (auto& vertex : vertices)
     {
         vertex.pos.z *= -1;
+        vertex.norm.z *= -1;
     }
 }
 
@@ -148,6 +151,7 @@ void GeometryEditor::rotate(List<Mesh::Vertex>& vertices, const Quaternion& quat
     for (auto& vertex : vertices)
     {
         vertex.pos = quat.rotate_vector3(vertex.pos);
+        vertex.norm = quat.rotate_vector3(vertex.norm);
     }
 }
 

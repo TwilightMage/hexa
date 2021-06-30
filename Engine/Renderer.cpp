@@ -91,6 +91,8 @@ void Renderer::put_params_for_intances(const Matrix4x4& view, const Matrix4x4& p
     // declare local buffers
     Matrix4x4* model_array = new Matrix4x4[instance_count];
     uint64* texture_handle_array = new uint64[instance_count];
+    Vector3 ambient_color = world->ambient_color_.to_vector3();
+    Vector3 sun_color = world->sun_color_.to_vector3();
     Vector3 sun_dir = -world->get_sun_angle().forward();
 
     // fill local buffers
@@ -106,8 +108,8 @@ void Renderer::put_params_for_intances(const Matrix4x4& view, const Matrix4x4& p
     glUniformHandleui64vARB(230, instance_count, texture_handle_array);
     glUniformMatrix4fv(460, 1, GL_FALSE, reinterpret_cast<const float*>(&view));
     glUniformMatrix4fv(461, 1, GL_FALSE, reinterpret_cast<const float*>(&projection));
-    glUniform3f(462, world->get_ambient_light().x, world->get_ambient_light().y, world->get_ambient_light().z);
-    glUniform3f(463, world->get_sun_light().x, world->get_sun_light().y, world->get_sun_light().z);
+    glUniform3f(462, ambient_color.x * world->ambient_intensity_, ambient_color.y * world->ambient_intensity_, ambient_color.z * world->ambient_intensity_);
+    glUniform4f(463, sun_color.x, sun_color.y, sun_color.z, world->sun_intensity_);
     glUniform3f(464, sun_dir.x, sun_dir.y, sun_dir.z);
 
     // clear local buffers

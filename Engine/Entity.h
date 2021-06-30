@@ -84,6 +84,9 @@ public:
         return nullptr;
     }
 
+    FORCEINLINE bool is_visible() const { return visible_; }
+    void set_visibility(bool visibility);
+
     Delegate<const Shared<Entity>&> on_destroyed;
     
 protected:
@@ -115,4 +118,6 @@ private:
     Shared<Collision> collision_;
     byte16 collision_mask_ = CollisionMaskBits::NONE;
     List<Shared<EntityComponent>> components_;
+    bool visible_ = true;
+    bool visibility_changed_ = false;
 };

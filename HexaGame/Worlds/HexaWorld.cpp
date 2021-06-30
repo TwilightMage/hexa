@@ -15,6 +15,7 @@
 HexaWorld::HexaWorld(const Shared<WorldGenerator>& generator)
     : World()
     , generator_(generator)
+    , cap_chunk_z(WorldChunk::chunk_height)
 {
 
 }
@@ -97,7 +98,7 @@ bool attempt_move(PathFindingData& data, const TileIndex& current_tile, const Ti
             bool enough_space_to_jump_down = true;
             for (uint j = 0; j < data.config.agent_height; j++)
             {
-                if (data.world->get_tile_id(next_tile.offset(0, 0, data.config.agent_height - j))->type != TileType::Air)
+                if (data.world->get_tile_id(next_tile.offset(0, 0, data.config.agent_height - 1 - j))->type != TileType::Air)
                 {
                     enough_space_to_jump_down = false;
                 }
@@ -110,7 +111,7 @@ bool attempt_move(PathFindingData& data, const TileIndex& current_tile, const Ti
                 
                 for (int j = 1; j < (int)data.config.allowed_fall + 1; j++)
                 {
-                    jump_to = next_tile.offset(0, 0, -j);
+                    jump_to = next_tile.offset(0, 0, -j - 1);
                     if (data.world->get_tile_id(jump_to)->type == TileType::Solid)
                     {
                         has_land_to_jump_down = true;
@@ -205,7 +206,7 @@ bool build_path_recursive(PathFindingData& data, const PathMove& current_move, b
         return true;
     }
 
-    const float angle_to = -Vector2::angle_global(current_move.to.to_vector(), data.to_vector);
+    const float angle_to = current_move.to.x != data.config.to.x || current_move.to.y != data.config.to.y ? -Vector2::angle_global(current_move.to.to_vector(), data.to_vector) : 0.0f;
     const bool vertical_priority = data.config.to.z > current_move.to.z;
     
     const TileSide side_try_f = tile_side_from_angle_xy(angle_to);
@@ -296,7 +297,10 @@ bool build_path_recursive(PathFindingData& data, const PathMove& current_move, b
         if (attempt_move(data, current_move.to, next_tile_b, vertical_priority)) return true;
     }
 
-    data.moves.RemoveAt(data.moves.length() - 1);
+    if (!is_first)
+    {
+        data.moves.RemoveAt(data.moves.length() - 1);
+    }
     return false;
 }
 
@@ -355,6 +359,8 @@ bool HexaWorld::spawn_character(const Shared<Character>& character, const TileIn
 
 Shared<Entity> HexaWorld::spawn_drop(const TileIndex& tile, const ItemContainer& item)
 {
+    if (item.is_empty()) return nullptr;
+    
     Shared<Entity> entity = MakeShared<ItemDrop>(item);
     auto random = Random::global;
     spawn_entity(MakeShared<ItemDrop>(item), tile.to_vector() - Vector3(random->number<float>(-0.2f, 0.2f), random->number<float>(-0.2f, 0.2f), item.item ? (item.item->mesh->get_bounds_center().z - item.item->mesh->get_bounds_half_size().z) : 0.0f), Quaternion(Vector3(0, 0, Random::global->number(360.0f))));
@@ -397,6 +403,26 @@ Shared<const TileInfo> HexaWorld::get_tile_id(const TileIndex& index) const
 
     print_debug("World", "Unable to get tile {$i;$i;$i}, chunk {$i;$i} is not loaded", index.x, index.y, index.z, chunk_index.x, chunk_index.y);
     return nullptr;
+}
+
+void HexaWorld::cap_chunks(uint z)
+{
+    if (cap_chunk_z == z) return;
+    
+    cap_chunk_z = z;
+
+    for (const auto& observer : chunk_observers_)
+    {
+        for (const auto& chunk : observer->chunks_)
+        {
+            chunk->cap(z);
+        }
+    }
+}
+
+void HexaWorld::uncap_chunks()
+{
+    cap_chunks(WorldChunk::chunk_height);
 }
 
 void HexaWorld::dump_observable_area()
@@ -522,6 +548,11 @@ void HexaWorld::move_observer(WorldChunkObserver* observer, const Rect& new_rect
 
     collect_observer_array(new_chunks, new_rect.x, new_rect.y);
     fill_observer_array(new_chunks, new_rect.x, new_rect.y);
+
+    for (const auto& new_chunk : new_chunks)
+    {
+        new_chunk->cap(cap_chunk_z);
+    }
     
     for (int x = 0; x < old_rect.w; x++)
     {

@@ -19,6 +19,7 @@
 #include "UIRenderer.h"
 #include "World.h"
 #include "ui/Image.h"
+#include "ui/TextBlock.h"
 #include "ui/UIInputElement.h"
 
 Game* Game::instance_ = nullptr;
@@ -400,7 +401,8 @@ void Game::render_loop()
 	basic_shader_meta.vertex_params = {
 		{"vPos", 0, 3, GL_FLOAT},
 		{"vUV", sizeof(float) * 3, 2, GL_FLOAT},
-		{"vCol", sizeof(float) * 5, 3, GL_FLOAT}
+		{"vCol", sizeof(float) * 5, 3, GL_FLOAT},
+		{"vNorm", sizeof(float) * 8, 3, GL_FLOAT}
 	};
 	basic_shader_meta.instance_count = 230;
 	basic_shader_ = Shader::compile(RESOURCES_ENGINE_SHADERS + "basic", basic_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
@@ -455,6 +457,14 @@ void Game::render_loop()
 	start();
 
 	float last_delta_time = 0.0f;
+
+	float fps_delta_time_stack = 0;
+	uint fps_count = 0;
+	uint fps_last_count = 0;
+
+	fps_display_ = MakeShared<TextBlock>();
+	fps_display_->set_z(10);
+	add_ui(fps_display_);
 	
 	verbose("Game", "Entering game-loop...");
 	while (!glfwWindowShouldClose(window_))
@@ -487,6 +497,17 @@ void Game::render_loop()
 			last_mouse_pos_ = mouse_pos_;
 		}
 
+		fps_delta_time_stack += last_delta_time;
+		fps_count++;
+		if (fps_delta_time_stack >= 1)
+		{
+			fps_delta_time_stack -= 1;
+			fps_last_count = fps_count;
+			fps_count = 0;
+		}
+		
+		fps_display_->set_text(String::format("FPS: %i", fps_last_count));
+		
 		// ticking
 		if (last_delta_time > 0.0f)
 		{
@@ -511,19 +532,17 @@ void Game::render_loop()
 				);
 
 			auto proj = Matrix4x4::perspective(camera_info.fov, static_cast<float>(width) / static_cast<float>(height), 0.01f, 1000.0f);
-			
-			auto vp = proj * view;
 
 			un_projected_mouse_ = Matrix4x4::un_project(Vector2(mouse_pos_.x, mouse_pos_.y), Vector2(static_cast<float>(width), static_cast<float>(height)), Matrix4x4().translate(camera_info.position), view, proj);
 				
 			// UI matrix
-			auto ui_vp = Matrix4x4::ortho(0.0f, static_cast<float>(width), static_cast<float>(-height), 0.0f, -1000.0f, 0.0001f);
+			auto ui_proj = Matrix4x4::ortho(0.0f, static_cast<float>(width), static_cast<float>(-height), 0.0f, -1000.0f, 0.0001f);
 
 			// rendering
 			is_render_stage_ = true;
-			renderer_->render(vp);
+			renderer_->render(view, proj, world_);
 			glClear(GL_DEPTH_BUFFER_BIT);
-			ui_renderer_->render(ui_vp);
+			ui_renderer_->render(Matrix4x4(), ui_proj, world_);
 			is_render_stage_ = false;
 		}
  

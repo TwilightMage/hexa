@@ -70,9 +70,15 @@ private:
     void dec_visibility();
 
     void generate_metadata();
+    void generate_metadata(uint z);
+
+    void neighbor_tile_changed(const ChunkIndex& chunk, const TileIndex& index);
 
     public:
-    void regenerate_mesh();
+    void regenerate_whole_mesh();
+    void regenerate_mesh(uint z);
+    void regenerate_cap_mesh();
+    void cap(uint z);
     private:
     
     FORCEINLINE const Shared<const TileInfo>& front_tile(const TileIndex& index) const;
@@ -92,9 +98,11 @@ private:
     ChunkIndex index_;
     Weak<HexaWorld> world_;
 
-    List<Shared<Entity>> mesh_entities_;
+    List<List<Shared<Entity>>> mesh_entities_;
+    Shared<Entity> cap_entity_;
     Map<TileIndex, Shared<const TileInfo>> modifications_;
     bool dirty_;
+    uint cap_z;
 
     WorldChunkDataState state_;
 

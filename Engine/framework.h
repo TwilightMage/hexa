@@ -142,22 +142,6 @@ FORCEINLINE MemberType* hack_member(ObjectType* obj, uint byte_offset)
 	return reinterpret_cast<MemberType*>(reinterpret_cast<byte*>(obj) + byte_offset);
 }
 
-// check value, print error to log and return
-#define assert_error(cond, retval, category, message, ...) \
-if (!(cond))\
-{\
-	print_error(category, message, __VA_ARGS__);\
-	return retval;\
-}\
-
-// check value, print warning to log and return
-#define assert_warning(cond, retval, category, message, ...) \
-if (!(cond))\
-{\
-print_warning(category, message, __VA_ARGS__);\
-return retval;\
-}\
-
 
 
 // --------------------- Enum macros -----------------------

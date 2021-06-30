@@ -129,6 +129,11 @@ float Quaternion::axis_angle() const
     return 2 * acos(w);
 }
 
+float Quaternion::dot(const Quaternion& rhs) const
+{
+    return x * rhs.x + y * rhs.y + z * rhs.z + w * rhs.w;
+}
+
 Quaternion Quaternion::from_axis_angle(const Vector3& axis, float angle)
 {   
     const auto factor = sin(glm::radians(angle) / 2.0f);

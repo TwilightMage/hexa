@@ -37,6 +37,10 @@ public:
 
     void set_tile(const TileIndex& index, const Shared<const TileInfo>& id) const;
     Shared<const TileInfo> get_tile_id(const TileIndex& index) const;
+
+    void cap_chunks(uint z);
+    void uncap_chunks();
+    FORCEINLINE uint get_cap_chunk_z() const { return cap_chunk_z; }
     
     void dump_observable_area();
 
@@ -57,4 +61,6 @@ private:
     List<Shared<WorldChunkObserver>> chunk_observers_;
 
     List<Shared<Character>> characters_;
+
+    uint cap_chunk_z;
 };

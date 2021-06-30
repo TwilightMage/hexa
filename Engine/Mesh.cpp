@@ -2,6 +2,7 @@
 
 #include <OBJ-Loader/Source/OBJ_Loader.h>
 
+#include "Assert.h"
 #include "File.h"
 #include "Game.h"
 #include "GeometryEditor.h"
@@ -25,6 +26,8 @@ Mesh::Mesh(const String& name, const List<Vertex>& vertices)
         indices_[i] = i;
     }
 
+    GeometryEditor::compute_normals(vertices_, indices_, true);
+
     calculate_bbox();
 }
 
@@ -34,6 +37,8 @@ Mesh::Mesh(const String& name, const List<Vertex>& vertices, const List<uint>& i
     , indices_(indices)
     , usage_count_(0)
 {
+    GeometryEditor::compute_normals(vertices_, indices_, true);
+    
     calculate_bbox();
 }
 
@@ -44,12 +49,12 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
         return *found;
     }
 
-    assert_error(path.exists(), nullptr, "Mesh", "Mesh does not exists %s", path.get_absolute_string().c());
+    if (!Check(path.exists(), "Mesh Loader", "Mesh does not exists %s", path.get_absolute_string().c())) return nullptr;
     
     Shared<objl::Loader> loader = MakeShared<objl::Loader>();
-    assert_error(loader->LoadFile(path.get_absolute().to_string().std()), nullptr, "Mesh", "Unknown error on loading mesh %s", path.get_absolute_string().c())
-    assert_error(loader->LoadedVertices.size() > 0, nullptr, "Mesh", "Number of vertices is 0 in mesh %s", path.get_absolute_string().c());
-    assert_error(loader->LoadedIndices.size() > 0, nullptr, "Mesh", "Number of indices is 0 in mesh %s", path.get_absolute_string().c());
+    if (!Check(loader->LoadFile(path.get_absolute().to_string().std()), "Mesh Loader", "Unknown error on loading mesh %s", path.get_absolute_string().c())) return nullptr;
+    if (!Check(loader->LoadedVertices.size() > 0, "Mesh Loader", "Number of vertices is 0 in mesh %s", path.get_absolute_string().c())) return nullptr;
+    if (!Check(loader->LoadedIndices.size() > 0, "Mesh Loader", "Number of indices is 0 in mesh %s", path.get_absolute_string().c())) return nullptr;
         
     loader->LoadedMeshes.clear();
         
@@ -57,7 +62,7 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
         
     for (auto& vert : loader->LoadedVertices)
     {
-        result->vertices_.Add({cast_object<Vector3>(vert.Position), {vert.TextureCoordinate.X, 1 - vert.TextureCoordinate.Y}, Vector3::one()});
+        result->vertices_.Add({cast_object<Vector3>(vert.Position), {vert.TextureCoordinate.X, 1 - vert.TextureCoordinate.Y}, Vector3::one(), cast_object<Vector3>(vert.Normal)});
     }
     loader->LoadedVertices.clear();
 
@@ -68,6 +73,7 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
     GeometryEditor::remove_indices(result->vertices_, result->indices_);
     GeometryEditor::rotate(result->vertices_, Quaternion(Vector3(90.0f, 0.0f, 180.0f)));
     GeometryEditor::mirror_y(result->vertices_);
+    GeometryEditor::compute_normals(result->vertices_, result->indices_, true);
 
     result->calculate_bbox();
 

@@ -80,7 +80,7 @@ void Entity::use_mesh(const Weak<Mesh>& new_mesh)
         {
             if (auto world_ptr = world_.lock())
             {
-                world_ptr->notify_renderable_mesh_updated(weak_from_this(), old);
+                world_ptr->notify_renderable_mesh_updated(shared_from_this(), old);
             }
         }
     }
@@ -100,7 +100,7 @@ void Entity::clear_mesh()
 
     if (auto world_ptr = world_.lock())
     {
-        world_ptr->notify_renderable_mesh_updated(weak_from_this(), old_mesh);
+        world_ptr->notify_renderable_mesh_updated(shared_from_this(), old_mesh);
     }
 }
 
@@ -114,7 +114,7 @@ void Entity::use_shader(const Weak<Shader>& new_shader)
         
         if (auto world_ptr = world_.lock())
         {
-            world_ptr->notify_renderable_shader_updated(weak_from_this(), old);
+            world_ptr->notify_renderable_shader_updated(shared_from_this(), old);
         }
     }
 }
@@ -228,7 +228,7 @@ void Entity::use_collision(const Shared<Collision>& collision, const Vector3& of
 
     const auto collider_shape = collision->get_collider_shape();
 
-    Assert(collider_shape);
+    Assert(collider_shape != nullptr);
 
     if (!rigid_body_)
     {
@@ -343,6 +343,14 @@ void Entity::remove_all_components()
         component->owner = null_weak(Entity);
     }
     components_.Clear();
+}
+
+void Entity::set_visibility(bool visibility)
+{
+    if (visible_ == visibility) return;
+    
+    visible_ = visibility;
+    visibility_changed_ = true;
 }
 
 void Entity::generate_components()

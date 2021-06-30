@@ -25,6 +25,7 @@ public:
     Quaternion conjugate() const;
     Vector3 axis() const;
     float axis_angle() const;
+    float dot(const Quaternion& rhs) const;
 
     static Quaternion from_axis_angle(const Vector3& axis, float angle);
     FORCEINLINE static Quaternion look_at(const Vector3& from, const Vector3& to);

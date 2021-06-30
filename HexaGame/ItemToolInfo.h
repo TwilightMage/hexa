@@ -19,5 +19,5 @@ public:
         : ItemInfo(key, icon, mesh, mesh_texture, type, name, stack_size, mass, tile_target)
     {}
 
-    void apply_to_tile(ItemContainer& item, const Shared<Character>& character, const TileIndex& tile, const Shared<HexaWorld>& world) const override;
+    void apply_to_tile(ItemContainer& item, const Shared<Character>& character, const TileIndex& index, const Shared<HexaWorld>& world) const override;
 };

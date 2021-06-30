@@ -69,6 +69,26 @@ public:
         return *this;
     }
 
+    T* begin()
+    {
+        return data_;
+    }
+
+    T* end()
+    {
+        return data_ + size_x_ * size_y_;
+    }
+
+    const T* begin() const
+    {
+        return data_;
+    }
+
+    const T* end() const
+    {
+        return data_ + size_x_ * size_y_;
+    }
+
     ~Array2D()
     {
         delete[] data_;

@@ -6,20 +6,20 @@
 #include "Entities/Character.h"
 #include "Worlds/HexaWorld.h"
 
-void ItemToolInfo::apply_to_tile(ItemContainer& item, const Shared<Character>& character, const TileIndex& tile, const Shared<HexaWorld>& world) const
+void ItemToolInfo::apply_to_tile(ItemContainer& item, const Shared<Character>& character, const TileIndex& index, const Shared<HexaWorld>& world) const
 {
-    if (Vector3::distance(character->get_position(), tile.to_vector()) <= character->get_reach_distance())
+    if (Vector3::distance(character->get_position(), index.to_vector()) <= character->get_reach_distance())
     {
-        auto tile_id = world->get_tile_id(tile);
+        auto tile_id = world->get_tile_id(index);
         if (tile_id != Tiles::air)
         {
-            auto drop = HexaGame::item_database->get(tile_id->key);
-            world->set_tile(tile, Tiles::air);
-            if (drop)
+            auto drops = tile_id->get_drops(index, world);
+            world->set_tile(index, Tiles::air);
+            for (auto& drop : drops)
             {
-                if (!character->get_inventory()->add_item(ItemContainer(drop)))
+                if (!character->get_inventory()->add_item(drop))
                 {
-                    world->spawn_drop(tile, ItemContainer(drop));
+                    world->spawn_drop(index, drop);
                 }
             }
         }

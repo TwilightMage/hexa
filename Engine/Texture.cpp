@@ -5,6 +5,7 @@
 
 #include <glad/glad.h>
 
+#include "Assert.h"
 #include "Game.h"
 
 Texture::Editor::Editor(const Editor& rhs)
@@ -75,7 +76,7 @@ Shared<Texture> Texture::load_png(const Path& path)
         return *found;
     }
 
-    assert_error(path.exists(), nullptr, "Texture", "Texture does not exist %s", path.get_absolute_string().c())
+    if (!Check(path.exists(), "Texture Loader", "Texture does not exist %s", path.get_absolute_string().c())) return nullptr;
     
     uint tex_width, tex_height, tex_channels;
     const auto pixels = stb::load(path, tex_width, tex_height);

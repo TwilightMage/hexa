@@ -63,6 +63,11 @@ TileIndex TileIndex::to_absolute(const ChunkIndex& parent_chunk) const
     
 }
 
+bool TileIndex::is_inside_chunk() const
+{
+    return x >= 0 && x < WorldChunk::chunk_size && y >= 0 && y < WorldChunk::chunk_size && z >= 0 && z < WorldChunk::chunk_height;
+}
+
 TileIndex TileIndex::offset_from_side(TileSide side)
 {
     switch (side)

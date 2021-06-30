@@ -64,6 +64,27 @@ Shared<const RaycastResult> World::raycast(const Vector3& from, const Vector3& t
     return callback.results.length() > 0 ? MakeShared<RaycastResult>(callback.results.first()) : nullptr;
 }
 
+List<RaycastResult> World::raycast_all(const Vector3& from, const Vector3& to, bool sort_by_distance) const
+{
+    return raycast_all(from, to, CollisionMaskBits::ALL, sort_by_distance);
+}
+
+List<RaycastResult> World::raycast_all(const Vector3& from, const Vector3& to, byte16 collision_mask, bool sort_by_distance) const
+{
+    RaycastCallback callback;
+    physics_world_->raycast(reactphysics3d::Ray(cast_object<reactphysics3d::Vector3>(from), cast_object<reactphysics3d::Vector3>(to)), &callback, collision_mask);
+
+    if (sort_by_distance)
+    {
+        callback.results.sort([&](const RaycastResult& a, const RaycastResult& b)->bool
+        {
+            return Vector3::distance(from, a.location) > Vector3::distance(from, b.location);
+        });
+    }
+    
+    return callback.results;
+}
+
 void World::start()
 {
     physics_world_ = Game::instance_->physics_->createPhysicsWorld();
@@ -120,7 +141,8 @@ void World::tick(float delta_time)
     
     for (uint i = 0; i < entities_.length(); i++)
     {
-        if (auto& entity = entities_[i]; entity->pending_kill_)
+        auto& entity = entities_[i];
+        if (entity->pending_kill_)
         {
             do_destroy(entity);
 
@@ -129,7 +151,23 @@ void World::tick(float delta_time)
             to_delete.Add(i);
         }
         else if (time_scale_ != 0.0f)
-        {            
+        {
+            if (entity->visibility_changed_)
+            {
+                if (entity->get_mesh() && entity->get_shader())
+                {
+                    if (entity->visible_)
+                    {
+                        notify_renderable_added(entity);
+                    }
+                    else
+                    {
+                        notify_renderable_deleted(entity);
+                    }
+                }
+                entity->visibility_changed_ = false;
+            }
+            
             if (auto tickable = cast<ITickable>(entity))
             {
                 tickable->tick(delta_time);
@@ -139,7 +177,7 @@ void World::tick(float delta_time)
                 }
             }
 
-            if (entity->rigid_body_ && !entity->rigid_body_->isSleeping() || entity->is_matrix_dirty_)
+            if (entity->rigid_body_ && !entity->rigid_body_->isSleeping() && entity->rigid_body_->getType() != reactphysics3d::BodyType::KINEMATIC || entity->is_matrix_dirty_)
             {
                 entity->cache_matrix();
             }
@@ -159,47 +197,45 @@ const List<Shared<Entity>>& World::get_entities() const
     return entities_;
 }
 
-void World::notify_renderable_added(const Weak<IRenderable>& renderable)
+void World::notify_renderable_added(const Shared<IRenderable>& renderable)
 {
     Game::get_instance()->renderer_->register_object(renderable);
 }
 
-void World::notify_renderable_deleted(const Weak<IRenderable>& renderable)
+void World::notify_renderable_deleted(const Shared<IRenderable>& renderable)
 {
     Game::get_instance()->renderer_->unregister_object(renderable);
 }
 
-void World::notify_renderable_mesh_updated(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh)
+void World::notify_renderable_mesh_updated(const Shared<IRenderable>& renderable, const Shared<Mesh>& old_mesh)
 {
-    if (auto renderable_ptr = renderable.lock())
+    if (renderable)
     {
-        const auto new_mesh_ptr = renderable_ptr->get_mesh();
-        const auto old_mesh_ptr = old_mesh.lock();
+        const auto new_mesh = renderable->get_mesh();
 
-
-        if (new_mesh_ptr != old_mesh_ptr)
+        if (new_mesh != old_mesh)
         {
-            if (!old_mesh_ptr) // add
+            if (!old_mesh) // add
             {
-                Game::get_instance()->renderer_->register_object(renderable_ptr);
+                Game::get_instance()->renderer_->register_object(renderable);
             }
-            else if (!new_mesh_ptr) // remove
+            else if (!new_mesh) // remove
             {
-                Game::get_instance()->renderer_->unregister_object(renderable_ptr);
+                Game::get_instance()->renderer_->unregister_object(renderable);
             }
             else // change
             {
-                Game::get_instance()->renderer_->change_object_mesh(renderable_ptr, old_mesh);
+                Game::get_instance()->renderer_->change_object_mesh(renderable, old_mesh);
             }
         }
     }
 }
 
-void World::notify_renderable_shader_updated(const Weak<IRenderable>& renderable, const Weak<Shader>& old_shader)
+void World::notify_renderable_shader_updated(const Shared<IRenderable>& renderable, const Shared<Shader>& old_shader)
 {
-    if (auto renderable_ptr = renderable.lock())
+    if (renderable)
     {
-        Game::get_instance()->renderer_->change_object_shader(renderable_ptr, old_shader);
+        Game::get_instance()->renderer_->change_object_shader(renderable, old_shader);
     }
 }
 
@@ -230,6 +266,26 @@ TimerHandle World::delay(float time, std::function<void()> func)
     const TimerHandle handle = { TimerHandle::id_generator++ };
     timer_entries_.insert(handle, { time, func });
     return handle;
+}
+
+void World::set_ambient_light(const Vector3& ambient_light)
+{
+    ambient_light_ = ambient_light;
+}
+
+void World::set_sun_light(const Vector3& sun_light)
+{
+    sun_light_ = sun_light;
+}
+
+void World::set_sun_pitch(float sun_pitch)
+{
+    sun_angle_ = Quaternion(Vector3(0, sun_pitch, sun_angle_.yaw()));
+}
+
+void World::set_sun_yaw(float sun_yaw)
+{
+    sun_angle_ = Quaternion(Vector3(0, sun_angle_.pitch(), sun_yaw));
 }
 
 void World::on_start()
@@ -283,7 +339,7 @@ void World::spawn_entity_internal(const Shared<Entity>& entity)
     entities_.Add(entity);
     entity->start();
 
-    if (entity->get_mesh() && entity->get_shader())
+    if (entity->get_mesh() && entity->get_shader() && entity->visible_)
     {
         notify_renderable_added(entity);
     }
@@ -308,7 +364,7 @@ void World::do_destroy(const Shared<Entity>& entity)
         mesh->usage_count_--;
     }
             
-    if (entity->get_mesh() && entity->get_shader())
+    if (entity->get_mesh() && entity->get_shader() && entity->visible_)
     {
         notify_renderable_deleted(entity);
     }

@@ -33,6 +33,7 @@ public:
     static void move_to_center(List<Mesh::Vertex>& vertices);
     static void compute_faces(const List<Mesh::Vertex>& vertices, const List<uint>& indices, List<Face>& out_faces, List<uint>& out_indices);
     static void compute_normals(const List<Mesh::Vertex>& vertices, const List<uint>& indices, List<Vector3>& out_normals, bool invert = false);
+    static void compute_normals(List<Mesh::Vertex>& vertices, const List<uint>& indices, bool invert = false);
     
     static Shared<Mesh> get_unit_cube();
 };

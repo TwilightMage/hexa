@@ -1,63 +1,22 @@
 ﻿#include "SpriteFont.h"
 
+#include "Assert.h"
 #include "File.h"
 #include "Game.h"
 
-std::pmr::map<String, String> parse_params(const String& line)
+Map<String, String> parse_params(const String& line)
 {
-    std::pmr::map<String, String> result;
+    if (line.length() == 0) return Map<String, String>();
+    
+    Map<String, String> result;
 
-    auto state = false;
-    auto quoted = false;
-    String key, val;
-    for (auto& ch : line)
+    auto parts = line.split(' ', true);
+    
+    for (uint i = 1; i < parts.length(); i++)
     {
-        if (!quoted)
-        {
-            if (ch == ' ')
-            {
-                if (state)
-                {
-                    result[key] = val;
-                    state = false;
-                }
-                key = val = "";
-            }
-            else if (ch == '"')
-            {
-                quoted = true;
-            }
-            else if (ch == '=')
-            {
-                state = !state;
-            }
-            else if (state)
-            {
-                val += ch;
-            }
-            else
-            {
-                key += ch;
-            }
-        }
-        else
-        {
-            if (ch == '"')
-            {
-                quoted = false;
-            }
-            else if (state)
-            {
-                val += ch;
-            }
-            else
-            {
-                key += ch;
-            }
-        }
+        auto fragments = parts[i].split('=');
+        result[fragments[0]] = fragments[1].trim("\"");
     }
-
-    result[key] = val;
 
     return result;
 }
@@ -87,27 +46,27 @@ Shared<SpriteFont> SpriteFont::load_fnt(const Path& path)
                         result->name = info_params["face"] + " Font";
                     }*/
 
-                    assert_error(!info_params.contains("charset") || info_params["charset"] == "ANSI", nullptr, "Sprite Font Loader", "Unsupported charset %s in font %s", info_params["charset"].c(), path.get_absolute_string().c());
+                    if (!Check(info_params.contains("charset") && info_params["charset"] == "ANSI", "Font Loader", "Unsupported charset %s in font %s", info_params["charset"].c(), path.get_absolute_string().c())) return nullptr;
 
-                    assert_error(!info_params.contains("unicode") || info_params["unicode"] == "0", nullptr, "Sprite Font Loader", "Unicode is not supported in font %s", path.get_absolute_string().c());
+                    if (!Check(!info_params.contains("unicode") || info_params["unicode"] == "0", "Font Loader", "Unicode is not supported in font %s", path.get_absolute_string().c())) return nullptr;
                 }
                 else if (line.starts_with("common "))
                 {
                     auto info_params = parse_params(line);
 
-                    assert_error(!info_params.contains("pages") || info_params["pages"] == "1", nullptr, "Sprite Font Loader", "Unsupported number of pages in font %s", path.get_absolute_string().c());
+                    if (!Check(!info_params.contains("pages") || info_params["pages"] == "1", "Font Loader", "Unsupported number of pages in font %s", path.get_absolute_string().c())) return nullptr;
 
-                    assert_error(info_params.contains("lineHeight"), nullptr, "Sprite Font Loader", "Missing parameter lineHeight in font %s", path.get_absolute_string().c());
+                    if (!Check(info_params.contains("lineHeight"), "Font Loader", "Missing parameter lineHeight in font %s", path.get_absolute_string().c())) return nullptr;
                     result->line_height_ = String::parse<uint>(info_params["lineHeight"]);
 
-                    assert_error(info_params.contains("base"), nullptr, "Sprite Font Loader", "Missing parameter base in font %s", path.get_absolute_string().c());
+                    if (!Check(info_params.contains("base"), "Font Loader", "Missing parameter base in font %s", path.get_absolute_string().c())) return nullptr;
                     result->base_ = String::parse<uint>(info_params["base"]);
                 }
                 else if (line.starts_with("page "))
                 {
                     auto info_params = parse_params(line);
 
-                    assert_error(info_params.contains("file"), nullptr, "Sprite Font Loader", "Missing parameter file in font %s", path.get_absolute_string().c());
+                    if (!Check(info_params.contains("file"), "Font Loader", "Missing parameter file in font %s", path.get_absolute_string().c())) return nullptr;
                     
                     result->atlas_ = TextureAtlas::load_png(path.up().get_child(info_params["file"]));
                 }
@@ -115,17 +74,17 @@ Shared<SpriteFont> SpriteFont::load_fnt(const Path& path)
                 {
                     auto info_params = parse_params(line);
 
-                    assert_error(info_params.contains("id"), nullptr, "Sprite Font Loader", "Missing parameter id in font %s", path.get_absolute_string().c());
-                    assert_error(info_params.contains("x"), nullptr, "Sprite Font Loader", "Missing parameter x in font %s", path.get_absolute_string().c());
-                    assert_error(info_params.contains("y"), nullptr, "Sprite Font Loader", "Missing parameter y in font %s", path.get_absolute_string().c());
-                    assert_error(info_params.contains("width"), nullptr, "Sprite Font Loader", "Missing parameter width in font %s", path.get_absolute_string().c());
-                    assert_error(info_params.contains("height"), nullptr, "Sprite Font Loader", "Missing parameter height in font %s", path.get_absolute_string().c());
-                    assert_error(info_params.contains("xadvance"), nullptr, "Sprite Font Loader", "Missing parameter xadvance in font %s", path.get_absolute_string().c());
+                    if (!Check(info_params.contains("id"), "Font Loader", "Missing parameter id in font %s", path.get_absolute_string().c())) return nullptr;
+                    if (!Check(info_params.contains("x"), "Font Loader", "Missing parameter x in font %s", path.get_absolute_string().c())) return nullptr;
+                    if (!Check(info_params.contains("y"), "Font Loader", "Missing parameter y in font %s", path.get_absolute_string().c())) return nullptr;
+                    if (!Check(info_params.contains("width"), "Font Loader", "Missing parameter width in font %s", path.get_absolute_string().c())) return nullptr;
+                    if (!Check(info_params.contains("height"), "Font Loader", "Missing parameter height in font %s", path.get_absolute_string().c())) return nullptr;
+                    if (!Check(info_params.contains("xadvance"), "Font Loader", "Missing parameter xadvance in font %s", path.get_absolute_string().c())) return nullptr;
 
                     Letter letter;
                     const auto ch = static_cast<char>(String::parse<int>(info_params["id"]));
                     letter.atlas_entry_id_ = result->atlas_->claim_rect({String::parse<int>(info_params["x"]), String::parse<int>(info_params["y"]), String::parse<int>(info_params["width"]), String::parse<int>(info_params["height"])});
-                    assert_error(letter.atlas_entry_id_ != -1, nullptr, "Sprite Font Loader", "Unable to claim rect on atlas for letter %c in font %s", ch, path.get_absolute_string().c());
+                    if (!Check(letter.atlas_entry_id_ != -1, "Font Loader", "Unable to claim rect on atlas for letter %c in font %s", ch, path.get_absolute_string().c())) return nullptr;
                     letter.advance = String::parse<int>(info_params["xadvance"]);
                     letter.offset_x = String::parse<int>(info_params["xoffset"]);
                     letter.offset_y = String::parse<int>(info_params["yoffset"]);

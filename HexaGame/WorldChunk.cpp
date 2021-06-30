@@ -12,9 +12,26 @@
 #include "Engine/Physics/ConcaveMeshCollision.h"
 #include "Worlds/HexaWorld.h"
 
+FORCEINLINE byte count_difference(TileType flags)
+{
+    int int_flags = static_cast<int>(flags);
+    byte count = 0;
+    while (int_flags) {
+        count += int_flags & 1;
+        int_flags >>= 1;
+    }
+
+    // if Liquid or Air present, complex does not count
+    if ((!!(flags & TileType::Liquid) || !!(flags & TileType::Air)) && !!(flags & TileType::Complex)) --count;
+	
+    return count;
+}
+
 WorldChunk::WorldChunk(const ChunkIndex& index, const Weak<HexaWorld>& world)
     : index_(index)
     , world_(world)
+    , mesh_entities_(chunk_height)
+    , cap_z(chunk_height)
     , state_(WorldChunkDataState::Pending)
     , plane_metadata{}
 {
@@ -83,8 +100,38 @@ void WorldChunk::set_tile(const TileIndex& index, const Shared<const TileInfo>& 
     modifications_[index] = tile;
     data[index.x][index.y][index.z] = tile;
     dirty_ = true;
-    on_tile_change(index_, index.to_absolute(index_));
-    regenerate_mesh();
+
+    generate_metadata(index.z);
+
+    if (auto world = world_.lock())
+    {
+        for (byte b = 0; b < 8; b++)
+        {
+            auto side = (TileSide)(1 << b);
+            TileIndex neighbor = index + TileIndex::offset_from_side(side);
+            if (neighbor.is_inside_chunk())
+            {
+                data[neighbor.x][neighbor.y][neighbor.z]->neighbor_changed(neighbor, tile_side_opposite(side), world, tile);
+            }
+        }
+    }
+    
+    on_tile_change(index_, index);
+    
+    if (index.z > 0 && count_difference(tile->type | data[index.x][index.y][index.z - 1]->type) >= 2)
+    {
+        regenerate_mesh(index.z - 1);
+    }
+    regenerate_mesh(index.z);
+    if (index.z < chunk_height - 1 && count_difference(tile->type | data[index.x][index.y][index.z + 1]->type) >= 2)
+    {
+        regenerate_mesh(index.z + 1);
+    }
+
+    if (index.z == cap_z - 1)
+    {
+        regenerate_cap_mesh();
+    }
 }
 
 TileSide WorldChunk::get_tile_face_flags(const TileIndex& tile_index) const
@@ -129,7 +176,8 @@ void WorldChunk::try_show_mesh()
 {
     if (load_counter_ == 0 && visibility_counter_ > 0)
     {
-        regenerate_mesh();
+        regenerate_whole_mesh();
+        regenerate_cap_mesh();
     }
 }
 
@@ -150,6 +198,9 @@ void WorldChunk::set_state(WorldChunkDataState state)
     else if (state == WorldChunkDataState::Loaded) on_loaded(shared_from_this());
 }
 
+#define bind_tile_change(side)\
+side->on_tile_change.bind(this, &WorldChunk::neighbor_tile_changed);\
+this->on_tile_change.bind(side, &WorldChunk::neighbor_tile_changed);
 void WorldChunk::link(WorldChunk* front, WorldChunk* right, WorldChunk* front_right,
     WorldChunk* back, WorldChunk* left, WorldChunk* back_left)
 {
@@ -160,22 +211,73 @@ void WorldChunk::link(WorldChunk* front, WorldChunk* right, WorldChunk* front_ri
     if (left) left_ = left;
     if (back_left) back_left_ = back_left;
 
-    if (front_) front_->back_ = this;
-    if (right_) right_->left_ = this;
-    if (front_right_) front_right_->back_left_ = this;
-    if (back_) back_->front_ = this;
-    if (left_) left_->right_ = this;
-    if (back_left_) back_left_->front_right_ = this;
+    if (front_)
+    {
+        front_->back_ = this;
+        bind_tile_change(front_);
+    }
+    if (right_)
+    {
+        right_->left_ = this;
+        bind_tile_change(right_);
+    }
+    if (front_right_)
+    {
+        front_right_->back_left_ = this;
+        bind_tile_change(front_right_);
+    }
+    if (back_)
+    {
+        back_->front_ = this;
+        bind_tile_change(back_);
+    }
+    if (left_)
+    {
+        left_->right_ = this;
+        bind_tile_change(left_);
+    }
+    if (back_left_)
+    {
+        back_left_->front_right_ = this;
+        bind_tile_change(back_left_);
+    }
 }
 
+#define unbind_tile_change(side)\
+side->on_tile_change.unbind(this, &WorldChunk::neighbor_tile_changed);\
+this->on_tile_change.unbind(side, &WorldChunk::neighbor_tile_changed);
 void WorldChunk::unlink()
 {
-    if (front_) front_->back_ = nullptr;
-    if (right_) right_->left_ = nullptr;
-    if (front_right_) front_right_->back_left_ = nullptr;
-    if (back_) back_->front_ = nullptr;
-    if (left_) left_->right_ = nullptr;
-    if (back_left_) back_left_->front_right_ = nullptr;
+    if (front_)
+    {
+        unbind_tile_change(front_);
+        front_->back_ = nullptr;
+    }
+    if (right_)
+    {
+        unbind_tile_change(right_);
+        right_->left_ = nullptr;
+    }
+    if (front_right_)
+    {
+        unbind_tile_change(front_right_);
+        front_right_->back_left_ = nullptr;
+    }
+    if (back_)
+    {
+        unbind_tile_change(back_);
+        back_->front_ = nullptr;
+    }
+    if (left_)
+    {
+        unbind_tile_change(left_);
+        left_->right_ = nullptr;
+    }
+    if (back_left_)
+    {
+        unbind_tile_change(back_left_);
+        back_left_->front_right_ = nullptr;
+    }
 
     front_ = nullptr;
     right_ = nullptr;
@@ -234,104 +336,182 @@ void WorldChunk::dec_visibility()
 {
     if (--visibility_counter_ == 0)
     {
-        for (auto& chunk_mesh : mesh_entities_)
+        for (auto& layer_mesh : mesh_entities_)
         {
-            chunk_mesh->destroy();
+            for (auto& type_mesh_destroy : layer_mesh)
+            {
+                type_mesh_destroy->destroy();
+            }
+
+           layer_mesh.Clear();
         }
-        mesh_entities_.Clear();
+
+        if (cap_entity_)
+        {
+            cap_entity_->destroy();
+            cap_entity_ = nullptr;
+        }
     }
 }
 
 void WorldChunk::generate_metadata()
 {
+    for (uint z = 0; z < chunk_height; z++)
+    {
+        generate_metadata(z);
+    }
+}
+
+void WorldChunk::generate_metadata(uint z)
+{
+    plane_metadata[z] = TileType::None;
+    
     for (uint x = 0; x < chunk_size; x++)
     {
         for (uint y = 0; y < chunk_size; y++)
         {
-            for (uint z = 0; z < chunk_height; z++)
+            if (data[x][y][z] == nullptr)
             {
-                if (data[x][y][z] == nullptr)
-                {
-                    data[x][y][z] = Tiles::air;
-                }
-				
-                plane_metadata[z] |= data[x][y][z]->type;
+                data[x][y][z] = Tiles::air;
             }
+				
+            plane_metadata[z] |= data[x][y][z]->type;
         }
     }
 }
 
-FORCEINLINE byte count_difference(TileType flags)
+void WorldChunk::neighbor_tile_changed(const ChunkIndex& chunk, const TileIndex& index)
 {
-	int int_flags = static_cast<int>(flags);
-	byte count = 0;
-	while (int_flags) {
-		count += int_flags & 1;
-		int_flags >>= 1;
-	}
+    if (auto world = world_.lock())
+    {
+        List<TileSide> sender_sides;
+        if (chunk == index_ + ChunkIndex(1, 0)) // front
+        {
+            if (index.x == 0)
+            {
+                sender_sides = { TileSide::Back };
+                if (index.y > 0) sender_sides.Add(TileSide::BackLeft);
+            }
+        }
+        else if (chunk == index_ + ChunkIndex(1, 1)) // front right
+        {
+            if (index.x == 0 && index.y == 0)
+            {
+                sender_sides = { TileSide::BackLeft};
+            }
+        }
+        else if (chunk == index_ + ChunkIndex(0, 1)) // right
+        {
+            if (index.y == 0)
+            {
+                sender_sides = { TileSide::FrontLeft };
+                if (index.x > 0) sender_sides.Add(TileSide::BackLeft);
+            }
+        }
+        else if (chunk == index_ - ChunkIndex(1, 0)) // back
+        {
+            if (index.x == chunk_size - 1)
+            {
+                sender_sides = { TileSide::Front };
+                if (index.y < chunk_size - 1) sender_sides.Add(TileSide::FrontRight);
+            }
+        }
+        else if (chunk == index_ - ChunkIndex(1, 1)) // back left
+        {
+            if (index.x == chunk_size - 1 && index.y == chunk_size - 1)
+            {
+                sender_sides = { TileSide::FrontRight };
+            }
+        }
+        else if (chunk == index_ - ChunkIndex(0, 1)) // left
+        {
+            if (index.y == chunk_size - 1)
+            {
+                sender_sides = { TileSide::FrontRight };
+                if (index.x < chunk_size - 1) sender_sides.Add(TileSide::BackRight);
+            }
+        }
 
-	// if Liquid or Air present, complex does not count
-	if ((!!(flags & TileType::Liquid) || !!(flags & TileType::Air)) && !!(flags & TileType::Complex)) --count;
-	
-	return count;
+        bool regenerate = false;
+        auto absolute_index = index.to_absolute(chunk);
+        auto new_tile = world->get_tile_id(absolute_index);
+        for (auto sender_side : sender_sides)
+        {
+            auto neighbor = absolute_index + TileIndex::offset_from_side(sender_side);
+            auto neighbor_local = neighbor.cycle_chunk();
+            data[neighbor_local.x][neighbor_local.y][neighbor_local.z]->neighbor_changed(neighbor, tile_side_opposite(sender_side), world, new_tile);
+            regenerate |= count_difference(data[neighbor_local.x][neighbor_local.y][neighbor_local.z]->type | new_tile->type) >= 2;
+        }
+
+        if (regenerate)
+        {
+            regenerate_mesh(index.z);
+        }
+    }
 }
 
-void WorldChunk::regenerate_mesh()
+void WorldChunk::regenerate_whole_mesh()
 {
-    for (auto mesh_entity : mesh_entities_)
+    for (uint i = 0; i < chunk_height; i++)
     {
-        mesh_entity->destroy();
+        regenerate_mesh(i);
     }
-    mesh_entities_.Clear();
+}
+
+void WorldChunk::regenerate_mesh(uint z)
+{
+    for (auto& type_mesh : mesh_entities_[z])
+    {
+        type_mesh->destroy();
+    }
+    
+    mesh_entities_[z].Clear();
     
     if (auto world = world_.lock())
     {
-        std::map<Shared<const TileInfo>, List<Mesh::Vertex>> vertices;
+        std::map<Shared<const TileInfo>, List<Mesh::Vertex>> type_vertices;
 
-        for (int z = 0; z < chunk_height; z++)
+        const TileType plane_metadata_front_right = front_right_->plane_metadata[z];
+        const TileType plane_metadata_back_left = back_left_->plane_metadata[z];
+        const TileType plane_metadata_right = right_->plane_metadata[z];
+        const TileType plane_metadata_left = left_->plane_metadata[z];
+        const TileType plane_metadata_forward = front_->plane_metadata[z];
+        const TileType plane_metadata_back = back_->plane_metadata[z];
+        const TileType plane_metadata_down = z > 0 ? plane_metadata[z - 1] : TileType::Air;
+        const TileType plane_metadata_up = z < chunk_height - 1 ? plane_metadata[z + 1] : TileType::Air;
+        if (count_difference(plane_metadata[z] | plane_metadata_up | plane_metadata_down | plane_metadata_forward | plane_metadata_back | plane_metadata_right | plane_metadata_left | plane_metadata_front_right | plane_metadata_back_left) >= 2)
         {
-            const TileType plane_metadata_front_right = front_right_->plane_metadata[z];
-            const TileType plane_metadata_back_left = back_left_->plane_metadata[z];
-            const TileType plane_metadata_right = right_->plane_metadata[z];
-            const TileType plane_metadata_left = left_->plane_metadata[z];
-            const TileType plane_metadata_forward = front_->plane_metadata[z];
-            const TileType plane_metadata_back = back_->plane_metadata[z];
-            const TileType plane_metadata_down = z > 0 ? plane_metadata[z - 1] : TileType::Air;
-            const TileType plane_metadata_up = z < chunk_height - 1 ? plane_metadata[z + 1] : TileType::Air;
-            if (count_difference(plane_metadata[z] | plane_metadata_up | plane_metadata_down | plane_metadata_forward | plane_metadata_back | plane_metadata_right | plane_metadata_left | plane_metadata_front_right | plane_metadata_back_left) >= 2)
+            for (int x = 0; x < chunk_size; x++)
             {
-                for (int x = 0; x < chunk_size; x++)
+                for (int y = 0; y < chunk_size; y++)
                 {
-                    for (int y = 0; y < chunk_size; y++)
+                    const auto index = TileIndex(x, y, z);
+                    const auto& tile = data[x][y][z];
+
+                    if (tile->type == TileType::Solid)
                     {
-                        const auto index = TileIndex(x, y, z);
-                        const auto& tile = data[x][y][z];
+                        TileSide side_flags = get_tile_face_flags(index);
 
-                        if (tile->type == TileType::Solid)
+                        if (side_flags != TileSide::None)
                         {
-                            TileSide side_flags = get_tile_face_flags(index);
+                            Vector3 world_pos = index.to_vector();
+                            List<Mesh::Vertex> tile_vertices;
+                            List<uint> tile_indices;
+                            WorldGenerator::generate_tile_mesh(side_flags, tile, tile_vertices, tile_indices, world_pos.sum_all());
 
-                            if (side_flags != TileSide::None)
-                            {
-                                Vector3 world_pos = index.to_vector();
-                                List<Mesh::Vertex> tile_vertices;
-                                List<uint> tile_indices;
-                                WorldGenerator::generate_tile_mesh(side_flags, tile, tile_vertices, tile_indices, world_pos.sum_all());
+                            GeometryEditor::remove_indices(tile_vertices, tile_indices);
+                            GeometryEditor::translate(tile_vertices, world_pos);
 
-                                GeometryEditor::remove_indices(tile_vertices, tile_indices);
-                                GeometryEditor::translate(tile_vertices, world_pos);
-
-                                vertices[tile] += tile_vertices;
-                            }
+                            type_vertices[tile] += tile_vertices;
                         }
                     }
                 }
             }
         }
 
-        for (auto& kvp : vertices)
+        for (auto& kvp : type_vertices)
         {
-            auto mesh = MakeShared<Mesh>(String::format("Chunk {%i %i} %s", index_.x, index_.y, kvp.first->key.c()), kvp.second);
+            auto mesh = MakeShared<Mesh>(String::format("Chunk {%i %i %i} %s", index_.x, index_.y, z, kvp.first->key.c()), kvp.second);
             
             auto mesh_entity = MakeShared<ChunkMeshEntity>();
             mesh_entity->use_mesh(mesh);
@@ -339,9 +519,83 @@ void WorldChunk::regenerate_mesh()
             world->spawn_entity(mesh_entity, index_.to_vector());
 
             mesh_entity->use_collision(MakeShared<ConcaveMeshCollision>(mesh));
+
+            mesh_entity->set_visibility(z < cap_z);
         
-            mesh_entities_.Add(mesh_entity);
+            mesh_entities_[z].Add(mesh_entity);
         }
+    }
+}
+
+void WorldChunk::regenerate_cap_mesh()
+{
+    if (cap_entity_)
+    {
+        cap_entity_->destroy();
+        cap_entity_ = nullptr;
+    }
+    
+    if (auto world = world_.lock())
+    {
+        List<Mesh::Vertex> cap_vertices;
+        for (int x = 0; x < chunk_size; x++)
+        {
+            for (int y = 0; y < chunk_size; y++)
+            {
+                const auto index = TileIndex(x, y, cap_z - 1);
+                const auto& tile = data[x][y][cap_z - 1];
+
+                if (tile->type == TileType::Solid)
+                {
+                    TileSide side_flags = get_tile_face_flags(index);
+
+                    if (!!(~side_flags & TileSide::Up))
+                    {
+                        Vector3 world_pos = index.to_vector();
+                        List<Mesh::Vertex> tile_vertices;
+                        List<uint> tile_indices;
+                        WorldGenerator::generate_tile_mesh(TileSide::Up, tile, tile_vertices, tile_indices, world_pos.sum_all());
+
+                        GeometryEditor::remove_indices(tile_vertices, tile_indices);
+                        GeometryEditor::translate(tile_vertices, world_pos);
+
+                        cap_vertices += tile_vertices;
+                    }
+                }
+            }
+        }
+
+        if (cap_vertices.length() > 0)
+        {
+            auto mesh = MakeShared<Mesh>(String::format("Chunk {%i %i %i} cap", index_.x, index_.y, cap_z - 1), cap_vertices);
+            
+            cap_entity_ = MakeShared<ChunkMeshEntity>();
+            cap_entity_->use_mesh(mesh);
+            cap_entity_->use_texture(Texture::load_png(RESOURCES_HEXA_TEXTURES_TILES + "cap.png"));
+            world->spawn_entity(cap_entity_, index_.to_vector());
+
+            cap_entity_->use_collision(MakeShared<ConcaveMeshCollision>(mesh));
+        }
+    }
+}
+
+void WorldChunk::cap(uint z)
+{
+    if (z == cap_z) return;
+
+    cap_z = z;
+    
+    for (uint i = 0; i < mesh_entities_.length(); i++)
+    {
+        for (auto& type_entity : mesh_entities_[i])
+        {
+            type_entity->set_visibility(i < z);
+        }
+    }
+
+    if (visibility_counter_ > 0)
+    {
+        regenerate_cap_mesh();
     }
 }
 

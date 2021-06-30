@@ -14,6 +14,7 @@ public:
     struct SlotInfo
     {
         Shared<Image> icon;
+        Shared<TextBlock> count_label;
         Rect rect;
     };
     

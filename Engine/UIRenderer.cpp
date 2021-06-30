@@ -18,7 +18,7 @@ UIRenderer::~UIRenderer()
     delete database_;
 }
 
-bool UIRenderer::register_object(const Weak<IRenderable>& renderable) const
+bool UIRenderer::register_object(const Shared<IRenderable>& renderable) const
 {
     if (const auto image = cast<Image>(renderable))
     {
@@ -28,7 +28,7 @@ bool UIRenderer::register_object(const Weak<IRenderable>& renderable) const
     return false;
 }
 
-bool UIRenderer::unregister_object(const Weak<IRenderable>& renderable) const
+bool UIRenderer::unregister_object(const Shared<IRenderable>& renderable) const
 {
     if (const auto image = cast<Image>(renderable))
     {
@@ -38,7 +38,7 @@ bool UIRenderer::unregister_object(const Weak<IRenderable>& renderable) const
     return false;
 }
 
-bool UIRenderer::change_object_mesh(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh)
+bool UIRenderer::change_object_mesh(const Shared<IRenderable>& renderable, const Shared<Mesh>& old_mesh)
 {
     if (const auto image = cast<Image>(renderable))
     {
@@ -48,7 +48,7 @@ bool UIRenderer::change_object_mesh(const Weak<IRenderable>& renderable, const W
     return false;
 }
 
-bool UIRenderer::change_object_shader(const Weak<IRenderable>& renderable, const Weak<Shader>& old_shader)
+bool UIRenderer::change_object_shader(const Shared<IRenderable>& renderable, const Shared<Shader>& old_shader)
 {
     if (const auto image = cast<Image>(renderable))
     {
@@ -63,7 +63,7 @@ std::map<Texture*, uint> UIRenderer::dump_texture_usage() const
     return database_->dump_texture_usage();
 }
 
-void UIRenderer::render(const Matrix4x4& view_projection_matrix) const
+void UIRenderer::render(const Matrix4x4& view, const Matrix4x4& projection, const Shared<World>& world) const
 {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -103,7 +103,7 @@ void UIRenderer::render(const Matrix4x4& view_projection_matrix) const
                 for (uint i = 0; i < instance_count; i++)
                 {
                     const auto& object = mesh_objects.value[rendered_instance_count + i];
-                    mvp_array[i] = view_projection_matrix * object->get_matrix();
+                    mvp_array[i] = projection * view * object->get_matrix();
                     uv_array[i] = object->get_uv_rect();
                     color_array[i] = object->get_color().to_quaternion();
                     texture_handle_array[i] = object->get_texture()->get_handle_arb();

@@ -19,6 +19,7 @@ public:
     FORCEINLINE TileIndex cycle_chunk() const;
     ChunkIndex get_chunk() const;
     TileIndex to_absolute(const ChunkIndex& parent_chunk) const;
+    bool is_inside_chunk() const;
 
     static TileIndex offset_from_side(TileSide side);
     static TileSide offset_to_side(const TileIndex& offset);

@@ -235,27 +235,24 @@ struct render_database : simple_map<Shared<Shader>, shader_render_data<T>> // me
         return false;
     }
 
-    bool unregister_object(const Weak<T>& renderable)
+    bool unregister_object(const Shared<T>& renderable)
     {
-        if (const auto renderable_ptr = renderable.lock())
+        if (const auto shader = renderable->get_shader())
         {
-            if (const auto shader_ptr = renderable_ptr->get_shader())
+            if (const auto mesh = renderable->get_mesh())
             {
-                if (const auto mesh_ptr = renderable_ptr->get_mesh())
+                if (have_key(shader))
                 {
-                    if (have_key(shader_ptr))
+                    if (unregister_object_from_mesh(renderable, shader, mesh))
                     {
-                        if (unregister_object_from_mesh(renderable_ptr, shader_ptr, mesh_ptr))
+                        auto& shader_meshes = operator[](shader);
+                        if (shader_meshes.size() == 0)
                         {
-                            auto& shader_meshes = operator[](shader_ptr);
-                            if (shader_meshes.size() == 0)
-                            {
-                                shader_meshes.cleanup();
-                                remove_key(shader_ptr);
-                            }
-
-                            return true;
+                            shader_meshes.cleanup();
+                            remove_key(shader);
                         }
+
+                        return true;
                     }
                 }
             }
@@ -392,13 +389,13 @@ private:
         return true;
     }
 
-    bool unregister_object_from_mesh(const Shared<T>& renderable_ptr, const Shared<Shader>& shader_ptr, const Shared<Mesh>& mesh_ptr)
+    bool unregister_object_from_mesh(const Shared<T>& renderable, const Shared<Shader>& shader, const Shared<Mesh>& mesh)
     {
-        auto& shader_meshes = operator[](shader_ptr);
+        auto& shader_meshes = operator[](shader);
 
-        if (auto mesh_objects = shader_meshes.try_get_entry(mesh_ptr))
+        if (auto mesh_objects = shader_meshes.try_get_entry(mesh))
         {
-            const auto index = mesh_objects->value.IndexOf(renderable_ptr);
+            const auto index = mesh_objects->value.IndexOf(renderable);
             if (index > -1)
             {
                 mesh_objects->value.RemoveAt(index);
@@ -423,7 +420,7 @@ private:
 
                     delete vertex_buffer;
 
-                    shader_meshes.remove_key(mesh_ptr);
+                    shader_meshes.remove_key(mesh);
                 }
 
                 return true;

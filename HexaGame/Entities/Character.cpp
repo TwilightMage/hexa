@@ -186,12 +186,12 @@ void Character::start_next_path_segment()
                     path_segment_finished();
                 });
             }*/
-            auto anim_handle = animator_->play_animation(step_animation.animation, 0, 1, step_animation.reverse);
+            auto anim_handle = animator_->play_animation(step_animation.animation, 0, basic_movement_speed / step_animation.animation->get_length(), step_animation.reverse);
             anim_handle.on_end()->bind(this, &Character::path_segment_finished);
         }
         else if (segment.from.z == segment.to.z) // step
         {
-            auto anim_handle = animator_->play_animation(step_animation.animation, 0, 1, step_animation.reverse);
+            auto anim_handle = animator_->play_animation(step_animation.animation, 0, basic_movement_speed / step_animation.animation->get_length(), step_animation.reverse);
             anim_handle.on_end()->bind(this, &Character::path_segment_finished);
         }
         else // climb
@@ -203,7 +203,7 @@ void Character::start_next_path_segment()
                     path_segment_finished();
                 });
             }*/
-            auto anim_handle = animator_->play_animation(step_animation.animation, 0, 1, step_animation.reverse);
+            auto anim_handle = animator_->play_animation(step_animation.animation, 0, basic_movement_speed / step_animation.animation->get_length(), step_animation.reverse);
             anim_handle.on_end()->bind(this, &Character::path_segment_finished);
         }
     }
@@ -251,11 +251,11 @@ void Character::update_target_rotation()
     }
 }
 
-void Character::parent_chunk_changed(const ChunkIndex& sender, const TileIndex& world_tile)
+void Character::parent_chunk_changed(const ChunkIndex& chunk, const TileIndex& index)
 {
     if (auto world = cast<HexaWorld>(get_world()))
     {
-        if (world_tile == get_tile_position().offset(TileSide::Down))
+        if (index.to_absolute(chunk) == get_tile_position().offset(TileSide::Down))
         {
             for (int i = 1; i < get_tile_position().z; i++)
             {

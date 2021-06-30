@@ -14,6 +14,7 @@
 #include "Vector2.h"
 #include "Version.h"
 
+class TextBlock;
 class ICamera;
 class Animation;
 class UIInputElement;
@@ -182,6 +183,7 @@ private:
     Shared<Texture> white_pixel_;
     Shared<SpriteFont> default_font_;
     List<Shared<Mod>> mods_;
+    Shared<TextBlock> fps_display_;
     
     // Game Play
     Shared<ICamera> current_camera_;

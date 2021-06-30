@@ -5,6 +5,7 @@
 #include "Engine/Player.h"
 #include "HexaGame/CharacterController.h"
 #include "HexaGame/ChunkIndex.h"
+#include "HexaGame/TileIndex.h"
 
 class WorldChunk;
 class WorldChunkObserver;
@@ -16,6 +17,8 @@ public:
     void key_down(int key) override;
     void key_up(int key) override;
     void mouse_button_down(int button) override;
+    void mouse_button_up(int button) override;
+    void scroll(const Vector2& delta) override;
     void tick(float delta_time) override;
     
     Shared<const CharacterController> get_as_character_controller() const override;
@@ -26,10 +29,25 @@ public:
     Shared<WorldChunkObserver> observer_;
     uint load_distance_ = 3;
 
+protected:
+    CameraInfo get_camera_info() const override;
+
 private:
     void spawn_chunk_loaded(const Shared<WorldChunk>& sender);
     void character_position_changed(const Shared<Character>& sender);
+    void current_chunk_tile_changed(const ChunkIndex& chunk, const TileIndex& tile);
+    void check_cap();
 
     ChunkIndex old_chunk_;
     bool use_item_mode_ = false;
+
+    bool rotate_camera_ = false;
+    float camera_distance_ = 4;
+    float desired_camera_distance_ = 4;
+    float camera_pivot_z_ = 0.0f;
+    float desired_camera_pivot_z = 0.0f;
+    Vector3 camera_position_;
+    float camera_pitch_ = -45.0f;
+    float camera_yaw_ = 0.0f;
+    Quaternion camera_rotation_ = Quaternion(Vector3(0, 45, 0));
 };

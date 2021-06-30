@@ -46,6 +46,8 @@ public:
 
     PathConfig get_path_config(const TileIndex& to) const;
 
+    uint declared_height = 1;
+    
     Delegate<const Shared<Character>&> on_tile_position_changed;
     Delegate<const Shared<Character>&, const Shared<WorldPath>&, const Shared<WorldPath>&> on_path_changed;
 
@@ -58,9 +60,9 @@ protected:
 
     AnimationSlot step_animation;
 
-    uint declared_height = 1;
     uint initial_inventory_size = 40;
-    float basic_reach_distance = 1.0f;
+    float basic_reach_distance = 2.0f;
+    float basic_movement_speed = 1.5f;
     
 private:
     void set_tile_position(const TileIndex& tile_position);
@@ -69,7 +71,7 @@ private:
 
     void update_target_rotation();
 
-    void parent_chunk_changed(const ChunkIndex& sender, const TileIndex& world_tile);
+    void parent_chunk_changed(const ChunkIndex& chunk, const TileIndex& index);
 
     Vector3 anim_offset_ = Vector3::zero();
     Vector3 anim_scale_ = Vector3::one();

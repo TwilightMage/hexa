@@ -33,16 +33,18 @@ public:
 
     Shared<const RaycastResult> raycast(const Vector3& from, const Vector3& to) const;
     Shared<const RaycastResult> raycast(const Vector3& from, const Vector3& to, byte16 collision_mask) const;
+    List<RaycastResult> raycast_all(const Vector3& from, const Vector3& to, bool sort_by_distance = false) const;
+    List<RaycastResult> raycast_all(const Vector3& from, const Vector3& to, byte16 collision_mask, bool sort_by_distance = false) const;
 
     void start();
     void tick(float delta_time);
 
     const List<Shared<Entity>>& get_entities() const;
 
-    static void notify_renderable_added(const Weak<IRenderable>& renderable);
-    static void notify_renderable_deleted(const Weak<IRenderable>& renderable);
-    static void notify_renderable_mesh_updated(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh);
-    static void notify_renderable_shader_updated(const Weak<IRenderable>& renderable, const Weak<Shader>& old_shader);
+    static void notify_renderable_added(const Shared<IRenderable>& renderable);
+    static void notify_renderable_deleted(const Shared<IRenderable>& renderable);
+    static void notify_renderable_mesh_updated(const Shared<IRenderable>& renderable, const Shared<Mesh>& old_mesh);
+    static void notify_renderable_shader_updated(const Shared<IRenderable>& renderable, const Shared<Shader>& old_shader);
 
     float get_time_scale() const;
     void set_time_scale(float val);
@@ -52,6 +54,16 @@ public:
 
     TimerHandle delay(float time, std::function<void()> func);
 
+    FORCEINLINE const Vector3& get_ambient_light() const { return ambient_light_; }
+    void set_ambient_light(const Vector3& ambient_light);
+
+    FORCEINLINE const Vector3& get_sun_light() const { return sun_light_; }
+    void set_sun_light(const Vector3& sun_light);
+
+    FORCEINLINE const Quaternion& get_sun_angle() const { return sun_angle_; }
+    void set_sun_pitch(float sun_pitch);
+    void set_sun_yaw(float sun_yaw);
+    
 protected:
     virtual void on_start();
     virtual void on_tick();
@@ -70,4 +82,8 @@ private:
     float time_scale_ = 1.0f;
 
     Map<TimerHandle, TimerEntry> timer_entries_;
+
+    Vector3 ambient_light_ = Vector3(0.5f);
+    Vector3 sun_light_ = Vector3(0.8f);
+    Quaternion sun_angle_ = Quaternion(Vector3(0, 45, 0));
 };

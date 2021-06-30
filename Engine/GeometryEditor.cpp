@@ -285,6 +285,35 @@ void GeometryEditor::compute_normals(const List<Mesh::Vertex>& vertices, const L
     }
 }
 
+void GeometryEditor::compute_normals(List<Mesh::Vertex>& vertices, const List<uint>& indices, bool invert)
+{
+    List<List<Vector3>> vertex_normals = List<List<Vector3>>(vertices.length());
+    
+    for (uint i = 0; i < indices.length() / 3; i++)
+    {
+        const uint i0 = indices[i * 3 + 0];
+        const uint i1 = indices[i * 3 + 1];
+        const uint i2 = indices[i * 3 + 2];
+        auto normal = compute_normal(vertices[i0].pos, vertices[i1].pos, vertices[i2].pos);
+        if (invert) normal *= -1;
+        vertex_normals[i0].Add(normal);
+        vertex_normals[i1].Add(normal);
+        vertex_normals[i2].Add(normal);
+    }
+
+    for (uint i = 0; i < indices.length(); i++)
+    {
+        const uint index = indices[i];
+
+        Vector3 normal_sum;
+        for (auto norm : vertex_normals[index])
+        {
+            normal_sum += norm;
+        }
+        vertices[i].norm = (normal_sum / vertex_normals.length()).normalized();
+    }
+}
+
 Shared<Mesh> GeometryEditor::get_unit_cube()
 {
     static Shared<Mesh> result;

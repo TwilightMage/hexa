@@ -12,11 +12,9 @@ public:
         const Shared<Texture>& mesh_texture,
         ItemType type,
         const String& name,
-        uint stack_size,
-        float mass,
-        ItemTileTarget tile_target
+        float mass
         )
-        : ItemInfo(key, icon, mesh, mesh_texture, type, name, stack_size, mass, tile_target)
+        : ItemInfo(key, icon, mesh, mesh_texture, type, name, 99, mass, TARGET_OUTSIDE)
     {}
     
     void apply_to_tile(ItemContainer& item, const Shared<Character>& character, const TileIndex& tile, const Shared<HexaWorld>& world) const override;

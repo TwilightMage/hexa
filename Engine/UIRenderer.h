@@ -12,12 +12,12 @@ public:
     UIRenderer();
     ~UIRenderer();
     
-    bool register_object(const Weak<IRenderable>& renderable) const override;
-    bool unregister_object(const Weak<IRenderable>& renderable) const override;
-    bool change_object_mesh(const Weak<IRenderable>& renderable, const Weak<Mesh>& old_mesh) override;
-    bool change_object_shader(const Weak<IRenderable>& renderable, const Weak<Shader>& old_shader) override;
+    bool register_object(const Shared<IRenderable>& renderable) const override;
+    bool unregister_object(const Shared<IRenderable>& renderable) const override;
+    bool change_object_mesh(const Shared<IRenderable>& renderable, const Shared<Mesh>& old_mesh) override;
+    bool change_object_shader(const Shared<IRenderable>& renderable, const Shared<Shader>& old_shader) override;
     std::map<Texture*, uint> dump_texture_usage() const override;
-    void render(const Matrix4x4& view_projection_matrix) const override;
+    void render(const Matrix4x4& view, const Matrix4x4& projection, const Shared<World>& world) const override;
     void cleanup() const override;
 
 private:

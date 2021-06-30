@@ -27,6 +27,12 @@ void Toolbar::on_construct()
         icon->set_mouse_detection(false);
         slot_infos_[i].icon = icon;
 
+        auto count_label = MakeShared<TextBlock>();
+        count_label->set_font_size(10);
+        count_label->set_z(KINDA_SMALL_NUMBER * 2);
+        count_label->set_mouse_detection(false);
+        slot_infos_[i].count_label = count_label;
+        
         auto label = MakeShared<TextBlock>(String::make((i + 1) % 10));
         const auto label_size = label->get_font()->measure_string(label->get_text(), label->get_font_size());
         label->set_position(Vector2(5 + 37 * static_cast<float>(i) + (37 - label_size) / 2, 35));
@@ -114,11 +120,23 @@ void Toolbar::item_changed(uint index, const ItemContainer& item)
         if (item.is_empty())
         {
             slot_infos_[index].icon->remove_from_parent();
+            slot_infos_[index].count_label->remove_from_parent();
         }
         else
         {
             add_child(slot_infos_[index].icon);
             slot_infos_[index].icon->use_texture(item.item->icon);
+
+            if (item.count > 1)
+            {
+                add_child(slot_infos_[index].count_label);
+                slot_infos_[index].count_label->set_text(String::make(item.count));
+                slot_infos_[index].count_label->set_position(Vector2(5 + 37 * static_cast<float>(index) + 37 - slot_infos_[index].count_label->get_size().x - 4, 35 - 4));
+            }
+            else
+            {
+                slot_infos_[index].count_label->remove_from_parent();
+            }
         }
     }
 }

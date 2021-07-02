@@ -11,6 +11,7 @@
 #include "Path.h"
 #include "Paths.h"
 #include "Renderer.h"
+#include "Renderer3D.h"
 #include "SaveGame.h"
 #include "Settings.h"
 #include "Shader.h"
@@ -25,10 +26,8 @@
 Game* Game::instance_ = nullptr;
 
 Game::Game(int argc, char* argv[])
-    : log_stream_(DateTime::now(), argv[0])
-	, event_bus_(new EventBus())
-	, renderer_(new Renderer)
-	, ui_renderer_(new UIRenderer)
+    : event_bus_(new EventBus())
+	, log_stream_(DateTime::now(), argv[0])
 	, physics_(new reactphysics3d::PhysicsCommon)
 	, ui_root_(new UIElement)
 {
@@ -182,28 +181,6 @@ const Path& Game::get_app_path()
 	return instance_->app_path_;
 }
 
-void Game::use_renderer(const Weak<Renderer>& renderer)
-{
-	if (instance_->is_loading_stage_)
-	{
-		if (const auto& renderer_ptr = renderer.lock())
-		{
-			instance_->renderer_.reset(renderer_ptr.get());
-		}
-	}
-}
-
-void Game::use_ui_renderer(const Weak<Renderer>& ui_renderer)
-{
-	if (instance_->is_loading_stage_)
-	{
-		if (const auto& ui_renderer_ptr = ui_renderer.lock())
-		{
-			instance_->ui_renderer_.reset(ui_renderer_ptr.get());
-		}
-	}
-}
-
 Shared<Shader> Game::get_basic_shader()
 {
 	return instance_->basic_shader_;
@@ -212,6 +189,16 @@ Shared<Shader> Game::get_basic_shader()
 Shared<Shader> Game::get_basic_ui_shader()
 {
 	return instance_->basic_ui_shader_;
+}
+
+Shared<Renderer3D> Game::get_basic_renderer_3d()
+{
+	return instance_->basic_renderer_3d_;
+}
+
+Shared<RendererUI> Game::get_basic_renderer_ui()
+{
+	return instance_->basic_renderer_ui_;
 }
 
 Shared<Texture> Game::get_white_pixel()
@@ -353,9 +340,9 @@ void Game::prepare()
 
 void Game::render_loop()
 {
-	const String renderer(reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-	verbose("OpenGL", "Active GPU: %s", renderer.c());
-	glfwSetWindowTitle(window_, (get_info().title + " - " + renderer).c());
+	const String GPU_name(reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
+	verbose("OpenGL", "Active GPU: %s", GPU_name.c());
+	glfwSetWindowTitle(window_, (get_info().title + " - " + GPU_name).c());
 	
 	const String opengl_version_string(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
 	verbose("OpenGL", "Detected version: %s", opengl_version_string.c());
@@ -396,14 +383,7 @@ void Game::render_loop()
 	is_loading_stage_ = true;
 
 	// Load shaders
-	Shader::Meta basic_shader_meta;
-	basic_shader_meta.vertex_param_size = sizeof(Mesh::Vertex);
-	basic_shader_meta.vertex_params = {
-		{"vPos", 0, 3, GL_FLOAT},
-		{"vUV", sizeof(float) * 3, 2, GL_FLOAT},
-		{"vCol", sizeof(float) * 5, 3, GL_FLOAT},
-		{"vNorm", sizeof(float) * 8, 3, GL_FLOAT}
-	};
+	Shader::Meta basic_shader_meta = Renderer3D::default_meta;
 	basic_shader_meta.instance_count = 230;
 	basic_shader_ = Shader::compile(RESOURCES_ENGINE_SHADERS + "basic", basic_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
 
@@ -538,11 +518,15 @@ void Game::render_loop()
 			// UI matrix
 			auto ui_proj = Matrix4x4::ortho(0.0f, static_cast<float>(width), static_cast<float>(-height), 0.0f, -1000.0f, 0.0001f);
 
-			// rendering
+			// rendering+
+			Renderer::RenderData render_data = {world_, view, proj, Matrix4x4(), ui_proj };
+			
 			is_render_stage_ = true;
-			renderer_->render(view, proj, world_);
-			glClear(GL_DEPTH_BUFFER_BIT);
-			ui_renderer_->render(Matrix4x4(), ui_proj, world_);
+			for (auto& renderer : renderers_)
+			{
+				renderer.value->render(render_data);
+			}
+			//glClear(GL_DEPTH_BUFFER_BIT);
 			is_render_stage_ = false;
 		}
  
@@ -560,9 +544,11 @@ void Game::render_loop()
 void Game::cleanup()
 {
 	verbose("Game", "Cleaning up...");
-	
-	renderer_->cleanup();
-	ui_renderer_->cleanup();
+
+	for (auto& renderer : renderers_)
+	{
+		renderer.value->cleanup();
+	}
 
 	for (auto& kvp : shaders_)
 	{

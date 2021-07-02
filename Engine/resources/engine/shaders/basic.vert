@@ -1,6 +1,6 @@
 #version 450
 
-layout(location=0) uniform mat4 models[230];
+layout(location=0) uniform mat4 INST_model[230];
 layout(location=460) uniform mat4 view;
 layout(location=461) uniform mat4 projection;
 
@@ -18,7 +18,7 @@ out vec3 cam_pos;
 
 void main()
 {
-    mat4 model = models[gl_InstanceID];
+    mat4 model = INST_model[gl_InstanceID];
     
     InstanceID = gl_InstanceID;
     gl_Position = projection * view * model * vec4(vPos, 1.0);

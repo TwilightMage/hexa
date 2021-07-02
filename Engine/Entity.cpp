@@ -8,20 +8,22 @@
 #include "Game.h"
 #include "Mesh.h"
 #include "GeometryEditor.h"
+#include "Renderer3D.h"
+#include "Renderer3DInstance.h"
 #include "Texture.h"
 #include "World.h"
 #include "Physics/Collision.h"
 
 Entity::Entity()
-    : Object(typeid(this).raw_name() + String(" entity"))
-    , shader_(Game::get_basic_shader())
-    , texture_(Game::get_white_pixel(), false)
+    : Object(typeid(this).name() + String(" entity"))
+    , is_matrix_dirty_(true)
+    , renderer_instance_(cast<Renderer3DInstance>(Game::get_basic_renderer_3d()->create_instance()))
     , pending_kill_(false)
     , started_(false)
     , rigid_body_(nullptr)
     , collider_(nullptr)
-    , is_matrix_dirty_(true)
 {
+    
 }
 
 Shared<World> Entity::get_world() const
@@ -47,110 +49,24 @@ bool Entity::is_started() const
     return started_;
 }
 
-void Entity::use_mesh(const Weak<Mesh>& new_mesh)
+void Entity::use_mesh(const Shared<Mesh>& new_mesh) const
 {
-    if (!world_.expired())
-    {
-        if (mesh_)
-        {
-            mesh_->usage_count_--;
-        }
-
-        if (const auto new_mesh_ptr = new_mesh.lock())
-        {
-            new_mesh_ptr->usage_count_++;
-        }
-    }
-
-    const auto old= mesh_;
-    mesh_ = new_mesh.lock();
-
-    if (mesh_ != old)
-    {
-        if (mesh_)
-        {
-            texture_.activate();
-        }
-        else
-        {
-            texture_.deactivate();
-        }
-        
-        if (started_)
-        {
-            if (auto world_ptr = world_.lock())
-            {
-                world_ptr->notify_renderable_mesh_updated(shared_from_this(), old);
-            }
-        }
-    }
+    renderer_instance_->set_mesh(new_mesh);
 }
 
-void Entity::clear_mesh()
+void Entity::clear_mesh() const
 {
-    if (mesh_ && !world_.expired())
-    {
-        mesh_->usage_count_--;
-    }
-
-    const auto old_mesh = mesh_;
-    mesh_ = nullptr;
-
-    texture_.deactivate();
-
-    if (auto world_ptr = world_.lock())
-    {
-        world_ptr->notify_renderable_mesh_updated(shared_from_this(), old_mesh);
-    }
+    renderer_instance_->set_mesh(nullptr);
 }
 
-void Entity::use_shader(const Weak<Shader>& new_shader)
+void Entity::use_texture(const Shared<Texture>& new_texture) const
 {
-    const auto shader_to_set = new_shader.expired() ? Game::get_basic_shader() : new_shader.lock();
-    if (shader_ != shader_to_set)
-    {
-        const auto old = shader_;
-        shader_ = shader_to_set;
-        
-        if (auto world_ptr = world_.lock())
-        {
-            world_ptr->notify_renderable_shader_updated(shared_from_this(), old);
-        }
-    }
-}
-
-void Entity::use_texture(const Weak<Texture>& new_texture)
-{
-    const auto texture_to_set = new_texture.expired() ? Game::get_white_pixel() : new_texture.lock();
-    if (*texture_ != texture_to_set)
-    {
-        texture_ = texture_to_set;
-    }
-}
-
-Shared<Mesh> Entity::get_mesh() const
-{
-    return mesh_;
-}
-
-Shared<Shader> Entity::get_shader() const
-{
-    return shader_;
-}
-
-Shared<Texture> Entity::get_texture() const
-{
-    return *texture_;
+    renderer_instance_->set_param("texture", new_texture);
 }
 
 void Entity::mark_matrix_dirty()
 {
     is_matrix_dirty_ = true;
-}
-
-Matrix4x4 Entity::get_matrix() const
-{
-    return cached_matrix_;
 }
 
 Vector3 Entity::get_position() const
@@ -345,14 +261,6 @@ void Entity::remove_all_components()
     components_.Clear();
 }
 
-void Entity::set_visibility(bool visibility)
-{
-    if (visible_ == visibility) return;
-    
-    visible_ = visibility;
-    visibility_changed_ = true;
-}
-
 void Entity::generate_components()
 {
 }
@@ -367,7 +275,7 @@ void Entity::cache_matrix()
     Quaternion rotation = get_rotation();
     Vector3 scale = get_scale();
     modify_matrix_params(position, rotation, scale);
-    cached_matrix_ = Matrix4x4().translate(position).rotate(rotation).scale(scale);
+    renderer_instance_->set_model(Matrix4x4().translate(position).rotate(rotation).scale(scale));
     is_matrix_dirty_ = false;
 }
 
@@ -375,9 +283,5 @@ void Entity::start()
 {
     started_ = true;
     
-    if (mesh_)
-    {
-        texture_.activate();
-    }
     on_start();
 }

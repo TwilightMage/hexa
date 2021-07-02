@@ -11,7 +11,6 @@ Shared<Mesh> Mesh::empty = MakeShared<Mesh>("Empty Mesh");
 
 Mesh::Mesh(const String& name)
     : Object(name)
-    , usage_count_(0)
 {
 }
 
@@ -19,7 +18,6 @@ Mesh::Mesh(const String& name, const List<Vertex>& vertices)
     : Object(name)
     , vertices_(vertices)
     , indices_(vertices.length())
-    , usage_count_(0)
 {
     for (uint i = 0; i < vertices.length(); i++)
     {
@@ -35,7 +33,6 @@ Mesh::Mesh(const String& name, const List<Vertex>& vertices, const List<uint>& i
     : Object(name)
     , vertices_(vertices)
     , indices_(indices)
-    , usage_count_(0)
 {
     GeometryEditor::compute_normals(vertices_, indices_, true);
     
@@ -91,11 +88,6 @@ const List<Mesh::Vertex>& Mesh::get_vertices() const
 const List<uint>& Mesh::get_indices() const
 {
     return indices_;
-}
-
-uint Mesh::get_usage_count() const
-{
-    return usage_count_;
 }
 
 bool Mesh::is_empty() const

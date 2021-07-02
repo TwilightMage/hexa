@@ -2,6 +2,7 @@
 
 #include "File.h"
 #include "Game.h"
+#include "Utils.h"
 
 Shader::Shader(const String& name)
     : Object(name)
@@ -23,43 +24,27 @@ const String& Shader::get_name() const
     return name;
 }
 
-void Shader::map_params()
-{
-    glLinkProgram(program_);
-    for (auto& vertex_param : shader_meta_.vertex_params)
-    {
-        vertex_param.id = glGetAttribLocation(program_, vertex_param.name.c());
-        if (vertex_param.id != GL_INVALID_INDEX || true)
-        {
-            glEnableVertexAttribArray(vertex_param.id);
-            glVertexAttribPointer(vertex_param.id, vertex_param.size, vertex_param.type, GL_FALSE, shader_meta_.vertex_param_size, reinterpret_cast<void*>(static_cast<uint64>(vertex_param.offset)));
-        }
-    }
-
-    for (auto& uniform_param : shader_meta_.uniform_params)
-    {
-        if (!uniform_param.name.is_empty())
-        {
-            uniform_param.id = glGetUniformLocation(program_, uniform_param.name.c());
-        }
-        else
-        {
-            uniform_param.id = GL_INVALID_INDEX;
-        }
-    }
-}
-
 void Shader::cleanup()
 {
     glLinkProgram(program_);
 
     for (auto& kvp : shaders_)
     {
-        glDetachShader(program_, kvp.second);
-        glDeleteShader(kvp.second);
+        glDetachShader(program_, kvp.value);
+        glDeleteShader(kvp.value);
     }
 
     glDeleteProgram(program_);
+}
+
+bool Shader::check_uniform_presence(const String& name, ShaderDataType type, bool instance) const
+{
+    if (auto found = instance ? instance_uniforms_.find(name) : global_uniforms_)
+    {
+        return found->type == type;
+    }
+
+    return false;
 }
 
 Shared<Shader> Shader::compile(const Path& path, const Meta& shader_meta, int type_flags)
@@ -97,9 +82,9 @@ Shared<Shader> Shader::compile(const Path& path, const Meta& shader_meta, int ty
         List<String> problem_shaders;
         for (auto& kvp : result->shaders_)
         {
-            if (kvp.second == -1)
+            if (kvp.value == -1)
             {
-                problem_shaders.Add(shader_type_meta.at(kvp.first).name);
+                problem_shaders.Add(shader_type_meta.at(kvp.x).name);
             }
         }
         
@@ -107,7 +92,7 @@ Shared<Shader> Shader::compile(const Path& path, const Meta& shader_meta, int ty
         {
             for (auto& kvp : result->shaders_)
             {
-                glDeleteShader(kvp.second);
+                glDeleteShader(kvp.value);
             }
             print_error("Shader", "Unable to compile shader program %s because of problems with shaders: %s", path.get_absolute_string().c(), String::join(problem_shaders, ", ").c());
         }
@@ -119,9 +104,69 @@ Shared<Shader> Shader::compile(const Path& path, const Meta& shader_meta, int ty
             glLinkProgram(result->program_);
             for (auto& kvp : result->shaders_)
             {
-                glAttachShader(result->program_, kvp.second);
+                glAttachShader(result->program_, kvp.value);
             }
 
+            glLinkProgram(result->program_);
+
+            int name_len_max = 32;
+            
+            int num_uniforms = 0;
+            glGetProgramiv(result->program_, GL_ACTIVE_UNIFORMS, &num_uniforms);
+            glGetProgramiv(result->program_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &name_len_max);
+            for (int i = 0; i < num_uniforms; i++)
+            {
+                char* name = new char[name_len_max];
+                int name_len;
+                int size;
+                uint type;
+                glGetActiveUniform(result->program_, i, name_len_max, &name_len, &size, &type, name);
+                String name_str = String(name, name_len);
+                bool is_array = false;
+                if (name_str.ends_with("[0]"))
+                {
+                    name_str = name_str.substring(0, name_str.length() - 3);
+                    is_array = true;
+                }
+                const uint layout = glGetUniformLocation(result->program_, name);
+                if (name_str.starts_with("INST_"))
+                {
+                    name_str = name_str.substring(5);
+                    result->instance_uniforms_.insert(name_str, UniformParam(size, static_cast<ShaderDataType>(type), is_array, name_str, layout));
+                }
+                else
+                {
+                    result->global_uniforms_.insert(name_str, UniformParam(size, static_cast<ShaderDataType>(type), is_array, name_str, layout));
+                }
+                delete[] name;
+            }
+
+            GLint num_inputs = 0;
+            glGetProgramiv(result->program_, GL_ACTIVE_ATTRIBUTES, &num_inputs);
+            glGetProgramiv(result->program_, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &name_len_max);
+            for (int i = 0; i < num_inputs; i++)
+            {
+                char* name = new char[name_len_max];
+                int name_len;
+                int size;
+                uint type;
+                const uint layout = glGetAttribLocation(result->program_, name);
+                glGetActiveAttrib(result->program_, i, name_len_max, &name_len, &size, &type, name);
+                result->vertex_params_.Add(VertexParam(size,static_cast<ShaderDataType>(type), String(name, name_len), layout));
+                delete[] name;
+            }
+            result->vertex_params_.sort([](const VertexParam& a, const VertexParam& b) -> bool
+            {
+                return a.layout < b.layout;
+            });
+            uint vertex_param_offset = 0;
+            for (auto& vertex_param : result->vertex_params_)
+            {
+                vertex_param.offset = (void*)(uint64)vertex_param_offset;
+                vertex_param_offset += shader_type_info[vertex_param.type].c_size;
+            }
+
+            Utils::check_gl_error();
             verbose("Shader", "Compiled shader %s", path.get_absolute_string().c());
 
             Game::instance_->shaders_[path.get_absolute_string()] = result;

@@ -1,11 +1,13 @@
 ﻿#include "Image.h"
 
 #include "Engine/Game.h"
+#include "Engine/RendererUI.h"
+#include "Engine/RendererUIInstance.h"
 #include "Engine/Texture.h"
 
 Image::Image()
     : UIElement()
-    , shader_(Game::get_basic_ui_shader())
+    , renderer_instance_(cast<RendererUIInstance>(Game::get_basic_renderer_ui()->create_instance()))
     , texture_(Game::get_white_pixel(), false)
     , have_rect_(false)
     , uv_rect_(Quaternion(0.0f, 0.0f, 1.0f, 1.0f))
@@ -14,31 +16,16 @@ Image::Image()
 
 Image::Image(const Shared<Texture>& texture)
     : UIElement()
-    , shader_(Game::get_basic_ui_shader())
+    , renderer_instance_(cast<RendererUIInstance>(Game::get_basic_renderer_ui()->create_instance()))
     , texture_(texture, false)
     , have_rect_(false)
     , uv_rect_(Quaternion(0.0f, 0.0f, 1.0f, 1.0f))
 {
 }
 
-Shared<Mesh> Image::get_mesh() const
-{
-    return Mesh::empty;
-}
-
-Shared<Shader> Image::get_shader() const
-{
-    return shader_;
-}
-
 Shared<Texture> Image::get_texture() const
 {
     return *texture_;
-}
-
-Matrix4x4 Image::get_matrix() const
-{
-    return get_ui_matrix();
 }
 
 Quaternion Image::get_uv_rect() const
@@ -66,10 +53,10 @@ void Image::clear_rect()
 
 void Image::use_shader(const Shared<Shader>& shader)
 {
-    if (shader_ != shader)
+    if (renderer_instance_ != shader)
     {
-        const auto old = shader_;
-        shader_ = shader;
+        const auto old = renderer_instance_;
+        renderer_instance_ = shader;
         
         /*if (auto world_ptr = world_.lock())
         {
@@ -89,7 +76,7 @@ void Image::use_texture(const Shared<Texture>& texture)
 
 void Image::on_register_render()
 {
-    texture_.activate();
+    renderer_instance_->set_param("texture")
 }
 
 void Image::on_unregister_render()

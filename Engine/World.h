@@ -41,11 +41,6 @@ public:
 
     const List<Shared<Entity>>& get_entities() const;
 
-    static void notify_renderable_added(const Shared<IRenderable>& renderable);
-    static void notify_renderable_deleted(const Shared<IRenderable>& renderable);
-    static void notify_renderable_mesh_updated(const Shared<IRenderable>& renderable, const Shared<Mesh>& old_mesh);
-    static void notify_renderable_shader_updated(const Shared<IRenderable>& renderable, const Shared<Shader>& old_shader);
-
     float get_time_scale() const;
     void set_time_scale(float val);
 

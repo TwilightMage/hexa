@@ -92,11 +92,6 @@ void World::start()
     physics_world_->setGravity(gravity);
     
     on_start();
-
-    for (auto entity : entities_)
-    {
-        notify_renderable_added(entity);
-    }
 }
 
 void World::tick(float delta_time)
@@ -152,22 +147,6 @@ void World::tick(float delta_time)
         }
         else if (time_scale_ != 0.0f)
         {
-            if (entity->visibility_changed_)
-            {
-                if (entity->get_mesh() && entity->get_shader())
-                {
-                    if (entity->visible_)
-                    {
-                        notify_renderable_added(entity);
-                    }
-                    else
-                    {
-                        notify_renderable_deleted(entity);
-                    }
-                }
-                entity->visibility_changed_ = false;
-            }
-            
             if (auto tickable = cast<ITickable>(entity))
             {
                 tickable->tick(delta_time);
@@ -195,48 +174,6 @@ void World::tick(float delta_time)
 const List<Shared<Entity>>& World::get_entities() const
 {
     return entities_;
-}
-
-void World::notify_renderable_added(const Shared<IRenderable>& renderable)
-{
-    Game::get_instance()->renderer_->register_object(renderable);
-}
-
-void World::notify_renderable_deleted(const Shared<IRenderable>& renderable)
-{
-    Game::get_instance()->renderer_->unregister_object(renderable);
-}
-
-void World::notify_renderable_mesh_updated(const Shared<IRenderable>& renderable, const Shared<Mesh>& old_mesh)
-{
-    if (renderable)
-    {
-        const auto new_mesh = renderable->get_mesh();
-
-        if (new_mesh != old_mesh)
-        {
-            if (!old_mesh) // add
-            {
-                Game::get_instance()->renderer_->register_object(renderable);
-            }
-            else if (!new_mesh) // remove
-            {
-                Game::get_instance()->renderer_->unregister_object(renderable);
-            }
-            else // change
-            {
-                Game::get_instance()->renderer_->change_object_mesh(renderable, old_mesh);
-            }
-        }
-    }
-}
-
-void World::notify_renderable_shader_updated(const Shared<IRenderable>& renderable, const Shared<Shader>& old_shader)
-{
-    if (renderable)
-    {
-        Game::get_instance()->renderer_->change_object_shader(renderable, old_shader);
-    }
 }
 
 float World::get_time_scale() const
@@ -321,18 +258,8 @@ void World::spawn_entity_internal(const Shared<Entity>& entity)
         entity->rigid_body_->setUserData(entity.get());
     }
         
-    if (const auto mesh = entity->get_mesh())
-    {
-        mesh->usage_count_++;
-    }
-        
     entities_.Add(entity);
     entity->start();
-
-    if (entity->get_mesh() && entity->get_shader() && entity->visible_)
-    {
-        notify_renderable_added(entity);
-    }
 }
 
 bool World::ensure_child_not_exist(const Shared<Entity>& entity)
@@ -349,15 +276,7 @@ void World::do_destroy(const Shared<Entity>& entity)
 {
     entity->on_destroy();
 
-    if (const auto mesh = entity->get_mesh())
-    {
-        mesh->usage_count_--;
-    }
-            
-    if (entity->get_mesh() && entity->get_shader() && entity->visible_)
-    {
-        notify_renderable_deleted(entity);
-    }
+    entity->renderer_instance_->destroy();
 
     if (entity->rigid_body_)
     {

@@ -4,12 +4,13 @@
 #include "CollisionMaskBits.h"
 #include "EntityComponent.h"
 #include "framework.h"
-#include "IRenderable.h"
 #include "Object.h"
 #include "Quaternion.h"
-#include "Slot.h"
+#include "Renderer3DInstance.h"
 #include "Texture.h"
 #include "Vector3.h"
+
+class Renderer3DInstance;
 
 namespace reactphysics3d
 {
@@ -17,7 +18,7 @@ namespace reactphysics3d
     class Collider;
 }
 
-class EXPORT Entity : public Object, public IRenderable, public std::enable_shared_from_this<Entity>
+class EXPORT Entity : public Object, public std::enable_shared_from_this<Entity>
 {
     friend class World;
 
@@ -33,17 +34,11 @@ public:
 
     bool is_started() const;
     
-    void use_mesh(const Weak<class Mesh>& new_mesh);
-    void clear_mesh();
-    void use_shader(const Weak<Shader>& new_shader);
-    void use_texture(const Weak<Texture>& new_texture);
-    Shared<Mesh> get_mesh() const override;
-    Shared<Shader> get_shader() const override;
-    Shared<Texture> get_texture() const override;
+    void use_mesh(const Shared<class Mesh>& new_mesh) const;
+    void clear_mesh() const;
+    void use_texture(const Shared<Texture>& new_texture) const;
 
     void mark_matrix_dirty();
-    
-    Matrix4x4 get_matrix() const override;
     
     FORCEINLINE Vector3 get_position() const;
     void set_position(const Vector3& pos);
@@ -84,8 +79,8 @@ public:
         return nullptr;
     }
 
-    FORCEINLINE bool is_visible() const { return visible_; }
-    void set_visibility(bool visibility);
+    FORCEINLINE bool is_visible() const { return renderer_instance_->is_visible(); }
+    FORCEINLINE void set_visibility(bool visibility) const { renderer_instance_->set_visible(visibility); }
 
     Delegate<const Shared<Entity>&> on_destroyed;
     
@@ -104,13 +99,10 @@ private:
     Vector3 position_;
     Quaternion rotation_;
     Vector3 scale_ = Vector3::one();
-    Matrix4x4 cached_matrix_;
     bool is_matrix_dirty_;
     
     Weak<World> world_;
-    Shared<Mesh> mesh_;
-    Shared<Shader> shader_;
-    Slot<Texture> texture_;
+    Shared<Renderer3DInstance> renderer_instance_;
     bool pending_kill_;
     bool started_;
     reactphysics3d::RigidBody* rigid_body_;
@@ -118,6 +110,4 @@ private:
     Shared<Collision> collision_;
     byte16 collision_mask_ = CollisionMaskBits::NONE;
     List<Shared<EntityComponent>> components_;
-    bool visible_ = true;
-    bool visibility_changed_ = false;
 };

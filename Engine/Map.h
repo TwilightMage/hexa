@@ -62,6 +62,16 @@ public:
         return *data_.find(key);
     }
 
+    Value operator[](const Key& key) const
+    {
+        if (auto value = data_.find(key))
+        {
+            return *value;
+        }
+
+        throw std::runtime_error("Unable to find value in map");
+    }
+
     FORCEINLINE bool contains(const Key& key)
     {
         return data_.find(key) != nullptr;

@@ -130,6 +130,17 @@ public:
         inner_[length_++] = std::move(item);
     }
 
+    template<typename... Items>
+    void AddMany(const T& first, const Items&... rest)
+    {
+        Add(first);
+
+        if constexpr (sizeof...(rest) > 0)
+        {
+            AddMany(rest...);
+        }
+    }
+
     void AddMany(const List<T>& items)
     {
         if (length_ + items.length() > allocated_length_)

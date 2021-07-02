@@ -14,6 +14,11 @@
 #include "Vector2.h"
 #include "Version.h"
 
+class Entity;
+class Mesh;
+class Shader;
+class RendererUI;
+class Renderer3D;
 class TextBlock;
 class ICamera;
 class Animation;
@@ -92,11 +97,10 @@ public:
     static bool is_app_path_set();
     static const Path& get_app_path();
 
-    static void use_renderer(const Weak<Renderer>& renderer);
-    static void use_ui_renderer(const Weak<Renderer>& ui_renderer);
-
     static Shared<Shader> get_basic_shader();
     static Shared<Shader> get_basic_ui_shader();
+    static Shared<Renderer3D> get_basic_renderer_3d();
+    static Shared<RendererUI> get_basic_renderer_ui();
     static Shared<Texture> get_white_pixel();
     static Shared<SpriteFont> get_default_font();
 
@@ -174,12 +178,15 @@ private:
     Map<String, Shared<Mesh>> meshes_;
     Map<String, Shared<Texture>> textures_;
     Map<String, Shared<Animation>> animations_;
-
+    Map<String, Shared<Renderer>> renderers_;
+    
     // Game
     Version game_version_ = {0, 1, 0};
     float ui_scale_ = 2;
     Shared<Shader> basic_shader_;
     Shared<Shader> basic_ui_shader_;
+    Shared<Renderer3D> basic_renderer_3d_;
+    Shared<RendererUI> basic_renderer_ui_;
     Shared<Texture> white_pixel_;
     Shared<SpriteFont> default_font_;
     List<Shared<Mod>> mods_;
@@ -192,8 +199,6 @@ private:
     Shared<World> world_;
 
     // Core
-    Unique<IRenderer> renderer_;
-    Unique<IRenderer> ui_renderer_;
     Shared<reactphysics3d::PhysicsCommon> physics_;
     Shared<UIElement> ui_root_;
     Weak<UIElement> ui_under_mouse_;

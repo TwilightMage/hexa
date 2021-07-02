@@ -2,47 +2,126 @@
 
 #include <glad/glad.h>
 
-#include "IRenderable.h"
-#include "RendererUtils.h"
-#include "Texture.h"
+#include "RendererInstance.h"
+#include "Shader.h"
 #include "World.h"
 
-Renderer::Renderer()
+template<typename T>
+FORCEINLINE T* extract_gl_buffer(uint buffer, uint buffer_type, int& buffer_size, int add_size = 0)
 {
-    database_ = new render_database<IRenderable>();
+    glBindBuffer(buffer_type, buffer);
+    
+    glGetBufferParameteriv(buffer_type, GL_BUFFER_SIZE, &buffer_size);
+    
+    buffer_size /= sizeof(T);
+    buffer_size += add_size;
+
+    T* buffer_data = new T[buffer_size];
+
+    void* buf_ptr = glMapBuffer(buffer_type, GL_READ_ONLY);
+    memcpy(buffer_data, buf_ptr, sizeof(T) * (buffer_size - add_size));
+    glUnmapBuffer(buffer_type);
+
+    glBindBuffer(buffer_type, 0);
+    
+    return buffer_data;
 }
 
-Renderer::~Renderer()
+void Renderer::MeshContainer::add_instance(const Shared<RendererInstance>& instance)
 {
-    delete database_;
+    if (instance->is_visible())
+    {
+        active_instances_.Add(instance);
+    }
+    else
+    {
+        disabled_instances_.Add(instance);
+    }
 }
 
-bool Renderer::register_object(const Shared<IRenderable>& renderable) const
+void Renderer::MeshContainer::remove_instance(const Shared<RendererInstance>& instance)
 {
-    return database_->register_object(renderable);
+    if (instance->is_visible())
+    {
+        active_instances_.Remove(instance);
+    }
+    else
+    {
+        disabled_instances_.Remove(instance);
+    }
 }
 
-bool Renderer::unregister_object(const Shared<IRenderable>& renderable) const
+void Renderer::MeshContainer::state_changed(const Shared<RendererInstance>& instance)
 {
-    return database_->unregister_object(renderable);
+    if (instance->is_visible())
+    {
+        disabled_instances_.Remove(instance);
+        active_instances_.Add(instance);
+    }
+    else
+    {
+        active_instances_.Remove(instance);
+        disabled_instances_.Add(instance);
+    }
 }
 
-bool Renderer::change_object_mesh(const Shared<IRenderable>& renderable, const Shared<Mesh>& old_mesh)
+void Renderer::VertexBufferContainer::init()
 {
-    return database_->change_object_mesh(renderable, old_mesh);
+    glGenBuffers(1, &gl_id);
 }
 
-bool Renderer::change_object_shader(const Shared<IRenderable>& renderable, const Shared<Shader>& old_shader)
+void Renderer::VertexBufferContainer::cleanup() const
 {
-    return database_->change_object_shader(renderable, old_shader);
+    glDeleteBuffers(1, new uint[1] { gl_id });
 }
 
-std::map<Texture*, uint> Renderer::dump_texture_usage() const
+void Renderer::VertexBufferContainer::add_mesh(const Shared<Mesh>& mesh, const Shared<RendererInstance>& first_instance)
 {
-    return database_->dump_texture_usage();
+    int current_buffer_size;
+    Mesh::Vertex* current_buffer_data = extract_gl_buffer<Mesh::Vertex>(gl_id, GL_ARRAY_BUFFER, current_buffer_size, mesh->get_vertices().length());
+    const uint new_start = current_buffer_size - mesh->get_vertices().length();
+    memcpy(current_buffer_data + new_start, mesh->get_vertices().get_data(), sizeof(Mesh::Vertex) * mesh->get_vertices().length());
+    glBindBuffer(GL_ARRAY_BUFFER, gl_id);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Mesh::Vertex) * current_buffer_size, current_buffer_data, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    delete current_buffer_data;
+    MeshContainer* new_mesh_container = new MeshContainer();
+    new_mesh_container->position_in_buffer = new_start;
+    new_mesh_container->size_in_buffer = mesh->get_vertices().length();
+    if (first_instance->is_visible())
+    {
+        new_mesh_container->active_instances_.Add(first_instance);
+    }
+    else
+    {
+        new_mesh_container->disabled_instances_.Add(first_instance);
+    }
+    mesh_containers.insert(mesh, new_mesh_container);
 }
 
-void Renderer::render(const Matrix4x4& view, const Matrix4x4& projection, const Shared<World>& world) const
+void Renderer::VertexBufferContainer::remove_mesh(const Shared<Mesh>& mesh)
+{
+    int current_buffer_size;
+    Mesh::Vertex* current_buffer_data = extract_gl_buffer<Mesh::Vertex>(gl_id, GL_ARRAY_BUFFER, current_buffer_size, mesh->get_vertices().length());
+    const uint offset = mesh->get_vertices().length();
+    const uint from = mesh_containers[mesh]->position_in_buffer;
+    delete mesh_containers[mesh];
+    mesh_containers.remove(mesh);
+    for (auto& container : mesh_containers)
+    {
+        if (container.value->position_in_buffer > from)
+        {
+            container.value->position_in_buffer -= offset;
+        }
+    }
+    memcpy(current_buffer_data + from, current_buffer_data + from + offset, sizeof(Mesh::Vertex) * (current_buffer_size - from - offset));
+    glBindBuffer(GL_ARRAY_BUFFER, gl_id);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(Mesh::Vertex) * current_buffer_size - offset, current_buffer_data, GL_STATIC_DRAW);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    delete current_buffer_data;
+}
+
+void Renderer::render(const RenderData& render_data) const
 {
     glEnable(GL_DEPTH_TEST);
     glDepthFunc(GL_LESS);
@@ -50,31 +129,58 @@ void Renderer::render(const Matrix4x4& view, const Matrix4x4& projection, const 
     glEnable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
 
-    auto& db = *database_;
-    for (const auto& shader_meshes : db)
+    if (shader_->get_meta().transparency)
     {
-        if (shader_meshes.key->get_meta().transparency)
-        {
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-        }
-        else
-        {
-            glDisable(GL_BLEND);
-        }
-        glUseProgram(shader_meshes.value.gl_shader_id);
-        glBindBuffer(GL_ARRAY_BUFFER, shader_meshes.value.gl_vertex_buffer_id);
-        shader_meshes.key->map_params();
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+    }
+    else
+    {
+        glDisable(GL_BLEND);
+    }
+    glUseProgram(shader_->get_program());
 
-        for (const auto& mesh_objects : shader_meshes.value)
+    for (auto& vertex_buffer_container : vertex_buffers_)
+    {
+        glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_container->gl_id);
+
+        for (auto& input : shader_->vertex_params_)
         {
+            uint layout = input.layout;
+            glEnableVertexAttribArray(layout);
+            glVertexAttribPointer(layout, shader_type_info[input.type].c_size, (GLenum)input.type, GL_FALSE, sizeof(Mesh::Vertex), input.offset);
+        }
+
+        for (const auto& mesh_container_point : vertex_buffer_container->mesh_containers)
+        {
+            auto mesh_container = mesh_container_point.value;
+            
             uint rendered_instance_count = 0;
-            while (rendered_instance_count < mesh_objects.value.length())
+            while (rendered_instance_count < mesh_container->active_instances_.length())
             {
-                const auto instance_count = std::min(mesh_objects.value.length() - rendered_instance_count, shader_meshes.key->get_meta().instance_count);
-                put_params_for_intances(view, projection, &mesh_objects.value[rendered_instance_count], instance_count, world);
+                const auto instance_count = std::min(mesh_container->active_instances_.length() - rendered_instance_count, shader_->get_meta().instance_count);
+
+                List<RendererParameterApplier*> parameter_appliers;
+                for (auto& shader_instance_param : get_shader()->instance_uniforms_)
+                {
+                    parameter_appliers.Add(new RendererParameterApplier(instance_count,  shader_type_info[shader_instance_param.value.type].c_size));
+                }
+                
+                for (uint j = 0; j < instance_count; j++)
+                {
+                    uint i = 0;
+                    for (auto& instance_parameter : mesh_container->active_instances_[rendered_instance_count + j]->instance_parameters_)
+                    {
+                        parameter_appliers[i++]->put(instance_parameter, j);
+                    }
+                }
+    
+                for (uint i = 0; i < parameter_appliers.length(); i++)
+                {
+                    delete parameter_appliers[i];
+                }
             		
-                glDrawArraysInstanced(GL_TRIANGLES, mesh_objects.value.vertex_buffer_offset, mesh_objects.value.size_in_vertex_buffer, instance_count);
+                glDrawArraysInstanced(GL_TRIANGLES, mesh_container->position_in_buffer, mesh_container->size_in_buffer, instance_count);
                 rendered_instance_count += instance_count;
             }
         }
@@ -83,36 +189,117 @@ void Renderer::render(const Matrix4x4& view, const Matrix4x4& projection, const 
 
 void Renderer::cleanup() const
 {
-    database_->cleanup();
+    //mesh_instances_->cleanup();
 }
 
-void Renderer::put_params_for_intances(const Matrix4x4& view, const Matrix4x4& projection, const Shared<IRenderable>* objects, uint instance_count, const Shared<World>& world) const
+Shared<RendererInstance> Renderer::create_instance()
 {
-    // declare local buffers
-    Matrix4x4* model_array = new Matrix4x4[instance_count];
-    uint64* texture_handle_array = new uint64[instance_count];
-    Vector3 ambient_color = world->ambient_color_.to_vector3();
-    Vector3 sun_color = world->sun_color_.to_vector3();
-    Vector3 sun_dir = -world->get_sun_angle().forward();
-
-    // fill local buffers
-    for (uint i = 0; i < instance_count; i++)
+    Shared<RendererInstance> instance = create_instance_object();
+    for (auto& uniform_parameter : shader_->instance_uniforms_)
     {
-        const auto& object = objects[i];
-        model_array[i] = object->get_matrix();
-        texture_handle_array[i] = object->get_texture()->get_handle_arb();
+        instance->instance_parameters_.insert(uniform_parameter.value.name, shader_type_info[uniform_parameter.value.type].parameter_producer());
     }
+    instance->register_direct_parameters();
+    empty_instances_.Add(instance);
+    return instance;
+}
 
-    // put local buffers into uniform arrays
-    glUniformMatrix4fv(0, instance_count, GL_FALSE, reinterpret_cast<float*>(model_array));
-    glUniformHandleui64vARB(230, instance_count, texture_handle_array);
-    glUniformMatrix4fv(460, 1, GL_FALSE, reinterpret_cast<const float*>(&view));
-    glUniformMatrix4fv(461, 1, GL_FALSE, reinterpret_cast<const float*>(&projection));
-    glUniform3f(462, ambient_color.x * world->ambient_intensity_, ambient_color.y * world->ambient_intensity_, ambient_color.z * world->ambient_intensity_);
-    glUniform4f(463, sun_color.x, sun_color.y, sun_color.z, world->sun_intensity_);
-    glUniform3f(464, sun_dir.x, sun_dir.y, sun_dir.z);
+void Renderer::destroy_instance(const Shared<RendererInstance>& instance)
+{
+    if (instance->get_master_renderer().get() == this)
+    {
+        if (instance->mesh_ == nullptr)
+        {
+            empty_instances_.Remove(instance);
+        }
+        else
+        {
+            if (const auto found = mesh_buffer_map_.find(instance->mesh_))
+            {
+                auto vertex_buffer_container = vertex_buffers_[*found];
+                auto mesh_container = vertex_buffer_container->mesh_containers[instance->mesh_];
+                
+                mesh_container->remove_instance(instance);
 
-    // clear local buffers
-    delete[] model_array;
-    delete[] texture_handle_array;
+                if (mesh_container->count() == 0)
+                {
+                    vertex_buffer_container->remove_mesh(instance->mesh_);
+                    mesh_buffer_map_.remove(instance->mesh_);
+                }
+            }
+        }
+        
+        instance->master_renderer_ = null_weak(Renderer);
+    }
+}
+
+Shared<RendererInstance> Renderer::create_instance_object()
+{
+    return MakeShared<RendererInstance>();
+}
+
+void Renderer::change_mesh(const Shared<RendererInstance>& instance, const Shared<Mesh>& old_mesh, const Shared<Mesh>& new_mesh)
+{
+    if (instance->get_master_renderer().get() == this && old_mesh != new_mesh)
+    {
+        if (old_mesh == nullptr)
+        {
+            empty_instances_.Remove(instance);
+            if (auto found = mesh_buffer_map_.find(new_mesh)) // case - no mesh -> registered mesh
+            {
+                vertex_buffers_[*found]->mesh_containers[old_mesh]->add_instance(instance);
+            }
+            else // case - no mesh -> unregistered mesh
+            {
+                uint use_buffer_index = -1;
+                const int mesh_size = (int)new_mesh->get_vertices().length() * (int)sizeof(Mesh::Vertex);
+                for (uint i = 0; i < vertex_buffers_.length(); i++)
+                {
+                    if (max_buffer_size - (int)vertex_buffers_[i]->vertex_buffer.length() * (int)sizeof(Mesh::Vertex) > mesh_size)
+                    {
+                        vertex_buffers_[i]->add_mesh(new_mesh, instance);
+                        use_buffer_index = i;
+                        break;
+                    }
+                }
+                
+                if (use_buffer_index == -1)
+                {
+                    VertexBufferContainer* vbc = new VertexBufferContainer();
+                    vbc->init();
+                    vbc->add_mesh(new_mesh, instance);
+                    vertex_buffers_.Add(vbc);
+                }
+                mesh_buffer_map_.insert(new_mesh, use_buffer_index);
+            }
+        }
+        else if (new_mesh == nullptr) // case - registered mesh -> no mesh
+        {
+            if (const auto found = mesh_buffer_map_.find(old_mesh))
+            {
+                auto vertex_buffer_container = vertex_buffers_[*found];
+                auto mesh_container = vertex_buffer_container->mesh_containers[old_mesh];
+                
+                mesh_container->remove_instance(instance);
+
+                if (mesh_container->count() == 0)
+                {
+                    vertex_buffer_container->remove_mesh(old_mesh);
+                    mesh_buffer_map_.remove(old_mesh);
+                }
+            }
+            empty_instances_.Add(instance);
+        }
+    }
+}
+
+void Renderer::change_active(const Shared<RendererInstance>& instance)
+{
+    if (instance->get_master_renderer().get() == this)
+    {
+        if (const auto found = mesh_buffer_map_.find(instance->get_mesh()))
+        {
+            vertex_buffers_[*found]->mesh_containers[instance->get_mesh()]->state_changed(instance);
+        }
+    }
 }

@@ -1,10 +1,11 @@
 ﻿#pragma once
 
 #include "UIElement.h"
-#include "Engine/IRenderable.h"
 #include "Engine/Rect.h"
 #include "Engine/Slot.h"
 #include "Engine/Texture.h"
+
+class RendererUIInstance;
 
 class EXPORT Image : public UIElement, public IRenderable
 {
@@ -16,10 +17,7 @@ public:
     }
     explicit Image(const Shared<Texture>& texture);
     
-    Shared<Mesh> get_mesh() const override;
-    Shared<Shader> get_shader() const override;
-    Shared<Texture> get_texture() const override;
-    Matrix4x4 get_matrix() const override;
+    Shared<Texture> get_texture() const;
     Quaternion get_uv_rect() const;
     const Rect& get_rect() const;
     void set_rect(const Rect& rect);
@@ -35,7 +33,7 @@ protected:
 private:
     void update_uv_rect();
 
-    Shared<Shader> shader_;
+    Shared<RendererUIInstance> renderer_instance_;
     Slot<Texture> texture_;
     Rect rect_;
     bool have_rect_;

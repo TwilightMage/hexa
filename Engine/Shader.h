@@ -7,13 +7,13 @@
 #include "Matrix4x4.h"
 #include "Object.h"
 #include "Path.h"
-#include "RendererParameters.h"
+#include "MaterialParameters.h"
 
-class Renderer;
+class Material;
 
 class EXPORT Shader : public Object
 {
-    friend Renderer;
+    friend Material;
     
 public:    
     struct UniformParam
@@ -81,7 +81,7 @@ private:
     bool transparency_ = false;
     uint empty_vertex_ = 0;
 
-    Map<String, UniformParam> instance_uniforms_;
-    Map<String, UniformParam> global_uniforms_;
+    List<UniformParam> instance_uniforms_;
+    List<UniformParam> global_uniforms_;
     List<VertexParam> vertex_params_;
 };

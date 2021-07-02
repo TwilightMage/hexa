@@ -263,16 +263,17 @@
     <ClInclude Include="Random.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="Regex.h" />
-    <ClInclude Include="Renderer.h" />
-    <ClInclude Include="Renderer3D.h" />
-    <ClInclude Include="Renderer3DInstance.h" />
-    <ClInclude Include="RendererInstance.h" />
-    <ClInclude Include="RendererUI.h" />
-    <ClInclude Include="RendererUIInstance.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="Material3D.h" />
+    <ClInclude Include="Material3DInstance.h" />
+    <ClInclude Include="MaterialInstance.h" />
+    <ClInclude Include="MaterialUI.h" />
+    <ClInclude Include="MaterialUIInstance.h" />
     <ClInclude Include="SaveGame.h" />
     <ClInclude Include="Set.h" />
     <ClInclude Include="Settings.h" />
     <ClInclude Include="Shader.h" />
+    <ClInclude Include="SimpleMap.h" />
     <ClInclude Include="SlotBase.h" />
     <ClInclude Include="SpriteFont.h" />
     <ClInclude Include="stb.h" />
@@ -363,15 +364,16 @@
     <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="Rect.cpp" />
     <ClCompile Include="Regex.cpp" />
-    <ClCompile Include="Renderer.cpp" />
-    <ClCompile Include="Renderer3D.cpp" />
-    <ClCompile Include="Renderer3DInstance.cpp" />
-    <ClCompile Include="RendererInstance.cpp" />
-    <ClCompile Include="RendererParameters.cpp" />
-    <ClCompile Include="RendererUI.cpp" />
-    <ClCompile Include="RendererUIInstance.cpp" />
+    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="Material3D.cpp" />
+    <ClCompile Include="Material3DInstance.cpp" />
+    <ClCompile Include="MaterialInstance.cpp" />
+    <ClCompile Include="MaterialParameters.cpp" />
+    <ClCompile Include="MaterialUI.cpp" />
+    <ClCompile Include="MaterialUIInstance.cpp" />
     <ClCompile Include="SaveGame.cpp" />
     <ClCompile Include="Shader.cpp" />
+    <ClCompile Include="SimpleMap.cpp" />
     <ClCompile Include="SlotBase.cpp" />
     <ClCompile Include="SpriteFont.cpp" />
     <ClCompile Include="stb.cpp" />
@@ -408,7 +410,7 @@
     <Natvis Include="Engine.natvis" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="RendererParameters.h" />
+    <ClInclude Include="MaterialParameters.h" />
     <Content Include="resources\engine\meshes\axis_arrows.obj" />
     <Content Include="resources\engine\meshes\icosphere.obj" />
     <Content Include="resources\engine\meshes\monkey.obj" />

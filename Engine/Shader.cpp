@@ -35,9 +35,12 @@ void Shader::cleanup()
 
 bool Shader::check_uniform_presence(const String& name, GLTypeEnum type, bool instance) const
 {
-    if (const auto found = (instance ? instance_uniforms_ : global_uniforms_).find(name))
+    for (const auto& param : instance ? instance_uniforms_ : global_uniforms_)
     {
-        return found->type && found->type->gl_type == type;
+        if (param.name == name)
+        {
+            return param.type && param.type->gl_type == type;
+        }
     }
 
     return false;
@@ -135,11 +138,11 @@ Shared<Shader> Shader::compile(const Path& path, int type_flags)
                     {
                         name_str = name_str.substring(5);
                         result->instance_count_ = result->instance_count_ == 0 ? layout_size : Math::min(result->instance_count_, (uint)layout_size);
-                        result->instance_uniforms_.insert(name_str, UniformParam(layout_size, *type_info, is_array, name_str, layout));
+                        result->instance_uniforms_.Add(UniformParam(layout_size, *type_info, is_array, name_str, layout));
                     }
                     else
                     {
-                        result->global_uniforms_.insert(name_str, UniformParam(layout_size, *type_info, is_array, name_str, layout));
+                        result->global_uniforms_.Add(UniformParam(layout_size, *type_info, is_array, name_str, layout));
                     }
                 }
                 else

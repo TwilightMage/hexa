@@ -5,8 +5,8 @@
 #include "Game.h"
 #include "ITickable.h"
 #include "Quaternion.h"
-#include "Renderer.h"
-#include "Renderer3D.h"
+#include "Material.h"
+#include "Material3D.h"
 #include "Settings.h"
 #include "Physics/ConcaveMeshCollision.h"
 #include "Physics/ConvexMeshCollision.h"
@@ -91,11 +91,11 @@ void World::start()
     reactphysics3d::Vector3 gravity(0.0f, 0.0f, -9.81f);
     physics_world_->setGravity(gravity);
 
-    Game::get_basic_renderer_3d()->set_param_value("view", Matrix4x4());
-    Game::get_basic_renderer_3d()->set_param_value("projection", Matrix4x4());
-    Game::get_basic_renderer_3d()->set_param_value("ambient_light", Vector3::one());
-    Game::get_basic_renderer_3d()->set_param_value("sun_light", Vector3::one());
-    Game::get_basic_renderer_3d()->set_param_value("sun_dir", Vector3(1, 1, 1).normalized());
+    Game::get_basic_material_3d()->set_param_value("view", Matrix4x4());
+    Game::get_basic_material_3d()->set_param_value("projection", Matrix4x4());
+    Game::get_basic_material_3d()->set_param_value("ambient_light", Vector3::one());
+    Game::get_basic_material_3d()->set_param_value("sun_light", Vector3::one());
+    Game::get_basic_material_3d()->set_param_value("sun_dir", Vector3(1, 1, 1).normalized());
     
     
     on_start();
@@ -283,7 +283,7 @@ void World::do_destroy(const Shared<Entity>& entity)
 {
     entity->on_destroy();
 
-    entity->renderer_instance_->destroy();
+    entity->material_instance_->destroy();
 
     if (entity->rigid_body_)
     {

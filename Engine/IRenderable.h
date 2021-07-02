@@ -1,11 +1,12 @@
 ﻿#pragma once
+
 #include "BasicTypes.h"
 
-class Renderer;
+class Material;
 
 class IRenderable
 {
 public:
-    virtual void set_renderer(const Shared<Renderer>& renderer) = 0;
-    virtual Shared<Renderer> get_renderer() const = 0;
+    virtual void set_material(const Shared<Material>& material) = 0;
+    virtual Shared<Material> get_material() const = 0;
 };

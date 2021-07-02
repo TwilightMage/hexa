@@ -10,7 +10,7 @@
 #include "Texture.h"
 #include "Vector2.h"
 
-class IRendererParameter;
+class MaterialParameterBase;
 
 enum class GLTypeEnum
 {
@@ -129,16 +129,16 @@ struct GLType
     uint gl_size;
     GLTypeEnum gl_type;
     GLTypeEnum gl_primitive_type;
-    std::function<Shared<IRendererParameter>()> parameter_producer;
+    std::function<Shared<MaterialParameterBase>(const String& name)> parameter_producer;
 };
 
-class EXPORT RendererParameterApplier
+class EXPORT MaterialParameterApplier
 {
 public:
-    RendererParameterApplier(uint count, const GLType* data_type, uint location);
-    ~RendererParameterApplier();
+    MaterialParameterApplier(uint count, const GLType* data_type, uint location);
+    ~MaterialParameterApplier();
 
-    void put(IRendererParameter* parameter, uint index);
+    void put(MaterialParameterBase* parameter, uint index);
     template<typename T>
     void put_value(const T& value, uint index)
     {
@@ -153,15 +153,17 @@ public:
     uint location;
 };
 
-class EXPORT IRendererParameter
+class EXPORT MaterialParameterBase
 {
 public:
     virtual uint size() const = 0;
     virtual void write_data(void* dest) const = 0;
+
+    String name;
 };
 
 template<typename T>
-class RendererParameter : public IRendererParameter
+class MaterialParameter : public MaterialParameterBase
 {
 public:
     uint size() const override { return sizeof(T); }
@@ -171,7 +173,7 @@ public:
 };
 
 template<>
-class RendererParameter<Shared<Texture>> : public IRendererParameter
+class MaterialParameter<Shared<Texture>> : public MaterialParameterBase
 {
 public:
     uint size() const override { return sizeof(uint64); }
@@ -180,7 +182,7 @@ public:
     TextureSlot value;
 };
 
-#define GLTYPE(type, primitive_type, size, c_size, c_type) { GLTypeEnum::type, new GLType { #type, c_size, size, GLTypeEnum::type, GLTypeEnum::primitive_type, []()->Shared<IRendererParameter>{ return MakeShared<RendererParameter<c_type>>(); } } }
+#define GLTYPE(type, primitive_type, size, c_size, c_type) { GLTypeEnum::type, new GLType { #type, c_size, size, GLTypeEnum::type, GLTypeEnum::primitive_type, [](const String& name)->Shared<MaterialParameterBase>{ auto result = MakeShared<MaterialParameter<c_type>>(); result->name = name; return result; } } }
 const Map<GLTypeEnum, const GLType*> shader_type_info = {
     GLTYPE(Int,       Int,   1, sizeof(int),        int            ),
     GLTYPE(Uint,      Uint,  1, sizeof(uint),       uint           ),

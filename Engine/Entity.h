@@ -7,12 +7,12 @@
 #include "framework.h"
 #include "Object.h"
 #include "Quaternion.h"
-#include "Renderer3DInstance.h"
+#include "Material3DInstance.h"
 #include "Texture.h"
 #include "Vector3.h"
 
 class Collision;
-class Renderer3DInstance;
+class Material3DInstance;
 
 namespace reactphysics3d
 {
@@ -81,8 +81,8 @@ public:
         return nullptr;
     }
 
-    FORCEINLINE bool is_visible() const { return renderer_instance_->is_visible(); }
-    FORCEINLINE void set_visibility(bool visibility) const { renderer_instance_->set_visible(visibility); }
+    FORCEINLINE bool is_visible() const { return material_instance_->is_visible(); }
+    FORCEINLINE void set_visibility(bool visibility) const { material_instance_->set_visible(visibility); }
 
     Delegate<const Shared<Entity>&> on_destroyed;
     
@@ -104,7 +104,7 @@ private:
     bool is_matrix_dirty_;
     
     Weak<World> world_;
-    Shared<Renderer3DInstance> renderer_instance_;
+    Shared<Material3DInstance> material_instance_;
     bool pending_kill_;
     bool started_;
     reactphysics3d::RigidBody* rigid_body_;

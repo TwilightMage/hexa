@@ -343,13 +343,15 @@ void UIElement::update_matrix()
         parent_matrix = parent->trans_rot_matrix_stacked_;
     }
     update_matrix_child(parent_matrix);
-
-    matrix_updated(trans_rot_size_matrix_);
 }
 
 void UIElement::update_matrix_child(const Matrix4x4& parent_matrix)
 {
     trans_rot_matrix_stacked_ = parent_matrix * trans_rot_matrix_;
+
+    trans_rot_size_matrix_ = trans_rot_matrix_stacked_.scale(size_ * Game::get_ui_scale());
+    
+    matrix_updated(trans_rot_size_matrix_);
 
     uint i = 0;
     for (auto& child : children_)
@@ -357,8 +359,6 @@ void UIElement::update_matrix_child(const Matrix4x4& parent_matrix)
         child->update_matrix_child(trans_rot_matrix_stacked_);
         i++;
     }
-
-    trans_rot_size_matrix_ = trans_rot_matrix_stacked_.scale(size_ * Game::get_ui_scale());
 }
 
 void UIElement::remove_child_internal(const Shared<UIElement>& item)

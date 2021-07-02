@@ -8,8 +8,8 @@
 #include "Game.h"
 #include "Mesh.h"
 #include "GeometryEditor.h"
-#include "Renderer3D.h"
-#include "Renderer3DInstance.h"
+#include "Material3D.h"
+#include "Material3DInstance.h"
 #include "Texture.h"
 #include "World.h"
 #include "Physics/Collision.h"
@@ -17,7 +17,7 @@
 Entity::Entity()
     : Object(typeid(this).name() + String(" entity"))
     , is_matrix_dirty_(true)
-    , renderer_instance_(cast<Renderer3DInstance>(Game::get_basic_renderer_3d()->create_instance()))
+    , material_instance_(cast<Material3DInstance>(Game::get_basic_material_3d()->create_instance()))
     , pending_kill_(false)
     , started_(false)
     , rigid_body_(nullptr)
@@ -51,17 +51,17 @@ bool Entity::is_started() const
 
 void Entity::use_mesh(const Shared<Mesh>& new_mesh) const
 {
-    renderer_instance_->set_mesh(new_mesh);
+    material_instance_->set_mesh(new_mesh);
 }
 
 void Entity::clear_mesh() const
 {
-    renderer_instance_->set_mesh(nullptr);
+    material_instance_->set_mesh(nullptr);
 }
 
 void Entity::use_texture(const Shared<Texture>& new_texture) const
 {
-    renderer_instance_->set_param("texture", new_texture);
+    material_instance_->set_param_value("texture", new_texture);
 }
 
 void Entity::mark_matrix_dirty()
@@ -275,7 +275,7 @@ void Entity::cache_matrix()
     Quaternion rotation = get_rotation();
     Vector3 scale = get_scale();
     modify_matrix_params(position, rotation, scale);
-    renderer_instance_->set_model(Matrix4x4().translate(position).rotate(rotation).scale(scale));
+    material_instance_->set_model(Matrix4x4().translate(position).rotate(rotation).scale(scale));
     is_matrix_dirty_ = false;
 }
 

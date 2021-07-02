@@ -6,8 +6,8 @@
 #include "Engine/Slot.h"
 #include "Engine/Texture.h"
 
-class RendererUI;
-class RendererUIInstance;
+class MaterialUI;
+class MaterialUIInstance;
 
 class EXPORT Image : public UIElement, public IRenderable
 {
@@ -27,8 +27,8 @@ public:
     
     void use_texture(const Shared<Texture>& texture);
 
-    void set_renderer(const Shared<Renderer>& renderer) override;
-    Shared<Renderer> get_renderer() const override;
+    void set_material(const Shared<Material>& material) override;
+    Shared<Material> get_material() const override;
 
 protected:
     void on_register_render() override;
@@ -39,11 +39,11 @@ protected:
 private:
     void update_uv_rect();
 
-    Shared<RendererUIInstance> renderer_instance_;
+    Shared<MaterialUIInstance> material_instance_;
     Shared<Texture> texture_;
     Rect rect_;
     bool have_rect_;
     Quaternion uv_rect_;
 
-    Shared<RendererUI> renderer_;
+    Shared<MaterialUI> material_;
 };

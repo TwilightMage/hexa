@@ -1,12 +1,12 @@
-﻿#include "RendererInstance.h"
+﻿#include "MaterialInstance.h"
 
-#include "Renderer.h"
+#include "Material.h"
 
-void RendererInstance::set_mesh(const Shared<Mesh>& mesh)
+void MaterialInstance::set_mesh(const Shared<Mesh>& mesh)
 {
     if (mesh_ == mesh) return;
     
-    if (auto master = get_master_renderer())
+    if (auto master = get_master_material())
     {
         if (master->shader_->get_empty_vertex() > 0) return;
         
@@ -16,26 +16,26 @@ void RendererInstance::set_mesh(const Shared<Mesh>& mesh)
     }
 }
 
-void RendererInstance::set_visible(bool visible)
+void MaterialInstance::set_visible(bool visible)
 {
     if (visible_ == visible) return;
     
-    if (auto master = get_master_renderer())
+    if (auto master = get_master_material())
     {
         visible_ = visible;
         master->change_active(shared_from_this());
     }
 }
 
-void RendererInstance::destroy()
+void MaterialInstance::destroy()
 {
-    if (auto master = get_master_renderer())
+    if (auto master = get_master_material())
     {
         master->destroy_instance(shared_from_this());
     }
 }
 
-void RendererInstance::register_direct_parameters()
+void MaterialInstance::register_direct_parameters()
 {
     
 }

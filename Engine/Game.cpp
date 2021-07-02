@@ -11,9 +11,9 @@
 #include "Mod.h"
 #include "Path.h"
 #include "Paths.h"
-#include "Renderer.h"
-#include "Renderer3D.h"
-#include "RendererUI.h"
+#include "Material.h"
+#include "Material3D.h"
+#include "MaterialUI.h"
 #include "SaveGame.h"
 #include "Settings.h"
 #include "Shader.h"
@@ -183,14 +183,14 @@ Shared<Shader> Game::get_basic_ui_shader()
 	return instance_->basic_ui_shader_;
 }
 
-Shared<Renderer3D> Game::get_basic_renderer_3d()
+Shared<Material3D> Game::get_basic_material_3d()
 {
-	return instance_->basic_renderer_3d_;
+	return instance_->basic_material_3d_;
 }
 
-Shared<RendererUI> Game::get_basic_renderer_ui()
+Shared<MaterialUI> Game::get_basic_material_ui()
 {
-	return instance_->basic_renderer_ui_;
+	return instance_->basic_material_ui_;
 }
 
 Shared<Texture> Game::get_white_pixel()
@@ -318,7 +318,7 @@ void Game::prepare()
 {
 	glfwMakeContextCurrent(window_);
 	gladLoadGL();
-	glfwSwapInterval(1);
+	glfwSwapInterval(0);
 	
 	glfwSetErrorCallback(error_callback);
 	glfwSetWindowSizeLimits(window_, 800, 600, GLFW_DONT_CARE, GLFW_DONT_CARE);
@@ -329,6 +329,8 @@ void Game::prepare()
 	glfwSetCursorPosCallback(window_, cursor_position_callback);
 	glfwSetWindowSizeCallback(window_, window_size_callback);
 }
+
+#define NOW(name) auto name = std::chrono::system_clock::now()
 
 void Game::render_loop()
 {
@@ -379,12 +381,12 @@ void Game::render_loop()
 
 	basic_ui_shader_ = Shader::compile(RESOURCES_ENGINE_SHADERS + "basic_ui", Shader::VERTEX | Shader::FRAGMENT);
 
-	// Load renderers
-	basic_renderer_3d_ = MakeShared<Renderer3D>();
-	basic_renderer_3d_->init(basic_shader_);
+	// Load materials
+	basic_material_3d_ = MakeShared<Material3D>();
+	basic_material_3d_->init(basic_shader_, 0);
 	
-	basic_renderer_ui_ = MakeShared<RendererUI>();
-	basic_renderer_ui_->init(basic_ui_shader_);
+	basic_material_ui_ = MakeShared<MaterialUI>();
+	basic_material_ui_->init(basic_ui_shader_, 1);
 	
 	white_pixel_ = MakeShared<Texture>("White Pixel", 1, 1, List<Color>::of(Color::white()));
 
@@ -435,7 +437,7 @@ void Game::render_loop()
 	float fps_delta_time_stack = 0;
 	uint fps_count = 0;
 	uint fps_last_count = 0;
-
+	
 	fps_display_ = MakeShared<TextBlock>();
 	fps_display_->set_z(10);
 	add_ui(fps_display_);
@@ -513,14 +515,17 @@ void Game::render_loop()
 			auto ui_proj = Matrix4x4::ortho(0.0f, static_cast<float>(width), static_cast<float>(-height), 0.0f, -1000.0f, 0.0001f);
 
 			// rendering+
-			Renderer::RenderData render_data = {world_, view, proj, ui_proj };
-			
+			Material::RenderData render_data = {world_, view, proj, ui_proj };
+
 			is_render_stage_ = true;
-			for (auto& renderer : renderers_)
+			for (auto& material_list : materials_)
 			{
-				renderer->render(render_data);
+				glClear(GL_DEPTH_BUFFER_BIT);
+				for (auto& material : material_list->value)
+				{
+					material->render(render_data);
+				}
 			}
-			//glClear(GL_DEPTH_BUFFER_BIT);
 			is_render_stage_ = false;
 		}
  
@@ -539,9 +544,12 @@ void Game::cleanup()
 {
 	verbose("Game", "Cleaning up...");
 
-	for (auto& renderer : renderers_)
+	for (auto& material_list : materials_)
 	{
-		renderer->cleanup();
+		for (auto& material : material_list->value)
+		{
+			material->cleanup();
+		}
 	}
 
 	for (auto& kvp : shaders_)

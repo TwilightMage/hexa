@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "RendererInstance.h"
+#include "MaterialInstance.h"
 
-class EXPORT RendererUIInstance : public RendererInstance
+class EXPORT MaterialUIInstance : public MaterialInstance
 {
 public:
     void set_mvp(const Matrix4x4& value) const;
@@ -15,8 +15,8 @@ protected:
     void register_direct_parameters() override;
 
 private:
-    Shared<RendererParameter<Matrix4x4>> model;
-    Shared<RendererParameter<Quaternion>> uv;
-    Shared<RendererParameter<Quaternion>> color;
-    Shared<RendererParameter<Shared<Texture>>> texture;
+    Shared<MaterialParameter<Matrix4x4>> model;
+    Shared<MaterialParameter<Quaternion>> uv;
+    Shared<MaterialParameter<Quaternion>> color;
+    Shared<MaterialParameter<Shared<Texture>>> texture;
 };

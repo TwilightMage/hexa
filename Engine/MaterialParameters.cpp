@@ -1,6 +1,6 @@
-#include "RendererParameters.h"
+#include "MaterialParameters.h"
 
-RendererParameterApplier::RendererParameterApplier(uint count, const GLType* data_type, uint location)
+MaterialParameterApplier::MaterialParameterApplier(uint count, const GLType* data_type, uint location)
     : count(count)
     , data_type(data_type)
     , location(location)
@@ -8,17 +8,17 @@ RendererParameterApplier::RendererParameterApplier(uint count, const GLType* dat
     data = malloc(count * data_type->c_size);
 }
 
-RendererParameterApplier::~RendererParameterApplier()
+MaterialParameterApplier::~MaterialParameterApplier()
 {
     free(data);
 }
 
-void RendererParameterApplier::put(IRendererParameter* parameter, uint index)
+void MaterialParameterApplier::put(MaterialParameterBase* parameter, uint index)
 {
     parameter->write_data(((byte*)data) + index * data_type->c_size);
 }
 
-void RendererParameterApplier::apply() const
+void MaterialParameterApplier::apply() const
 {
     switch (data_type->gl_type)
     {

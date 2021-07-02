@@ -2,10 +2,10 @@
 
 #include "BasicTypes.h"
 #include "Matrix4x4.h"
-#include "RendererInstance.h"
-#include "RendererParameters.h"
+#include "MaterialInstance.h"
+#include "MaterialParameters.h"
 
-class EXPORT Renderer3DInstance : public RendererInstance
+class EXPORT Material3DInstance : public MaterialInstance
 {
 public:
     void set_model(const Matrix4x4& value) const;
@@ -15,6 +15,6 @@ protected:
     void register_direct_parameters() override;
 
 private:
-    Shared<RendererParameter<Matrix4x4>> model;
-    Shared<RendererParameter<Shared<Texture>>> texture;
+    Shared<MaterialParameter<Matrix4x4>> model;
+    Shared<MaterialParameter<Shared<Texture>>> texture;
 };

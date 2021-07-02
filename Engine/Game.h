@@ -8,18 +8,19 @@
 #include "List.h"
 #include "Map.h"
 #include "Path.h"
+#include "SimpleMap.h"
 #include "Slot.h"
 #include "String.h"
 #include "Vector2.h"
 #include "Vector3.h"
 #include "Version.h"
 
-class Renderer;
+class Material;
 class Entity;
 class Mesh;
 class Shader;
-class RendererUI;
-class Renderer3D;
+class MaterialUI;
+class Material3D;
 class TextBlock;
 class ICamera;
 class Animation;
@@ -45,7 +46,7 @@ namespace reactphysics3d
 
 class EXPORT Game
 {
-    friend Renderer;
+    friend Material;
     friend World;
     friend Shader;
     friend Mesh;
@@ -91,8 +92,8 @@ public:
 
     static Shared<Shader> get_basic_shader();
     static Shared<Shader> get_basic_ui_shader();
-    static Shared<Renderer3D> get_basic_renderer_3d();
-    static Shared<RendererUI> get_basic_renderer_ui();
+    static Shared<Material3D> get_basic_material_3d();
+    static Shared<MaterialUI> get_basic_material_ui();
     static Shared<Texture> get_white_pixel();
     static Shared<SpriteFont> get_default_font();
 
@@ -166,15 +167,15 @@ private:
     Map<String, Shared<Mesh>> meshes_;
     Map<String, Shared<Texture>> textures_;
     Map<String, Shared<Animation>> animations_;
-    List<Shared<Renderer>> renderers_;
+    SimpleMap<float, List<Shared<Material>>> materials_;
     
     // Game
     Version game_version_ = {0, 1, 0};
     float ui_scale_ = 2;
     Shared<Shader> basic_shader_;
     Shared<Shader> basic_ui_shader_;
-    Shared<Renderer3D> basic_renderer_3d_;
-    Shared<RendererUI> basic_renderer_ui_;
+    Shared<Material3D> basic_material_3d_;
+    Shared<MaterialUI> basic_material_ui_;
     Slot<Texture> white_pixel_;
     Shared<SpriteFont> default_font_;
     List<Shared<Mod>> mods_;

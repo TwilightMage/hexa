@@ -4,9 +4,9 @@
 
 #include "Game.h"
 #include "ITickable.h"
-#include "Mesh.h"
 #include "Quaternion.h"
 #include "Renderer.h"
+#include "Renderer3D.h"
 #include "Settings.h"
 #include "Physics/ConcaveMeshCollision.h"
 #include "Physics/ConvexMeshCollision.h"
@@ -90,6 +90,13 @@ void World::start()
     physics_world_ = Game::instance_->physics_->createPhysicsWorld();
     reactphysics3d::Vector3 gravity(0.0f, 0.0f, -9.81f);
     physics_world_->setGravity(gravity);
+
+    Game::get_basic_renderer_3d()->set_param_value("view", Matrix4x4());
+    Game::get_basic_renderer_3d()->set_param_value("projection", Matrix4x4());
+    Game::get_basic_renderer_3d()->set_param_value("ambient_light", Vector3::one());
+    Game::get_basic_renderer_3d()->set_param_value("sun_light", Vector3::one());
+    Game::get_basic_renderer_3d()->set_param_value("sun_dir", Vector3(1, 1, 1).normalized());
+    
     
     on_start();
 }
@@ -118,7 +125,7 @@ void World::tick(float delta_time)
         if (timer_entry.value.time <= 0)
         {
             timer_entry.value.func();
-            expired_timers.Add(timer_entry.x);
+            expired_timers.Add(timer_entry.key);
         }
     }
 

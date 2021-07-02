@@ -154,6 +154,7 @@
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -177,6 +178,7 @@
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <LanguageStandard>stdcpplatest</LanguageStandard>
       <Optimization>MinSpace</Optimization>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -229,12 +231,14 @@
     <ClInclude Include="IControllable.h" />
     <ClInclude Include="ImageEditor.h" />
     <ClInclude Include="Interpolators.h" />
+    <ClInclude Include="IRenderable.h" />
     <ClInclude Include="ITexture.h" />
     <ClInclude Include="ITickable.h" />
     <ClInclude Include="IUsageCountable.h" />
     <ClInclude Include="IUsageCountableBase.h" />
     <ClInclude Include="JSON.h" />
     <ClInclude Include="List.h" />
+    <ClInclude Include="Logger.h" />
     <ClInclude Include="LogStream.h" />
     <ClInclude Include="Map.h" />
     <ClInclude Include="Margins.h" />
@@ -283,7 +287,6 @@
     <ClInclude Include="Slot.h" />
     <ClInclude Include="TimerHandle.h" />
     <ClInclude Include="Tree2D.h" />
-    <ClInclude Include="UIRenderer.h" />
     <ClInclude Include="ui\ButtonImage.h" />
     <ClInclude Include="ui\ButtonImagePanel.h" />
     <ClInclude Include="ui\ButtonTextPanel.h" />
@@ -326,7 +329,6 @@
     <ClInclude Include="Database.cpp" />
     <ClCompile Include="DatabaseBase.cpp" />
     <ClCompile Include="DateTime.cpp" />
-    <ClInclude Include="DeferredRegister.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="EditorPlayer.cpp" />
     <ClCompile Include="EntityComponent.cpp" />
@@ -337,6 +339,7 @@
     <ClCompile Include="glad.c" />
     <ClCompile Include="ImageEditor.cpp" />
     <ClCompile Include="JSON.cpp" />
+    <ClCompile Include="Logger.cpp" />
     <ClCompile Include="LogStream.cpp" />
     <ClCompile Include="Margins.cpp" />
     <ClCompile Include="Matrix4x4.cpp" />
@@ -379,7 +382,6 @@
     <ClCompile Include="TextureAtlas.cpp" />
     <ClCompile Include="TextureAtlasBinding.cpp" />
     <ClCompile Include="TextureBinding.cpp" />
-    <ClCompile Include="UIRenderer.cpp" />
     <ClCompile Include="ui\Button.cpp" />
     <ClCompile Include="ui\ButtonImage.cpp" />
     <ClCompile Include="ui\ButtonImagePanel.cpp" />

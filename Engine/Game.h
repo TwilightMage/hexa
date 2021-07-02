@@ -6,14 +6,15 @@
 #include "EventBus.h"
 #include "GameInfo.h"
 #include "List.h"
-#include "LogStream.h"
 #include "Map.h"
 #include "Path.h"
-#include "Renderer.h"
+#include "Slot.h"
 #include "String.h"
 #include "Vector2.h"
+#include "Vector3.h"
 #include "Version.h"
 
+class Renderer;
 class Entity;
 class Mesh;
 class Shader;
@@ -42,16 +43,9 @@ namespace reactphysics3d
     class PhysicsCommon;
 }
 
-enum class ELogLevel
-{
-    Verbose,
-    Debug,
-    Warning,
-    Error
-};
-
 class EXPORT Game
 {
+    friend Renderer;
     friend World;
     friend Shader;
     friend Mesh;
@@ -89,8 +83,6 @@ public:
     static const Shared<EventBus>& get_event_bus();
     template<typename T>
     FORCEINLINE static T get_event_bus() { return cast<T>(get_event_bus()); }
-
-    static void new_log_record(ELogLevel level, const String& category, const String& message);
 
     static void call_on_main_thread(std::function<void()> func);
 
@@ -156,10 +148,6 @@ private:
     Shared<SaveGame> save_game_;
     Shared<EventBus> event_bus_;
 
-    // Logging
-    LogStream log_stream_;
-    std::mutex log_stream_mutex_;
-
     // Common
     Path app_path_;
     bool app_path_set_;
@@ -178,7 +166,7 @@ private:
     Map<String, Shared<Mesh>> meshes_;
     Map<String, Shared<Texture>> textures_;
     Map<String, Shared<Animation>> animations_;
-    Map<String, Shared<Renderer>> renderers_;
+    List<Shared<Renderer>> renderers_;
     
     // Game
     Version game_version_ = {0, 1, 0};
@@ -187,7 +175,7 @@ private:
     Shared<Shader> basic_ui_shader_;
     Shared<Renderer3D> basic_renderer_3d_;
     Shared<RendererUI> basic_renderer_ui_;
-    Shared<Texture> white_pixel_;
+    Slot<Texture> white_pixel_;
     Shared<SpriteFont> default_font_;
     List<Shared<Mod>> mods_;
     Shared<TextBlock> fps_display_;
@@ -209,43 +197,3 @@ private:
     bool is_loading_stage_;
     bool is_render_stage_;
 };
-
-template<typename... Args>
-static void print_debug(const String& category, const String& format, Args... args)
-{
-    const int size = snprintf(nullptr, 0, format.c(), std::forward<Args>(args)...);
-	char* buffer = new char[size + 1];
-	sprintf_s(buffer, size + 1, format.c(), std::forward<Args>(args)...);
-
-	Game::new_log_record(ELogLevel::Debug, category, buffer);
-}
-
-template<typename... Args>
-static void print_warning(const String& category, const String& format, Args... args)
-{
-    const int size = snprintf(nullptr, 0, format.c(), std::forward<Args>(args)...);
-	char* buffer = new char[size + 1];
-	sprintf_s(buffer, size + 1, format.c(), std::forward<Args>(args)...);
-
-    Game::new_log_record(ELogLevel::Warning, category, buffer);
-}
-
-template<typename... Args>
-static void print_error(const String& category, const String& format, Args... args)
-{
-    const int size = snprintf(nullptr, 0, format.c(), std::forward<Args>(args)...);
-	char* buffer = new char[size + 1];
-	sprintf_s(buffer, size + 1, format.c(), std::forward<Args>(args)...);
-
-    Game::new_log_record(ELogLevel::Error, category, buffer);
-}
-
-template<typename... Args>
-static void verbose(const String& category, const String& format, Args... args)
-{
-    const int size = snprintf(nullptr, 0, format.c(), std::forward<Args>(args)...);
-	char* buffer = new char[size + 1];
-	sprintf_s(buffer, size + 1, format.c(), std::forward<Args>(args)...);
-
-    Game::new_log_record(ELogLevel::Verbose, category, buffer);
-}

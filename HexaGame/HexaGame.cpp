@@ -9,6 +9,7 @@
 #include "Tiles.h"
 #include "WorldGenerator.h"
 #include "Engine/GeometryEditor.h"
+#include "Engine/Logger.h"
 #include "Engine/AnimationEditor/AnimationEditorWorld.h"
 #include "Entities/Characters/Slime.h"
 #include "ui/TileDatabaseViewer.h"
@@ -60,6 +61,7 @@ void HexaGame::start()
     else
     {
         open_game_world();
+        //open_tile_test_world();
     }
 }
 
@@ -120,4 +122,10 @@ void HexaGame::open_game_world()
             }
         }
     }
+}
+
+void HexaGame::open_tile_test_world()
+{
+    const auto world = MakeShared<TilePresentationWorld>();
+    open_world(world);
 }

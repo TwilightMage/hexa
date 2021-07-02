@@ -4,7 +4,7 @@
 
 #include "Path.h"
 
-LogStream::LogStream(const DateTime& log_start_time, const char* root)
+LogStream::LogStream(const DateTime& log_start_time, const String& root)
 	: std::ostream(&tbuf_)
 {
 	auto logs = Path(root).up().get_child("logs");

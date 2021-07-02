@@ -30,6 +30,7 @@ protected:
 private:
     bool open_animation_editor(const String& entity_type, const String& entity_name);
     void open_game_world();
+    void open_tile_test_world();
     
     Map<String, Shared<WorldGeneratorInfo>> generator_infos_;
 };

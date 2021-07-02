@@ -1,5 +1,8 @@
 ﻿#pragma once
 
+#include <stdexcept>
+
+#include "List.h"
 #include "Tree1D.h"
 
 template<typename Key, typename Value>
@@ -121,7 +124,7 @@ public:
         List<Key> result;
         for (auto entry : data_)
         {
-            result.Add(entry.x);
+            result.Add(entry.key);
         }
 
         return result;

@@ -4,9 +4,9 @@ layout(location=0) uniform mat4 INST_model[230];
 layout(location=460) uniform mat4 view;
 layout(location=461) uniform mat4 projection;
 
-in vec3 vCol;
-in vec2 vUV;
 in vec3 vPos;
+in vec2 vUV;
+in vec3 vCol;
 in vec3 vNorm;
 
 out int InstanceID;

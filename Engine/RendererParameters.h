@@ -3,71 +3,165 @@
 #include <glad/glad.h>
 
 #include "BasicTypes.h"
+#include "Game.h"
+#include "Map.h"
+#include "Matrix4x4.h"
 #include "Quaternion.h"
 #include "Texture.h"
 #include "Vector2.h"
 
-class RendererParameterBase;
+class IRendererParameter;
 
-class RendererParameterApplier
+enum class GLTypeEnum
+{
+    None = 0,
+    Float = GL_FLOAT,
+    Vec2 = GL_FLOAT_VEC2,
+    Vec3 = GL_FLOAT_VEC3,
+    Vec4 = GL_FLOAT_VEC4,
+    Double = GL_DOUBLE,
+    Dvec2 = GL_DOUBLE_VEC2,
+    Dvec3 = GL_DOUBLE_VEC3,
+    Dvec4 = GL_DOUBLE_VEC4,
+    Int = GL_INT,
+    Ivec2 = GL_INT_VEC2,
+    Ivec3 = GL_INT_VEC3,
+    Ivec4 = GL_INT_VEC4,
+    Uint = GL_UNSIGNED_INT,
+    Uvec2 = GL_UNSIGNED_INT_VEC2,
+    Uvec3 = GL_UNSIGNED_INT_VEC3,
+    Uvec4 = GL_UNSIGNED_INT_VEC4,
+    Bool = GL_BOOL,
+    Bvec2 = GL_BOOL_VEC2,
+    Bvec3 = GL_BOOL_VEC3,
+    Bvec4 = GL_BOOL_VEC4,
+    Mat2 = GL_FLOAT_MAT2,
+    Mat3 = GL_FLOAT_MAT3,
+    Mat4 = GL_FLOAT_MAT4,
+    Mat2x3 = GL_FLOAT_MAT2x3,
+    Mat2x4 = GL_FLOAT_MAT2x4,
+    Mat3x2 = GL_FLOAT_MAT3x2,
+    Mat3x4 = GL_FLOAT_MAT3x4,
+    Mat4x2 = GL_FLOAT_MAT4x2,
+    Mat4x3 = GL_FLOAT_MAT4x3,
+    Dmat2 = GL_DOUBLE_MAT2,
+    Dmat3 = GL_DOUBLE_MAT3,
+    Dmat4 = GL_DOUBLE_MAT4,
+    Dmat2x3 = GL_DOUBLE_MAT2x3,
+    Dmat2x4 = GL_DOUBLE_MAT2x4,
+    Dmat3x2 = GL_DOUBLE_MAT3x2,
+    Dmat3x4 = GL_DOUBLE_MAT3x4,
+    Dmat4x2 = GL_DOUBLE_MAT4x2,
+    Dmat4x3 = GL_DOUBLE_MAT4x3,
+    Sampler1D = GL_SAMPLER_1D,
+    Sampler2D = GL_SAMPLER_2D,
+    Sampler3D = GL_SAMPLER_3D,
+    SamplerCube = GL_SAMPLER_CUBE,
+    Sampler1DShadow = GL_SAMPLER_1D_SHADOW,
+    Sampler2DShadow = GL_SAMPLER_2D_SHADOW,
+    Sampler1DArray = GL_SAMPLER_1D_ARRAY,
+    Sampler2DArray = GL_SAMPLER_2D_ARRAY,
+    Sampler1DArrayShadow = GL_SAMPLER_1D_ARRAY_SHADOW,
+    Sampler2DArrayShadow = GL_SAMPLER_2D_ARRAY_SHADOW,
+    Sampler2DMS = GL_SAMPLER_2D_MULTISAMPLE,
+    Sampler2DMSArray = GL_SAMPLER_2D_MULTISAMPLE_ARRAY,
+    SamplerCubeShadow = GL_SAMPLER_CUBE_SHADOW,
+    SamplerBuffer = GL_SAMPLER_BUFFER,
+    Sampler2DRect = GL_SAMPLER_2D_RECT,
+    Sampler2DRectShadow = GL_SAMPLER_2D_RECT_SHADOW,
+    Isampler1D = GL_INT_SAMPLER_1D,
+    Isampler2D = GL_INT_SAMPLER_2D,
+    Isampler3D = GL_INT_SAMPLER_3D,
+    IsamplerCube = GL_INT_SAMPLER_CUBE,
+    Isampler1DArray = GL_INT_SAMPLER_1D_ARRAY,
+    Isampler2DArray = GL_INT_SAMPLER_2D_ARRAY,
+    Isampler2DMS = GL_INT_SAMPLER_2D_MULTISAMPLE,
+    Isampler2DMSArray = GL_INT_SAMPLER_2D_MULTISAMPLE_ARRAY,
+    IsamplerBuffer = GL_INT_SAMPLER_BUFFER,
+    Isampler2DRect = GL_INT_SAMPLER_2D_RECT,
+    Usampler1D = GL_UNSIGNED_INT_SAMPLER_1D,
+    Usampler2D = GL_UNSIGNED_INT_SAMPLER_2D,
+    Usampler3D = GL_UNSIGNED_INT_SAMPLER_3D,
+    UsamplerCube = GL_UNSIGNED_INT_SAMPLER_CUBE,
+    Usampler1DArray = GL_UNSIGNED_INT_SAMPLER_1D_ARRAY,
+    Usampler2DArray = GL_UNSIGNED_INT_SAMPLER_2D_ARRAY,
+    Usampler2DMS = GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE,
+    Usampler2DMSArray = GL_UNSIGNED_INT_SAMPLER_2D_MULTISAMPLE_ARRAY,
+    UsamplerBuffer = GL_UNSIGNED_INT_SAMPLER_BUFFER,
+    Usampler2DRect = GL_UNSIGNED_INT_SAMPLER_2D_RECT,
+    Image1D = GL_IMAGE_1D,
+    Image2D = GL_IMAGE_2D,
+    Image3D = GL_IMAGE_3D,
+    Image2DRect = GL_IMAGE_2D_RECT,
+    ImageCube = GL_IMAGE_CUBE,
+    ImageBuffer = GL_IMAGE_BUFFER,
+    Image1DArray = GL_IMAGE_1D_ARRAY,
+    Image2DArray = GL_IMAGE_2D_ARRAY,
+    Image2DMS = GL_IMAGE_2D_MULTISAMPLE,
+    Image2DMSArray = GL_IMAGE_2D_MULTISAMPLE_ARRAY,
+    Iimage1D = GL_INT_IMAGE_1D,
+    Iimage2D = GL_INT_IMAGE_2D,
+    Iimage3D = GL_INT_IMAGE_3D,
+    Iimage2DRect = GL_INT_IMAGE_2D_RECT,
+    IimageCube = GL_INT_IMAGE_CUBE,
+    IimageBuffer = GL_INT_IMAGE_BUFFER,
+    Iimage1DArray = GL_INT_IMAGE_1D_ARRAY,
+    Iimage2DArray = GL_INT_IMAGE_2D_ARRAY,
+    Iimage2DMS = GL_INT_IMAGE_2D_MULTISAMPLE,
+    Iimage2DMSArray = GL_INT_IMAGE_2D_MULTISAMPLE_ARRAY,
+    Uimage1D = GL_UNSIGNED_INT_IMAGE_1D,
+    Uimage2D = GL_UNSIGNED_INT_IMAGE_2D,
+    Uimage3D = GL_UNSIGNED_INT_IMAGE_3D,
+    Uimage2DRect = GL_UNSIGNED_INT_IMAGE_2D_RECT,
+    UimageCube = GL_UNSIGNED_INT_IMAGE_CUBE,
+    UimageBuffer = GL_UNSIGNED_INT_IMAGE_BUFFER,
+    Uimage1DArray = GL_UNSIGNED_INT_IMAGE_1D_ARRAY,
+    Uimage2DArray = GL_UNSIGNED_INT_IMAGE_2D_ARRAY,
+    Uimage2DMS = GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE,
+    Uimage2DMSArray = GL_UNSIGNED_INT_IMAGE_2D_MULTISAMPLE_ARRAY,
+    AtomicUint = GL_UNSIGNED_INT_ATOMIC_COUNTER
+};
+
+struct GLType
+{
+    String name;
+    uint c_size;
+    uint gl_size;
+    GLTypeEnum gl_type;
+    GLTypeEnum gl_primitive_type;
+    std::function<Shared<IRendererParameter>()> parameter_producer;
+};
+
+class EXPORT RendererParameterApplier
 {
 public:
-    RendererParameterApplier(uint count, uint item_size);
+    RendererParameterApplier(uint count, const GLType* data_type, uint location);
     ~RendererParameterApplier();
 
-    void put(RendererParameterBase* parameter, uint index);
+    void put(IRendererParameter* parameter, uint index);
     template<typename T>
-    void put(const T& value, uint index)
+    void put_value(const T& value, uint index)
     {
-        *(T*)(((byte*)data) + index * item_size) = value;
+        *(T*)(((byte*)data) + index * data_type->c_size) = value;
     }
 
-    template<typename T>
-    void apply(uint location)
-    {
-        
-    }
+    void apply() const;
     
     void* data;
     uint count;
-    uint item_size;
+    const GLType* data_type;
+    uint location;
 };
 
-template<>
-inline void RendererParameterApplier::apply<float>(uint location)
-{
-    glUniform1fv(location, count, (float*)data);
-}
-
-template<>
-inline void RendererParameterApplier::apply<Vector2>(uint location)
-{
-    glUniform2fv(location, count, (float*)data);
-}
-
-template<>
-inline void RendererParameterApplier::apply<Vector3>(uint location)
-{
-    glUniform3fv(location, count, (float*)data);
-}
-
-template<>
-inline void RendererParameterApplier::apply<Quaternion>(uint location)
-{
-    glUniform4fv(location, count, (float*)data);
-}
-
-class RendererParameterBase
+class EXPORT IRendererParameter
 {
 public:
     virtual uint size() const = 0;
     virtual void write_data(void* dest) const = 0;
-    
-    uint id;
 };
 
 template<typename T>
-class RendererParameter : public RendererParameterBase
+class RendererParameter : public IRendererParameter
 {
 public:
     uint size() const override { return sizeof(T); }
@@ -77,21 +171,25 @@ public:
 };
 
 template<>
-class RendererParameter<Shared<Texture>> : public RendererParameterBase
+class RendererParameter<Shared<Texture>> : public IRendererParameter
 {
 public:
     uint size() const override { return sizeof(uint64); }
-    void write_data(void* dest) const override { *((uint64*)dest) = value->get_handle_arb(); }
+    void write_data(void* dest) const override { *((uint64*)dest) = value ? value->get_handle_arb() : Game::get_white_pixel()->get_handle_arb(); }
     
     TextureSlot value;
 };
 
-template<>
-class RendererParameter<Color> : public RendererParameterBase
-{
-public:
-    uint size() const override { return sizeof(Quaternion); }
-    void write_data(void* dest) const override { *((Quaternion*)dest) = value.to_quaternion(); }
-    
-    Color value;
+#define GLTYPE(type, primitive_type, size, c_size, c_type) { GLTypeEnum::type, new GLType { #type, c_size, size, GLTypeEnum::type, GLTypeEnum::primitive_type, []()->Shared<IRendererParameter>{ return MakeShared<RendererParameter<c_type>>(); } } }
+const Map<GLTypeEnum, const GLType*> shader_type_info = {
+    GLTYPE(Int,       Int,   1, sizeof(int),        int            ),
+    GLTYPE(Uint,      Uint,  1, sizeof(uint),       uint           ),
+    GLTYPE(Bool,      Bool,  1, sizeof(bool),       bool           ),
+    GLTYPE(Float,     Float, 1, sizeof(float),      float          ),
+    GLTYPE(Vec2,      Float, 2, sizeof(Vector2),    Vector2        ),
+    GLTYPE(Vec3,      Float, 3, sizeof(Vector3),    Vector3        ),
+    GLTYPE(Vec4,      Float, 4, sizeof(Quaternion), Quaternion     ),
+    GLTYPE(Mat4,      None,  0, sizeof(Matrix4x4),  Matrix4x4      ),
+    GLTYPE(Sampler2D, None,  0, sizeof(uint64),     Shared<Texture>)
 };
+#undef GLTYPE

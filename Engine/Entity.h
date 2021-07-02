@@ -2,6 +2,7 @@
 
 #include "BasicTypes.h"
 #include "CollisionMaskBits.h"
+#include "Delegate.h"
 #include "EntityComponent.h"
 #include "framework.h"
 #include "Object.h"
@@ -10,6 +11,7 @@
 #include "Texture.h"
 #include "Vector3.h"
 
+class Collision;
 class Renderer3DInstance;
 
 namespace reactphysics3d

@@ -1,13 +1,15 @@
 ﻿#pragma once
 
 #include "BasicTypes.h"
+#include "Logger.h"
 #include "RendererParameters.h"
 #include "Shader.h"
 #include "String.h"
 
+class Mesh;
 class Shader;
 
-class RendererInstance : public std::enable_shared_from_this<RendererInstance>
+class EXPORT RendererInstance : public std::enable_shared_from_this<RendererInstance>
 {
     friend Renderer;
     
@@ -51,5 +53,5 @@ private:
     Shared<Mesh> mesh_;
     bool visible_ = true;
 
-    Map<String, Shared<RendererParameterBase>> instance_parameters_;
+    Map<String, Shared<IRendererParameter>> instance_parameters_;
 };

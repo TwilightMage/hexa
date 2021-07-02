@@ -2,7 +2,6 @@
 
 #include <memory>
 
-
 #include "Engine/EventBus.h"
 
 void ExampleMod::on_loaded(const Shared<EventBus>& event_bus)

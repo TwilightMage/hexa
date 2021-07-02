@@ -2,7 +2,7 @@
 
 
 #include "File.h"
-#include "Game.h"
+#include "Logger.h"
 #include "Path.h"
 
 typedef Mod* (__stdcall *f_get_mod)();

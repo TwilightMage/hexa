@@ -56,6 +56,8 @@ protected:
     virtual void on_child_added(const Shared<UIElement>& child);
     virtual void on_child_removed(const Shared<UIElement>& child);
     virtual void on_all_child_removed();
+    virtual void matrix_updated(const Matrix4x4& matrix);
+    virtual void color_updated(const Color& color);
     
     void set_size_internal(const Vector2& vec2_size);
     
@@ -64,8 +66,6 @@ private:
     bool is_rect_under_mouse(const Vector2& mouse) const;
     void added_to_hierarchy();
     void removed_from_hierarchy();
-    void register_render();
-    void unregister_render();
     void construct();
     void update_matrix();
     void update_matrix_child(const Matrix4x4& parent_matrix);

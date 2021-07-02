@@ -5,6 +5,7 @@
 #include "File.h"
 #include "Game.h"
 #include "ImageEditor.h"
+#include "Logger.h"
 #include "stb.h"
 
 int TextureAtlas::max_size_ = 0;

@@ -1,5 +1,6 @@
 ﻿#include "ItemDrop.h"
 
+#include "Engine/Logger.h"
 #include "Engine/Physics/ConcaveMeshCollision.h"
 #include "HexaGame/HexaCollisionMaskBits.h"
 #include "HexaGame/ItemInfo.h"

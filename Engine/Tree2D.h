@@ -108,13 +108,13 @@ public:
 
         while (*current != nullptr)
         {
-            if (x == (*current)->point.x && y == (*current)->point.y)
+            if (x == (*current)->point.key && y == (*current)->point.y)
             {
                 (*current)->point = Point(x, y, value);
                 return;
             }
 
-            typename Node::D1& d1 = (x < (*current)->point.x) ? (*current)->left : (*current)->right;
+            typename Node::D1& d1 = (x < (*current)->point.key) ? (*current)->left : (*current)->right;
             current = (y < (*current)->point.y) ? &d1.left : &d1.right;
         }
         
@@ -128,12 +128,12 @@ public:
 
         while (current != nullptr)
         {
-            if (x == current->point.x && y == current->point.y)
+            if (x == current->point.key && y == current->point.y)
             {
                 return &current->point;
             }
 
-            typename Node::D1& d1 = (x < current->point.x) ? current->left : current->right;
+            typename Node::D1& d1 = (x < current->point.key) ? current->left : current->right;
             current = (y < current->point.y) ? d1.left : d1.right;
         }
 

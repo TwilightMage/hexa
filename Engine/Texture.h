@@ -4,15 +4,16 @@
 
 #include "Array2D.h"
 #include "Color.h"
-#include "Game.h"
 #include "ITexture.h"
 #include "IUsageCountable.h"
 #include "List.h"
+#include "Logger.h"
 #include "Object.h"
 #include "Path.h"
 #include "Slot.h"
 #include "UsageCounter.h"
 
+class Game;
 class UIElement;
 class Image;
 

@@ -2,7 +2,7 @@
 
 #include "Assert.h"
 #include "File.h"
-#include "Game.h"
+#include "Map.h"
 
 Map<String, String> parse_params(const String& line)
 {

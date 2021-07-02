@@ -60,7 +60,7 @@ void AnimatorComponent::on_tick(float delta_time)
             instance.value->revert();
             instance.value->on_end();
             instance.value->is_playing = false;
-            instances_to_remove.Add(instance.x);
+            instances_to_remove.Add(instance.key);
         }
     }
 

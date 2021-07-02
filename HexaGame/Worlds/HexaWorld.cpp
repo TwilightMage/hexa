@@ -1,5 +1,7 @@
 ﻿#include "HexaWorld.h"
 
+#include "Engine/Game.h"
+#include "Engine/Logger.h"
 #include "Engine/Math.h"
 #include "Engine/Random.h"
 #include "Engine/Rect.h"

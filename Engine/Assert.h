@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Utils.h"
-#include "Game.h"
+#include "Logger.h"
 
 #if DEBUG
     #define Assert(condition)\

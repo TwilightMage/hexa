@@ -17,13 +17,9 @@ void DebugPlayer::on_start()
 {
     Player::on_start();
     
-    debug_text_ = MakeShared<TextBlock>("qwerty");
-    debug_text_->set_position(Vector2(5, 5));
-    Game::add_ui(debug_text_);
-    
     if (auto world = get_world())
     {
-        const auto arrows_mesh = Mesh::load_obj(RESOURCES_HEXA_MESHES + "axis_arrows.obj");
+        const auto arrows_mesh = Mesh::load_obj(RESOURCES_ENGINE_MESHES + "axis_arrows.obj");
         auto arrows_vertices = arrows_mesh->get_vertices();
         auto arrows_indices = arrows_mesh->get_indices();
         for (auto& vertex : arrows_vertices)

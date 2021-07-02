@@ -150,6 +150,12 @@ inline String String::join<String>(List<String> items, const String& glue)
 	return result;
 }
 
+template<>
+inline bool String::parse<bool>(const String& rhs)
+{
+	return rhs == "true" || rhs == "True";
+}
+
 inline String operator+(const char* const l, const String& r)
 {
 	return String(l) + r.std();

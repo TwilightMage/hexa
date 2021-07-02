@@ -85,6 +85,7 @@ const Color& UIElement::get_color() const
 void UIElement::set_color(const Color& color)
 {
     color_ = color;
+    color_updated(color);
 }
 
 const Matrix4x4& UIElement::get_ui_matrix() const
@@ -192,18 +193,6 @@ bool UIElement::is_in_hierarchy() const
     return is_in_hierarchy_;
 }
 
-void UIElement::register_render()
-{
-    should_render_ = true;
-    on_register_render();
-}
-
-void UIElement::unregister_render()
-{
-    should_render_ = false;
-    on_unregister_render();
-}
-
 void UIElement::construct()
 {
     if (!constructed_)
@@ -267,6 +256,14 @@ void UIElement::on_all_child_removed()
 {
 }
 
+void UIElement::matrix_updated(const Matrix4x4& matrix)
+{
+}
+
+void UIElement::color_updated(const Color& color)
+{
+}
+
 void UIElement::set_size_internal(const Vector2& vec2_size)
 {
     size_ = vec2_size;
@@ -304,13 +301,8 @@ void UIElement::added_to_hierarchy()
 {
     if (!is_in_hierarchy_)
     {
-        if (auto me_renderable = cast<IRenderable>(shared_from_this()))
-        {
-            if (Game::instance_->ui_renderer_->register_object(me_renderable))
-            {
-                register_render();
-            }
-        }
+        should_render_ = true;
+        on_register_render();
 
         for (auto& child : children_)
         {
@@ -325,13 +317,8 @@ void UIElement::removed_from_hierarchy()
 {
     if (is_in_hierarchy_)
     {
-        if (auto me_renderable = cast<IRenderable>(shared_from_this()))
-        {
-            if (Game::instance_->ui_renderer_->unregister_object(me_renderable))
-            {
-                unregister_render();
-            }
-        }
+        should_render_ = false;
+        on_unregister_render();
 
         for (auto& child : children_)
         {
@@ -356,6 +343,8 @@ void UIElement::update_matrix()
         parent_matrix = parent->trans_rot_matrix_stacked_;
     }
     update_matrix_child(parent_matrix);
+
+    matrix_updated(trans_rot_size_matrix_);
 }
 
 void UIElement::update_matrix_child(const Matrix4x4& parent_matrix)

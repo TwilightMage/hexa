@@ -76,9 +76,9 @@ void HexaSaveGame::save_chunk_modifications(const ChunkIndex& index, const Map<T
 
         for (auto& kvp : modifications)
         {
-            write(stream, static_cast<byte>(kvp.x.x));
-            write(stream, static_cast<byte>(kvp.x.y));
-            write(stream, static_cast<byte16>(kvp.x.z));
+            write(stream, static_cast<byte>(kvp.key.x));
+            write(stream, static_cast<byte>(kvp.key.y));
+            write(stream, static_cast<byte16>(kvp.key.z));
 
             for (auto& ch : kvp.value->key)
             {

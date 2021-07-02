@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include <functional>
-#include <map>
 #include <stack>
 
 
@@ -13,7 +12,13 @@ class Tree1D
 public:
     struct Point
     {
-        const KeyType x;
+        Point(const KeyType& key, const ValueType& value)
+            : key(key)
+            , value(value)
+        {
+        }
+        
+        const KeyType key;
         ValueType value;
     };
 
@@ -222,13 +227,13 @@ private:
     {
         if (node)
         {
-            if (point.x == node->point.x)
+            if (point.key == node->point.key)
             {
                 node->point.value = point.value;
                 return node->h;
             }
 
-            node->h = insert(point, (point.x < node->point.x) ? node->left : node->right, size) + 1;
+            node->h = insert(point, (point.key < node->point.key) ? node->left : node->right, size) + 1;
             balance(node);
             return node->h;
         }
@@ -282,7 +287,7 @@ private:
     {
         if (node)
         {
-            if (x == node->point.x)
+            if (x == node->point.key)
             {
                 size--;
                 if (node->left)
@@ -310,7 +315,7 @@ private:
                 }
             }
 
-            node->h = remove(x, (x < node->point.x) ? node->left : node->right, size) + 1;
+            node->h = remove(x, (x < node->point.key) ? node->left : node->right, size) + 1;
             return node->h;
         }
 
@@ -406,12 +411,12 @@ public:
 
         while (current != nullptr)
         {
-            if (x == current->point.x)
+            if (x == current->point.key)
             {
                 return &current->point.value;
             }
 
-            current = (x < current->point.x) ? current->left : current->right;
+            current = (x < current->point.key) ? current->left : current->right;
         }
 
         return nullptr;

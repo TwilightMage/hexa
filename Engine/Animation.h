@@ -2,6 +2,7 @@
 
 #include "Assert.h"
 #include "Curve.h"
+#include "Path.h"
 
 class AnimationEditorUI;
 class AnimatorComponent;

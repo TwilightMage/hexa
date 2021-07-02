@@ -5,6 +5,7 @@
 #include "ItemToolInfo.h"
 #include "Paths.h"
 #include "Engine/DatabaseHelpers.h"
+#include "Engine/Mesh.h"
 #include "Engine/Texture.h"
 
 #define INIT_ITEM_DATABASE_ENTRY(name, type, resources_path_root, mesh_name, ...) INIT_DATABASE_ENTRY(name, type, Texture::load_png(resources_path_root##_TEXTURES_ITEMS + #name + ".png"), Mesh::load_obj(resources_path_root##_MESHES_ITEMS + mesh_name + ".obj"), Texture::load_png(resources_path_root##_TEXTURES_ITEMS + #name + "_mesh.png"), __VA_ARGS__)

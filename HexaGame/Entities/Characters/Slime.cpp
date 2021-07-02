@@ -1,6 +1,7 @@
 ﻿#include "Slime.h"
 
 #include "Engine/Animation.h"
+#include "Engine/Mesh.h"
 #include "Engine/World.h"
 #include "HexaGame/Items.h"
 #include "HexaGame/Paths.h"

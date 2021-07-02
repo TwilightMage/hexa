@@ -5,7 +5,7 @@
 #include "RendererInstance.h"
 #include "RendererParameters.h"
 
-class Renderer3DInstance : public RendererInstance
+class EXPORT Renderer3DInstance : public RendererInstance
 {
 public:
     void set_model(const Matrix4x4& value) const;

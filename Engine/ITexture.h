@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "BasicTypes.h"
+#include "Path.h"
 
 class EXPORT ITexture
 {

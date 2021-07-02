@@ -2,6 +2,7 @@
 
 #include "Engine/Array2D.h"
 #include "Engine/Color.h"
+#include "Engine/Game.h"
 #include "Engine/stb.h"
 #include "Engine/Texture.h"
 #include "Engine/ui/Image.h"

@@ -1,11 +1,11 @@
 ﻿#include "Utils.h"
 
-#include "Game.h"
-
 #define GLFW_INCLUDE_NONE
 #include <algorithm>
 #include <GLFW/glfw3.h>
 #include <glad/glad.h>
+
+#include "Logger.h"
 
 #if PLATFORM_WINDOWS
 #include <dbghelp.h>

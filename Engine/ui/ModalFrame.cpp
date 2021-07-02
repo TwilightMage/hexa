@@ -1,6 +1,7 @@
 ﻿#include "ModalFrame.h"
 
 #include "Image.h"
+#include "Engine/Game.h"
 
 ModalFrame::ModalFrame(const Shared<UIElement>& content)
     : content_(content)

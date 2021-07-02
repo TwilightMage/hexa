@@ -3,8 +3,6 @@
 #include <reactphysics3d/collision/TriangleVertexArray.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 
-#include "Engine/Game.h"
-
 ConcaveMeshCollision::DataBlock::~DataBlock()
 {
     get_physics()->destroyConcaveMeshShape(concave_mesh_shape);

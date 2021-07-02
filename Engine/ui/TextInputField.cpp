@@ -6,6 +6,7 @@
 #include "Image.h"
 #include "Panel.h"
 #include "TextBlock.h"
+#include "Engine/Game.h"
 #include "Engine/Margins.h"
 #include "Engine/Paths.h"
 #include "Engine/Regex.h"

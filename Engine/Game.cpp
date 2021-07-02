@@ -7,17 +7,18 @@
 
 #include "ICamera.h"
 #include "IControllable.h"
+#include "Logger.h"
 #include "Mod.h"
 #include "Path.h"
 #include "Paths.h"
 #include "Renderer.h"
 #include "Renderer3D.h"
+#include "RendererUI.h"
 #include "SaveGame.h"
 #include "Settings.h"
 #include "Shader.h"
 #include "SpriteFont.h"
 #include "TextureAtlas.h"
-#include "UIRenderer.h"
 #include "World.h"
 #include "ui/Image.h"
 #include "ui/TextBlock.h"
@@ -27,7 +28,6 @@ Game* Game::instance_ = nullptr;
 
 Game::Game(int argc, char* argv[])
     : event_bus_(new EventBus())
-	, log_stream_(DateTime::now(), argv[0])
 	, physics_(new reactphysics3d::PhysicsCommon)
 	, ui_root_(new UIElement)
 {
@@ -46,6 +46,8 @@ Game::Game(int argc, char* argv[])
 	}
 
 	set_app_path(String(argv[0]));
+
+	Logger::init(argv[0]);
 }
 
 Game::~Game()
@@ -154,16 +156,6 @@ const Shared<EventBus>& Game::get_event_bus()
 	return instance_->event_bus_;
 }
 
-void Game::new_log_record(ELogLevel level, const String& category, const String& message)
-{
-	static const char* levelNames[4] = { "Verbose", "Debug", "Warning", "Error" };
-	static const char* levelColors[4] = { CONSOLE_WHITE, CONSOLE_CYAN, CONSOLE_YELLOW, CONSOLE_RED };
-
-	instance_->log_stream_mutex_.lock();
-	instance_->log_stream_ << levelColors[static_cast<int>(level)] << "[" << DateTime::now().to_string().c() << "] [" << levelNames[static_cast<int>(level)] << "] [" << category.c() << "] " << message.c() << CONSOLE_RESET << "\n";
-	instance_->log_stream_mutex_.unlock();
-}
-
 void Game::call_on_main_thread(std::function<void()> func)
 {
 	instance_->main_thread_calls_mutex_.lock();
@@ -203,7 +195,7 @@ Shared<RendererUI> Game::get_basic_renderer_ui()
 
 Shared<Texture> Game::get_white_pixel()
 {
-	return instance_->white_pixel_;
+	return *instance_->white_pixel_;
 }
 
 Shared<SpriteFont> Game::get_default_font()
@@ -383,15 +375,17 @@ void Game::render_loop()
 	is_loading_stage_ = true;
 
 	// Load shaders
-	Shader::Meta basic_shader_meta = Renderer3D::default_meta;
-	basic_shader_meta.instance_count = 230;
-	basic_shader_ = Shader::compile(RESOURCES_ENGINE_SHADERS + "basic", basic_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
+	basic_shader_ = Shader::compile(RESOURCES_ENGINE_SHADERS + "basic", Shader::VERTEX | Shader::FRAGMENT);
 
-	Shader::Meta basic_ui_shader_meta;
-	basic_ui_shader_meta.instance_count = 146;
-	basic_ui_shader_meta.transparency = true;
-	basic_ui_shader_ = Shader::compile(RESOURCES_ENGINE_SHADERS + "basic_ui", basic_ui_shader_meta, Shader::VERTEX | Shader::FRAGMENT);
+	basic_ui_shader_ = Shader::compile(RESOURCES_ENGINE_SHADERS + "basic_ui", Shader::VERTEX | Shader::FRAGMENT);
 
+	// Load renderers
+	basic_renderer_3d_ = MakeShared<Renderer3D>();
+	basic_renderer_3d_->init(basic_shader_);
+	
+	basic_renderer_ui_ = MakeShared<RendererUI>();
+	basic_renderer_ui_->init(basic_ui_shader_);
+	
 	white_pixel_ = MakeShared<Texture>("White Pixel", 1, 1, List<Color>::of(Color::white()));
 
 	default_font_ = SpriteFont::load_fnt(RESOURCES_ENGINE_FONTS + "arial.fnt"); // courgette.fnt
@@ -519,12 +513,12 @@ void Game::render_loop()
 			auto ui_proj = Matrix4x4::ortho(0.0f, static_cast<float>(width), static_cast<float>(-height), 0.0f, -1000.0f, 0.0001f);
 
 			// rendering+
-			Renderer::RenderData render_data = {world_, view, proj, Matrix4x4(), ui_proj };
+			Renderer::RenderData render_data = {world_, view, proj, ui_proj };
 			
 			is_render_stage_ = true;
 			for (auto& renderer : renderers_)
 			{
-				renderer.value->render(render_data);
+				renderer->render(render_data);
 			}
 			//glClear(GL_DEPTH_BUFFER_BIT);
 			is_render_stage_ = false;
@@ -547,7 +541,7 @@ void Game::cleanup()
 
 	for (auto& renderer : renderers_)
 	{
-		renderer.value->cleanup();
+		renderer->cleanup();
 	}
 
 	for (auto& kvp : shaders_)

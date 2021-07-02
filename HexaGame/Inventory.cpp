@@ -37,9 +37,9 @@ bool Inventory::add_item(const ItemContainer& item)
         for (const auto& modification : modifications)
         {
             ItemContainer item_in_slot = item;
-            item_in_slot.count = items_[modification.x].count + modification.value;
-            items_[modification.x] = item_in_slot;
-            on_item_changed(modification.x, item_in_slot);
+            item_in_slot.count = items_[modification.key].count + modification.value;
+            items_[modification.key] = item_in_slot;
+            on_item_changed(modification.key, item_in_slot);
         }
 
         return true;
@@ -59,9 +59,9 @@ uint Inventory::add_item_force(const ItemContainer& item)
     for (const auto& modification : modifications)
     {
         ItemContainer item_in_slot = item;
-        item_in_slot.count = items_[modification.x].count + modification.value;
-        items_[modification.x] = item_in_slot;
-        on_item_changed(modification.x, item_in_slot);
+        item_in_slot.count = items_[modification.key].count + modification.value;
+        items_[modification.key] = item_in_slot;
+        on_item_changed(modification.key, item_in_slot);
     }
 
     return count;
@@ -79,8 +79,8 @@ bool Inventory::take_item(const ItemContainer& item)
     {
         for (const auto& modification : modifications)
         {
-            items_[modification.x].count -= modification.value;
-            on_item_changed(modification.x, items_[modification.x]);
+            items_[modification.key].count -= modification.value;
+            on_item_changed(modification.key, items_[modification.key]);
         }
 
         return true;
@@ -99,8 +99,8 @@ uint Inventory::take_item_force(const ItemContainer& item)
 
     for (const auto& modification : modifications)
     {
-        items_[modification.x].count -= modification.value;
-        on_item_changed(modification.x, items_[modification.x]);
+        items_[modification.key].count -= modification.value;
+        on_item_changed(modification.key, items_[modification.key]);
     }
 
     return item.count - required;

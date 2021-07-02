@@ -4,7 +4,7 @@
 #include <rapidjson/writer.h>
 #include <rapidjson/error/en.h>
 
-#include "Game.h"
+#include "Logger.h"
 
 using namespace rapidjson;
 

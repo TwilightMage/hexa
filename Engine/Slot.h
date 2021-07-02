@@ -99,6 +99,11 @@ public:
         return item_;
     }
 
+    operator bool() const
+    {
+        return item_ != nullptr;
+    }
+
 private:
     Shared<C> item_;
     bool is_active_;

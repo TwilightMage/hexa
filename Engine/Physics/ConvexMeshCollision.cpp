@@ -3,8 +3,6 @@
 #include <reactphysics3d/collision/PolygonVertexArray.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 
-#include "Engine/Game.h"
-
 ConvexMeshCollision::DataBlock::~DataBlock()
 {
     get_physics()->destroyConvexMeshShape(convex_mesh_shape);

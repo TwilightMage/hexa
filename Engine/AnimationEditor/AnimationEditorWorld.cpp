@@ -4,6 +4,7 @@
 #include "Engine/Animated.h"
 #include "Engine/AnimatorComponent.h"
 #include "Engine/EditorPlayer.h"
+#include "Engine/Game.h"
 
 void AnimationEditorWorld::on_start()
 {

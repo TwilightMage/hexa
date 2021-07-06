@@ -29,7 +29,7 @@ bool Utils::check_gl_error()
     List<String> errors;
     while (uint err = glGetError())
     {
-        errors.Add(get_gl_error_message(err));
+        errors.add(get_gl_error_message(err));
     }
     if (errors.length() > 0)
     {
@@ -138,7 +138,7 @@ List<String> Utils::get_callstack(uint offset)
             if (frame >= offset)
             {
                 String filename = line->FileName;
-                result.Add(String::format("\tat %s in %s:%lu", pSymbol->Name, filename.substring(filename.index_of("Hexa")).c(), line->LineNumber));
+                result.add(String::format("\tat %s in %s:%lu", pSymbol->Name, filename.substring(filename.index_of("Hexa")).c(), line->LineNumber));
                 if (strcmp(pSymbol->Name, "main") == 0) break;
             }
         }     

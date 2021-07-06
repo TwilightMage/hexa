@@ -3,6 +3,7 @@
 #include "File.h"
 #include "Game.h"
 #include "Logger.h"
+#include "Regex.h"
 #include "Utils.h"
 
 Shader::Shader(const String& name)
@@ -33,239 +34,251 @@ void Shader::cleanup()
     glDeleteProgram(program_);
 }
 
-bool Shader::check_uniform_presence(const String& name, GLTypeEnum type, bool instance) const
+Shared<Shader> Shader::compile(const String& name, const List<Path>& paths)
 {
-    for (const auto& param : instance ? instance_uniforms_ : global_uniforms_)
+    Map<ShaderType, Path> path_type_map;
+    
+    for (auto& path : paths)
     {
-        if (param.name == name)
+        const auto absolute_path = path.get_absolute_string();
+        if (!path.exists())
         {
-            return param.type && param.type->gl_type == type;
+            print_error("Shader", "Unable to find shader at path %s for shader program %s", absolute_path.c(), name.c());
+            return nullptr;
         }
-    }
 
-    return false;
-}
+        ShaderType found_type = NONE;
+        for (auto& type : shader_type_meta)
+        {
+            if (path.extension == type.value.format)
+            {
+                found_type = type.key;
+                break;
+            }
+        }
 
-Shared<Shader> Shader::compile(const Path& path, int type_flags)
-{
-    if (const auto found = Game::instance_->shaders_.find(path.get_absolute_string()))
-    {
-        return *found;
+        if (found_type == NONE)
+        {
+            print_error("Shader", "Unknown shader extension %s for shader %s", path.extension.c(), name.c());
+            return nullptr;
+        }
+
+        if (path_type_map.contains(found_type))
+        {
+            print_error("Shader", "Multiple shaders of same type is not allowed! file %s for shader %s", absolute_path.c(), name.c());
+            return nullptr;
+        }
+
+        path_type_map[found_type] = path;
     }
     
-    if (type_flags != 0)
+    const auto result = MakeShared<Shader>(name);
+
+    Map<String, String> defines;
+
+    for (auto& path_type : path_type_map)
     {
-        const auto result = MakeShared<Shader>(path.filename);
-        result->program_ = glCreateProgram();
+        result->shaders_[path_type.key] = compile_shader(path_type.value, path_type.key, defines);
+    }
 
-        Map<String, String> defines;
-        
-        if (type_flags & VERTEX)
+    if (defines.contains("transparency")) result->transparency_ = String::parse<bool>(defines["transparency"]);
+    
+    List<String> problem_shaders;
+    for (auto& kvp : result->shaders_)
+    {
+        if (kvp.value == -1)
         {
-            result->shaders_[VERTEX] = compile_shader(path, VERTEX, defines);
+            problem_shaders.add(shader_type_meta.at(kvp.key).name);
         }
-
-        if (type_flags & FRAGMENT)
-        {
-            result->shaders_[FRAGMENT] = compile_shader(path, FRAGMENT, defines);
-        }
-
-        if (type_flags & GEOMETRY)
-        {
-            result->shaders_[GEOMETRY] = compile_shader(path, GEOMETRY, defines);
-        }
-
-        if (type_flags & COMPUTE)
-        {
-            result->shaders_[COMPUTE] = compile_shader(path, COMPUTE, defines);
-        }
-
-        if (defines.contains("transparency")) result->transparency_ = String::parse<bool>(defines["transparency"]);
-        
-        List<String> problem_shaders;
+    }
+    
+    if (problem_shaders.length() > 0)
+    {
         for (auto& kvp : result->shaders_)
         {
-            if (kvp.value == -1)
+            glDeleteShader(kvp.value);
+        }
+        print_error("Shader", "Unable to compile shader program %s because of problems with shaders: %s", name.c(), String::join(problem_shaders, ", ").c());
+    }
+    else
+    {
+        result->program_ = glCreateProgram();
+        glLinkProgram(result->program_);
+        for (auto& kvp : result->shaders_)
+        {
+            glAttachShader(result->program_, kvp.value);
+        }
+
+        glLinkProgram(result->program_);
+
+        int name_len_max = 0;
+        
+        int num_uniforms = 0;
+        glGetProgramiv(result->program_, GL_ACTIVE_UNIFORMS, &num_uniforms);
+        glGetProgramiv(result->program_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &name_len_max);
+        result->instance_count_ = 0;
+        for (int i = 0; i < num_uniforms; i++)
+        {
+            char* param_name = new char[name_len_max];
+            int name_len;
+            int layout_size;
+            uint type;
+            glGetActiveUniform(result->program_, i, name_len_max, &name_len, &layout_size, &type, param_name);
+            const uint layout = glGetUniformLocation(result->program_, param_name);
+            String name_str = String(param_name, name_len);
+            delete[] param_name;
+            bool is_array = layout_size > 1;
+            if (name_str.ends_with("[0]"))
             {
-                problem_shaders.Add(shader_type_meta.at(kvp.key).name);
+                name_str = name_str.substring(0, name_str.length() - 3);
+            }
+            const auto shader_data_type = static_cast<GLTypeEnum>(type);
+            if (const auto type_info = shader_type_info.find(shader_data_type))
+            {
+                if (name_str.starts_with("INST_"))
+                {
+                    name_str = name_str.substring(5);
+                    result->instance_count_ = result->instance_count_ == 0 ? layout_size : Math::min(result->instance_count_, (uint)layout_size);
+                    result->instance_uniforms_.add(UniformParam(layout_size, *type_info, is_array, name_str, layout));
+                }
+                else
+                {
+                    result->global_uniforms_.add(UniformParam(layout_size, *type_info, is_array, name_str, layout));
+                }
+            }
+            else
+            {
+                print_error("Shader", "Parameter %s has unsupported type", name_str.c());
+                result->cleanup();
+                return nullptr;
+            }
+        }
+
+        GLint num_inputs = 0;
+        glGetProgramiv(result->program_, GL_ACTIVE_ATTRIBUTES, &num_inputs);
+        glGetProgramiv(result->program_, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &name_len_max);
+        for (int i = 0; i < num_inputs; i++)
+        {
+            char* param_name = new char[name_len_max];
+            int name_len;
+            int layout_size;
+            uint type;
+            glGetActiveAttrib(result->program_, i, name_len_max, &name_len, &layout_size, &type, param_name);
+            const uint layout = glGetAttribLocation(result->program_, param_name);
+            String name_str = String(param_name, name_len);
+            delete[] param_name;
+            if (name_str.starts_with("gl_")) continue;
+            const auto shader_data_type = static_cast<GLTypeEnum>(type);
+            if (const auto type_info = shader_type_info.find(shader_data_type))
+            {
+                result->vertex_params_.add(VertexParam(layout_size, *type_info, name_str, layout));
+            }
+            else
+            {
+                print_error("Shader", "Parameter %s has unsupported type", name_str.c());
+                result->cleanup();
+                return nullptr;
+            }
+        }
+        result->vertex_params_.sort([](const VertexParam& a, const VertexParam& b) -> bool
+        {
+            return a.layout > b.layout;
+        });
+        uint vertex_param_offset = 0;
+        for (auto& vertex_param : result->vertex_params_)
+        {
+            vertex_param.offset = (void*)(uint64)vertex_param_offset;
+            vertex_param_offset += vertex_param.type->c_size;
+        }
+
+        if (result->vertex_params_.length() == 0)
+        {
+            if (defines.contains("empty_vertex"))
+            {
+                result->empty_vertex_ = String::parse<uint>(defines["empty_vertex"]);
+            }
+            else
+            {
+                print_error("Shader", "Shader %s does not contains info about vertices or empty vertex count", name.c());
+                result->cleanup();
+                return nullptr;
             }
         }
         
-        if (problem_shaders.length() > 0)
-        {
-            for (auto& kvp : result->shaders_)
-            {
-                glDeleteShader(kvp.value);
-            }
-            print_error("Shader", "Unable to compile shader program %s because of problems with shaders: %s", path.get_absolute_string().c(), String::join(problem_shaders, ", ").c());
-        }
-        else
-        {
-            result->program_ = glCreateProgram();
-            glLinkProgram(result->program_);
-            for (auto& kvp : result->shaders_)
-            {
-                glAttachShader(result->program_, kvp.value);
-            }
+        Utils::check_gl_error();
+        verbose("Shader", "Compiled shader %s", name.c());
 
-            glLinkProgram(result->program_);
-
-            int name_len_max = 0;
-            
-            int num_uniforms = 0;
-            glGetProgramiv(result->program_, GL_ACTIVE_UNIFORMS, &num_uniforms);
-            glGetProgramiv(result->program_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &name_len_max);
-            result->instance_count_ = 0;
-            for (int i = 0; i < num_uniforms; i++)
-            {
-                char* name = new char[name_len_max];
-                int name_len;
-                int layout_size;
-                uint type;
-                glGetActiveUniform(result->program_, i, name_len_max, &name_len, &layout_size, &type, name);
-                const uint layout = glGetUniformLocation(result->program_, name);
-                String name_str = String(name, name_len);
-                delete[] name;
-                bool is_array = layout_size > 1;
-                if (name_str.ends_with("[0]"))
-                {
-                    name_str = name_str.substring(0, name_str.length() - 3);
-                }
-                const auto shader_data_type = static_cast<GLTypeEnum>(type);
-                if (const auto type_info = shader_type_info.find(shader_data_type))
-                {
-                    if (name_str.starts_with("INST_"))
-                    {
-                        name_str = name_str.substring(5);
-                        result->instance_count_ = result->instance_count_ == 0 ? layout_size : Math::min(result->instance_count_, (uint)layout_size);
-                        result->instance_uniforms_.Add(UniformParam(layout_size, *type_info, is_array, name_str, layout));
-                    }
-                    else
-                    {
-                        result->global_uniforms_.Add(UniformParam(layout_size, *type_info, is_array, name_str, layout));
-                    }
-                }
-                else
-                {
-                    print_error("Shader", "Parameter %s has unsupported type", name_str.c());
-                    return nullptr;
-                }
-            }
-
-            GLint num_inputs = 0;
-            glGetProgramiv(result->program_, GL_ACTIVE_ATTRIBUTES, &num_inputs);
-            glGetProgramiv(result->program_, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &name_len_max);
-            for (int i = 0; i < num_inputs; i++)
-            {
-                char* name = new char[name_len_max];
-                int name_len;
-                int layout_size;
-                uint type;
-                glGetActiveAttrib(result->program_, i, name_len_max, &name_len, &layout_size, &type, name);
-                const uint layout = glGetAttribLocation(result->program_, name);
-                String name_str = String(name, name_len);
-                delete[] name;
-                if (name_str.starts_with("gl_")) continue;
-                const auto shader_data_type = static_cast<GLTypeEnum>(type);
-                if (const auto type_info = shader_type_info.find(shader_data_type))
-                {
-                    result->vertex_params_.Add(VertexParam(layout_size, *type_info, name_str, layout));
-                }
-                else
-                {
-                    print_error("Shader", "Parameter %s has unsupported type", name_str.c());
-                    return nullptr;
-                }
-            }
-            result->vertex_params_.sort([](const VertexParam& a, const VertexParam& b) -> bool
-            {
-                return a.layout > b.layout;
-            });
-            uint vertex_param_offset = 0;
-            for (auto& vertex_param : result->vertex_params_)
-            {
-                vertex_param.offset = (void*)(uint64)vertex_param_offset;
-                vertex_param_offset += vertex_param.type->c_size;
-            }
-
-            if (result->vertex_params_.length() == 0)
-            {
-                if (defines.contains("empty_vertex"))
-                {
-                    result->empty_vertex_ = String::parse<uint>(defines["empty_vertex"]);
-                }
-                else
-                {
-                    print_error("Shader", "Shader %s does not contains info about vertices or empty vertex count", path.get_absolute_string().c());
-                    return nullptr;
-                }
-            }
-            
-            Utils::check_gl_error();
-            verbose("Shader", "Compiled shader %s", path.get_absolute_string().c());
-
-            Game::instance_->shaders_[path.get_absolute_string()] = result;
-            
-            return result;
-        }
+        Game::instance_->shaders_[name] = result;
+        
+        return result;
     }
     
     return nullptr;
 }
 
-uint Shader::compile_shader(const Path& path, type shader_type, Map<String, String>& defines)
+uint Shader::compile_shader(const Path& path, ShaderType shader_type, Map<String, String>& defines)
 {
-    Path filepath = path.to_string() + shader_type_meta.at(shader_type).format;
+    const auto shader = glCreateShader(shader_type_meta.at(shader_type).gl_type);
+    const auto shader_code = File::read_file(path).trim();
+    char* shader_code_c = shader_code.c_copy();
+    glShaderSource(shader, 1, &shader_code_c, nullptr);
+    delete shader_code_c;
+    glCompileShader(shader);
 
-    if (filepath.exists())
+    GLint compile_log_length = 0;
+    glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &compile_log_length);
+
+    if (compile_log_length > 0)
     {
-        const auto shader = glCreateShader(shader_type_meta.at(shader_type).gl_type);
-        const auto shader_code = File::read_file(filepath).trim();
-        char* shader_code_c = shader_code.c_copy();
-        glShaderSource(shader, 1, &shader_code_c, nullptr);
-        delete shader_code_c;
-        glCompileShader(shader);
+        std::vector<GLchar> compile_log(compile_log_length);
+        glGetShaderInfoLog(shader, compile_log_length, &compile_log_length, compile_log.data());
 
-        GLint is_compiled = 0;
-        glGetShaderiv(shader, GL_COMPILE_STATUS, &is_compiled);
-        if(is_compiled == GL_FALSE)
+        auto log_lines = String(compile_log.data(), compile_log_length - 1).split('\n', true);
+
+        for (auto& line : log_lines)
         {
-            GLint max_length = 0;
-            glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &max_length);
-
-            std::vector<GLchar> error_log(max_length);
-            glGetShaderInfoLog(shader, max_length, &max_length, error_log.data());
-
-            print_error("Shader", "Failed to compile shader %s:\n%s", filepath.get_absolute().to_string().c(), error_log.data());
-
-            glDeleteShader(shader);
-            return -1;
-        }
-
-        for (auto line : shader_code.split('\n'))
-        {
-            line = line.trim();
-            if (line.starts_with("#define"))
+            if (auto warning_capt = Regex("^(\\d+\\(\\d+\\)) : warning (.*)").capture(line))
             {
-                line = line.substring(7).trim();
-                const int sep_pos = line.index_of(' ');
-                if (sep_pos > 0)
-                {
-                    defines.insert(line.substring(0, sep_pos), line.substring(sep_pos + 1));
-                }
-                else
-                {
-                    defines.insert(line, "true");
-                }
+                line = CONSOLE_YELLOW + line + CONSOLE_RESET;
+            }
+            else if (auto error_capt = Regex("^(\\d+\\(\\d+\\)) : error (.*)").capture(line))
+            {
+                line = CONSOLE_RED + line + CONSOLE_RESET;
+            }
+            else
+            {
+                line = CONSOLE_WHITE + line + CONSOLE_RESET;
             }
         }
-    
-        return shader;  
+
+        verbose("Shader", "glsl compiler output for shader %s:\n%s", path.get_absolute_string().c(), String::join(log_lines, "\n").c());
     }
-    else
+    
+    GLint is_compiled = 0;
+    glGetShaderiv(shader, GL_COMPILE_STATUS, &is_compiled);
+    if(is_compiled == GL_FALSE)
     {
-        print_error("Shader", "Failed to compile %s shader %s: file does not exist", shader_type_meta.at(shader_type).name.c(), filepath.get_absolute().to_string().c());
+        glDeleteShader(shader);
+        return -1;
     }
 
-    return -1;
+    for (auto line : shader_code.split('\n'))
+    {
+        line = line.trim();
+        if (line.starts_with("#define"))
+        {
+            line = line.substring(7).trim();
+            const int sep_pos = line.index_of(' ');
+            if (sep_pos > 0)
+            {
+                defines.insert(line.substring(0, sep_pos), line.substring(sep_pos + 1));
+            }
+            else
+            {
+                defines.insert(line, "true");
+            }
+        }
+    }
+
+    return shader;
 }

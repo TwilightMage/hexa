@@ -3,11 +3,14 @@
 
 
 #include "ChunkMeshEntity.h"
+#include "HexaGame.h"
 #include "HexaSaveGame.h"
 #include "Tiles.h"
 #include "WorldChunkMesh.h"
 #include "WorldGenerator.h"
 #include "Engine/GeometryEditor.h"
+#include "Engine/Material3D.h"
+#include "Engine/Random.h"
 #include "Engine/World.h"
 #include "Engine/Physics/ConcaveMeshCollision.h"
 #include "Worlds/HexaWorld.h"
@@ -343,7 +346,7 @@ void WorldChunk::dec_visibility()
                 type_mesh_destroy->destroy();
             }
 
-           layer_mesh.Clear();
+           layer_mesh.clear();
         }
 
         if (cap_entity_)
@@ -390,7 +393,7 @@ void WorldChunk::neighbor_tile_changed(const ChunkIndex& chunk, const TileIndex&
             if (index.x == 0)
             {
                 sender_sides = { TileSide::Back };
-                if (index.y > 0) sender_sides.Add(TileSide::BackLeft);
+                if (index.y > 0) sender_sides.add(TileSide::BackLeft);
             }
         }
         else if (chunk == index_ + ChunkIndex(1, 1)) // front right
@@ -405,7 +408,7 @@ void WorldChunk::neighbor_tile_changed(const ChunkIndex& chunk, const TileIndex&
             if (index.y == 0)
             {
                 sender_sides = { TileSide::FrontLeft };
-                if (index.x > 0) sender_sides.Add(TileSide::BackLeft);
+                if (index.x > 0) sender_sides.add(TileSide::BackLeft);
             }
         }
         else if (chunk == index_ - ChunkIndex(1, 0)) // back
@@ -413,7 +416,7 @@ void WorldChunk::neighbor_tile_changed(const ChunkIndex& chunk, const TileIndex&
             if (index.x == chunk_size - 1)
             {
                 sender_sides = { TileSide::Front };
-                if (index.y < chunk_size - 1) sender_sides.Add(TileSide::FrontRight);
+                if (index.y < chunk_size - 1) sender_sides.add(TileSide::FrontRight);
             }
         }
         else if (chunk == index_ - ChunkIndex(1, 1)) // back left
@@ -428,7 +431,7 @@ void WorldChunk::neighbor_tile_changed(const ChunkIndex& chunk, const TileIndex&
             if (index.y == chunk_size - 1)
             {
                 sender_sides = { TileSide::FrontRight };
-                if (index.x < chunk_size - 1) sender_sides.Add(TileSide::BackRight);
+                if (index.x < chunk_size - 1) sender_sides.add(TileSide::BackRight);
             }
         }
 
@@ -465,7 +468,7 @@ void WorldChunk::regenerate_mesh(uint z)
         type_mesh->destroy();
     }
     
-    mesh_entities_[z].Clear();
+    mesh_entities_[z].clear();
     
     if (auto world = world_.lock())
     {
@@ -522,7 +525,7 @@ void WorldChunk::regenerate_mesh(uint z)
 
             mesh_entity->set_visibility(z < cap_z);
         
-            mesh_entities_[z].Add(mesh_entity);
+            mesh_entities_[z].add(mesh_entity);
         }
     }
 }
@@ -554,7 +557,14 @@ void WorldChunk::regenerate_cap_mesh()
                         Vector3 world_pos = index.to_vector();
                         List<Mesh::Vertex> tile_vertices;
                         List<uint> tile_indices;
-                        WorldGenerator::generate_tile_mesh(TileSide::Up, tile, tile_vertices, tile_indices, world_pos.sum_all());
+                        const float sa = world_pos.sum_all();
+                        WorldGenerator::generate_tile_mesh(TileSide::Up, tile, tile_vertices, tile_indices, sa);
+
+                        const Vector2 offset = Vector2(sa * 3, sa);
+                        for (auto& v : tile_vertices)
+                        {
+                            v.uv += offset;
+                        }
 
                         GeometryEditor::remove_indices(tile_vertices, tile_indices);
                         GeometryEditor::translate(tile_vertices, world_pos);
@@ -570,6 +580,7 @@ void WorldChunk::regenerate_cap_mesh()
             auto mesh = MakeShared<Mesh>(String::format("Chunk {%i %i %i} cap", index_.x, index_.y, cap_z - 1), cap_vertices);
             
             cap_entity_ = MakeShared<ChunkMeshEntity>();
+            cap_entity_->set_material(HexaGame::tile_cap_material);
             cap_entity_->use_mesh(mesh);
             cap_entity_->use_texture(Texture::load_png(RESOURCES_HEXA_TEXTURES_TILES + "cap.png"));
             world->spawn_entity(cap_entity_, index_.to_vector());

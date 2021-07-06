@@ -34,7 +34,7 @@ public:
         void* offset;
     };
 
-    enum type
+    enum ShaderType
     {
         NONE      = 0,
         VERTEX    = 1,
@@ -54,9 +54,7 @@ public:
 
     void cleanup();
 
-    bool check_uniform_presence(const String& name, GLTypeEnum type, bool instance) const;
-    
-    static Shared<Shader> compile(const Path& path, int type_flags);
+    static Shared<Shader> compile(const String& name, const List<Path>& paths);
 
 private:
     struct type_meta
@@ -65,17 +63,17 @@ private:
         String format;
         uint gl_type;
     };
-    inline static const std::map<type, type_meta> shader_type_meta = {
+    inline static const Map<ShaderType, type_meta> shader_type_meta = {
         {VERTEX, {"vertex", ".vert", GL_VERTEX_SHADER}},
         {FRAGMENT, {"fragment", ".frag", GL_FRAGMENT_SHADER}},
         {GEOMETRY, {"geometry", ".geom", GL_GEOMETRY_SHADER}},
         {COMPUTE, {"compute", ".comp", GL_COMPUTE_SHADER}}
     };
 
-    static uint compile_shader(const Path& path, type shader_type, Map<String, String>& defines);
+    static uint compile_shader(const Path& path, ShaderType shader_type, Map<String, String>& defines);
 
     uint program_ = 0;
-    Map<type, uint> shaders_;
+    Map<ShaderType, uint> shaders_;
     uint instance_count_;
 
     bool transparency_ = false;

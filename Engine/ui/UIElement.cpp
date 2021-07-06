@@ -124,7 +124,7 @@ void UIElement::add_child(const Shared<UIElement>& child)
                 return;
             }
             
-            old_parent->children_.Remove(child);
+            old_parent->children_.remove(child);
             old_parent->on_child_removed(child);
         }
 
@@ -134,7 +134,7 @@ void UIElement::add_child(const Shared<UIElement>& child)
         }
         
         child->parent_ = weak_from_this();
-        children_.Add(child);
+        children_.add(child);
         on_child_added(child);
 
         child->update_matrix();
@@ -363,9 +363,9 @@ void UIElement::update_matrix_child(const Matrix4x4& parent_matrix)
 
 void UIElement::remove_child_internal(const Shared<UIElement>& item)
 {
-    if (auto index = children_.IndexOf(item); index >= 0)
+    if (auto index = children_.index_of(item); index >= 0)
     {
-        children_.RemoveAt(index);
+        children_.remove_at(index);
         on_child_removed(item);
         item->parent_ = null_weak(UIElement);
 

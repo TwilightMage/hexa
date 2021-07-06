@@ -19,6 +19,10 @@ public:
     inline const static Shared<Database<CharacterInfo>> character_database = MakeShared<Database<CharacterInfo>>("Character Database");
 
     static void register_world_generator(const Shared<WorldGeneratorInfo>& generator_info);
+
+    static Shared<Shader> tile_cap_shader;
+
+    static Shared<Material3D> tile_cap_material;
     
 protected:
     void init_game_info(GameInfo& outInfo) override;

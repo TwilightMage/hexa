@@ -19,7 +19,7 @@ AnimationHandle AnimatorComponent::play_animation(const Shared<Animation>& anima
         List<AnimatedField<float>*> fields;
         for (auto named_curve : animation->named_curves_)
         {
-            fields.Add(cast<AnimatedField<float>>(animated_owner->find_animated_field(named_curve.name)));
+            fields.add(cast<AnimatedField<float>>(animated_owner->find_animated_field(named_curve.name)));
         }
 
         auto result = MakeShared<AnimationInstance>(animation, fields);
@@ -60,7 +60,7 @@ void AnimatorComponent::on_tick(float delta_time)
             instance.value->revert();
             instance.value->on_end();
             instance.value->is_playing = false;
-            instances_to_remove.Add(instance.key);
+            instances_to_remove.add(instance.key);
         }
     }
 

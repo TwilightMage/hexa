@@ -1,6 +1,7 @@
 ﻿#include "TilePresentationWorld.h"
 
 #include "Engine/GeometryEditor.h"
+#include "Engine/Physics/ConcaveMeshCollision.h"
 #include "Engine/Physics/ConvexMeshCollision.h"
 #include "HexaGame/HexaGame.h"
 #include "HexaGame/Tiles.h"
@@ -11,10 +12,6 @@
 
 void TilePresentationWorld::on_start()
 {
-    const auto player = MakeShared<DebugPlayer>();
-    spawn_entity(player, Vector3(-3.0f, 0.0f, 0.0f), Quaternion(Vector3(0.0f, 0.0f, 0.0f)));
-    Game::possess(player);
-
     uint x = 0;
     uint y = 0;
     uint i = 2;
@@ -45,4 +42,8 @@ void TilePresentationWorld::on_start()
 
     const auto tile_demo_entity = MakeShared<TileDemoEntity>(std::array<Shared<const TileInfo>, 6>{Tiles::dirt, Tiles::dirt, Tiles::grass, Tiles::dirt, Tiles::grass, Tiles::grass});
     spawn_entity(tile_demo_entity, TileIndex(3, 0, 0).to_vector());
+
+    const auto player = MakeShared<DebugPlayer>();
+    spawn_entity(player, Vector3(-3.0f, 0.0f, 0.0f), Quaternion(Vector3(0.0f, 0.0f, 0.0f)));
+    Game::possess(player);
 }

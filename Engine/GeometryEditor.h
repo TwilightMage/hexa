@@ -22,8 +22,6 @@ public:
     static void remove_indices(List<Mesh::Vertex>& vertices, List<uint>& indices);
     static void invert_vertices(List<Mesh::Vertex>& vertices);
     static void invert_indices(List<uint>& indices);
-    static void randomize_colors(List<Mesh::Vertex>& vertices);
-    static void set_color(List<Mesh::Vertex>& vertices, const Color& color);
     static void mirror_x(List<Mesh::Vertex>& vertices);
     static void mirror_y(List<Mesh::Vertex>& vertices);
     static void mirror_z(List<Mesh::Vertex>& vertices);

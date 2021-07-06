@@ -4,7 +4,7 @@
 
 void EditorPlayer::tick(float delta_time)
 {
-    distance_ = Math::lerp(distance_, target_distance_, 0.1f);
+    distance_ = Math::lerp(distance_, target_distance_, delta_time * 10);
     
     if (is_rotating_)
     {

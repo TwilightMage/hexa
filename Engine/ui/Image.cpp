@@ -1,5 +1,6 @@
 ﻿#include "Image.h"
 
+#include "Engine/Assert.h"
 #include "Engine/Game.h"
 #include "Engine/MaterialUI.h"
 #include "Engine/MaterialUIInstance.h"
@@ -63,6 +64,8 @@ void Image::use_texture(const Shared<Texture>& texture)
 
 void Image::set_material(const Shared<Material>& material)
 {
+    if (!Check(material_ != nullptr, "UI", "Cannot set material to nullptr")) return;
+    
     if (material_instance_)
     {
         material_instance_->destroy();

@@ -2,24 +2,20 @@
 
 #include <stdexcept>
 
+#include "IMap.h"
 #include "List.h"
+#include "Pair.h"
 #include "Tree1D.h"
 
 template<typename Key, typename Value>
-class Map
+class Map : public IMap<Key, Value>
 {
 public:
-    struct Pair
-    {
-        Key key;
-        Value value;
-    };
-    
     Map()
     {
     }
 
-    Map(const std::initializer_list<Pair>& initializer_list)
+    Map(const std::initializer_list<Pair<Key, Value>>& initializer_list)
     {
         for (const auto& pair : initializer_list)
         {
@@ -32,7 +28,7 @@ public:
         data_.insert(key, new_value);
     }
 
-    FORCEINLINE Value& find_or_insert(const Key& key, std::function<Value()> generator)
+    Value& find_or_insert(const Key& key, std::function<Value()> generator)
     {
         if (auto value = data_.find(key))
         {
@@ -54,7 +50,17 @@ public:
         return *data_.find(key);
     }
 
-    Value& operator[](const Key& key)
+    FORCEINLINE Value& operator[](const Key& key) override
+    {
+        return at(key);
+    }
+
+    FORCEINLINE const Value& operator[](const Key& key) const override
+    {
+        return at(key);
+    }
+
+    Value& at(const Key& key) override
     {
         if (auto value = data_.find(key))
         {
@@ -65,7 +71,7 @@ public:
         return *data_.find(key);
     }
 
-    Value operator[](const Key& key) const
+    const Value& at(const Key& key) const override
     {
         if (auto value = data_.find(key))
         {
@@ -75,27 +81,27 @@ public:
         throw std::runtime_error("Unable to find value in map");
     }
 
-    FORCEINLINE bool contains(const Key& key)
+    FORCEINLINE bool contains(const Key& key) const override
     {
         return data_.find(key) != nullptr;
     }
 
-    FORCEINLINE void remove(const Key& key)
+    FORCEINLINE void remove(const Key& key) override
     {
         data_.remove(key);
     }
 
-    FORCEINLINE void clear()
+    FORCEINLINE void clear() override
     {
         data_.clear();
     }
 
-    FORCEINLINE Value* find(const Key& key) const
+    FORCEINLINE Value* find(const Key& key) const override
     {
         return data_.find(key);
     }
 
-    FORCEINLINE Value find_or_default(const Key& key) const
+    Value find_or_default(const Key& key) const
     {
         if (auto found = data_.find(key))
         {
@@ -107,7 +113,7 @@ public:
         }
     }
 
-    FORCEINLINE Value find_or_default(const Key& key, const Value& default_value) const
+    Value find_or_default(const Key& key, const Value& default_value) const
     {
         if (auto found = data_.find(key))
         {
@@ -119,18 +125,18 @@ public:
         }
     }
 
-    List<Key> get_keys() const
+    List<Key> get_keys() const override
     {
         List<Key> result;
-        for (auto entry : data_)
+        for (auto& entry : data_)
         {
-            result.Add(entry.key);
+            result.add(entry.key);
         }
 
         return result;
     }
 
-    FORCEINLINE uint size() const
+    FORCEINLINE uint size() const override
     {
         return data_.size();
     }

@@ -59,7 +59,7 @@ Shared<Mesh> Mesh::load_obj(const Path& path)
         
     for (auto& vert : loader->LoadedVertices)
     {
-        result->vertices_.Add({cast_object<Vector3>(vert.Position), {vert.TextureCoordinate.X, 1 - vert.TextureCoordinate.Y}, Vector3::one(), cast_object<Vector3>(vert.Normal)});
+        result->vertices_.add({cast_object<Vector3>(vert.Position), {vert.TextureCoordinate.X, 1 - vert.TextureCoordinate.Y}, cast_object<Vector3>(vert.Normal)});
     }
     loader->LoadedVertices.clear();
 

@@ -120,7 +120,7 @@ public:
         return *this;
     }
 
-    void Add(const T& item)
+    void add(const T& item)
     {
         if (length_ == allocated_length_)
         {
@@ -131,17 +131,17 @@ public:
     }
 
     template<typename... Items>
-    void AddMany(const T& first, const Items&... rest)
+    void add_many(const T& first, const Items&... rest)
     {
-        Add(first);
+        add(first);
 
         if constexpr (sizeof...(rest) > 0)
         {
-            AddMany(rest...);
+            add_many(rest...);
         }
     }
 
-    void AddMany(const List<T>& items)
+    void add_many(const List<T>& items)
     {
         if (length_ + items.length() > allocated_length_)
         {
@@ -164,10 +164,10 @@ public:
             }
         }
 
-        Add(item);
+        add(item);
     }
 
-    bool Contains(const T& item) const
+    bool contains(const T& item) const
     {
         if (length_ == 0) return false;
         
@@ -178,7 +178,7 @@ public:
         return false;
     }
 
-    int IndexOf(const T& item) const
+    int index_of(const T& item) const
     {
         if (length_ == 0) return -1;
         
@@ -189,7 +189,7 @@ public:
         return -1;
     }
 
-    int IndexOf(std::function<bool(const T& item)> predicate) const
+    int index_of(std::function<bool(const T& item)> predicate) const
     {
         if (length_ == 0) return -1;
         
@@ -200,7 +200,7 @@ public:
         return -1;
     }
 
-    void RemoveAt(uint index)
+    void remove_at(uint index)
     {
         if (index >= length_)
         {
@@ -220,7 +220,7 @@ public:
         --length_;
     }
 
-    void Remove(const T& item)
+    void remove(const T& item)
     {
         uint offset = 0;
         for (uint i = 0; i < length_; i++)
@@ -249,7 +249,7 @@ public:
         length_ -= offset;
     }
 
-    void Remove(bool(* predicate)(const T&))
+    void remove(bool(* predicate)(const T&))
     {
         uint offset = 0;
         for (uint i = 0; i < length_; i++)
@@ -278,7 +278,17 @@ public:
         length_ -= offset;
     }
 
-    T& operator[](uint index)
+    FORCEINLINE T& operator[](uint index)
+    {
+        return at(index);
+    }
+
+    FORCEINLINE const T& operator[](uint index) const
+    {
+        return at(index);
+    }
+
+    T& at(uint index)
     {
         if (index >= length_)
         {
@@ -288,7 +298,7 @@ public:
         return inner_[index];
     }
 
-    const T& operator[](uint index) const
+    const T& at(uint index) const
     {
         if (index >= length_)
         {
@@ -298,47 +308,47 @@ public:
         return inner_[index];
     }
 
-    T& first()
+    FORCEINLINE T& first()
     {
         return operator[](0);
     }
 
-    const T& first() const
+    FORCEINLINE const T& first() const
     {
         return operator[](0);
     }
 
-    T& first_or_default()
+    FORCEINLINE T& first_or_default()
     {
         return length_ > 0 ? operator[](0) : T();
     }
 
-    const T& first_or_default() const
+    FORCEINLINE const T& first_or_default() const
     {
         return length_ > 0 ? operator[](0) : T();
     }
     
-    T& last()
+    FORCEINLINE T& last()
     {
         return operator[](length_ - 1);
     }
 
-    const T& last() const
+    FORCEINLINE const T& last() const
     {
         return operator[](length_ - 1);
     }
 
-    T& last_or_default()
+    FORCEINLINE T& last_or_default()
     {
         return length_ > 0 ? operator[](length_ - 1) : T();
     }
 
-    const T& last_or_default() const
+    FORCEINLINE const T& last_or_default() const
     {
         return length_ > 0 ? operator[](length_ - 1) : T();
     }
 
-    bool all(bool(* predicate)(const T&)) const
+    bool all(std::function<bool(const T& item)> predicate) const
     {
         for (uint i = 0; i < length_; i++)
         {
@@ -348,7 +358,7 @@ public:
         return  true;
     }
 
-    bool any(bool(* predicate)(const T&)) const
+    bool any(std::function<bool(const T& item)> predicate) const
     {
         for (uint i = 0; i < length_; i++)
         {
@@ -358,7 +368,7 @@ public:
         return  false;
     }
     
-    bool none(bool(* predicate)(const T&)) const
+    bool none(std::function<bool(const T& item)> predicate) const
     {
         for (uint i = 0; i < length_; i++)
         {
@@ -368,7 +378,7 @@ public:
         return  true;
     }
 
-    bool count(bool(* predicate)(const T&)) const
+    bool count(std::function<bool(const T& item)> predicate) const
     {
         uint counter = 0;
         for (uint i = 0; i < length_; i++)
@@ -389,7 +399,7 @@ public:
         {
             if (predicate(inner_[i]))
             {
-                result.Add(inner_[i]);
+                result.add(inner_[i]);
             }
         }
         
@@ -409,7 +419,7 @@ public:
         return result;
     }
 
-    void Insert(const T& item, uint indexAt)
+    void insert(const T& item, uint indexAt)
     {
         if (indexAt > length_)
         {
@@ -435,7 +445,7 @@ public:
         inner_[indexAt] = std::move(item_copy);
     }
 
-    void Clear()
+    void clear()
     {
         reallocate(0);
         length_ = 0;
@@ -509,14 +519,14 @@ public:
     List operator+(const T& rhs)
     {
         List result = *this;
-        result.Add(rhs);
+        result.add(rhs);
 
         return result;
     }
 
     List& operator+=(const T& rhs)
     {
-        Add(rhs);
+        add(rhs);
 
         return *this;
     }
@@ -524,14 +534,14 @@ public:
     List operator+(const List& rhs)
     {
         List result = *this;
-        result.AddMany(rhs);
+        result.add_many(rhs);
 
         return result;
     }
 
     List& operator+=(const List& rhs)
     {
-        AddMany(rhs);
+        add_many(rhs);
 
         return *this;
     }
@@ -541,9 +551,9 @@ public:
         List result;
         for (auto& entry : *this)
         {
-            if (rhs.Contains(entry))
+            if (rhs.contains(entry))
             {
-                result.Add(entry);
+                result.add(entry);
             }
         }
 
@@ -554,9 +564,9 @@ public:
     {
         for (uint i = 0; i < length_; i++)
         {
-            if (!rhs.Contains(inner_[i]))
+            if (!rhs.contains(inner_[i]))
             {
-                RemoveAt(i--);
+                remove_at(i--);
             }
         }
 
@@ -568,9 +578,9 @@ public:
         List result;
         for (auto& entry : *this)
         {
-            if (!rhs.Contains(entry))
+            if (!rhs.contains(entry))
             {
-                result.Add(entry);
+                result.add(entry);
             }
         }
 
@@ -581,9 +591,9 @@ public:
     {
         for (uint i = 0; i < length_; i++)
         {
-            if (rhs.Contains(inner_[i]))
+            if (rhs.contains(inner_[i]))
             {
-                RemoveAt(i--);
+                remove_at(i--);
             }
         }
 

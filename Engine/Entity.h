@@ -5,6 +5,7 @@
 #include "Delegate.h"
 #include "EntityComponent.h"
 #include "framework.h"
+#include "IRenderable.h"
 #include "Object.h"
 #include "Quaternion.h"
 #include "Material3DInstance.h"
@@ -20,7 +21,7 @@ namespace reactphysics3d
     class Collider;
 }
 
-class EXPORT Entity : public Object, public std::enable_shared_from_this<Entity>
+class EXPORT Entity : public Object, public IRenderable, public std::enable_shared_from_this<Entity>
 {
     friend class World;
 
@@ -36,9 +37,9 @@ public:
 
     bool is_started() const;
     
-    void use_mesh(const Shared<class Mesh>& new_mesh) const;
-    void clear_mesh() const;
-    void use_texture(const Shared<Texture>& new_texture) const;
+    void use_mesh(const Shared<class Mesh>& new_mesh);
+    void clear_mesh();
+    void use_texture(const Shared<Texture>& new_texture);
 
     void mark_matrix_dirty();
     
@@ -63,6 +64,9 @@ public:
     void make_body_static() const;
     void make_body_dynamic() const;
     void make_body_kinematic() const;
+
+    void set_material(const Shared<Material>& material) override;
+    FORCEINLINE Shared<Material> get_material() const override;
 
     void add_component(const Shared<EntityComponent>& component);
     void remove_component(const Shared<EntityComponent>& component);
@@ -105,6 +109,9 @@ private:
     
     Weak<World> world_;
     Shared<Material3DInstance> material_instance_;
+    Shared<Material3D> material_;
+    Shared<Mesh> mesh_;
+    Shared<Texture> texture_;
     bool pending_kill_;
     bool started_;
     reactphysics3d::RigidBody* rigid_body_;

@@ -15,7 +15,7 @@ void Animation::change_curve_name(uint id, const String& new_name)
 
 void Animation::create_curve(const String& name, float value)
 {
-    named_curves_.Add({ name, MakeShared<Curve<float>>(value) });
+    named_curves_.add({ name, MakeShared<Curve<float>>(value) });
 }
 
 void Animation::save_to_file(const Path& path) const

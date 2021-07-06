@@ -34,15 +34,13 @@ public:
                     param->value = value;
                     return;
                 }
-                print_warning("Material", "Attempting to assign a value to a parameter %s of a different type", name.c());
+                print_warning("Material", "Attempting to assign a value to instance parameter %s %s of a different type", basic_param->type->name.c(), name.c());
+                return;
             }
         }
-        print_warning("Material", "Attempting to assign a value to a parameter %s which doesn't exists", name.c());
+        print_warning("Material", "Attempting to assign a value to instance parameter %s which doesn't exists", name.c());
     }
 
-    void destroy();
-
-protected:
     template<typename T>
     Shared<MaterialParameter<T>> get_parameter(const String& name) const
     {
@@ -51,9 +49,12 @@ protected:
             if (param->name == name) return cast<MaterialParameter<T>>(param);
         }
         
-        return nullptr;
+        return MakeShared<MaterialParameter<T>>();
     }
 
+    void destroy();
+
+protected:
     virtual void register_direct_parameters();
 
 private:

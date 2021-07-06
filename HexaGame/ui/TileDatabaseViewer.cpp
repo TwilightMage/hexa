@@ -18,7 +18,7 @@ List<Shared<UIElement>> TileDatabaseViewer::construct_all_rows()
 
         for (auto& record : database->records())
         {
-            result.Add(MakeShared<TileDatabaseRow>(record.value->key, record.value->texture));
+            result.add(MakeShared<TileDatabaseRow>(record.value->key, record.value->texture));
         }
 
         return result;

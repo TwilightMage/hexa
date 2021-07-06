@@ -6,9 +6,13 @@
 #include "Array.h"
 #include "framework.h"
 
-template<typename T, class Compare = std::less<T>>
+template<typename T>
 class Set : public Array<T>
 {
+    using Array<T>::get_allocate_size;
+    using Array<T>::reallocate;
+    using Array<T>::slack;
+    
 public:
     using Array<T>::begin;
     using Array<T>::end;
@@ -26,39 +30,29 @@ public:
 
     Set(const Set& rhs)
     {
-        inner_ = new T[rhs.allocated_length_];
-        length_ = rhs.length_;
-        allocated_length_ = rhs.allocated_length_;
-
-        memcpy(inner_, rhs.inner_, sizeof(T) * length_);
-    }
-
-    Set(T* inner_, uint length_)
-    {
-        allocated_length_ = get_allocated_size(length_);
-        this->inner_ = new T[allocated_length_];
+        reallocate(rhs.length_);
 
         for (uint i = 0; i < length_; i++)
         {
-            Add(inner_[i]);
+            inner_[i] = std::move(rhs.inner_[i]);
+        }
+    }
+
+    Set(T* data_ptr, uint length)
+    {
+        reallocate(length);
+
+        for (uint i = 0; i < length; i++)
+        {
+            Add(data_ptr[i]);
         }
 
         slack();
     }
 
-    Set(const std::set<T, Compare>& set)
-    {
-        inner_ = new T[set.size()];
-        length_ = static_cast<uint>(set.size());
-        allocated_length_ = get_allocated_size(length_);
-
-        memcpy(inner_, set.data(), sizeof(T) * set.size());
-    }
-
     Set(const std::initializer_list<T>& il)
     {
-        allocated_length_ = get_allocated_size(il.size());
-        inner_ = new T[allocated_length_];
+        reallocate(il.size());
 
         for (uint i = 0; i < il.size(); i++)
         {
@@ -72,78 +66,96 @@ public:
     {
         if (this == &rhs) return *this;
 
-        delete[] inner_;
+        reallocate(rhs.length_);
 
-        length_ = rhs.length_;
-        allocated_length_ = rhs.allocated_length_;
-
-        inner_ = new T[allocated_length_];
-        memcpy(inner_, rhs.inner_, sizeof(T) * length_);
+        for (uint i = 0; i < length_; i++)
+        {
+            inner_[i] = std::move(rhs.inner_[i]);
+        }
 
         return *this;
     }
 
-    void Add(const T& item)
+    void add(const T& item)
     {
-        Compare compare;
+        uint l = 0;
+        uint r = length_;
+        uint m = 0;
 
-        if (length_ == allocated_length_)
+        while (l < r)
         {
-            reallocate(get_allocated_size(length_ + 1));
-        }
-
-        bool inserted = false;
-        for (uint i = 0; i < length_; i++)
-        {
-            if (compare(item, inner_[i]))
+            m = (l + r) / 2;
+            if (inner_[m] < item)
             {
-                memcpy_b(inner_ + (i + 1), inner_ + i, sizeof(T) * (length_ - i));
-
-                inner_[i] = std::move(item);
-
-                inserted = true;
-
-                break;
+                l = m + 1;
             }
-            else if (!compare(inner_[i], item))
+            else if (inner_[m] > item)
+            {
+                r = m;
+            }
+            else
             {
                 return;
             }
         }
 
-        if (!inserted)
+        m = (l + r) / 2;
+
+        T item_copy = item;
+        if (length_ == allocated_length_)
         {
-            inner_[length_] = std::move(item);
+            reallocate(get_allocate_size(length_ + 1));
         }
 
-        length_++;
+        ++length_;
+        
+        if (m < length_)
+        {
+            for (uint i = 0; i < length_ - m - 1; i++)
+            {
+                inner_[length_ - i - 1] = std::move(inner_[length_ - i - 2]);
+            }
+        }
+
+        inner_[m] = std::move(item_copy);
     }
 
-    void Remove(const T& item)
+    void remove(const T& item)
     {
-        for (uint i = 0; i < length_; i++)
+        uint l = 0;
+        uint r = length_;
+        uint m = 0;
+
+        while (l < r)
         {
-            if (inner_[i] == item)
+            m = (l + r) / 2;
+            if (inner_[m] < item)
             {
-                memcpy(inner_ + (i + 1), inner_ + i, sizeof(T) * (length_ - i - 1));
+                l = m + 1;
+            }
+            else if (inner_[m] > item)
+            {
+                r = m;
+            }
+            else
+            {
+                if (m < length_ - 1)
+                {
+                    for (uint i = m; i < length_ - 1; i++)
+                    {
+                        inner_[i] = std::move(inner_[i + 1]);
+                    }
+                }
 
-                length_--;
-
-                break;
+                inner_[length_ - 1] = T();
+        
+                --length_;
+                
+                return;
             }
         }
     }
-
-    T& operator[](uint index)
-    {
-        if (index >= length_)
-        {
-            throw new std::out_of_range("Parameter \"index\" is greater than last item index");
-        }
-
-        return inner_[index];
-    }
-
+    
     const T& operator[](uint index) const
     {
         if (index >= length_)
@@ -155,10 +167,6 @@ public:
     }
 
 private:
-    using Array<T>::get_allocated_size;
-    using Array<T>::reallocate;
-    using Array<T>::slack;
-
     using Array<T>::inner_;
     using Array<T>::length_;
     using Array<T>::allocated_length_;

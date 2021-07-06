@@ -177,4 +177,9 @@
             <Item Name="[3]" ExcludeView="simple">data[3]</Item>
         </Expand>
     </Type>
+
+    <Type Name="Mesh">
+        <DisplayString Condition="vertices_.length_ > 0">Mesh {name_} {{ v: {vertices_.length_}, i: {indices_.length_} }}</DisplayString>
+        <DisplayString Condition="vertices_.length_ == 0">Mesh {name_} {{ empty }}</DisplayString>
+    </Type>
 </AutoVisualizer>

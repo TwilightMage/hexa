@@ -9,7 +9,13 @@ flat in int InstanceID;
 in vec4 color;
 in vec2 uv;
 
+out vec4 frag_color;
+
 void main()
 {
-    gl_FragColor = texture(INST_texture[InstanceID], uv) * color;
+    frag_color = texture(INST_texture[InstanceID], uv) * color;
+    if (frag_color.a < 0.1)
+    {
+        discard;
+    }
 }

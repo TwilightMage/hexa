@@ -100,7 +100,7 @@ public:
     {
         if (points_.length() == 0)
         {
-            points_.Add({ Point(0, T()) });
+            points_.add({ Point(0, T()) });
         }
         else if (points_.first().time != 0)
         {
@@ -115,8 +115,8 @@ public:
 
     void insert_linear_segment(uint index, float length, T to)
     {
-        points_.Insert({points_[index - 1].time + length, to}, index);
-        segments_.Insert(new LinearInterpolator(), index - 1);
+        points_.insert({points_[index - 1].time + length, to}, index);
+        segments_.insert(new LinearInterpolator(), index - 1);
 
         for (uint i = index + 1; i < points_.length(); i++)
         {
@@ -126,8 +126,8 @@ public:
 
     void insert_sinusoid_segment(uint index, float length, T to)
     {
-        points_.Insert({points_[index - 1].time + length, to},index);
-        segments_.Insert(new SinusoidInterpolator(), index - 1);
+        points_.insert({points_[index - 1].time + length, to},index);
+        segments_.insert(new SinusoidInterpolator(), index - 1);
 
         for (uint i = index + 1; i < points_.length(); i++)
         {
@@ -138,14 +138,14 @@ public:
     
     void add_linear_segment(float length, T to)
     {
-        points_.Add({points_.last().time + length, to});
-        segments_.Add(new LinearInterpolator());
+        points_.add({points_.last().time + length, to});
+        segments_.add(new LinearInterpolator());
     }
 
     void add_sinusoid_segment(float length, T to)
     {
-        points_.Add({points_.last().time + length, to});
-        segments_.Add(new SinusoidInterpolator());
+        points_.add({points_.last().time + length, to});
+        segments_.add(new SinusoidInterpolator());
     }
     
 
@@ -164,8 +164,8 @@ public:
     {
         if (points_.length() <= 1) return;
         
-        points_.RemoveAt(point_id);
-        segments_.RemoveAt(point_id > 0 ? point_id - 1 : 0);
+        points_.remove_at(point_id);
+        segments_.remove_at(point_id > 0 ? point_id - 1 : 0);
 
         if (point_id == 0)
         {

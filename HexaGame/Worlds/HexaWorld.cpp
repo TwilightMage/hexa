@@ -42,7 +42,7 @@ Shared<WorldChunkObserver> HexaWorld::register_chunk_observer(const Rect& rect)
         }
     }
     
-    chunk_observers_.Add(observer);
+    chunk_observers_.add(observer);
 
     return observer;
 }
@@ -178,6 +178,7 @@ bool attempt_move(PathFindingData& data, const TileIndex& current_tile, const Ti
 
 bool build_path_recursive(PathFindingData& data, const PathMove& current_move, bool is_first)
 {
+    if (data.moves.length() == 10) return false;
     for (uint i = 0; i < data.config.agent_height; i++)
     {
         if (data.world->get_tile_id(current_move.to.offset(0, 0, i))->type != TileType::Air) return false;
@@ -200,7 +201,7 @@ bool build_path_recursive(PathFindingData& data, const PathMove& current_move, b
 
     if (!is_first)
     {
-        data.moves.Add(current_move);
+        data.moves.add(current_move);
     }
 
     if (current_move.to == data.config.to)
@@ -301,7 +302,7 @@ bool build_path_recursive(PathFindingData& data, const PathMove& current_move, b
 
     if (!is_first)
     {
-        data.moves.RemoveAt(data.moves.length() - 1);
+        data.moves.remove_at(data.moves.length() - 1);
     }
     return false;
 }
@@ -326,7 +327,7 @@ Shared<WorldPath> HexaWorld::FindPath(const PathConfig& config)
         List<WorldPath::Segment> path_segments;
         for (const auto& path_move : path_finding_data.moves)
         {
-            path_segments.Add({ path_move.from, path_move.to });
+            path_segments.add({ path_move.from, path_move.to });
         }
         return MakeShared<WorldPath>(path_segments);
     }
@@ -336,7 +337,7 @@ Shared<WorldPath> HexaWorld::FindPath(const PathConfig& config)
 
 bool HexaWorld::spawn_character(const Shared<Character>& character, const TileIndex& tile_index)
 {
-    if (characters_.Contains(character)) return false;
+    if (characters_.contains(character)) return false;
     
     for (auto charact : characters_)
     {
@@ -347,7 +348,7 @@ bool HexaWorld::spawn_character(const Shared<Character>& character, const TileIn
     
     if (spawn_entity(character, tile_index.to_vector()))
     {
-        characters_.Add(character);
+        characters_.add(character);
 
         character->on_destroyed.bind(this, &HexaWorld::character_destroyed_callback);
 
@@ -365,7 +366,7 @@ Shared<Entity> HexaWorld::spawn_drop(const TileIndex& tile, const ItemContainer&
     
     Shared<Entity> entity = MakeShared<ItemDrop>(item);
     auto random = Random::global;
-    spawn_entity(MakeShared<ItemDrop>(item), tile.to_vector() - Vector3(random->number<float>(-0.2f, 0.2f), random->number<float>(-0.2f, 0.2f), item.item ? (item.item->mesh->get_bounds_center().z - item.item->mesh->get_bounds_half_size().z) : 0.0f), Quaternion(Vector3(0, 0, Random::global->number(360.0f))));
+    spawn_entity(MakeShared<ItemDrop>(item), tile.to_vector() - Vector3(random->number<float>(-0.2f, 0.2f), random->number<float>(-0.2f, 0.2f), item.item ? (item.item->mesh->get_bounds_center().z - item.item->mesh->get_bounds_half_size().z) : 0.0f), Quaternion(Vector3(0, 0, random->number(360.0f))));
     return entity;
 }
 
@@ -461,11 +462,11 @@ void HexaWorld::dump_observable_area()
         List<String> s2;
         for (uint j = 0; j < matrix.get_size_x(); j++)
         {
-            if (j + min_x == 0 && i + min_y == 0) s2.Add("()");
-            else if (j + min_x == 10 && i + min_y == 10) s2.Add("XX");
-            else s2.Add(String::format("%s", matrix.at(j, i) ? "00" : "--"));
+            if (j + min_x == 0 && i + min_y == 0) s2.add("()");
+            else if (j + min_x == 10 && i + min_y == 10) s2.add("XX");
+            else s2.add(String::format("%s", matrix.at(j, i) ? "00" : "--"));
         }
-        s1.Add(String::join(s2, " "));
+        s1.add(String::join(s2, " "));
     }
     String s = String::join(s1, "\n");
     print_debug("Dump loaded chunks", "From %i %i\n" + s, min_x, min_y);
@@ -477,7 +478,7 @@ void HexaWorld::character_destroyed_callback(const Shared<Entity>& character)
     
     if (auto charact = cast<Character>(character))
     {
-        characters_.Remove(charact);
+        characters_.remove(charact);
     }
 }
 
@@ -524,7 +525,7 @@ void HexaWorld::unregister_chunk_observer(WorldChunkObserver* observer)
         }
     }
 
-    chunk_observers_.RemoveAt(index);
+    chunk_observers_.remove_at(index);
 }
 
 void HexaWorld::move_observer(WorldChunkObserver* observer, const Rect& new_rect)
@@ -637,7 +638,7 @@ void HexaWorld::fill_observer_array(Array2D<Shared<WorldChunk>>& array, int star
             if (chunk == nullptr)
             {
                 chunk = MakeShared<WorldChunk>(ChunkIndex(start_x + x, start_y + y), cast<HexaWorld>(shared_from_this()));
-                added.Add(ChunkIndex(x, y));
+                added.add(ChunkIndex(x, y));
             }
         }
     }

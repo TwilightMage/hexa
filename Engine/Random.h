@@ -2,6 +2,8 @@
 
 #include "framework.h"
 
+#define RANDOM_STEP 137591
+
 class Random
 {
 public:
@@ -13,25 +15,29 @@ public:
     template<typename T>
     T number()
     {
-        srand(seed_ + offset_++);
-        return rand() % std::numeric_limits<T>::max();
+        srand(seed_ + offset_);
+        offset_ += RANDOM_STEP;
+        return rand() % RAND_MAX;
     }
     template<typename T>
     T number(T max)
     {
-        srand(seed_ + offset_++);
+        srand(seed_ + offset_);
+        offset_ += RANDOM_STEP;
         return rand() % max;
     }
     template<typename T>
     T number(T min, T max)
     {
-        srand(seed_ + offset_++);
+        srand(seed_ + offset_);
+        offset_ += RANDOM_STEP;
         return min + rand() % (max - min);
     }
 
     bool boolean()
     {
-        srand(seed_ + offset_++);
+        srand(seed_ + offset_);
+        offset_ += RANDOM_STEP;
         return rand() % 2 == 1;
     }
 
@@ -45,7 +51,8 @@ private:
 template<>
 inline float Random::number()
 {
-    srand(seed_ + offset_++);
+    srand(seed_ + offset_);
+    offset_ += RANDOM_STEP;
     return rand() / static_cast<float>(RAND_MAX);
 }
 template<>

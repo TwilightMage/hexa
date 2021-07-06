@@ -15,7 +15,7 @@ List<Vector2> HorizontalList::arrange_positions(const List<Shared<UIElement>>& e
     Vector2 offset;
     for (uint i = 0; i < elements.length(); i++)
     {
-        result.Add(offset);
+        result.add(offset);
         offset.x += elements[i]->get_size().x + get_spacing();
     }
 

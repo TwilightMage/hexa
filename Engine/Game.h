@@ -172,14 +172,13 @@ private:
     // Game
     Version game_version_ = {0, 1, 0};
     float ui_scale_ = 2;
-    Shared<Shader> basic_shader_;
+    Shared<Shader> basic_3d_shader_;
     Shared<Shader> basic_ui_shader_;
     Shared<Material3D> basic_material_3d_;
     Shared<MaterialUI> basic_material_ui_;
     Slot<Texture> white_pixel_;
     Shared<SpriteFont> default_font_;
     List<Shared<Mod>> mods_;
-    Shared<TextBlock> fps_display_;
     
     // Game Play
     Shared<ICamera> current_camera_;

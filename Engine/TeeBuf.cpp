@@ -7,12 +7,12 @@ TeeBuf::TeeBuf(List<std::streambuf*> buffs)
 
 void TeeBuf::AddBuff(std::streambuf* buff)
 {
-	buffs.Add(buff);
+	buffs.add(buff);
 }
 
 void TeeBuf::RemoveBuff(std::streambuf* buff)
 {
-    buffs.Remove(buff);
+    buffs.remove(buff);
 }
 
 int TeeBuf::overflow(int c)

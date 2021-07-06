@@ -230,6 +230,7 @@
     <ClInclude Include="ICamera.h" />
     <ClInclude Include="IControllable.h" />
     <ClInclude Include="ImageEditor.h" />
+    <ClInclude Include="IMap.h" />
     <ClInclude Include="Interpolators.h" />
     <ClInclude Include="IRenderable.h" />
     <ClInclude Include="ITexture.h" />
@@ -247,6 +248,7 @@
     <ClInclude Include="Mesh.h" />
     <ClInclude Include="Mod.h" />
     <ClInclude Include="Object.h" />
+    <ClInclude Include="Pair.h" />
     <ClInclude Include="Path.h" />
     <ClInclude Include="Paths.h" />
     <ClInclude Include="pch.h" />
@@ -368,7 +370,6 @@
     <ClCompile Include="Material3D.cpp" />
     <ClCompile Include="Material3DInstance.cpp" />
     <ClCompile Include="MaterialInstance.cpp" />
-    <ClCompile Include="MaterialParameters.cpp" />
     <ClCompile Include="MaterialUI.cpp" />
     <ClCompile Include="MaterialUIInstance.cpp" />
     <ClCompile Include="SaveGame.cpp" />
@@ -418,8 +419,8 @@
     <Content Include="resources\engine\meshes\square.obj" />
     <Content Include="resources\engine\shaders\basic_ui.frag" />
     <Content Include="resources\engine\shaders\basic_ui.vert" />
-    <Content Include="resources\engine\shaders\basic.frag" />
-    <Content Include="resources\engine\shaders\basic.vert" />
+    <Content Include="resources\engine\shaders\basic_3D.frag" />
+    <Content Include="resources\engine\shaders\basic_3D.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

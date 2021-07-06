@@ -135,7 +135,7 @@ List<SpriteFont::UILetter> SpriteFont::arrange_string(const String& string, uint
     for (auto ch : string)
     {
         const auto letter = entries_.contains(ch) ? entries_.at(ch) : entries_.at('?');
-        result.Add({{static_cast<int>(ptr + letter.offset_x), static_cast<int>(letter.offset_y), static_cast<int>(letter.width), static_cast<int>(letter.height)}, atlas_->get_entry(letter.atlas_entry_id_), ch});
+        result.add({{static_cast<int>(ptr + letter.offset_x), static_cast<int>(letter.offset_y), static_cast<int>(letter.width), static_cast<int>(letter.height)}, atlas_->get_entry(letter.atlas_entry_id_), ch});
         ptr += letter.advance + 1;
     }
     out_length = ptr;
@@ -159,9 +159,9 @@ List<SpriteFont::UILetter> SpriteFont::arrange_line(const String& whole_text, ui
             auto word = arrange_string(words[i++], word_length);
             if (current_length + space_letter.advance + 1 + word_length < line_width)
             {
-                result.Add({{static_cast<int>(current_length + space_letter.offset_x), static_cast<int>(space_letter.offset_y), static_cast<int>(space_letter.width), static_cast<int>(space_letter.height)}, atlas_->get_entry(space_letter.atlas_entry_id_), ' '});
+                result.add({{static_cast<int>(current_length + space_letter.offset_x), static_cast<int>(space_letter.offset_y), static_cast<int>(space_letter.width), static_cast<int>(space_letter.height)}, atlas_->get_entry(space_letter.atlas_entry_id_), ' '});
                 for (auto& letter : word) letter.rect.x += current_length + space_letter.advance + 1;
-                result.AddMany(word);
+                result.add_many(word);
                 current_length += space_letter.advance + 1 + word_length;
             }
             else

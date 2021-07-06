@@ -10,21 +10,9 @@ template<typename KeyType, typename ValueType>
 class Tree1D
 {
 public:
-    struct Point
-    {
-        Point(const KeyType& key, const ValueType& value)
-            : key(key)
-            , value(value)
-        {
-        }
-        
-        const KeyType key;
-        ValueType value;
-    };
-
     struct Node
     {
-        Point point;
+        Pair<KeyType, ValueType> point;
         Node* left = nullptr;
         Node* right = nullptr;
         int h = 1;
@@ -37,7 +25,7 @@ public:
         {
         }
         
-        explicit Node(const Point& point)
+        explicit Node(const Pair<KeyType, ValueType>& point)
             : point(point)
         {
         }
@@ -56,6 +44,11 @@ public:
         bool operator==(const Iterator& rhs) const
         {
             return tree_ == rhs.tree_ && i_ == rhs.i_;
+        }
+
+        bool operator!=(const Iterator& rhs) const
+        {
+            return tree_ != rhs.tree_ || i_ != rhs.i_;
         }
 
         Iterator& operator++()
@@ -83,8 +76,8 @@ public:
             return *this;
         }
 
-        Point& operator*() const { return stack_.top()->point; }
-        Point& operator->() { return stack_.top()->point; }
+        Pair<KeyType, ValueType>& operator*() const { return stack_.top()->point; }
+        Pair<KeyType, ValueType>& operator->() { return stack_.top()->point; }
    
         explicit Iterator(const Tree1D* tree)
             : Iterator(tree, 0)
@@ -223,7 +216,7 @@ private:
         }
     }
     
-    static int insert(const Point& point, Node*& node, uint& size)
+    static int insert(const Pair<KeyType, ValueType>& point, Node*& node, uint& size)
     {
         if (node)
         {
@@ -271,7 +264,7 @@ private:
         return take_most_right(node->left);
     }
     
-    static Point* find(std::function<bool(const Point& point)> predicate, Node* node)
+    static Pair<KeyType, ValueType>* find(std::function<bool(const Pair<KeyType, ValueType>& point)> predicate, Node* node)
     {
         if (node)
         {
@@ -322,7 +315,7 @@ private:
         return 0;
     }
 
-    static void for_each(std::function<void(const Point& point)> callback, Node* node)
+    static void for_each(std::function<void(const Pair<KeyType, ValueType>& point)> callback, Node* node)
     {
         if (node)
         {
@@ -402,7 +395,7 @@ public:
     
     void insert(const KeyType& x, const ValueType& value)
     {
-        insert(Point(x, value), root_, size_);
+        insert(Pair<KeyType, ValueType>(x, value), root_, size_);
     }
 
     ValueType* find(const KeyType& x) const
@@ -422,7 +415,7 @@ public:
         return nullptr;
     }
 
-    Point* find(std::function<bool(const Point& point)> callback) const
+    Pair<KeyType, ValueType>* find(std::function<bool(const Pair<KeyType, ValueType>& point)> callback) const
     {
         return find(callback, root_);
     }
@@ -432,7 +425,7 @@ public:
         remove(x, root_, size_);
     }
 
-    void for_each(std::function<void(const Point& point)> callback)
+    void for_each(std::function<void(const Pair<KeyType, ValueType>& point)> callback)
     {
         for_each(callback, root_);
     }

@@ -24,7 +24,7 @@ void Character::on_start()
 
 void Character::tick(float delta_time)
 {
-    set_rotation(Quaternion::slerp(get_rotation(), target_rotation_, 0.1f));
+    set_rotation(Quaternion::slerp(get_rotation(), target_rotation_, delta_time * 10));
     
     if (is_in_path_segment_)
     {

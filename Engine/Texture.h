@@ -53,12 +53,12 @@ public:
     
     static Shared<Texture> load_png(const Path& path);
 
-    uint get_gl_texture_id() override;
-    uint64 get_handle_arb() const;
-    uint get_width() const;
-    uint get_height() const;
-    Vector2 get_size() const;
-    Color get_pixel(uint x, uint y) const;
+    FORCEINLINE uint get_gl_texture_id() override;
+    FORCEINLINE uint64 get_handle_arb() const;
+    FORCEINLINE uint get_width() const;
+    FORCEINLINE uint get_height() const;
+    FORCEINLINE Vector2 get_size() const;
+    FORCEINLINE Color get_pixel(uint x, uint y) const;
 
     void save_to_file(const Path& path) override;
     

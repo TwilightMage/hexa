@@ -17,13 +17,13 @@
 Entity::Entity()
     : Object(typeid(this).name() + String(" entity"))
     , is_matrix_dirty_(true)
-    , material_instance_(cast<Material3DInstance>(Game::get_basic_material_3d()->create_instance()))
+    , material_(Game::get_basic_material_3d())
     , pending_kill_(false)
     , started_(false)
     , rigid_body_(nullptr)
     , collider_(nullptr)
 {
-    
+    material_instance_ = cast<Material3DInstance>(material_->create_instance());
 }
 
 Shared<World> Entity::get_world() const
@@ -49,18 +49,21 @@ bool Entity::is_started() const
     return started_;
 }
 
-void Entity::use_mesh(const Shared<Mesh>& new_mesh) const
+void Entity::use_mesh(const Shared<Mesh>& new_mesh)
 {
+    mesh_ = new_mesh;
     material_instance_->set_mesh(new_mesh);
 }
 
-void Entity::clear_mesh() const
+void Entity::clear_mesh()
 {
+    mesh_ = nullptr;
     material_instance_->set_mesh(nullptr);
 }
 
-void Entity::use_texture(const Shared<Texture>& new_texture) const
+void Entity::use_texture(const Shared<Texture>& new_texture)
 {
+    texture_ = new_texture;
     material_instance_->set_param_value("texture", new_texture);
 }
 
@@ -233,19 +236,41 @@ void Entity::make_body_kinematic() const
     rigid_body_->setType(reactphysics3d::BodyType::KINEMATIC);
 }
 
+void Entity::set_material(const Shared<Material>& material)
+{
+    if (!Check(material != nullptr, "UI", "Cannot set material to nullptr")) return;
+    
+    if (material_instance_)
+    {
+        material_instance_->destroy();
+    }
+
+    material_ = cast<Material3D>(material);
+    
+    material_instance_ = cast<Material3DInstance>(material_->create_instance());
+
+    material_instance_->set_mesh(mesh_);
+    material_instance_->set_texture(texture_);
+}
+
+Shared<Material> Entity::get_material() const
+{
+    return material_;
+}
+
 void Entity::add_component(const Shared<EntityComponent>& component)
 {
     Assert(component->get_owner() == nullptr);
 
     component->owner = weak_from_this();
-    components_.Add(component);
+    components_.add(component);
 }
 
 void Entity::remove_component(const Shared<EntityComponent>& component)
 {
-    if (components_.Contains(component))
+    if (components_.contains(component))
     {
-        components_.Remove(component);
+        components_.remove(component);
         component->on_destroy();
         component->owner = null_weak(Entity);
     }
@@ -258,7 +283,7 @@ void Entity::remove_all_components()
         component->on_destroy();
         component->owner = null_weak(Entity);
     }
-    components_.Clear();
+    components_.clear();
 }
 
 void Entity::generate_components()

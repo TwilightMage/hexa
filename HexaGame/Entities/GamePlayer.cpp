@@ -106,7 +106,7 @@ void GamePlayer::mouse_button_down(int button)
             {
                 marker->destroy();
             }
-            markers.Clear();
+            markers.clear();
 
             if (get_character())
             {
@@ -145,13 +145,13 @@ void GamePlayer::mouse_button_down(int button)
                                         auto marker = MakeShared<MeshEntity>(marker_mesh);
                                         marker->set_scale(Vector3(0.1f));
                                         world->spawn_entity(marker, path->segments.first().from.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
-                                        markers.Add(marker);
+                                        markers.add(marker);
                                         for (const auto& segment : path->segments)
                                         {
                                             marker = MakeShared<MeshEntity>(marker_mesh);
                                             marker->set_scale(Vector3(0.1f));
                                             world->spawn_entity(marker, segment.to.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
-                                            markers.Add(marker);
+                                            markers.add(marker);
                                         }
                                     }
                                 }
@@ -260,8 +260,8 @@ void GamePlayer::tick(float delta_time)
             }
         }
 
-        camera_pivot_z_ = Math::lerp(camera_pivot_z_, desired_camera_pivot_z, 0.1f);
-        camera_distance_ = Math::lerp(camera_distance_, desired_camera_distance_, 0.1f);
+        camera_pivot_z_ = Math::lerp(camera_pivot_z_, desired_camera_pivot_z, delta_time * 10);
+        camera_distance_ = Math::lerp(camera_distance_, desired_camera_distance_, delta_time * 10);
         Vector3 camera_pivot = Vector3(pos.x, pos.y, camera_pivot_z_);
         camera_position_ = camera_pivot - camera_rotation_.forward() * camera_distance_;
     }
@@ -296,7 +296,7 @@ void GamePlayer::spawn_chunk_loaded(const Shared<WorldChunk>& sender)
             if (sender->get_tile(TileIndex(0, 0, WorldChunk::chunk_height - 1 - i)) != Tiles::air)
             {
                 const auto character = MakeShared<Slime>();
-
+                
                 auto toolbar_ui = MakeShared<Toolbar>();
                 toolbar_ui->bind(character->get_inventory());
                 Game::add_ui(toolbar_ui);
@@ -311,8 +311,10 @@ void GamePlayer::spawn_chunk_loaded(const Shared<WorldChunk>& sender)
                     set_position(character->get_tile_position().to_vector());
                     camera_pivot_z_ = desired_camera_pivot_z = character->get_tile_position().z * HexaMath::tile_height;
 
-                    world->spawn_drop(TileIndex(0, 1, WorldChunk::chunk_height - i), ItemContainer(Items::iron_shovel));
-                    world->spawn_drop(TileIndex(-1, 1, WorldChunk::chunk_height - i), ItemContainer(Items::stone_bricks));
+                    world->spawn_drop(TileIndex(0, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::iron_shovel));
+                    world->spawn_drop(TileIndex(-1, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::stone_bricks));
+                    world->spawn_drop(TileIndex(-1, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::stone_bricks));
+                    world->spawn_drop(TileIndex(-1, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::stone_bricks));
                 }
                 break;
             }

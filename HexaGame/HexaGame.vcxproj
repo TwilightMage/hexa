@@ -313,6 +313,7 @@
     <Content Include="resources\hexagame\meshes\items\shovel.obj" />
     <Content Include="resources\hexagame\meshes\items\sword.obj" />
     <Content Include="resources\hexagame\meshes\tiles\grass.obj" />
+    <Content Include="resources\hexagame\shaders\tile_cap.frag" />
     <Content Include="resources\hexagame\textures\arrow.png" />
     <Content Include="resources\hexagame\textures\axis_arrows.png" />
     <Content Include="resources\hexagame\textures\tiles\dirt.png" />
@@ -326,9 +327,6 @@
     <Content Include="resources\hexagame\textures\ui\frame.png" />
     <Content Include="resources\hexagame\textures\ui\panel.png" />
     <ClInclude Include="TileType.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="resources\hexagame\shaders" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

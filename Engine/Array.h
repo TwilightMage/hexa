@@ -11,37 +11,37 @@ public:
         delete[] inner_;
     }
 
-    const T* begin() const
+    FORCEINLINE const T* begin() const
     {
         return inner_;
     }
 
-    const T* end() const
+    FORCEINLINE const T* end() const
     {
         return inner_ + length_;
     }
 
-    T* begin()
+    FORCEINLINE T* begin()
     {
         return inner_;
     }
 
-    T* end()
+    FORCEINLINE T* end()
     {
         return inner_ + length_;
     }
 
-    [[nodiscard]] uint length() const
+    FORCEINLINE [[nodiscard]] uint length() const
     {
         return length_;
     }
 
-    T* get_data()
+    FORCEINLINE T* get_data()
     {
         return inner_;
     }
 
-    const T* get_data() const
+    FORCEINLINE const T* get_data() const
     {
         return inner_;
     }

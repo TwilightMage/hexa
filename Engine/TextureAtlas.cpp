@@ -109,18 +109,18 @@ uint TextureAtlas::put(const Path& path)
                     pixels_ = new_pixels;
                     size_ = desired_size;
 
-                    cached_uv_mods_.Clear();
+                    cached_uv_mods_.clear();
                     for (const auto& entry : entries_)
                     {
-                        cached_uv_mods_.Add({entry.get_scale(), entry.get_offset()});
+                        cached_uv_mods_.add({entry.get_scale(), entry.get_offset()});
                     }
                 }
 
                 ImageEditor::copy_rect(pixels.get_data(), 0, 0, tex_width, pixels_.get_data(), image_rect.x, image_rect.y, size_, image_rect.w, image_rect.h);
 
                 const Entry new_entry = {image_rect, this};
-                entries_.Add(new_entry);
-                cached_uv_mods_.Add({new_entry.get_scale(), new_entry.get_offset()});
+                entries_.add(new_entry);
+                cached_uv_mods_.add({new_entry.get_scale(), new_entry.get_offset()});
                 return entries_.length() - 1;
             }            
         }
@@ -146,7 +146,7 @@ uint TextureAtlas::claim_rect(const Rect& rect)
         i = i + 1;
     }
 
-    entries_.Add({rect, this});
+    entries_.add({rect, this});
     return entries_.length() - 1;
 }
 

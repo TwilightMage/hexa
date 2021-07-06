@@ -35,7 +35,7 @@ void ModalEnumFrame::on_construct()
         option_button->set_position(Vector2(5, 20 * i + 5));
         option_button->set_size(Vector2(90, 15));
         option_button->on_click.bind(this, &ModalEnumFrame::option_selected);
-        option_buttons_.Add(option_button);
+        option_buttons_.add(option_button);
         panel_->add_child(option_button);
     }
 
@@ -62,7 +62,7 @@ void ModalEnumFrame::option_selected(const Weak<Button>& sender)
 {
     if (const auto sender_lock = cast<ButtonTextPanel>(sender.lock()))
     {
-        const uint id_on_page = option_buttons_.IndexOf(sender_lock);
+        const uint id_on_page = option_buttons_.index_of(sender_lock);
         const uint selected_id = page_size * page + id_on_page;
 
         on_select(selected_id);

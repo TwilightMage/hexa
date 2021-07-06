@@ -22,12 +22,9 @@ void DebugPlayer::on_start()
         const auto arrows_mesh = Mesh::load_obj(RESOURCES_ENGINE_MESHES + "axis_arrows.obj");
         auto arrows_vertices = arrows_mesh->get_vertices();
         auto arrows_indices = arrows_mesh->get_indices();
-        for (auto& vertex : arrows_vertices)
-        {
-            vertex.col = vertex.pos;
-        }
         
         arrows_ = MakeShared<MeshEntity>(MakeShared<Mesh>("Axis Arrows", arrows_vertices, arrows_indices));
+        arrows_->use_texture(Texture::load_png(RESOURCES_ENGINE_TEXTURES + "axis_arrows.png"));
         arrows_->set_scale(Vector3(0.1f));
         world->spawn_entity(arrows_);
 

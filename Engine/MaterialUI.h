@@ -5,8 +5,6 @@
 class EXPORT MaterialUI : public Material
 {
 protected:
-    bool verify_shader_valid(const Shared<Shader>& shader) override;
-
     void register_direct_parameters() override;
     void apply_params(const RenderData& render_data) const override;
 

@@ -10,11 +10,17 @@
 #include "WorldGenerator.h"
 #include "Engine/GeometryEditor.h"
 #include "Engine/Logger.h"
+#include "Engine/Material.h"
+#include "Engine/Material3D.h"
 #include "Engine/AnimationEditor/AnimationEditorWorld.h"
 #include "Entities/Characters/Slime.h"
 #include "ui/TileDatabaseViewer.h"
 #include "Worlds/GameWorld.h"
 #include "Worlds/TilePresentationWorld.h"
+
+Shared<Shader> HexaGame::tile_cap_shader = nullptr;
+
+Shared<Material3D> HexaGame::tile_cap_material = nullptr;
 
 HexaGame::HexaGame(int argc, char* argv[])
     : Game(argc, argv)
@@ -67,6 +73,14 @@ void HexaGame::start()
 
 void HexaGame::loading_stage()
 {
+    tile_cap_shader = Shader::compile("tile cap", {
+        RESOURCES_ENGINE_SHADERS + "basic_3d.vert",
+        RESOURCES_HEXA_SHADERS + "tile_cap.frag"
+    });
+
+    tile_cap_material = MakeShared<Material3D>();
+    tile_cap_material->init(tile_cap_shader, 0);
+    
     Tiles::init(tile_database);
 
     Items::init(item_database);

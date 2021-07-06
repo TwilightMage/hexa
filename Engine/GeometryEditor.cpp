@@ -25,7 +25,7 @@ void GeometryEditor::optimize(List<Mesh::Vertex>& vertices, List<uint>& indices)
                     }
                 }
 
-                vertices.RemoveAt(j--);
+                vertices.remove_at(j--);
             }
         }
     }
@@ -51,7 +51,7 @@ void GeometryEditor::optimize_collision(List<Mesh::Vertex>& vertices, List<uint>
                     }
                 }
 
-                vertices.RemoveAt(j--);
+                vertices.remove_at(j--);
             }
         }
     }
@@ -75,7 +75,7 @@ void GeometryEditor::remove_indices(List<Mesh::Vertex>& vertices, List<uint>& in
     List<Mesh::Vertex> result;
     for (auto index : indices)
     {
-        result.Add(vertices[index]);
+        result.add(vertices[index]);
     }
 
     vertices = result;
@@ -87,6 +87,9 @@ void GeometryEditor::invert_vertices(List<Mesh::Vertex>& vertices)
     for (uint i = 0; i < vertices.length(); i += 3)
     {
         std::swap(vertices[i], vertices[i + 2]);
+        vertices[i + 0].norm *= -1;
+        vertices[i + 1].norm *= -1;
+        vertices[i + 2].norm *= -1;
     }
 }
 
@@ -95,19 +98,6 @@ void GeometryEditor::invert_indices(List<uint>& indices)
     for (uint i = 0; i < indices.length(); i += 3)
     {
         std::swap(indices[i], indices[i + 2]);
-    }
-}
-
-void GeometryEditor::randomize_colors(List<Mesh::Vertex>& vertices)
-{
-}
-
-void GeometryEditor::set_color(List<Mesh::Vertex>& vertices, const Color& color)
-{
-    const auto vec_color = color.to_vector3();
-    for (auto& vertex : vertices)
-    {
-        vertex.col = vec_color;
     }
 }
 
@@ -207,8 +197,8 @@ FORCEINLINE float angle(const Vector3& point, const Vector3& front, const Vector
 
 void GeometryEditor::compute_faces(const List<Mesh::Vertex>& vertices, const List<uint>& indices, List<Face>& out_faces, List<uint>& out_indices)
 {
-    out_faces.Clear();
-    out_indices.Clear();
+    out_faces.clear();
+    out_indices.clear();
 
     List<List<uint>> faces;
     List<Triangle> triangles(indices.length() / 3);
@@ -230,7 +220,7 @@ void GeometryEditor::compute_faces(const List<Mesh::Vertex>& vertices, const Lis
                 if (triangles[i].normal == triangles[face_triangle_index].normal && triangles[i].is_near(triangles[face_triangle_index]))
                 {
                     face_found = true;
-                    face.Add(i);
+                    face.add(i);
                     break;
                 }
             }
@@ -240,7 +230,7 @@ void GeometryEditor::compute_faces(const List<Mesh::Vertex>& vertices, const Lis
 
         if (!face_found)
         {
-            faces.Add({ i });
+            faces.add({ i });
         }
     }
 
@@ -272,20 +262,20 @@ void GeometryEditor::compute_faces(const List<Mesh::Vertex>& vertices, const Lis
             return angles[a] < angles[b];
         });
 
-        out_faces.Add({ face_vertex_indices.length(), out_indices.length() });
-        out_indices.AddMany(face_vertex_indices);
+        out_faces.add({ face_vertex_indices.length(), out_indices.length() });
+        out_indices.add_many(face_vertex_indices);
     }
 }
 
 void GeometryEditor::compute_normals(const List<Mesh::Vertex>& vertices, const List<uint>& indices, List<Vector3>& out_normals, bool invert)
 {
-    out_normals.Clear();
+    out_normals.clear();
 
     for (uint i = 0; i < indices.length() / 3; i++)
     {
         auto normal = compute_normal(vertices[indices[i * 3 + 0]].pos, vertices[indices[i * 3 + 1]].pos, vertices[indices[i * 3 + 2]].pos);
         if (invert) normal *= -1;
-        out_normals.Add(normal);
+        out_normals.add(normal);
     }
 }
 
@@ -300,9 +290,9 @@ void GeometryEditor::compute_normals(List<Mesh::Vertex>& vertices, const List<ui
         const uint i2 = indices[i * 3 + 2];
         auto normal = compute_normal(vertices[i0].pos, vertices[i1].pos, vertices[i2].pos);
         if (invert) normal *= -1;
-        vertex_normals[i0].Add(normal);
-        vertex_normals[i1].Add(normal);
-        vertex_normals[i2].Add(normal);
+        vertex_normals[i0].add(normal);
+        vertex_normals[i1].add(normal);
+        vertex_normals[i2].add(normal);
     }
 
     for (uint i = 0; i < indices.length(); i++)

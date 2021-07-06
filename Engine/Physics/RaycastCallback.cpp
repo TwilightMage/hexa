@@ -11,7 +11,7 @@ reactphysics3d::decimal RaycastCallback::notifyRaycastHit(const reactphysics3d::
     result.normal = cast_object<Vector3>(raycastInfo.worldNormal);
     result.triangle_index = raycastInfo.triangleIndex;
     result.entity = static_cast<Entity*>(raycastInfo.body->getUserData())->shared_from_this();
-    results.Add(result);
+    results.add(result);
     
     return 1.0f;
 }

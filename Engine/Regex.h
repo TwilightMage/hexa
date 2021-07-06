@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "SimpleMap.h"
 #include "String.h"
 
 class EXPORT Regex
@@ -8,6 +9,7 @@ public:
     Regex(const String& expression);
 
     bool check(const String& subject) const;
+    Shared<List<String>> capture(const String& subject) const;
 
 private:
     const char* expression_;

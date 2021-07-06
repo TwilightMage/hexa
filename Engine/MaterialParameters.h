@@ -132,25 +132,11 @@ struct GLType
     std::function<Shared<MaterialParameterBase>(const String& name)> parameter_producer;
 };
 
-class EXPORT MaterialParameterApplier
+struct GLParamSignature
 {
-public:
-    MaterialParameterApplier(uint count, const GLType* data_type, uint location);
-    ~MaterialParameterApplier();
-
-    void put(MaterialParameterBase* parameter, uint index);
-    template<typename T>
-    void put_value(const T& value, uint index)
-    {
-        *(T*)(((byte*)data) + index * data_type->c_size) = value;
-    }
-
-    void apply() const;
-    
-    void* data;
-    uint count;
-    const GLType* data_type;
-    uint location;
+    const GLType* type;
+    String name;
+    bool is_instance;
 };
 
 class EXPORT MaterialParameterBase
@@ -160,6 +146,7 @@ public:
     virtual void write_data(void* dest) const = 0;
 
     String name;
+    const GLType* type;
 };
 
 template<typename T>
@@ -182,16 +169,17 @@ public:
     TextureSlot value;
 };
 
-#define GLTYPE(type, primitive_type, size, c_size, c_type) { GLTypeEnum::type, new GLType { #type, c_size, size, GLTypeEnum::type, GLTypeEnum::primitive_type, [](const String& name)->Shared<MaterialParameterBase>{ auto result = MakeShared<MaterialParameter<c_type>>(); result->name = name; return result; } } }
+#define GLTYPE(T, primitive_type, size, c_size, c_type) { GLTypeEnum::T, new GLType { #T, c_size, size, GLTypeEnum::T, GLTypeEnum::primitive_type, [](const String& name)->Shared<MaterialParameterBase>{ auto result = MakeShared<MaterialParameter<c_type>>(); result->name = name; result->type = shader_type_info[GLTypeEnum::T]; return result; } } }
 const Map<GLTypeEnum, const GLType*> shader_type_info = {
-    GLTYPE(Int,       Int,   1, sizeof(int),        int            ),
-    GLTYPE(Uint,      Uint,  1, sizeof(uint),       uint           ),
-    GLTYPE(Bool,      Bool,  1, sizeof(bool),       bool           ),
-    GLTYPE(Float,     Float, 1, sizeof(float),      float          ),
-    GLTYPE(Vec2,      Float, 2, sizeof(Vector2),    Vector2        ),
-    GLTYPE(Vec3,      Float, 3, sizeof(Vector3),    Vector3        ),
-    GLTYPE(Vec4,      Float, 4, sizeof(Quaternion), Quaternion     ),
-    GLTYPE(Mat4,      None,  0, sizeof(Matrix4x4),  Matrix4x4      ),
-    GLTYPE(Sampler2D, None,  0, sizeof(uint64),     Shared<Texture>)
+    GLTYPE(Int,         Int,   1, sizeof(int),        int            ),
+    GLTYPE(Uint,        Uint,  1, sizeof(uint),       uint           ),
+    GLTYPE(Bool,        Bool,  1, sizeof(bool),       bool           ),
+    GLTYPE(Float,       Float, 1, sizeof(float),      float          ),
+    GLTYPE(Vec2,        Float, 2, sizeof(Vector2),    Vector2        ),
+    GLTYPE(Vec3,        Float, 3, sizeof(Vector3),    Vector3        ),
+    GLTYPE(Vec4,        Float, 4, sizeof(Quaternion), Quaternion     ),
+    GLTYPE(Mat4,        None,  0, sizeof(Matrix4x4),  Matrix4x4      ),
+    GLTYPE(Sampler2D,   None,  0, sizeof(uint64),     Shared<Texture>),
+    //GLTYPE(SamplerCube, None,  0, sizeof(uint),       uint           )
 };
 #undef GLTYPE

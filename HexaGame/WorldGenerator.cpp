@@ -53,9 +53,9 @@ void add_poly(List<uint>& src_indices, List<uint> indices, int offset)
 {
 	for (uint i = 1; i < indices.length() - 1; i++)
 	{
-		src_indices.Add(indices[0] + offset);
-		src_indices.Add(indices[i] + offset);
-		src_indices.Add(indices[i + 1] + offset);	
+		src_indices.add(indices[0] + offset);
+		src_indices.add(indices[i] + offset);
+		src_indices.add(indices[i + 1] + offset);	
 	}
 }
 
@@ -77,7 +77,7 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const TileI
 	if (!!(sides & TileSide::Wall)) vertexCount += 14;
 
 	vertices = List<Mesh::Vertex>(vertexCount);
-	indices.Clear();
+	indices.clear();
 
 	int offset = 0;
 
@@ -149,9 +149,9 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const TileI
 
 void WorldGenerator::request_chunk_generation(const Shared<WorldChunk>& chunk)
 {
-	if (pending_chunks_.Contains(chunk) || threads_.contains(chunk)) return;
+	if (pending_chunks_.contains(chunk) || threads_.contains(chunk)) return;
 	
-	pending_chunks_.Add(chunk);
+	pending_chunks_.add(chunk);
 	try_to_start_new_generation();
 }
 
@@ -169,7 +169,7 @@ void WorldGenerator::try_to_start_new_generation()
 	if (threads_.size() < cast<HexaSettings>(Game::get_settings())->get_max_threads() && pending_chunks_.length() > 0)
 	{
 		Shared<WorldChunk> chunk = pending_chunks_.first();
-		pending_chunks_.RemoveAt(0);
+		pending_chunks_.remove_at(0);
 		auto thread = MakeShared<std::thread>(&WorldGenerator::do_generate, this, chunk);
 		threads_[chunk] = thread;
 	}

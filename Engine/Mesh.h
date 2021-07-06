@@ -17,7 +17,6 @@ public:
     {
         Vector3 pos;
         Vector2 uv;
-        Vector3 col;
         Vector3 norm;
     };
 

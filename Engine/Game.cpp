@@ -15,6 +15,7 @@
 #include "Material3D.h"
 #include "MaterialUI.h"
 #include "SaveGame.h"
+#include "Set.h"
 #include "Settings.h"
 #include "Shader.h"
 #include "SpriteFont.h"
@@ -42,7 +43,7 @@ Game::Game(int argc, char* argv[])
 	
 	for (int i = 0; i < argc; i++)
 	{
-		args_.Add(argv[i]);
+		args_.add(argv[i]);
 	}
 
 	set_app_path(String(argv[0]));
@@ -159,7 +160,7 @@ const Shared<EventBus>& Game::get_event_bus()
 void Game::call_on_main_thread(std::function<void()> func)
 {
 	instance_->main_thread_calls_mutex_.lock();
-	instance_->main_thread_calls_.Add(func);
+	instance_->main_thread_calls_.add(func);
 	instance_->main_thread_calls_mutex_.unlock();
 }
 
@@ -175,7 +176,7 @@ const Path& Game::get_app_path()
 
 Shared<Shader> Game::get_basic_shader()
 {
-	return instance_->basic_shader_;
+	return instance_->basic_3d_shader_;
 }
 
 Shared<Shader> Game::get_basic_ui_shader()
@@ -297,7 +298,7 @@ void Game::tick(float delta_time)
 
 void Game::setup_window()
 {
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 2);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 
 	ui_root_->set_size(Vector2(800 / get_ui_scale(), 600 / get_ui_scale()));
@@ -330,10 +331,8 @@ void Game::prepare()
 	glfwSetWindowSizeCallback(window_, window_size_callback);
 }
 
-#define NOW(name) auto name = std::chrono::system_clock::now()
-
 void Game::render_loop()
-{
+{	
 	const String GPU_name(reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
 	verbose("OpenGL", "Active GPU: %s", GPU_name.c());
 	glfwSetWindowTitle(window_, (get_info().title + " - " + GPU_name).c());
@@ -362,7 +361,7 @@ void Game::render_loop()
 					print_error("Mod Loader", "Mod %s target game version is %s, but current game version is %s. This mod will be skipped", mod->info_.display_name.c(), mod->info_.target_game_version.to_string().c(), game_version_.to_string().c());
 					continue;
 				}
-				mods_.Add(mod);
+				mods_.add(mod);
 				verbose("Mod Loader", "Pre-loaded mod %s", mod->info_.display_name.c());
 			}
 			else
@@ -376,21 +375,29 @@ void Game::render_loop()
 	verbose("Game", "Loading stage...");
 	is_loading_stage_ = true;
 
-	// Load shaders
-	basic_shader_ = Shader::compile(RESOURCES_ENGINE_SHADERS + "basic", Shader::VERTEX | Shader::FRAGMENT);
+	// Shaders
+	basic_3d_shader_ = Shader::compile("basic 3d", {
+		RESOURCES_ENGINE_SHADERS + "basic_3d.vert",
+		RESOURCES_ENGINE_SHADERS + "basic_3d.frag"
+	});
 
-	basic_ui_shader_ = Shader::compile(RESOURCES_ENGINE_SHADERS + "basic_ui", Shader::VERTEX | Shader::FRAGMENT);
+	basic_ui_shader_ = Shader::compile("basic ui", {
+		RESOURCES_ENGINE_SHADERS + "basic_ui.vert",
+		RESOURCES_ENGINE_SHADERS + "basic_ui.frag"
+	});
 
-	// Load materials
+	// Materials
 	basic_material_3d_ = MakeShared<Material3D>();
-	basic_material_3d_->init(basic_shader_, 0);
+	basic_material_3d_->init(basic_3d_shader_, 0);
 	
 	basic_material_ui_ = MakeShared<MaterialUI>();
 	basic_material_ui_->init(basic_ui_shader_, 1);
-	
+
+	// Textures
 	white_pixel_ = MakeShared<Texture>("White Pixel", 1, 1, List<Color>::of(Color::white()));
 
-	default_font_ = SpriteFont::load_fnt(RESOURCES_ENGINE_FONTS + "arial.fnt"); // courgette.fnt
+	// Fonts
+	default_font_ = SpriteFont::load_fnt(RESOURCES_ENGINE_FONTS + "arial.fnt");
 	
 	loading_stage();
 	
@@ -438,11 +445,10 @@ void Game::render_loop()
 	uint fps_count = 0;
 	uint fps_last_count = 0;
 	
-	fps_display_ = MakeShared<TextBlock>();
+	auto fps_display_ = MakeShared<TextBlock>();
 	fps_display_->set_z(10);
 	add_ui(fps_display_);
-	
-	verbose("Game", "Entering game-loop...");
+
 	while (!glfwWindowShouldClose(window_))
 	{
 		const auto tick_start = glfwGetTime();
@@ -452,7 +458,7 @@ void Game::render_loop()
 		{
 			func();
 		}
-		main_thread_calls_.Clear();
+		main_thread_calls_.clear();
 		main_thread_calls_mutex_.unlock();
 		
 		int width, height;
@@ -518,6 +524,8 @@ void Game::render_loop()
 			Material::RenderData render_data = {world_, view, proj, ui_proj };
 
 			is_render_stage_ = true;
+			glEnable(GL_DEPTH_TEST);
+			glDepthFunc(GL_LESS);
 			for (auto& material_list : materials_)
 			{
 				glClear(GL_DEPTH_BUFFER_BIT);

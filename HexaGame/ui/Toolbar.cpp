@@ -92,7 +92,7 @@ void Toolbar::on_press(const Vector2& point)
     auto pt = point - Vector2(1, 1);
     if (pt.x >= 0 && pt.x < get_size().x - 2 && pt.y >= 0 && pt.y < get_size().y - 2)
     {
-        const auto slot = slot_infos_.IndexOf([&](const SlotInfo& info)->bool
+        const auto slot = slot_infos_.index_of([&](const SlotInfo& info)->bool
         {
             return info.rect.contains(point);
         });
@@ -115,27 +115,30 @@ void Toolbar::update_geometry()
 
 void Toolbar::item_changed(uint index, const ItemContainer& item)
 {
-    if (index < 10)
+    if (is_started_construction())
     {
-        if (item.is_empty())
+        if (index < 10)
         {
-            slot_infos_[index].icon->remove_from_parent();
-            slot_infos_[index].count_label->remove_from_parent();
-        }
-        else
-        {
-            add_child(slot_infos_[index].icon);
-            slot_infos_[index].icon->use_texture(item.item->icon);
-
-            if (item.count > 1)
+            if (item.is_empty())
             {
-                add_child(slot_infos_[index].count_label);
-                slot_infos_[index].count_label->set_text(String::make(item.count));
-                slot_infos_[index].count_label->set_position(Vector2(5 + 37 * static_cast<float>(index) + 37 - slot_infos_[index].count_label->get_size().x - 4, 35 - 4));
+                slot_infos_[index].icon->remove_from_parent();
+                slot_infos_[index].count_label->remove_from_parent();
             }
             else
             {
-                slot_infos_[index].count_label->remove_from_parent();
+                add_child(slot_infos_[index].icon);
+                slot_infos_[index].icon->use_texture(item.item->icon);
+
+                if (item.count > 1)
+                {
+                    add_child(slot_infos_[index].count_label);
+                    slot_infos_[index].count_label->set_text(String::make(item.count));
+                    slot_infos_[index].count_label->set_position(Vector2(5 + 37 * static_cast<float>(index) + 37 - slot_infos_[index].count_label->get_size().x - 4, 35 - 4));
+                }
+                else
+                {
+                    slot_infos_[index].count_label->remove_from_parent();
+                }
             }
         }
     }

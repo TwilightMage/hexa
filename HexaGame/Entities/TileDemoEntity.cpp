@@ -45,7 +45,7 @@ void TileDemoEntity::on_start()
             world->spawn_entity(domain_mesh);
             domain_mesh->use_collision(MakeShared<ConcaveMeshCollision>(mesh));
 
-            child_domains_.Add(domain_mesh);
+            child_domains_.add(domain_mesh);
         }
     }
 }

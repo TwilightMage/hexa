@@ -414,14 +414,14 @@ List<String> String::split(const String& delimiter, bool remove_empty) const
 		const auto substr = substring(i, positions[c] - i);
 		if (substr.length_ > 0 || !remove_empty)
 		{
-			result.Add(substr);
+			result.add(substr);
 		}
 		i = positions[c] + delimiter.length_;
 	}
 
 	if (positions.length() > 0)
 	{
-		result.Add(substring(positions[positions.length() - 1] + delimiter.length_));
+		result.add(substring(positions[positions.length() - 1] + delimiter.length_));
 	}
 	else
 	{
@@ -450,7 +450,7 @@ List<uint> String::find(const String& substr) const
 
 		if (flag)
 		{
-			result.Add(i);
+			result.add(i);
 			i += substr.length_ - 1;
 		}
 	}

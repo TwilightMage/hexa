@@ -204,7 +204,7 @@ void AnimationEditorUI::update_animation_display()
             }
         }
 
-        curve_data_list_.Clear();
+        curve_data_list_.clear();
 
         for (uint i = 0; i < edited_animation_->named_curves_.length(); i++)
         {
@@ -272,7 +272,7 @@ void AnimationEditorUI::stop_pressed(const Weak<Button>& sender)
 
 void AnimationEditorUI::add_curve(uint id)
 {
-    curve_data_list_.Add(EditedCurveData());
+    curve_data_list_.add(EditedCurveData());
             
     auto& curve_data = curve_data_list_.last();
     auto& curve = edited_animation_->named_curves_[id].curve;
@@ -312,7 +312,7 @@ void AnimationEditorUI::add_curve(uint id)
         curve_segment->on_click.bind(this, &AnimationEditorUI::segment_selected);
         panel_->add_child(curve_segment);
 
-        curve_data.segment_widgets.Add(curve_segment);
+        curve_data.segment_widgets.add(curve_segment);
     }
     
     for (uint j = 0; j < points.length(); j++)
@@ -323,7 +323,7 @@ void AnimationEditorUI::add_curve(uint id)
         curve_point->on_click.bind(this, &AnimationEditorUI::point_selected);
         panel_->add_child(curve_point);
 
-        curve_data.point_buttons.Add(curve_point);
+        curve_data.point_buttons.add(curve_point);
         update_point_position(id, curve_data.point_buttons.length() - 1);
     }
 }
@@ -334,7 +334,7 @@ void AnimationEditorUI::point_selected(const Weak<Button>& sender)
     {
         for (uint i = 0; i < curve_data_list_.length(); i++)
         {
-            auto j = curve_data_list_[i].point_buttons.IndexOf(sender_lock);
+            auto j = curve_data_list_[i].point_buttons.index_of(sender_lock);
             if (j >= 0)
             {
                 edit_point(i, j);
@@ -350,7 +350,7 @@ void AnimationEditorUI::segment_selected(const Weak<CurveSegmentWidget>& sender)
     {
         for (uint i = 0; i < curve_data_list_.length(); i++)
         {
-            auto j = curve_data_list_[i].segment_widgets.IndexOf(sender_lock);
+            auto j = curve_data_list_[i].segment_widgets.index_of(sender_lock);
             if (j >= 0)
             {
                 edit_segment(i, j);
@@ -451,12 +451,12 @@ void AnimationEditorUI::remove_point_clicked(const Weak<Button>& sender)
     edited_animation_->named_curves_[curve_id].curve->remove_point(element_id);
 
     point_buttons[element_id]->remove_from_parent();
-    point_buttons.RemoveAt(element_id);
+    point_buttons.remove_at(element_id);
 
     const uint segment_id = element_id > 0 ? element_id - 1 : 0;
     const float offset = segment_widgets[segment_id]->get_size().x;
     segment_widgets[segment_id]->remove_from_parent();
-    segment_widgets.RemoveAt(segment_id);
+    segment_widgets.remove_at(segment_id);
 
     const bool all_updated = update_min_max(curve_id);
 
@@ -552,7 +552,7 @@ void AnimationEditorUI::segment_added(uint curve_id, uint id)
     curve_segment->on_click.bind(this, &AnimationEditorUI::segment_selected);
     panel_->add_child(curve_segment);
 
-    curve_data.segment_widgets.Insert(curve_segment, id - 1);
+    curve_data.segment_widgets.insert(curve_segment, id - 1);
 
     update_min_max(curve_id);
 
@@ -575,7 +575,7 @@ void AnimationEditorUI::segment_added(uint curve_id, uint id)
     curve_point->on_click.bind(this, &AnimationEditorUI::point_selected);
     panel_->add_child(curve_point);
 
-    curve_data_list_[curve_id].point_buttons.Insert(curve_point, id);
+    curve_data_list_[curve_id].point_buttons.insert(curve_point, id);
     update_point_position(curve_id, id);
     
     for (uint i = id + 1; i < curve_data.point_buttons.length(); i++)
@@ -686,7 +686,7 @@ void AnimationEditorUI::curve_name_clicked(const Weak<Button>& sender)
 {
     if (auto sender_lock = sender.lock())
     {
-        curve_to_change_ = curve_data_list_.IndexOf([&sender_lock](const EditedCurveData& item) -> bool{ return item.name_button == sender_lock; });
+        curve_to_change_ = curve_data_list_.index_of([&sender_lock](const EditedCurveData& item) -> bool{ return item.name_button == sender_lock; });
         if (curve_to_change_ >= 0)
         {
             auto modal = ModalEnumFrame::show(animated->get_animated_fields().get_keys() - curve_data_list_.select<String>([](const EditedCurveData& item) -> String{ return item.name_button->get_text(); }), 100);

@@ -2,11 +2,57 @@
 
 #include <glad/glad.h>
 
+#include "Assert.h"
 #include "Game.h"
 #include "MaterialInstance.h"
 #include "Shader.h"
-#include "Utils.h"
 #include "World.h"
+
+FORCEINLINE void apply_uniform(GLTypeEnum gl_type, uint location, uint count, void* data)
+{
+    switch (gl_type)
+    {
+    case GLTypeEnum::Int:
+        glUniform1iv(location, count, (int*)data);
+        break;
+                
+    case GLTypeEnum::Uint:
+        glUniform1uiv(location, count, (uint*)data);
+        break;
+                
+    case GLTypeEnum::Bool:
+#ifdef glUniform1bv
+        glUniform1bv(location, count, (bool*)data);
+#endif
+        break;
+
+    case GLTypeEnum::Float:
+        glUniform1fv(location, count, (float*)data);
+        break;
+
+    case GLTypeEnum::Vec2:
+        glUniform2fv(location, count, (float*)data);
+        break;
+
+    case GLTypeEnum::Vec3:
+        glUniform3fv(location, count, (float*)data);
+        break;
+
+    case GLTypeEnum::Vec4:
+        glUniform4fv(location, count, (float*)data);
+        break;
+
+    case GLTypeEnum::Mat4:
+        glUniformMatrix4fv(location, count, GL_FALSE, (float*)data);
+        break;
+
+    case GLTypeEnum::Sampler2D:
+        glUniformHandleui64vARB(location, count, (uint64*)data);
+        break;
+    default:
+        break;
+    }
+}
 
 template<typename T>
 FORCEINLINE T* extract_gl_buffer(uint buffer, uint buffer_type, int& buffer_size, int add_size = 0)
@@ -36,11 +82,11 @@ void Material::MeshContainer::add_instance(const Shared<MaterialInstance>& insta
 {
     if (instance->is_visible())
     {
-        active_instances_.Add(instance);
+        active_instances_.add(instance);
     }
     else
     {
-        disabled_instances_.Add(instance);
+        disabled_instances_.add(instance);
     }
 }
 
@@ -48,11 +94,11 @@ void Material::MeshContainer::remove_instance(const Shared<MaterialInstance>& in
 {
     if (instance->is_visible())
     {
-        active_instances_.Remove(instance);
+        active_instances_.remove(instance);
     }
     else
     {
-        disabled_instances_.Remove(instance);
+        disabled_instances_.remove(instance);
     }
 }
 
@@ -60,13 +106,13 @@ void Material::MeshContainer::state_changed(const Shared<MaterialInstance>& inst
 {
     if (instance->is_visible())
     {
-        disabled_instances_.Remove(instance);
-        active_instances_.Add(instance);
+        disabled_instances_.remove(instance);
+        active_instances_.add(instance);
     }
     else
     {
-        active_instances_.Remove(instance);
-        disabled_instances_.Add(instance);
+        active_instances_.remove(instance);
+        disabled_instances_.add(instance);
     }
 }
 
@@ -98,11 +144,11 @@ void Material::VertexBufferContainer::add_mesh(const Shared<Mesh>& mesh, const S
     new_mesh_container->size_in_buffer = mesh->get_vertices().length();
     if (first_instance->is_visible())
     {
-        new_mesh_container->active_instances_.Add(first_instance);
+        new_mesh_container->active_instances_.add(first_instance);
     }
     else
     {
-        new_mesh_container->disabled_instances_.Add(first_instance);
+        new_mesh_container->disabled_instances_.add(first_instance);
     }
     mesh_containers[mesh] = new_mesh_container;
 }
@@ -115,7 +161,7 @@ void Material::VertexBufferContainer::remove_mesh(const Shared<Mesh>& mesh)
 
     const uint from = mesh_containers[mesh]->position_in_buffer;
     delete mesh_containers[mesh];
-    mesh_containers.remove_key(mesh);
+    mesh_containers.remove(mesh);
     
     for (auto& container : mesh_containers)
     {
@@ -134,50 +180,39 @@ void Material::VertexBufferContainer::remove_mesh(const Shared<Mesh>& mesh)
     delete current_buffer_data;
 }
 
-bool Material::init(const Shared<Shader>& shader, float z_order)
+void Material::init(const Shared<Shader>& shader, float z_order)
 {
-    if (is_valid_) return shader_ == shader;
+    if (!shader) return;
     
-    if (verify_shader_valid(shader))
+    if (is_valid_) return;
+    
+    shader_ = shader;
+
+    for (auto& uniform_parameter : shader->global_uniforms_)
     {
-        shader_ = shader;
+        global_parameters_.add(uniform_parameter.type->parameter_producer(uniform_parameter.name));
+    }
 
-        for (auto& uniform_parameter : shader->global_uniforms_)
-        {
-            global_parameters_.Add(uniform_parameter.type->parameter_producer(uniform_parameter.name));
-        }
+    register_direct_parameters();
 
-        register_direct_parameters();
-
-        if (shader_->empty_vertex_ > 0)
-        {
-            VertexBufferContainer* vbc = new VertexBufferContainer();
-            vbc->init();
-            vbc->mesh_containers[nullptr] = new MeshContainer();
-            vertex_buffers_.Add(vbc);
-            mesh_buffer_map_.insert(nullptr, 0);
-        }
+    if (shader_->empty_vertex_ > 0)
+    {
+        VertexBufferContainer* vbc = new VertexBufferContainer();
+        vbc->init();
+        vbc->mesh_containers[nullptr] = new MeshContainer();
+        vertex_buffers_.add(vbc);
+        mesh_buffer_map_[nullptr] = 0;
+    }
         
-        Game::instance_->materials_[z_order].Add(shared_from_this());
-        return is_valid_ = true;
-    }
-    else
-    {
-        print_error("Material", "Failed to initialize material with shader %s because of bad signature", shader->name.c());
-    }
-
-    return is_valid_ = false;
+    Game::instance_->materials_[z_order].add(shared_from_this());
+    is_valid_ = true;
 }
 
 void Material::render(const RenderData& render_data) const
 {
     apply_params(render_data);
     
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    
     glEnable(GL_CULL_FACE);
-    glDisable(GL_CULL_FACE);
     glCullFace(GL_FRONT);
 
     if (shader_->transparency_)
@@ -189,21 +224,37 @@ void Material::render(const RenderData& render_data) const
     {
         glDisable(GL_BLEND);
     }
+    
     glUseProgram(shader_->get_program());
+
+    // Global parameters
+    uint parameter_count = get_shader()->global_uniforms_.length();
+                
+    for (uint i = 0; i < parameter_count; i++)
+    {
+        const auto param = shader_->global_uniforms_[i];
+        void* parameter_buffer = malloc(param.type->c_size);
+        global_parameters_[i]->write_data(parameter_buffer);
+        apply_uniform(param.type->gl_type, param.layout, 1, parameter_buffer);
+        free(parameter_buffer);
+    }
+
+    parameter_count = get_shader()->instance_uniforms_.length();
+    uint vbc_id = 0;
+
 
     for (auto& vertex_buffer_container : vertex_buffers_)
     {
         glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_container->gl_id);
         for (auto& input : shader_->vertex_params_)
         {
-            uint layout = input.layout;
+            const uint layout = input.layout;
             glEnableVertexAttribArray(layout);
             glVertexAttribPointer(layout, input.type->gl_size, (GLenum)input.type->gl_primitive_type, GL_FALSE, sizeof(Mesh::Vertex), input.offset);
         }
-
-        for (const auto& mesh_container_point : vertex_buffer_container->mesh_containers)
+        for (uint k = 0; k < vertex_buffer_container->mesh_containers.entries.length(); k++)
         {
-            auto mesh_container = mesh_container_point->value;
+            auto mesh_container = vertex_buffer_container->mesh_containers.entries[k]->value;
             
             uint rendered_instance_count = 0;
             while (rendered_instance_count < mesh_container->active_instances_.length())
@@ -211,51 +262,19 @@ void Material::render(const RenderData& render_data) const
                 const auto instance_count = shader_->instance_count_ == 0 ? mesh_container->active_instances_.length() : std::min(mesh_container->active_instances_.length() - rendered_instance_count, shader_->instance_count_);
 
                 // Instance parameters
-                uint parameter_count = get_shader()->instance_uniforms_.length();
-                MaterialParameterApplier** parameter_appliers = new MaterialParameterApplier*[parameter_count];
-
                 for (uint i = 0; i < parameter_count; i++)
                 {
-                    parameter_appliers[i] = new MaterialParameterApplier(instance_count,  get_shader()->instance_uniforms_[i].type, get_shader()->instance_uniforms_[i].layout);
-                }
-                
-                for (uint j = 0; j < instance_count; j++)
-                {
-                    for (uint i = 0; i < parameter_count; i++)
+                    const auto& param = shader_->instance_uniforms_[i];
+                    void* parameter_buffer = malloc(param.type->c_size * instance_count);
+                    for (uint j = 0; j < instance_count; j++)
                     {
-                        parameter_appliers[i]->put(mesh_container->active_instances_[rendered_instance_count + j]->instance_parameters_[i].get(), j);
+                        mesh_container->active_instances_[j]->instance_parameters_[i]->write_data((byte*)parameter_buffer + j * param.type->c_size);
                     }
+                    apply_uniform(param.type->gl_type, param.layout, instance_count, parameter_buffer);
+                    free(parameter_buffer);
                 }
-    
-                for (uint i = 0; i < parameter_count; i++)
-                {
-                    parameter_appliers[i]->apply();
-                    delete parameter_appliers[i];
-                }
-                delete[] parameter_appliers;
 
-                // Global parameters
-                parameter_count = get_shader()->global_uniforms_.length();
-                parameter_appliers = new MaterialParameterApplier*[parameter_count];
-                
-                for (uint i = 0; i < parameter_count; i++)
-                {
-                    parameter_appliers[i] = new MaterialParameterApplier(1,  get_shader()->global_uniforms_[i].type, get_shader()->global_uniforms_[i].layout);
-                }
-                
-                for (uint i = 0; i < parameter_count; i++)
-                {
-                    parameter_appliers[i]->put(global_parameters_[i].get(), 0);
-                }
-    
-                for (uint i = 0; i < parameter_count; i++)
-                {
-                    parameter_appliers[i]->apply();
-                    delete parameter_appliers[i];
-                }
-                delete[] parameter_appliers;
-
-                if (shader_->empty_vertex_ > 0)
+                if (shader_->empty_vertex_)
                 {
                     glDrawArraysInstanced(GL_TRIANGLES, 0, shader_->empty_vertex_, instance_count);
                 }
@@ -277,11 +296,13 @@ void Material::cleanup() const
 
 Shared<MaterialInstance> Material::create_instance()
 {
+    if (!Check(shader_ != nullptr, "Material", "Attempt to create instance of material with no shader!")) return nullptr;
+    
     Shared<MaterialInstance> instance = create_instance_object();
     instance->master_material_ = weak_from_this();
     for (auto& uniform_parameter : shader_->instance_uniforms_)
     {
-        instance->instance_parameters_.Add(uniform_parameter.type->parameter_producer(uniform_parameter.name));
+        instance->instance_parameters_.add(uniform_parameter.type->parameter_producer(uniform_parameter.name));
     }
     instance->register_direct_parameters();
     if (shader_->empty_vertex_ > 0)
@@ -290,7 +311,7 @@ Shared<MaterialInstance> Material::create_instance()
     }
     else
     {
-        empty_instances_.Add(instance);
+        empty_instances_.add(instance);
     }
     return instance;
 }
@@ -301,7 +322,7 @@ void Material::destroy_instance(const Shared<MaterialInstance>& instance)
     {
         if (instance->mesh_ == nullptr && shader_->empty_vertex_ == 0)
         {
-            empty_instances_.Remove(instance);
+            empty_instances_.remove(instance);
         }
         else
         {
@@ -311,7 +332,6 @@ void Material::destroy_instance(const Shared<MaterialInstance>& instance)
                 auto mesh_container = vertex_buffer_container->mesh_containers[instance->mesh_];
                 
                 mesh_container->remove_instance(instance);
-
                 if (mesh_container->count() == 0 && shader_->empty_vertex_ == 0)
                 {
                     vertex_buffer_container->remove_mesh(instance->mesh_);
@@ -343,8 +363,8 @@ void Material::change_mesh(const Shared<MaterialInstance>& instance, const Share
     {
         if (old_mesh == nullptr)
         {
-            empty_instances_.Remove(instance);
-            if (auto found = mesh_buffer_map_.find(new_mesh)) // case - no mesh -> registered mesh
+            empty_instances_.remove(instance);
+            if (const auto found = mesh_buffer_map_.find(new_mesh)) // case - no mesh -> registered mesh
             {
                 vertex_buffers_[*found]->mesh_containers[new_mesh]->add_instance(instance);
             }
@@ -367,10 +387,10 @@ void Material::change_mesh(const Shared<MaterialInstance>& instance, const Share
                     VertexBufferContainer* vbc = new VertexBufferContainer();
                     vbc->init();
                     vbc->add_mesh(new_mesh, instance);
-                    use_buffer_index = 0;
-                    vertex_buffers_.Add(vbc);
+                    use_buffer_index = vertex_buffers_.length();
+                    vertex_buffers_.add(vbc);
                 }
-                mesh_buffer_map_.insert(new_mesh, use_buffer_index);
+                mesh_buffer_map_[new_mesh] = use_buffer_index;
             }
         }
         else if (new_mesh == nullptr) // case - registered mesh -> no mesh
@@ -388,7 +408,11 @@ void Material::change_mesh(const Shared<MaterialInstance>& instance, const Share
                     mesh_buffer_map_.remove(old_mesh);
                 }
             }
-            empty_instances_.Add(instance);
+            empty_instances_.add(instance);
+        }
+        else
+        {
+            uint q = 0;
         }
     }
 }

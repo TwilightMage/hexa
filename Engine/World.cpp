@@ -91,11 +91,9 @@ void World::start()
     reactphysics3d::Vector3 gravity(0.0f, 0.0f, -9.81f);
     physics_world_->setGravity(gravity);
 
-    Game::get_basic_material_3d()->set_param_value("view", Matrix4x4());
-    Game::get_basic_material_3d()->set_param_value("projection", Matrix4x4());
-    Game::get_basic_material_3d()->set_param_value("ambient_light", Vector3::one());
-    Game::get_basic_material_3d()->set_param_value("sun_light", Vector3::one());
-    Game::get_basic_material_3d()->set_param_value("sun_dir", Vector3(1, 1, 1).normalized());
+    Game::get_basic_material_3d()->set_param_value("ambient_light", Vector3(0.6f));
+    Game::get_basic_material_3d()->set_param_value("sun_light", Vector3(0.6f));
+    Game::get_basic_material_3d()->set_param_value("sun_dir", Vector3(-1, 1, 1).normalized());
     
     
     on_start();
@@ -125,7 +123,7 @@ void World::tick(float delta_time)
         if (timer_entry.value.time <= 0)
         {
             timer_entry.value.func();
-            expired_timers.Add(timer_entry.key);
+            expired_timers.add(timer_entry.key);
         }
     }
 
@@ -150,7 +148,7 @@ void World::tick(float delta_time)
 
             entity->pending_kill_ = false;
             
-            to_delete.Add(i);
+            to_delete.add(i);
         }
         else if (time_scale_ != 0.0f)
         {
@@ -173,9 +171,9 @@ void World::tick(float delta_time)
     // cleanup entities
     for (uint i = 0; i < to_delete.length(); i++)
     {
-        entities_.RemoveAt(to_delete[to_delete.length() - 1 - i]);
+        entities_.remove_at(to_delete[to_delete.length() - 1 - i]);
     }
-    to_delete.Clear();
+    to_delete.clear();
 }
 
 const List<Shared<Entity>>& World::get_entities() const
@@ -265,7 +263,7 @@ void World::spawn_entity_internal(const Shared<Entity>& entity)
         entity->rigid_body_->setUserData(entity.get());
     }
         
-    entities_.Add(entity);
+    entities_.add(entity);
     entity->start();
 }
 

@@ -9,6 +9,7 @@
 Slime::Slime()
 {
     declared_height = 2;
+    basic_movement_speed = 1.25f;
     
     step_animation = { Animation::load_from_file(RESOURCES_HEXA_ANIMATIONS + "slime_step.anim"), false };
 }

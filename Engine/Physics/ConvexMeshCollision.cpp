@@ -81,7 +81,7 @@ void ConvexMeshCollision::fill_data_block(const Shared<DataBlock>& data_block, L
     
     for (auto& vertex : source_vertices)
     {
-        data_block->vertices.Add(vertex.pos);
+        data_block->vertices.add(vertex.pos);
     }
 
     data_block->polygon_vertex_array = new reactphysics3d::PolygonVertexArray(

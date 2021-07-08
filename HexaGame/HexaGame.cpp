@@ -19,8 +19,12 @@
 #include "Worlds/TilePresentationWorld.h"
 
 Shared<Shader> HexaGame::tile_cap_shader = nullptr;
+Shared<Shader> HexaGame::skybox_shader = nullptr;
+Shared<Shader> HexaGame::foliage_shader = nullptr;
 
 Shared<Material3D> HexaGame::tile_cap_material = nullptr;
+Shared<Material3D> HexaGame::skybox_material = nullptr;
+Shared<Material3D> HexaGame::foliage_material = nullptr;
 
 HexaGame::HexaGame(int argc, char* argv[])
     : Game(argc, argv)
@@ -71,6 +75,17 @@ void HexaGame::start()
     }
 }
 
+void HexaGame::tick(float delta_time)
+{
+    if (auto world = get_world())
+    {
+        foliage_material->set_param_value("time", world->get_time());
+        foliage_material->set_param_value("ambient_light", world->ambient_color.to_vector3() * world->ambient_intensity);
+        foliage_material->set_param_value("sun_light", world->sun_color.to_vector3() * world->sun_intensity);
+        foliage_material->set_param_value("sun_dir", -world->sun_angle.forward());
+    }
+}
+
 void HexaGame::loading_stage()
 {
     tile_cap_shader = Shader::compile("tile cap", {
@@ -78,8 +93,28 @@ void HexaGame::loading_stage()
         RESOURCES_HEXA_SHADERS + "tile_cap.frag"
     });
 
+    skybox_shader = Shader::compile("skybox", {
+        RESOURCES_ENGINE_SHADERS + "basic_3d.vert",
+        RESOURCES_HEXA_SHADERS + "skybox.frag"
+    });
+
+    foliage_shader = Shader::compile("foliage", {
+        RESOURCES_HEXA_SHADERS + "foliage.vert",
+        RESOURCES_HEXA_SHADERS + "foliage.frag"
+    });
+
     tile_cap_material = MakeShared<Material3D>();
     tile_cap_material->init(tile_cap_shader, 0);
+    //tile_cap_material->set_param_value("void_skybox", Cubemap::load_png(RESOURCES_HEXA_TEXTURES_TILES + "cap.png"));
+
+    skybox_material = MakeShared<Material3D>();
+    skybox_material->init(skybox_shader, -1);
+    skybox_material->set_param_value("sky_top", Color(23, 23, 255).to_quaternion());
+    skybox_material->set_param_value("sky_horizon", Color::white().to_quaternion());
+    skybox_material->set_param_value("sky_down", Color::black().to_quaternion());
+
+    foliage_material = MakeShared<Material3D>();
+    foliage_material->init(foliage_shader, 0);
     
     Tiles::init(tile_database);
 
@@ -88,7 +123,7 @@ void HexaGame::loading_stage()
     Characters::init(character_database);
 }
 
-bool HexaGame::open_animation_editor(const String& entity_type, const String& entity_name)
+bool HexaGame::open_animation_editor(const String& entity_type, const String& entity_name) const
 {
     auto editor = MakeShared<AnimationEditorWorld>();
     open_world(editor);

@@ -2,10 +2,10 @@
 
 #define empty_vertex 6
 
-layout(location=000) uniform mat4 INST_model[145];
-layout(location=145) uniform vec4 INST_uv[145];
-layout(location=290) uniform vec4 INST_color[145];
-layout(location=580) uniform mat4 projection;
+uniform mat4 INST_model[145];
+uniform vec4 INST_uv[145];
+uniform vec4 INST_color[145];
+uniform mat4 projection;
 
 const struct Vertex {
     vec2 pos;

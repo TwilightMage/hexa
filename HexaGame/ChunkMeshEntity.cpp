@@ -5,5 +5,5 @@
 void ChunkMeshEntity::on_start()
 {
     make_body_static();
-    use_collision_mask(HexaCollisionMaskBits::GROUND);
+    set_collision_mask(HexaCollisionMaskBits::GROUND);
 }

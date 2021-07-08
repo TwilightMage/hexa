@@ -127,6 +127,11 @@ void Game::close_world()
 	}
 }
 
+const Shared<World>& Game::get_world()
+{
+	return instance_->world_;
+}
+
 const List<String>& Game::get_args()
 {
 	return instance_->args_;
@@ -257,6 +262,16 @@ float Game::get_ui_scale()
 Vector3 Game::get_un_projected_mouse()
 {
 	return instance_->un_projected_mouse_;
+}
+
+CameraInfo& Game::get_camera_info()
+{
+	return instance_->latest_camera_info_;
+}
+
+float Game::get_time()
+{
+	return instance_->time_;
 }
 
 bool Game::is_loading_stage()
@@ -445,14 +460,24 @@ void Game::render_loop()
 	uint fps_count = 0;
 	uint fps_last_count = 0;
 	
-	auto fps_display_ = MakeShared<TextBlock>();
-	fps_display_->set_z(10);
-	add_ui(fps_display_);
+	auto fps_display = MakeShared<TextBlock>();
+	fps_display->set_z(10);
+	add_ui(fps_display);
+
+	auto dcc_display = MakeShared<TextBlock>();
+	dcc_display->set_z(10);
+	dcc_display->set_position(Vector2(0, 50));
+	add_ui(dcc_display);
+
+	int d;
+	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &d);
 
 	while (!glfwWindowShouldClose(window_))
 	{
 		const auto tick_start = glfwGetTime();
 
+		time_ += last_delta_time;
+		
 		main_thread_calls_mutex_.lock();
 		for (auto& func : main_thread_calls_)
 		{
@@ -488,53 +513,69 @@ void Game::render_loop()
 			fps_count = 0;
 		}
 		
-		fps_display_->set_text(String::format("FPS: %i", fps_last_count));
-		
-		// ticking
-		if (last_delta_time > 0.0f)
+		fps_display->set_text(String::format("FPS: %i", fps_last_count));
+
+		String dcc_string = "--draw calls--";
+		for (auto& dcc : draw_call_counter_)
 		{
-			tick(last_delta_time);
-			world_->tick(last_delta_time);
+			dcc_string += "\n" + dcc->key + ": " + String::make(dcc->value);
 		}
-		
-		if (current_camera_ && width > 0 && height > 0)
+		dcc_display->set_text(dcc_string);
+
+		if (world_)
 		{
-			// 3d matrix
-			auto camera_info = current_camera_->get_camera_info();
-			auto cam_from = camera_info.position;
-			auto cam_to = camera_info.position + camera_info.rotation.forward();
-			cam_from.y *= -1;
-			cam_to.y *= -1;
-
-			auto view = Matrix4x4::look_at(cam_from, cam_to) * Matrix4x4(
-					1.0, 0.0, 0.0, 0.0,
-					0.0, -1.0, 0.0, 0.0,
-					0.0, 0.0, 1.0, 0.0,
-					0.0, 0.0, 0.0, 1.0
-				);
-
-			auto proj = Matrix4x4::perspective(camera_info.fov, static_cast<float>(width) / static_cast<float>(height), 0.01f, 1000.0f);
-
-			un_projected_mouse_ = Matrix4x4::un_project(Vector2(mouse_pos_.x, mouse_pos_.y), Vector2(static_cast<float>(width), static_cast<float>(height)), Matrix4x4().translate(camera_info.position), view, proj);
-				
-			// UI matrix
-			auto ui_proj = Matrix4x4::ortho(0.0f, static_cast<float>(width), static_cast<float>(-height), 0.0f, -1000.0f, 0.0001f);
-
-			// rendering+
-			Material::RenderData render_data = {world_, view, proj, ui_proj };
-
-			is_render_stage_ = true;
-			glEnable(GL_DEPTH_TEST);
-			glDepthFunc(GL_LESS);
-			for (auto& material_list : materials_)
+			basic_material_3d_->set_param_value("ambient_light", world_->ambient_color.to_vector3() * world_->ambient_intensity);
+			basic_material_3d_->set_param_value("sun_light", world_->sun_color.to_vector3() * world_->sun_intensity);
+			basic_material_3d_->set_param_value("sun_dir", -world_->sun_angle.forward());
+			
+			// ticking
+			if (last_delta_time > 0.0f)
 			{
-				glClear(GL_DEPTH_BUFFER_BIT);
-				for (auto& material : material_list->value)
-				{
-					material->render(render_data);
-				}
+				tick(last_delta_time);
+				world_->tick(last_delta_time);
 			}
-			is_render_stage_ = false;
+
+			if (current_camera_ && width > 0 && height > 0)
+			{
+				// 3d matrix
+				latest_camera_info_ = current_camera_->get_camera_info();
+				auto cam_from = latest_camera_info_.position;
+				auto cam_to = latest_camera_info_.position + latest_camera_info_.rotation.forward();
+				cam_from.y *= -1;
+				cam_to.y *= -1;
+
+				auto view = Matrix4x4::look_at(cam_from, cam_to) * Matrix4x4(
+						1.0, 0.0, 0.0, 0.0,
+						0.0, -1.0, 0.0, 0.0,
+						0.0, 0.0, 1.0, 0.0,
+						0.0, 0.0, 0.0, 1.0
+					);
+
+				auto proj = Matrix4x4::perspective(latest_camera_info_.fov, static_cast<float>(width) / static_cast<float>(height), 0.01f, 1000.0f);
+
+				un_projected_mouse_ = Matrix4x4::un_project(Vector2(mouse_pos_.x, mouse_pos_.y), Vector2(static_cast<float>(width), static_cast<float>(height)), Matrix4x4().translate(latest_camera_info_.position), view, proj);
+				
+				// UI matrix
+				auto ui_proj = Matrix4x4::ortho(0.0f, static_cast<float>(width), static_cast<float>(-height), 0.0f, -1000.0f, 0.0001f);
+
+				// rendering
+				Material::RenderData render_data = {world_, view, proj, ui_proj };
+
+				draw_call_counter_.clear();
+			
+				is_render_stage_ = true;
+				glEnable(GL_DEPTH_TEST);
+				glDepthFunc(GL_LESS);
+				for (auto& material_list : materials_)
+				{
+					glClear(GL_DEPTH_BUFFER_BIT);
+					for (auto& material : material_list->value)
+					{
+						material->render(render_data);
+					}
+				}
+				is_render_stage_ = false;
+			}
 		}
  
 		glfwSwapBuffers(window_);

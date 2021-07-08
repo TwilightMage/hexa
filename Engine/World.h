@@ -47,11 +47,15 @@ public:
     Vector3 get_gravity() const;
     void set_gravity(const Vector3& val) const;
 
+    FORCEINLINE float get_time() const { return time_; }
+
     TimerHandle delay(float time, std::function<void()> func);
 
-    FORCEINLINE const Quaternion& get_sun_angle() const { return sun_angle_; }
-    void set_sun_pitch(float sun_pitch);
-    void set_sun_yaw(float sun_yaw);
+    Quaternion sun_angle = Quaternion(Vector3(0, 45, 45));
+    Color ambient_color = Color::white();
+    float ambient_intensity = 0.6f;
+    Color sun_color = Color::white();
+    float sun_intensity = 0.8f;
     
 protected:
     virtual void on_start();
@@ -72,9 +76,5 @@ private:
 
     Map<TimerHandle, TimerEntry> timer_entries_;
 
-    Quaternion sun_angle_ = Quaternion(Vector3(0, 45, 0));
-    Color ambient_color_ = Color::white();
-    float ambient_intensity_ = 0.5f;
-    Color sun_color_ = Color::white();
-    float sun_intensity_ = 0.8f;
+    float time_ = 0.0f;
 };

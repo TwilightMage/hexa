@@ -14,7 +14,7 @@ class MaterialParameterBase;
 class World;
 class MaterialInstance;
 
-class EXPORT Material : public std::enable_shared_from_this<Material>
+class EXPORT Material : public Object, public std::enable_shared_from_this<Material>
 {
     friend MaterialInstance;
 
@@ -56,6 +56,8 @@ public:
         Matrix4x4 projection_2d;
     };
 
+    Material();
+
     void init(const Shared<Shader>& shader, float z_order);
     
     void render(const RenderData& render_data) const;
@@ -67,6 +69,12 @@ public:
     template<typename T>
     void set_param_value(const String& name, const T& value) const
     {
+        String shader_name = "NULL";
+        if (shader_)
+        {
+            shader_name = shader_->name;
+        }
+        
         for (auto& basic_param : global_parameters_)
         {
             if (basic_param->name == name)
@@ -76,11 +84,11 @@ public:
                     param->value = value;
                     return;
                 }
-                print_warning("Material", "Attempting to assign a value to global parameter %s %s of a different type", basic_param->type->name.c(), name.c());
+                print_warning("Material", "Attempting to assign a %s value to global parameter %s %s on shader %s", typeid(T).name(), basic_param->type->name.c(), name.c(), shader_name.c());
                 return;
             }
         }
-        print_warning("Material", "Attempting to assign a value to global parameter %s which doesn't exists", name.c());
+        print_warning("Material", "Attempting to assign a value to global parameter %s which doesn't exists on shader %s", name.c(), shader_name.c());
     }
 
     template<typename T>
@@ -91,7 +99,7 @@ public:
             if (param->name == name) return cast<MaterialParameter<T>>(param);
         }
         
-        return MakeShared<MaterialParameter<T>>();
+        return nullptr;
     }
 
     FORCEINLINE const Shared<Shader>& get_shader() const { return shader_; }

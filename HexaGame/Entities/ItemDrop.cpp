@@ -15,13 +15,13 @@ ItemDrop::ItemDrop(const ItemContainer& item)
 void ItemDrop::on_start()
 {
     make_body_kinematic();
-    use_collision_mask(HexaCollisionMaskBits::ITEM);
+    set_collision_mask(HexaCollisionMaskBits::ITEM);
     
     if (!item_.is_empty())
     {
-        use_mesh(item_.item->mesh);
-        use_texture(item_.item->mesh_texture);
-        use_collision(MakeShared<ConcaveMeshCollision>(item_.item->mesh));
+        set_mesh(item_.item->mesh);
+        get_material_instance()->set_param_value("texture", item_.item->mesh_texture);
+        set_collision(MakeShared<ConcaveMeshCollision>(item_.item->mesh));
     }
     else
     {

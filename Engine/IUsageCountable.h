@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "IUsageCountableBase.h"
+#include "Logger.h"
 #include "UsageCounter.h"
 #include "UsageCounterBase.h"
 

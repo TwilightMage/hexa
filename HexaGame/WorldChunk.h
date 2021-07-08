@@ -7,6 +7,8 @@
 #include "WorldChunkDataState.h"
 #include "Engine/Entity.h"
 
+class ComplexTileInfo;
+class ComplexTile;
 class WorldChunkObserver;
 class WorldGenerator;
 class EditableChunk;
@@ -22,6 +24,12 @@ class EXPORT WorldChunk : public std::enable_shared_from_this<WorldChunk>
     friend WorldChunkObserver;
     
 public:
+    struct ComplexTileSlot
+    {
+        Shared<const ComplexTileInfo> info;
+        Shared<ComplexTile> entity;
+    };
+    
     WorldChunk(const ChunkIndex& index, const Weak<HexaWorld>& world);
     
     FORCEINLINE int get_observe_counter() const;
@@ -38,7 +46,7 @@ public:
     FORCEINLINE WorldChunkDataState get_state() const;
     FORCEINLINE const Shared<const TileInfo>& get_tile(const TileIndex& index) const;
 
-    void set_tile(const TileIndex& index, const Shared<const TileInfo>& tile);
+    void set_tile(const TileIndex& index, const Shared<const TileInfo>& new_tile);
 
     TileSide get_tile_face_flags(const TileIndex& tile_index) const;
 
@@ -74,21 +82,24 @@ private:
 
     void neighbor_tile_changed(const ChunkIndex& chunk, const TileIndex& index);
 
+    void spawn_complex(const TileIndex& world_index, ComplexTileSlot& tile) const;
+
     public:
-    void regenerate_whole_mesh();
-    void regenerate_mesh(uint z);
+    void regenerate_all_complex_tiles();
+    void regenerate_whole_mesh(bool fill_complex = false);
+    void regenerate_mesh(uint z, bool fill_complex = false);
     void regenerate_cap_mesh();
     void cap(uint z);
     private:
     
-    FORCEINLINE const Shared<const TileInfo>& front_tile(const TileIndex& index) const;
-    FORCEINLINE const Shared<const TileInfo>& front_right_tile(const TileIndex& index) const;
-    FORCEINLINE const Shared<const TileInfo>& back_right_tile(const TileIndex& index) const;
-    FORCEINLINE const Shared<const TileInfo>& back_tile(const TileIndex& index) const;
-    FORCEINLINE const Shared<const TileInfo>& back_left_tile(const TileIndex& index) const;
-    FORCEINLINE const Shared<const TileInfo>& front_left_tile(const TileIndex& index) const;
-    FORCEINLINE const Shared<const TileInfo>& up_tile(const TileIndex& index) const;
-    FORCEINLINE const Shared<const TileInfo>& down_tile(const TileIndex& index) const;
+    FORCEINLINE Shared<const TileInfo> front_tile(const TileIndex& index) const;
+    FORCEINLINE Shared<const TileInfo> front_right_tile(const TileIndex& index) const;
+    FORCEINLINE Shared<const TileInfo> back_right_tile(const TileIndex& index) const;
+    FORCEINLINE Shared<const TileInfo> back_tile(const TileIndex& index) const;
+    FORCEINLINE Shared<const TileInfo> back_left_tile(const TileIndex& index) const;
+    FORCEINLINE Shared<const TileInfo> front_left_tile(const TileIndex& index) const;
+    FORCEINLINE Shared<const TileInfo> up_tile(const TileIndex& index) const;
+    FORCEINLINE Shared<const TileInfo> down_tile(const TileIndex& index) const;
 
     int observe_counter_ = 0;
     int visibility_counter_ = 0;
@@ -99,6 +110,7 @@ private:
     Weak<HexaWorld> world_;
 
     List<List<Shared<Entity>>> mesh_entities_;
+    SimpleMap<TileIndex, ComplexTileSlot> complex_tiles_;
     Shared<Entity> cap_entity_;
     Map<TileIndex, Shared<const TileInfo>> modifications_;
     bool dirty_;

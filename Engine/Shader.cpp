@@ -82,6 +82,7 @@ Shared<Shader> Shader::compile(const String& name, const List<Path>& paths)
     }
 
     if (defines.contains("transparency")) result->transparency_ = String::parse<bool>(defines["transparency"]);
+    if (defines.contains("no_face_cull")) result->no_face_cull_ = String::parse<bool>(defines["no_face_cull"]);
     
     List<String> problem_shaders;
     for (auto& kvp : result->shaders_)

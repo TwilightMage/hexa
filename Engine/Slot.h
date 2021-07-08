@@ -25,6 +25,13 @@ public:
     {
         if (is_active_) inc_ref(item_.get());
     }
+
+    Slot(nullptr_t null)
+        : item_(nullptr)
+        , is_active_(true)
+    {
+        if (is_active_) inc_ref(item_.get());
+    }
     
     explicit Slot(bool state)
         : is_active_(state)

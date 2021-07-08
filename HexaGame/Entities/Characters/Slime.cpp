@@ -18,8 +18,8 @@ void Slime::on_start()
 {
     Character::on_start();
     
-    use_mesh(Mesh::load_obj(RESOURCES_HEXA_MESHES_CHARACTERS + "slime.obj"));
-    use_texture(Texture::load_png(RESOURCES_HEXA_TEXTURES_CHARACTERS + "slime.png"));
+    set_mesh(Mesh::load_obj(RESOURCES_HEXA_MESHES_CHARACTERS + "slime.obj"));
+    get_material_instance()->set_param_value("texture", Texture::load_png(RESOURCES_HEXA_TEXTURES_CHARACTERS + "slime.png"));
 }
 
 void Slime::tick(float delta_time)

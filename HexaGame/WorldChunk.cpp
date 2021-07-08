@@ -3,6 +3,7 @@
 
 
 #include "ChunkMeshEntity.h"
+#include "HexaCollisionMaskBits.h"
 #include "HexaGame.h"
 #include "HexaSaveGame.h"
 #include "Tiles.h"
@@ -13,6 +14,7 @@
 #include "Engine/Random.h"
 #include "Engine/World.h"
 #include "Engine/Physics/ConcaveMeshCollision.h"
+#include "Entities/ComplexTile.h"
 #include "Worlds/HexaWorld.h"
 
 FORCEINLINE byte count_difference(TileType flags)
@@ -98,10 +100,12 @@ const Shared<const TileInfo>& WorldChunk::get_tile(const TileIndex& index) const
 	return data[index.x][index.y][index.z];
 }
 
-void WorldChunk::set_tile(const TileIndex& index, const Shared<const TileInfo>& tile)
+void WorldChunk::set_tile(const TileIndex& index, const Shared<const TileInfo>& new_tile)
 {
-    modifications_[index] = tile;
-    data[index.x][index.y][index.z] = tile;
+    auto old_tile = data[index.x][index.y][index.z];
+    
+    modifications_[index] = new_tile;
+    data[index.x][index.y][index.z] = new_tile;
     dirty_ = true;
 
     generate_metadata(index.z);
@@ -114,26 +118,49 @@ void WorldChunk::set_tile(const TileIndex& index, const Shared<const TileInfo>& 
             TileIndex neighbor = index + TileIndex::offset_from_side(side);
             if (neighbor.is_inside_chunk())
             {
-                data[neighbor.x][neighbor.y][neighbor.z]->neighbor_changed(neighbor, tile_side_opposite(side), world, tile);
+                data[neighbor.x][neighbor.y][neighbor.z]->neighbor_changed(neighbor, tile_side_opposite(side), world, new_tile);
             }
         }
     }
     
     on_tile_change(index_, index);
-    
-    if (index.z > 0 && count_difference(tile->type | data[index.x][index.y][index.z - 1]->type) >= 2)
+
+    if (auto complex = complex_tiles_.find(index))
     {
-        regenerate_mesh(index.z - 1);
+        complex->entity->destroy();
     }
-    regenerate_mesh(index.z);
-    if (index.z < chunk_height - 1 && count_difference(tile->type | data[index.x][index.y][index.z + 1]->type) >= 2)
+    if (new_tile->type == TileType::Complex)
     {
-        regenerate_mesh(index.z + 1);
+        auto& slot = complex_tiles_[index];
+        spawn_complex(index.to_absolute(index_), slot);
+        
+        if ((uint)index.z > cap_z)
+        {
+            slot.entity->set_visibility(false);
+        }
     }
 
-    if (index.z == cap_z - 1)
+    if (old_tile->type == TileType::Complex && new_tile->type != TileType::Complex)
     {
-        regenerate_cap_mesh();
+        complex_tiles_.remove(index);
+    }
+    
+    if (count_difference(new_tile->type | old_tile->type) >= 2)
+    {
+        if (index.z > 0 && count_difference(new_tile->type | data[index.x][index.y][index.z - 1]->type) >= 2)
+        {
+            regenerate_mesh(index.z - 1);
+        }
+        regenerate_mesh(index.z);
+        if (index.z < chunk_height - 1 && count_difference(new_tile->type | data[index.x][index.y][index.z + 1]->type) >= 2)
+        {
+            regenerate_mesh(index.z + 1);
+        }
+    
+        if (index.z == cap_z - 1)
+        {
+            regenerate_cap_mesh();
+        }
     }
 }
 
@@ -180,6 +207,7 @@ void WorldChunk::try_show_mesh()
     if (load_counter_ == 0 && visibility_counter_ > 0)
     {
         regenerate_whole_mesh();
+        regenerate_all_complex_tiles();
         regenerate_cap_mesh();
     }
 }
@@ -354,6 +382,12 @@ void WorldChunk::dec_visibility()
             cap_entity_->destroy();
             cap_entity_ = nullptr;
         }
+
+        for (auto& complex : complex_tiles_)
+        {
+            complex->value.entity->destroy();
+        }
+        complex_tiles_.clear();
     }
 }
 
@@ -453,15 +487,43 @@ void WorldChunk::neighbor_tile_changed(const ChunkIndex& chunk, const TileIndex&
     }
 }
 
-void WorldChunk::regenerate_whole_mesh()
+void WorldChunk::spawn_complex(const TileIndex& world_index, ComplexTileSlot& slot) const
 {
-    for (uint i = 0; i < chunk_height; i++)
+    if (auto world = world_.lock())
     {
-        regenerate_mesh(i);
+        if (slot.entity)
+        {
+            slot.entity->destroy();
+        }
+        
+        auto entity = MakeShared<ComplexTile>(slot.info);
+        entity->index_ = world_index;
+        world->spawn_entity(entity, world_index.to_vector());
+
+        slot.entity = entity;
     }
 }
 
-void WorldChunk::regenerate_mesh(uint z)
+void WorldChunk::regenerate_all_complex_tiles()
+{
+    if (auto world = world_.lock())
+    {
+        for (auto& complex : complex_tiles_)
+        {
+            spawn_complex(complex->key.to_absolute(index_), complex->value);
+        }
+    }
+}
+
+void WorldChunk::regenerate_whole_mesh(bool fill_complex)
+{
+    for (uint i = 0; i < chunk_height; i++)
+    {
+        regenerate_mesh(i, true);
+    }
+}
+
+void WorldChunk::regenerate_mesh(uint z, bool fill_complex)
 {
     for (auto& type_mesh : mesh_entities_[z])
     {
@@ -469,10 +531,27 @@ void WorldChunk::regenerate_mesh(uint z)
     }
     
     mesh_entities_[z].clear();
+
+    if (fill_complex)
+    {
+        bool z_met = false;
+        for (uint i = 0; i < complex_tiles_.entries.length(); i++)
+        {
+            if (complex_tiles_.entries[i]->key.z == z)
+            {
+                z_met = true;
+                complex_tiles_.entries.remove_at(i--);
+            }
+            else if (z_met)
+            {
+                break;
+            }
+        }
+    }
     
     if (auto world = world_.lock())
     {
-        std::map<Shared<const TileInfo>, List<Mesh::Vertex>> type_vertices;
+        std::map<Shared<const SolidTileInfo>, List<Mesh::Vertex>> type_vertices;
 
         const TileType plane_metadata_front_right = front_right_->plane_metadata[z];
         const TileType plane_metadata_back_left = back_left_->plane_metadata[z];
@@ -482,30 +561,44 @@ void WorldChunk::regenerate_mesh(uint z)
         const TileType plane_metadata_back = back_->plane_metadata[z];
         const TileType plane_metadata_down = z > 0 ? plane_metadata[z - 1] : TileType::Air;
         const TileType plane_metadata_up = z < chunk_height - 1 ? plane_metadata[z + 1] : TileType::Air;
-        if (count_difference(plane_metadata[z] | plane_metadata_up | plane_metadata_down | plane_metadata_forward | plane_metadata_back | plane_metadata_right | plane_metadata_left | plane_metadata_front_right | plane_metadata_back_left) >= 2)
+
+        const bool build_tiles = count_difference(plane_metadata[z] | plane_metadata_up | plane_metadata_down | plane_metadata_forward | plane_metadata_back | plane_metadata_right | plane_metadata_left | plane_metadata_front_right | plane_metadata_back_left) >= 2;
+        
+        if (build_tiles || fill_complex)
         {
             for (int x = 0; x < chunk_size; x++)
             {
                 for (int y = 0; y < chunk_size; y++)
                 {
                     const auto index = TileIndex(x, y, z);
-                    const auto& tile = data[x][y][z];
-
-                    if (tile->type == TileType::Solid)
+                    const auto tile = data[x][y][z];
+                    
+                    if (build_tiles)
                     {
-                        TileSide side_flags = get_tile_face_flags(index);
-
-                        if (side_flags != TileSide::None)
+                        if (const auto& solid_tile = cast<SolidTileInfo>(tile))
                         {
-                            Vector3 world_pos = index.to_vector();
-                            List<Mesh::Vertex> tile_vertices;
-                            List<uint> tile_indices;
-                            WorldGenerator::generate_tile_mesh(side_flags, tile, tile_vertices, tile_indices, world_pos.sum_all());
+                            TileSide side_flags = get_tile_face_flags(index);
 
-                            GeometryEditor::remove_indices(tile_vertices, tile_indices);
-                            GeometryEditor::translate(tile_vertices, world_pos);
+                            if (side_flags != TileSide::None)
+                            {
+                                Vector3 world_pos = index.to_vector();
+                                List<Mesh::Vertex> tile_vertices;
+                                List<uint> tile_indices;
+                                WorldGenerator::generate_tile_mesh(side_flags, solid_tile, tile_vertices, tile_indices, world_pos.sum_all());
 
-                            type_vertices[tile] += tile_vertices;
+                                GeometryEditor::remove_indices(tile_vertices, tile_indices);
+                                GeometryEditor::translate(tile_vertices, world_pos);
+
+                                type_vertices[solid_tile] += tile_vertices;
+                            }
+                        }
+                    }
+
+                    if (fill_complex)
+                    {
+                        if (const auto& complex_tile = cast<ComplexTileInfo>(tile))
+                        {
+                            complex_tiles_[index].info = complex_tile;
                         }
                     }
                 }
@@ -517,11 +610,11 @@ void WorldChunk::regenerate_mesh(uint z)
             auto mesh = MakeShared<Mesh>(String::format("Chunk {%i %i %i} %s", index_.x, index_.y, z, kvp.first->key.c()), kvp.second);
             
             auto mesh_entity = MakeShared<ChunkMeshEntity>();
-            mesh_entity->use_mesh(mesh);
-            mesh_entity->use_texture(kvp.first->texture);
+            mesh_entity->set_mesh(mesh);
+            mesh_entity->get_material_instance()->set_param_value("texture", kvp.first->texture);
             world->spawn_entity(mesh_entity, index_.to_vector());
 
-            mesh_entity->use_collision(MakeShared<ConcaveMeshCollision>(mesh));
+            mesh_entity->set_collision(MakeShared<ConcaveMeshCollision>(mesh));
 
             mesh_entity->set_visibility(z < cap_z);
         
@@ -546,9 +639,9 @@ void WorldChunk::regenerate_cap_mesh()
             for (int y = 0; y < chunk_size; y++)
             {
                 const auto index = TileIndex(x, y, cap_z - 1);
-                const auto& tile = data[x][y][cap_z - 1];
+                const auto& tile = cast<SolidTileInfo>(data[x][y][cap_z - 1]);
 
-                if (tile->type == TileType::Solid)
+                if (tile)
                 {
                     TileSide side_flags = get_tile_face_flags(index);
 
@@ -581,11 +674,10 @@ void WorldChunk::regenerate_cap_mesh()
             
             cap_entity_ = MakeShared<ChunkMeshEntity>();
             cap_entity_->set_material(HexaGame::tile_cap_material);
-            cap_entity_->use_mesh(mesh);
-            cap_entity_->use_texture(Texture::load_png(RESOURCES_HEXA_TEXTURES_TILES + "cap.png"));
+            cap_entity_->set_mesh(mesh);
             world->spawn_entity(cap_entity_, index_.to_vector());
 
-            cap_entity_->use_collision(MakeShared<ConcaveMeshCollision>(mesh));
+            cap_entity_->set_collision(MakeShared<ConcaveMeshCollision>(mesh));
         }
     }
 }
@@ -607,13 +699,18 @@ void WorldChunk::cap(uint z)
     if (visibility_counter_ > 0)
     {
         regenerate_cap_mesh();
+
+        for (auto& complex : complex_tiles_)
+        {
+            complex->value.entity->set_visibility((uint)complex->key.z <= z);
+        }
     }
 }
 
 #define get_tile()			(data[pos.x][pos.y][pos.z])
 #define try_get_tile(name)	(name ? name->data[pos.x][pos.y][pos.z] : Tiles::air)
 
-const Shared<const TileInfo>& WorldChunk::front_tile(const TileIndex& index) const
+Shared<const TileInfo> WorldChunk::front_tile(const TileIndex& index) const
 {
 	const auto pos = index.offset(1, 0, 0).cycle_chunk();
 
@@ -622,7 +719,7 @@ const Shared<const TileInfo>& WorldChunk::front_tile(const TileIndex& index) con
         : try_get_tile(front_);
 }
 
-const Shared<const TileInfo>& WorldChunk::front_right_tile(const TileIndex& index) const
+Shared<const TileInfo> WorldChunk::front_right_tile(const TileIndex& index) const
 {
 	const auto pos = index.offset(1, 1, 0).cycle_chunk();
 
@@ -635,7 +732,7 @@ const Shared<const TileInfo>& WorldChunk::front_right_tile(const TileIndex& inde
             : try_get_tile(front_right_);
 }
 
-const Shared<const TileInfo>& WorldChunk::back_right_tile(const TileIndex& index) const
+Shared<const TileInfo> WorldChunk::back_right_tile(const TileIndex& index) const
 {
 	const auto pos = index.offset(0, 1, 0).cycle_chunk();
 
@@ -644,7 +741,7 @@ const Shared<const TileInfo>& WorldChunk::back_right_tile(const TileIndex& index
         : try_get_tile(right_);
 }
 
-const Shared<const TileInfo>& WorldChunk::back_tile(const TileIndex& index) const
+Shared<const TileInfo> WorldChunk::back_tile(const TileIndex& index) const
 {
 	const auto pos = index.offset(-1, 0, 0).cycle_chunk();
 
@@ -653,7 +750,7 @@ const Shared<const TileInfo>& WorldChunk::back_tile(const TileIndex& index) cons
         : try_get_tile(back_);
 }
 
-const Shared<const TileInfo>& WorldChunk::back_left_tile(const TileIndex& index) const
+Shared<const TileInfo> WorldChunk::back_left_tile(const TileIndex& index) const
 {
 	const auto pos = index.offset(-1, -1, 0).cycle_chunk();
 
@@ -666,7 +763,7 @@ const Shared<const TileInfo>& WorldChunk::back_left_tile(const TileIndex& index)
             : try_get_tile(back_left_);
 }
 
-const Shared<const TileInfo>& WorldChunk::front_left_tile(const TileIndex& index) const
+Shared<const TileInfo> WorldChunk::front_left_tile(const TileIndex& index) const
 {
 	const auto pos = index.offset(0, -1, 0).cycle_chunk();
 
@@ -675,7 +772,7 @@ const Shared<const TileInfo>& WorldChunk::front_left_tile(const TileIndex& index
         : try_get_tile(left_);
 }
 
-const Shared<const TileInfo>& WorldChunk::up_tile(const TileIndex& index) const
+Shared<const TileInfo> WorldChunk::up_tile(const TileIndex& index) const
 {
 	if (index.z == chunk_height - 1) return Tiles::air;
 	
@@ -684,7 +781,7 @@ const Shared<const TileInfo>& WorldChunk::up_tile(const TileIndex& index) const
 	return get_tile();
 }
 
-const Shared<const TileInfo>& WorldChunk::down_tile(const TileIndex& index) const
+Shared<const TileInfo> WorldChunk::down_tile(const TileIndex& index) const
 {
 	if (index.z == 0) return Tiles::air;
 	

@@ -129,28 +129,34 @@ void TextBlock::update_geometry()
         }
         else
         {
+            const float line_h = static_cast<float>(font_->get_line_height()) * font_scale_;
+            auto lines = text_.split('\n');
             Vector2 text_size;
-            uint len;
-            auto letters = font_->arrange_string(text_, len);
-            float z = get_position().z;
-
-            bool ping_pong = true;
-            for (const auto& let : letters)
+            
+            for (uint i = 0; i < lines.length(); i++)
             {
-                auto ui_let = MakeShared<Image>();
-                ui_let->set_position(Vector3(static_cast<float>(let.rect.x) * font_scale_, static_cast<float>(let.rect.y) * font_scale_, z));
-                ui_let->set_size(Vector2(static_cast<float>(let.rect.w) * font_scale_, static_cast<float>(let.rect.h) * font_scale_));
-                ui_let->use_texture(font_->get_atlas_texture());
-                ui_let->set_rect(let.atlas_entry->rect);
-                ui_let->set_mouse_detection(false);
-                add_child(ui_let);
-                
-                z += ping_pong ? 0.0001f : -0.0001f;
-                ping_pong = !ping_pong;
+                uint len;
+                auto letters = font_->arrange_string(lines[i], len);
+                float z = get_position().z;
 
-                text_offset_ = Math::min(text_offset_, ui_let->get_position().y);
-                text_size.x = Math::max(text_size.x, ui_let->get_position().x + ui_let->get_size().x);
-                text_size.y = Math::max(text_size.y, ui_let->get_position().y + ui_let->get_size().y);
+                bool ping_pong = true;
+                for (const auto& let : letters)
+                {
+                    auto ui_let = MakeShared<Image>();
+                    ui_let->set_position(Vector3(static_cast<float>(let.rect.x) * font_scale_, static_cast<float>(let.rect.y) * font_scale_ + i * line_h, z));
+                    ui_let->set_size(Vector2(static_cast<float>(let.rect.w) * font_scale_, static_cast<float>(let.rect.h) * font_scale_));
+                    ui_let->use_texture(font_->get_atlas_texture());
+                    ui_let->set_rect(let.atlas_entry->rect);
+                    ui_let->set_mouse_detection(false);
+                    add_child(ui_let);
+                
+                    z += ping_pong ? KINDA_SMALL_NUMBER : -KINDA_SMALL_NUMBER;
+                    ping_pong = !ping_pong;
+
+                    text_offset_ = Math::min(text_offset_, ui_let->get_position().y);
+                    text_size.x = Math::max(text_size.x, ui_let->get_position().x + ui_let->get_size().x);
+                    text_size.y = Math::max(text_size.y, ui_let->get_position().y + ui_let->get_size().y);
+                }
             }
 
             set_size_internal(text_size);

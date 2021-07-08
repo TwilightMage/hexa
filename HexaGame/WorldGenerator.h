@@ -15,7 +15,7 @@ class EXPORT WorldGenerator
 public:
     ~WorldGenerator();
     
-    static void generate_tile_mesh(TileSide sides, const Shared<const TileInfo>& tileInfo, List<Mesh::Vertex>& vertices, List<uint>& indices, float seed);
+    static void generate_tile_mesh(TileSide sides, const Shared<const SolidTileInfo>& tileInfo, List<Mesh::Vertex>& vertices, List<uint>& indices, float seed);
 
     void request_chunk_generation(const Shared<WorldChunk>& chunk);
 

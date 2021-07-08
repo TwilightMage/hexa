@@ -1,12 +1,12 @@
 ﻿#include "MeshEntity.h"
 
-MeshEntity::MeshEntity(const Weak<Mesh>& mesh)
+MeshEntity::MeshEntity(const Shared<Mesh>& mesh)
     : Entity()
-    , mesh_(mesh.lock())
+    , mesh_(mesh)
 {
 }
 
 void MeshEntity::on_start()
 {
-    use_mesh(mesh_);
+    set_mesh(mesh_);
 }

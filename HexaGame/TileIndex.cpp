@@ -148,6 +148,14 @@ bool TileIndex::operator<(const TileIndex& rhs) const
     return false;
 }
 
+bool TileIndex::operator>(const TileIndex& rhs) const
+{
+    if (x != rhs.x) return x > rhs.x;
+    if (y != rhs.y) return y > rhs.y;
+    if (z != rhs.z) return z > rhs.z;
+    return false;
+}
+
 bool TileIndex::operator==(const TileIndex& rhs) const
 {
     return x == rhs.x && y == rhs.y && z == rhs.z;

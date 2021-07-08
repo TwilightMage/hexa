@@ -9,12 +9,8 @@
 #include "Path.h"
 #include "MaterialParameters.h"
 
-class Material;
-
 class EXPORT Shader : public Object
 {
-    friend Material;
-    
 public:    
     struct UniformParam
     {
@@ -51,7 +47,14 @@ public:
 
     FORCEINLINE bool get_transparency() const { return transparency_; }
     FORCEINLINE uint get_empty_vertex() const { return empty_vertex_; }
+    FORCEINLINE bool get_no_face_cull() const { return no_face_cull_; }
 
+    FORCEINLINE uint get_instance_count() const { return instance_count_; }
+    
+    FORCEINLINE const List<UniformParam>& get_instance_uniforms() const { return instance_uniforms_; }
+    FORCEINLINE const List<UniformParam>& get_global_uniforms() const { return global_uniforms_; }
+    FORCEINLINE const List<VertexParam>& get_vertex_params() const { return vertex_params_; }
+    
     void cleanup();
 
     static Shared<Shader> compile(const String& name, const List<Path>& paths);
@@ -78,6 +81,7 @@ private:
 
     bool transparency_ = false;
     uint empty_vertex_ = 0;
+    bool no_face_cull_ = false;
 
     List<UniformParam> instance_uniforms_;
     List<UniformParam> global_uniforms_;

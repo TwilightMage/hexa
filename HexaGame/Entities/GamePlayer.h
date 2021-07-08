@@ -27,7 +27,7 @@ public:
     Vector2 move_;
 
     Shared<WorldChunkObserver> observer_;
-    uint load_distance_ = 3;
+    uint load_distance_ = 2;
 
 protected:
     CameraInfo get_camera_info() const override;

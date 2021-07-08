@@ -8,7 +8,7 @@
 #include "HexaGame/TileIndex.h"
 #include "HexaGame/WorldGenerator.h"
 
-TileDemoEntity::TileDemoEntity(const std::array<Shared<const TileInfo>, 6>& tiles)
+TileDemoEntity::TileDemoEntity(const std::array<Shared<const SolidTileInfo>, 6>& tiles)
     : tiles_(tiles)
 {
 }
@@ -40,10 +40,10 @@ void TileDemoEntity::on_start()
             domain_mesh->set_rotation(get_rotation());
             domain_mesh->set_scale(get_scale());
             auto mesh = MakeShared<Mesh>("Tile demo mesh", domain.second);
-            domain_mesh->use_mesh(mesh);
-            domain_mesh->use_texture(domain.first);
+            domain_mesh->set_mesh(mesh);
+            domain_mesh->get_material_instance()->set_param_value("texture", domain.first);
             world->spawn_entity(domain_mesh);
-            domain_mesh->use_collision(MakeShared<ConcaveMeshCollision>(mesh));
+            domain_mesh->set_collision(MakeShared<ConcaveMeshCollision>(mesh));
 
             child_domains_.add(domain_mesh);
         }

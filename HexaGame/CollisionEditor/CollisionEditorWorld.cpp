@@ -13,6 +13,6 @@ void CollisionEditorWorld::on_start()
     Game::possess(player);
 
     const auto sample = MakeShared<MeshEntity>(Mesh::load_obj(RESOURCES_HEXA_MESHES + "arrow.obj"));
-    sample->use_texture(Texture::load_png(RESOURCES_HEXA_TEXTURES + "arrow.png"));
+    sample->get_material_instance()->set_param_value("texture", Texture::load_png(RESOURCES_HEXA_TEXTURES + "arrow.png"));
     spawn_entity(sample);
 }

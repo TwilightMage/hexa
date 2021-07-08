@@ -206,6 +206,7 @@
     <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="CameraInfo.h" />
     <ClInclude Include="ConversionPointer.h" />
+    <ClInclude Include="Cubemap.h" />
     <ClInclude Include="DatabaseHelpers.h" />
     <ClInclude Include="EditorPlayer.h" />
     <ClInclude Include="EntityComponent.h" />
@@ -330,6 +331,7 @@
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClInclude Include="Database.cpp" />
+    <ClCompile Include="Cubemap.cpp" />
     <ClCompile Include="DatabaseBase.cpp" />
     <ClCompile Include="DateTime.cpp" />
     <ClCompile Include="dllmain.cpp" />

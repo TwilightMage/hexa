@@ -49,6 +49,10 @@ FORCEINLINE void apply_uniform(GLTypeEnum gl_type, uint location, uint count, vo
     case GLTypeEnum::Sampler2D:
         glUniformHandleui64vARB(location, count, (uint64*)data);
         break;
+    case GLTypeEnum::SamplerCube:
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, *(uint*)data);
+        break;
     default:
         break;
     }
@@ -180,6 +184,11 @@ void Material::VertexBufferContainer::remove_mesh(const Shared<Mesh>& mesh)
     delete current_buffer_data;
 }
 
+Material::Material()
+    : Object("Empty material")
+{
+}
+
 void Material::init(const Shared<Shader>& shader, float z_order)
 {
     if (!shader) return;
@@ -188,14 +197,14 @@ void Material::init(const Shared<Shader>& shader, float z_order)
     
     shader_ = shader;
 
-    for (auto& uniform_parameter : shader->global_uniforms_)
+    for (auto& uniform_parameter : shader->get_global_uniforms())
     {
         global_parameters_.add(uniform_parameter.type->parameter_producer(uniform_parameter.name));
     }
 
     register_direct_parameters();
 
-    if (shader_->empty_vertex_ > 0)
+    if (shader_->get_empty_vertex() > 0)
     {
         VertexBufferContainer* vbc = new VertexBufferContainer();
         vbc->init();
@@ -203,19 +212,28 @@ void Material::init(const Shared<Shader>& shader, float z_order)
         vertex_buffers_.add(vbc);
         mesh_buffer_map_[nullptr] = 0;
     }
+
+    name = shader->name + " material";
         
     Game::instance_->materials_[z_order].add(shared_from_this());
     is_valid_ = true;
 }
 
 void Material::render(const RenderData& render_data) const
-{
+{    
     apply_params(render_data);
-    
-    glEnable(GL_CULL_FACE);
-    glCullFace(GL_FRONT);
 
-    if (shader_->transparency_)
+    if (shader_->get_no_face_cull())
+    {
+        glDisable(GL_CULL_FACE);
+    }
+    else
+    {
+        glEnable(GL_CULL_FACE);
+        glCullFace(GL_FRONT);
+    }
+
+    if (shader_->get_transparency())
     {
         glEnable(GL_BLEND);
         glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -228,25 +246,23 @@ void Material::render(const RenderData& render_data) const
     glUseProgram(shader_->get_program());
 
     // Global parameters
-    uint parameter_count = get_shader()->global_uniforms_.length();
+    uint parameter_count = shader_->get_global_uniforms().length();
                 
     for (uint i = 0; i < parameter_count; i++)
     {
-        const auto param = shader_->global_uniforms_[i];
+        const auto param = shader_->get_global_uniforms()[i];
         void* parameter_buffer = malloc(param.type->c_size);
         global_parameters_[i]->write_data(parameter_buffer);
         apply_uniform(param.type->gl_type, param.layout, 1, parameter_buffer);
         free(parameter_buffer);
     }
 
-    parameter_count = get_shader()->instance_uniforms_.length();
-    uint vbc_id = 0;
-
+    uint dcc = 0;
 
     for (auto& vertex_buffer_container : vertex_buffers_)
     {
         glBindBuffer(GL_ARRAY_BUFFER, vertex_buffer_container->gl_id);
-        for (auto& input : shader_->vertex_params_)
+        for (auto& input : shader_->get_vertex_params())
         {
             const uint layout = input.layout;
             glEnableVertexAttribArray(layout);
@@ -259,33 +275,39 @@ void Material::render(const RenderData& render_data) const
             uint rendered_instance_count = 0;
             while (rendered_instance_count < mesh_container->active_instances_.length())
             {
-                const auto instance_count = shader_->instance_count_ == 0 ? mesh_container->active_instances_.length() : std::min(mesh_container->active_instances_.length() - rendered_instance_count, shader_->instance_count_);
+                const auto instance_count = shader_->get_instance_count() == 0 ? mesh_container->active_instances_.length() : std::min(mesh_container->active_instances_.length() - rendered_instance_count, shader_->get_instance_count());
 
                 // Instance parameters
-                for (uint i = 0; i < parameter_count; i++)
+                for (uint i = 0; i < shader_->get_instance_uniforms().length(); i++)
                 {
-                    const auto& param = shader_->instance_uniforms_[i];
+                    const auto& param = shader_->get_instance_uniforms()[i];
                     void* parameter_buffer = malloc(param.type->c_size * instance_count);
                     for (uint j = 0; j < instance_count; j++)
                     {
-                        mesh_container->active_instances_[j]->instance_parameters_[i]->write_data((byte*)parameter_buffer + j * param.type->c_size);
+                        mesh_container->active_instances_[j + rendered_instance_count]->instance_parameters_[i]->write_data((byte*)parameter_buffer + j * param.type->c_size);
                     }
                     apply_uniform(param.type->gl_type, param.layout, instance_count, parameter_buffer);
                     free(parameter_buffer);
                 }
 
-                if (shader_->empty_vertex_)
+                if (shader_->get_empty_vertex())
                 {
-                    glDrawArraysInstanced(GL_TRIANGLES, 0, shader_->empty_vertex_, instance_count);
+                    glDrawArraysInstanced(GL_TRIANGLES, 0, shader_->get_empty_vertex(), instance_count);
                 }
                 else
                 {
                     glDrawArraysInstanced(GL_TRIANGLES, mesh_container->position_in_buffer, mesh_container->size_in_buffer, instance_count);
                 }
+                dcc++;
                 
                 rendered_instance_count += instance_count;
             }
         }
+    }
+
+    if (dcc > 0)
+    {
+        Game::instance_->draw_call_counter_[name] += dcc;
     }
 }
 
@@ -299,13 +321,15 @@ Shared<MaterialInstance> Material::create_instance()
     if (!Check(shader_ != nullptr, "Material", "Attempt to create instance of material with no shader!")) return nullptr;
     
     Shared<MaterialInstance> instance = create_instance_object();
-    instance->master_material_ = weak_from_this();
-    for (auto& uniform_parameter : shader_->instance_uniforms_)
+    instance->material_ = weak_from_this();
+    for (auto& uniform_parameter : shader_->get_instance_uniforms())
     {
-        instance->instance_parameters_.add(uniform_parameter.type->parameter_producer(uniform_parameter.name));
+        auto parameter = uniform_parameter.type->parameter_producer(uniform_parameter.name);
+        parameter->reset();
+        instance->instance_parameters_.add(parameter);
     }
     instance->register_direct_parameters();
-    if (shader_->empty_vertex_ > 0)
+    if (shader_->get_empty_vertex() > 0)
     {
         vertex_buffers_[0]->mesh_containers[nullptr]->add_instance(instance);
     }
@@ -318,9 +342,9 @@ Shared<MaterialInstance> Material::create_instance()
 
 void Material::destroy_instance(const Shared<MaterialInstance>& instance)
 {
-    if (instance->get_master_material().get() == this)
+    if (instance->get_material().get() == this)
     {
-        if (instance->mesh_ == nullptr && shader_->empty_vertex_ == 0)
+        if (instance->mesh_ == nullptr && shader_->get_empty_vertex() == 0)
         {
             empty_instances_.remove(instance);
         }
@@ -332,7 +356,7 @@ void Material::destroy_instance(const Shared<MaterialInstance>& instance)
                 auto mesh_container = vertex_buffer_container->mesh_containers[instance->mesh_];
                 
                 mesh_container->remove_instance(instance);
-                if (mesh_container->count() == 0 && shader_->empty_vertex_ == 0)
+                if (mesh_container->count() == 0 && shader_->get_empty_vertex() == 0)
                 {
                     vertex_buffer_container->remove_mesh(instance->mesh_);
                     mesh_buffer_map_.remove(instance->mesh_);
@@ -340,7 +364,7 @@ void Material::destroy_instance(const Shared<MaterialInstance>& instance)
             }
         }
         
-        instance->master_material_ = null_weak(Material);
+        instance->material_ = null_weak(Material);
     }
 }
 
@@ -359,7 +383,7 @@ Shared<MaterialInstance> Material::create_instance_object()
 
 void Material::change_mesh(const Shared<MaterialInstance>& instance, const Shared<Mesh>& old_mesh, const Shared<Mesh>& new_mesh)
 {
-    if (instance->get_master_material().get() == this && old_mesh != new_mesh)
+    if (instance->get_material().get() == this && old_mesh != new_mesh)
     {
         if (old_mesh == nullptr)
         {
@@ -419,7 +443,7 @@ void Material::change_mesh(const Shared<MaterialInstance>& instance, const Share
 
 void Material::change_active(const Shared<MaterialInstance>& instance)
 {
-    if (instance->get_master_material().get() == this)
+    if (instance->get_material().get() == this)
     {
         if (const auto found = mesh_buffer_map_.find(instance->get_mesh()))
         {

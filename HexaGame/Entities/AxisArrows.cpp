@@ -11,5 +11,5 @@ AxisArrows::AxisArrows()
 void AxisArrows::on_start()
 {
     static auto arrows_mesh = Mesh::load_obj(RESOURCES_HEXA_MESHES + "axis_arrows.obj");
-    use_mesh(arrows_mesh);
+    set_mesh(arrows_mesh);
 }

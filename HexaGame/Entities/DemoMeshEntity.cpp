@@ -20,5 +20,5 @@ void DemoMeshEntity::on_start()
 
     Shared<Mesh> mesh = MakeShared<Mesh>("tile", vertices);
     
-    use_mesh(mesh);
+    set_mesh(mesh);
 }

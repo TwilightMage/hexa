@@ -90,11 +90,6 @@ void World::start()
     physics_world_ = Game::instance_->physics_->createPhysicsWorld();
     reactphysics3d::Vector3 gravity(0.0f, 0.0f, -9.81f);
     physics_world_->setGravity(gravity);
-
-    Game::get_basic_material_3d()->set_param_value("ambient_light", Vector3(0.6f));
-    Game::get_basic_material_3d()->set_param_value("sun_light", Vector3(0.6f));
-    Game::get_basic_material_3d()->set_param_value("sun_dir", Vector3(-1, 1, 1).normalized());
-    
     
     on_start();
 }
@@ -102,6 +97,8 @@ void World::start()
 void World::tick(float delta_time)
 {
     delta_time *= time_scale_;
+
+    time_ += delta_time;
 
     // fixed tick for physics
     if (delta_time != 0.0f)
@@ -208,16 +205,6 @@ TimerHandle World::delay(float time, std::function<void()> func)
     const TimerHandle handle = { TimerHandle::id_generator++ };
     timer_entries_.insert(handle, { time, func });
     return handle;
-}
-
-void World::set_sun_pitch(float sun_pitch)
-{
-    sun_angle_ = Quaternion(Vector3(0, sun_pitch, sun_angle_.yaw()));
-}
-
-void World::set_sun_yaw(float sun_yaw)
-{
-    sun_angle_ = Quaternion(Vector3(0, sun_angle_.pitch(), sun_yaw));
 }
 
 void World::on_start()

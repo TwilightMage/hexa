@@ -3,6 +3,7 @@
 #include <mutex>
 #include <optional>
 
+#include "CameraInfo.h"
 #include "EventBus.h"
 #include "GameInfo.h"
 #include "List.h"
@@ -69,6 +70,7 @@ public:
     
     static void open_world(const Shared<World>& world);
     static void close_world();
+    static const Shared<World>& get_world();
 
     static const List<String>& get_args();
 
@@ -109,6 +111,8 @@ public:
     static void add_ui(const Shared<UIElement>& ui);
     static float get_ui_scale();
     static Vector3 get_un_projected_mouse();
+    static CameraInfo& get_camera_info();
+    static float get_time();
 
     static bool is_loading_stage();
     static bool is_render_stage();
@@ -158,6 +162,8 @@ private:
     Vector2 mouse_delta_;
     bool lock_mouse_;
     Vector3 un_projected_mouse_;
+    CameraInfo latest_camera_info_;
+    float time_;
     
     // GLFW
     GLFWwindow* window_;
@@ -179,6 +185,7 @@ private:
     Slot<Texture> white_pixel_;
     Shared<SpriteFont> default_font_;
     List<Shared<Mod>> mods_;
+    SimpleMap<String, uint> draw_call_counter_;
     
     // Game Play
     Shared<ICamera> current_camera_;

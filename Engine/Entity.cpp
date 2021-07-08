@@ -9,21 +9,19 @@
 #include "Mesh.h"
 #include "GeometryEditor.h"
 #include "Material3D.h"
-#include "Material3DInstance.h"
-#include "Texture.h"
 #include "World.h"
 #include "Physics/Collision.h"
 
 Entity::Entity()
     : Object(typeid(this).name() + String(" entity"))
     , is_matrix_dirty_(true)
-    , material_(Game::get_basic_material_3d())
     , pending_kill_(false)
     , started_(false)
     , rigid_body_(nullptr)
     , collider_(nullptr)
 {
-    material_instance_ = cast<Material3DInstance>(material_->create_instance());
+    material_ = Game::get_basic_material_3d();
+    material_changed();
 }
 
 Shared<World> Entity::get_world() const
@@ -49,7 +47,7 @@ bool Entity::is_started() const
     return started_;
 }
 
-void Entity::use_mesh(const Shared<Mesh>& new_mesh)
+void Entity::set_mesh(const Shared<Mesh>& new_mesh)
 {
     mesh_ = new_mesh;
     material_instance_->set_mesh(new_mesh);
@@ -59,12 +57,6 @@ void Entity::clear_mesh()
 {
     mesh_ = nullptr;
     material_instance_->set_mesh(nullptr);
-}
-
-void Entity::use_texture(const Shared<Texture>& new_texture)
-{
-    texture_ = new_texture;
-    material_instance_->set_param_value("texture", new_texture);
 }
 
 void Entity::mark_matrix_dirty()
@@ -141,7 +133,7 @@ void Entity::set_scale(const Vector3& scale)
     is_matrix_dirty_ = true;
 }
 
-void Entity::use_collision(const Shared<Collision>& collision, const Vector3& offset)
+void Entity::set_collision(const Shared<Collision>& collision, const Vector3& offset)
 {
     remove_collision();
 
@@ -177,7 +169,7 @@ void Entity::remove_collision()
     collision_ = nullptr;
 }
 
-void Entity::use_collision_mask(byte16 bits)
+void Entity::set_collision_mask(byte16 bits)
 {
     collision_mask_ = bits;
     
@@ -236,26 +228,18 @@ void Entity::make_body_kinematic() const
     rigid_body_->setType(reactphysics3d::BodyType::KINEMATIC);
 }
 
-void Entity::set_material(const Shared<Material>& material)
+void Entity::set_material(const Shared<Material3D>& material)
 {
-    if (!Check(material != nullptr, "UI", "Cannot set material to nullptr")) return;
-    
-    if (material_instance_)
-    {
-        material_instance_->destroy();
-    }
+    if (!Check(material != nullptr, "Entity", "Cannot set material to nullptr")) return;
 
-    material_ = cast<Material3D>(material);
-    
-    material_instance_ = cast<Material3DInstance>(material_->create_instance());
+    material_ = material;
 
-    material_instance_->set_mesh(mesh_);
-    material_instance_->set_texture(texture_);
+    material_changed();
 }
 
-Shared<Material> Entity::get_material() const
+Shared<Material3DInstance> Entity::get_material_instance() const
 {
-    return material_;
+    return material_instance_;
 }
 
 void Entity::add_component(const Shared<EntityComponent>& component)
@@ -300,8 +284,25 @@ void Entity::cache_matrix()
     Quaternion rotation = get_rotation();
     Vector3 scale = get_scale();
     modify_matrix_params(position, rotation, scale);
-    material_instance_->set_model(Matrix4x4().translate(position).rotate(rotation).scale(scale));
+    if (model_parameter_) model_parameter_->value = Matrix4x4().translate(position).rotate(rotation).scale(scale);
     is_matrix_dirty_ = false;
+}
+
+void Entity::material_changed()
+{
+    auto new_material_instance = cast<Material3DInstance>(material_->create_instance());
+    
+    if (material_instance_)
+    {
+        new_material_instance->copy_parameters_from(material_instance_);
+        material_instance_->destroy();
+    }
+
+    model_parameter_ = new_material_instance->get_parameter<Matrix4x4>("model");
+
+    material_instance_ = new_material_instance;
+
+    material_instance_->set_mesh(mesh_);
 }
 
 void Entity::start()

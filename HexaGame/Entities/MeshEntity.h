@@ -7,7 +7,7 @@
 class EXPORT MeshEntity : public Entity
 {
 public:
-    MeshEntity(const Weak<Mesh>& mesh);
+    MeshEntity(const Shared<Mesh>& mesh);
 
     void on_start() override;
 

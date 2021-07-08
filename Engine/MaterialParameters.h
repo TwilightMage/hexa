@@ -3,6 +3,7 @@
 #include <glad/glad.h>
 
 #include "BasicTypes.h"
+#include "Cubemap.h"
 #include "Game.h"
 #include "Map.h"
 #include "Matrix4x4.h"
@@ -142,8 +143,9 @@ struct GLParamSignature
 class EXPORT MaterialParameterBase
 {
 public:
-    virtual uint size() const = 0;
     virtual void write_data(void* dest) const = 0;
+    virtual void reset() = 0;
+    virtual void copy(MaterialParameterBase* to) const = 0;
 
     String name;
     const GLType* type;
@@ -153,8 +155,9 @@ template<typename T>
 class MaterialParameter : public MaterialParameterBase
 {
 public:
-    uint size() const override { return sizeof(T); }
-    void write_data(void* dest) const override { *((T*)dest) = value; }
+    FORCEINLINE void write_data(void* dest) const override { *((T*)dest) = value; }
+    FORCEINLINE void reset() override { value = T(); }
+    FORCEINLINE void copy(MaterialParameterBase* to) const override { ((MaterialParameter*)to)->value = value; }
     
     T value;
 };
@@ -163,10 +166,22 @@ template<>
 class MaterialParameter<Shared<Texture>> : public MaterialParameterBase
 {
 public:
-    uint size() const override { return sizeof(uint64); }
-    void write_data(void* dest) const override { *((uint64*)dest) = value ? value->get_handle_arb() : Game::get_white_pixel()->get_handle_arb(); }
+    FORCEINLINE void write_data(void* dest) const override { *((uint64*)dest) = value ? value->get_handle_arb() : 0; }
+    FORCEINLINE void reset() override { value = nullptr; }
+    FORCEINLINE void copy(MaterialParameterBase* to) const override { (( MaterialParameter<Shared<Texture>>*)to)->value = value; }
     
     TextureSlot value;
+};
+
+template<>
+class MaterialParameter<Shared<Cubemap>> : public MaterialParameterBase
+{
+public:
+    FORCEINLINE void write_data(void* dest) const override { *((uint*)dest) = value ? value->get_gl_id() : 0; }
+    FORCEINLINE void reset() override { value = nullptr; }
+    FORCEINLINE void copy(MaterialParameterBase* to) const override { (( MaterialParameter<Shared<Cubemap>>*)to)->value = value; }
+    
+    Shared<Cubemap> value;
 };
 
 #define GLTYPE(T, primitive_type, size, c_size, c_type) { GLTypeEnum::T, new GLType { #T, c_size, size, GLTypeEnum::T, GLTypeEnum::primitive_type, [](const String& name)->Shared<MaterialParameterBase>{ auto result = MakeShared<MaterialParameter<c_type>>(); result->name = name; result->type = shader_type_info[GLTypeEnum::T]; return result; } } }
@@ -180,6 +195,6 @@ const Map<GLTypeEnum, const GLType*> shader_type_info = {
     GLTYPE(Vec4,        Float, 4, sizeof(Quaternion), Quaternion     ),
     GLTYPE(Mat4,        None,  0, sizeof(Matrix4x4),  Matrix4x4      ),
     GLTYPE(Sampler2D,   None,  0, sizeof(uint64),     Shared<Texture>),
-    //GLTYPE(SamplerCube, None,  0, sizeof(uint),       uint           )
+    GLTYPE(SamplerCube, None,  0, sizeof(uint),       Shared<Cubemap>)
 };
 #undef GLTYPE

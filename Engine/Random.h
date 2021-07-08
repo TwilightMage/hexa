@@ -40,12 +40,44 @@ public:
         offset_ += RANDOM_STEP;
         return rand() % 2 == 1;
     }
+    
+    template<typename T>
+    static T static_number(uint seed)
+    {
+        srand(seed);
+        return rand() % RAND_MAX;
+    }
+    template<typename T>
+    static T static_number(uint seed, T max)
+    {
+        srand(seed);
+        return rand() % max;
+    }
+    template<typename T>
+    static T static_number(uint seed, T min, T max)
+    {
+        srand(seed);
+        return min + rand() % (max - min);
+    }
 
-    inline const static Shared<Random> global = MakeShared<Random>(1);
+    static bool static_boolean(uint seed)
+    {
+        srand(seed);
+        return rand() % 2 == 1;
+    }
+
+    static uint random_seed()
+    {
+        const uint copy = static_seed_;
+        static_seed_ += RANDOM_STEP;
+        return copy;
+    }
 
 private:
     uint seed_ = 1;
     uint offset_ = 0;
+
+    inline static uint static_seed_ = 1;
 };
 
 template<>
@@ -64,4 +96,21 @@ template<>
 inline float Random::number(float min, float max)
 {
     return min + number<float>() * (max - min);
+}
+
+template<>
+inline float Random::static_number(uint seed)
+{
+    srand(seed);
+    return rand() / static_cast<float>(RAND_MAX);
+}
+template<>
+inline float Random::static_number(uint seed, float max)
+{
+    return static_number<float>(seed) * max;
+}
+template<>
+inline float Random::static_number(uint seed, float min, float max)
+{
+    return min + static_number<float>(seed) * (max - min);
 }

@@ -31,6 +31,7 @@ public:
     TileIndex& operator-=(const TileIndex& rhs);
     
     bool operator<(const TileIndex& rhs) const;
+    bool operator>(const TileIndex& rhs) const;
     bool operator==(const TileIndex& rhs) const;
     bool operator!=(const TileIndex& rhs) const;
     

@@ -3,6 +3,7 @@
 #include <GLFW/glfw3.h>
 
 #include "AxisArrows.h"
+#include "ComplexTile.h"
 #include "ItemDrop.h"
 #include "MeshEntity.h"
 #include "Characters/Slime.h"
@@ -10,11 +11,13 @@
 #include "Engine/AnimatorComponent.h"
 #include "Engine/Camera.h"
 #include "Engine/GeometryEditor.h"
+#include "Engine/Material3D.h"
 #include "Engine/SystemIO.h"
 #include "Engine/Physics/RaycastResult.h"
 #include "HexaGame/CharacterInventory.h"
 #include "HexaGame/ChunkMeshEntity.h"
 #include "HexaGame/HexaCollisionMaskBits.h"
+#include "HexaGame/HexaGame.h"
 #include "HexaGame/HexaMath.h"
 #include "HexaGame/Items.h"
 #include "HexaGame/TileIndex.h"
@@ -110,50 +113,69 @@ void GamePlayer::mouse_button_down(int button)
 
             if (get_character())
             {
-                auto hits = world->raycast_all(camera_position_, camera_position_ + Game::get_un_projected_mouse() * 10, HexaCollisionMaskBits::GROUND | HexaCollisionMaskBits::ITEM, true);
+                auto raycast_mask = HexaCollisionMaskBits::GROUND | HexaCollisionMaskBits::ITEM;
+                if (use_item_mode_)
+                {
+                    raycast_mask |= HexaCollisionMaskBits::COMPLEX_NOBLOCK | HexaCollisionMaskBits::COMPLEX_BLOCK;
+                }
+                auto hits = world->raycast_all(camera_position_, camera_position_ + Game::get_un_projected_mouse() * 10, raycast_mask, true);
                 for (const auto& hit : hits)
                 {
                     if (hit.location.z > world->get_cap_chunk_z() * HexaMath::tile_height + KINDA_SMALL_NUMBER) continue;
 
+                    const auto& selected_item = get_character()->get_inventory()->get_selected_item();
+                    
                     if (cast<ChunkMeshEntity>(hit.entity))
                     {
-                        const auto& selected_item = get_character()->get_inventory()->get_selected_item();
                         const ItemTileTarget tile_target = use_item_mode_ && selected_item.item ? selected_item.item->tile_target : TARGET_OUTSIDE;
-                        const TileIndex tile_index = TileIndex::from_vector(hit.location + hit.normal * 0.1f * (tile_target == TARGET_OUTSIDE ? 1.0f : -1.0f));
+                        const TileIndex tile_index = TileIndex::from_vector(hit.location + hit.normal * KINDA_SMALL_NUMBER * (tile_target == TARGET_OUTSIDE ? 1.0f : -1.0f));
                         if (tile_index != get_character()->get_tile_position())
                         {
-                            if (cast<ChunkMeshEntity>(hit.entity))
+                            if (use_item_mode_)
                             {
-                                if (use_item_mode_)
+                                if (selected_item.item)
                                 {
-                                    if (selected_item.item)
+                                    auto item_copy = selected_item;
+                                    selected_item.item->apply_to_tile(item_copy, get_character(), tile_index, cast<HexaWorld>(get_world()));
+                                    if (item_copy != selected_item)
                                     {
-                                        auto item_copy = selected_item;
-                                        selected_item.item->apply_to_tile(item_copy, get_character(), tile_index, cast<HexaWorld>(get_world()));
-                                        if (item_copy != selected_item)
-                                        {
-                                            get_character()->get_inventory()->set_item(get_character()->get_inventory()->get_selected_hotbar(), item_copy);
-                                        }
+                                        get_character()->get_inventory()->set_item(get_character()->get_inventory()->get_selected_hotbar(), item_copy);
                                     }
                                 }
-                                else
+                            }
+                            else
+                            {
+                                get_character()->go_to(tile_index);
+                                if (auto path = world->FindPath(get_character()->get_path_config(tile_index)))
                                 {
-                                    get_character()->go_to(tile_index);
-                                    if (auto path = world->FindPath(get_character()->get_path_config(tile_index)))
+                                    auto marker_mesh = GeometryEditor::get_unit_cube();
+                                    auto marker = MakeShared<MeshEntity>(marker_mesh);
+                                    marker->set_scale(Vector3(0.1f));
+                                    world->spawn_entity(marker, path->segments.first().from.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
+                                    markers.add(marker);
+                                    for (const auto& segment : path->segments)
                                     {
-                                        auto marker_mesh = GeometryEditor::get_unit_cube();
-                                        auto marker = MakeShared<MeshEntity>(marker_mesh);
+                                        marker = MakeShared<MeshEntity>(marker_mesh);
                                         marker->set_scale(Vector3(0.1f));
-                                        world->spawn_entity(marker, path->segments.first().from.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
+                                        world->spawn_entity(marker, segment.to.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
                                         markers.add(marker);
-                                        for (const auto& segment : path->segments)
-                                        {
-                                            marker = MakeShared<MeshEntity>(marker_mesh);
-                                            marker->set_scale(Vector3(0.1f));
-                                            world->spawn_entity(marker, segment.to.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
-                                            markers.add(marker);
-                                        }
                                     }
+                                }
+                            }
+                        }
+                    }
+                    else if (cast<ComplexTile>(hit.entity))
+                    {
+                        if (use_item_mode_ && selected_item.item)
+                        {
+                            const TileIndex tile_index = TileIndex::from_vector(hit.location + hit.normal * -KINDA_SMALL_NUMBER);
+                            if (tile_index != get_character()->get_tile_position())
+                            {
+                                auto item_copy = selected_item;
+                                selected_item.item->apply_to_tile(item_copy, get_character(), tile_index, cast<HexaWorld>(get_world()));
+                                if (item_copy != selected_item)
+                                {
+                                    get_character()->get_inventory()->set_item(get_character()->get_inventory()->get_selected_hotbar(), item_copy);
                                 }
                             }
                         }
@@ -293,7 +315,7 @@ void GamePlayer::spawn_chunk_loaded(const Shared<WorldChunk>& sender)
     {
         for (uint i = 0; i < WorldChunk::chunk_height; i++)
         {
-            if (sender->get_tile(TileIndex(0, 0, WorldChunk::chunk_height - 1 - i)) != Tiles::air)
+            if (!(sender->get_tile(TileIndex(0, 0, WorldChunk::chunk_height - 1 - i))->type & (TileType::Air | TileType::Complex)))
             {
                 const auto character = MakeShared<Slime>();
                 
@@ -312,9 +334,9 @@ void GamePlayer::spawn_chunk_loaded(const Shared<WorldChunk>& sender)
                     camera_pivot_z_ = desired_camera_pivot_z = character->get_tile_position().z * HexaMath::tile_height;
 
                     world->spawn_drop(TileIndex(0, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::iron_shovel));
-                    world->spawn_drop(TileIndex(-1, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::stone_bricks));
-                    world->spawn_drop(TileIndex(-1, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::stone_bricks));
-                    world->spawn_drop(TileIndex(-1, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::stone_bricks));
+                    world->spawn_drop(TileIndex(1, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::stone_bricks));
+                    world->spawn_drop(TileIndex(1, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::stone_bricks));
+                    world->spawn_drop(TileIndex(1, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::stone_bricks));
                 }
                 break;
             }
@@ -356,7 +378,7 @@ void GamePlayer::check_cap()
             bool cap = false;
             for (uint i = 0; i < 10; i++)
             {
-                if (!!(world->get_tile_id(character->get_tile_position().offset(0, 0, i))->type & ~(TileType::Air | TileType::None)))
+                if (!!(world->get_tile_id(character->get_tile_position().offset(0, 0, i))->type & ~(TileType::Air | TileType::None | TileType::Complex)))
                 {
                     cap = true;
                     break;

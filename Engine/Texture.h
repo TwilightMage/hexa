@@ -7,7 +7,6 @@
 #include "ITexture.h"
 #include "IUsageCountable.h"
 #include "List.h"
-#include "Logger.h"
 #include "Object.h"
 #include "Path.h"
 #include "Slot.h"

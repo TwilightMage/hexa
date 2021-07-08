@@ -3,7 +3,7 @@
 
 #define transparency
 
-layout(bindless_sampler, location=435) uniform sampler2D INST_texture[145];
+layout(bindless_sampler) uniform sampler2D INST_texture[145];
 
 flat in int InstanceID;
 in vec4 color;

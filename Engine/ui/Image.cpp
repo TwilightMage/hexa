@@ -11,8 +11,9 @@ Image::Image()
     , texture_(Game::get_white_pixel())
     , have_rect_(false)
     , uv_rect_(Quaternion(0.0f, 0.0f, 1.0f, 1.0f))
-    , material_(cast<MaterialUI>(Game::get_basic_material_ui()))
+    , material_(Game::get_basic_material_ui())
 {
+    
 }
 
 Image::Image(const Shared<Texture>& texture)
@@ -22,6 +23,7 @@ Image::Image(const Shared<Texture>& texture)
     , uv_rect_(Quaternion(0.0f, 0.0f, 1.0f, 1.0f))
     , material_(cast<MaterialUI>(Game::get_basic_material_ui()))
 {
+
 }
 
 Shared<Texture> Image::get_texture() const
@@ -59,40 +61,27 @@ void Image::use_texture(const Shared<Texture>& texture)
     texture_ = texture;
     update_uv_rect();
 
-    if (material_instance_) material_instance_->set_texture(texture_);
+    if (material_instance_) material_instance_->set_param_value("texture", texture_);
 }
 
-void Image::set_material(const Shared<Material>& material)
+void Image::set_material(const Shared<MaterialUI>& material)
 {
     if (!Check(material_ != nullptr, "UI", "Cannot set material to nullptr")) return;
-    
-    if (material_instance_)
-    {
-        material_instance_->destroy();
-    }
 
-    material_ = cast<MaterialUI>(material);
+    material_ = material;
 
-    on_register_render();
-}
-
-Shared<Material> Image::get_material() const
-{
-    return material_;
+    material_changed();
 }
 
 void Image::on_register_render()
 {
-    if (material_)
-    {
-        if (material_instance_ = cast<MaterialUIInstance>(material_->create_instance()))
-        {
-            material_instance_->set_color(get_color());
-            material_instance_->set_mvp(get_ui_matrix());
-            material_instance_->set_uv(uv_rect_);
-            material_instance_->set_texture(texture_);
-        }
-    }
+    material_changed();
+    
+    material_instance_->set_param_value("color", get_color().to_quaternion());
+    material_instance_->set_param_value("uv", uv_rect_);
+    material_instance_->set_param_value("texture", texture_);
+
+    if (model_parameter_) model_parameter_->value = get_ui_matrix();
 }
 
 void Image::on_unregister_render()
@@ -103,12 +92,12 @@ void Image::on_unregister_render()
 
 void Image::matrix_updated(const Matrix4x4& matrix)
 {
-    if (material_instance_) material_instance_->set_mvp(matrix);
+    if (model_parameter_) model_parameter_->value = matrix;
 }
 
 void Image::color_updated(const Color& color)
 {
-    if (material_instance_) material_instance_->set_color(color);
+    if (material_instance_) material_instance_->set_param_value("color", color);
 }
 
 void Image::update_uv_rect()
@@ -122,5 +111,20 @@ void Image::update_uv_rect()
         uv_rect_ = Quaternion(rect_.x / static_cast<float>(texture_->get_width()), rect_.y / static_cast<float>(texture_->get_height()), rect_.w / static_cast<float>(texture_->get_width()), rect_.h / static_cast<float>(texture_->get_height()));
     }
 
-    if (material_instance_) material_instance_->set_uv(uv_rect_);
+    if (material_instance_) material_instance_->set_param_value("uv", uv_rect_);
+}
+
+void Image::material_changed()
+{
+    auto new_material_instance = cast<MaterialUIInstance>(material_->create_instance());
+    
+    if (material_instance_)
+    {
+        new_material_instance->copy_parameters_from(material_instance_);
+        material_instance_->destroy();
+    }
+
+    model_parameter_ = new_material_instance->get_parameter<Matrix4x4>("model");
+
+    material_instance_ = new_material_instance;
 }

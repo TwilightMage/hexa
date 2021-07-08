@@ -9,6 +9,14 @@ template<typename T>
 class Array2D
 {
 public:
+    Array2D()
+        : data_(nullptr)
+        , size_x_(0)
+        , size_y_(0)
+    {
+        
+    }
+    
     Array2D(uint size_x, uint size_y)
         : size_x_(size_x)
         , size_y_(size_y)
@@ -33,6 +41,20 @@ public:
             for (uint i = 0; i < size(); i++)
             {
                 data_[i] = fill;
+            }
+        }
+    }
+
+    Array2D(uint size_x, uint size_y, const List<T>& data)
+        : size_x_(size_x)
+        , size_y_(size_y)
+    {
+        if (data.length() == size_x * size_y)
+        {
+            data_ = new T[size()];
+            for (uint i = 0; i < size(); i++)
+            {
+                data_[i] = data[i];
             }
         }
     }

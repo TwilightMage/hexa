@@ -9,7 +9,6 @@
 #include "Object.h"
 #include "Quaternion.h"
 #include "Material3DInstance.h"
-#include "Texture.h"
 #include "Vector3.h"
 
 class Collision;
@@ -21,7 +20,7 @@ namespace reactphysics3d
     class Collider;
 }
 
-class EXPORT Entity : public Object, public IRenderable, public std::enable_shared_from_this<Entity>
+class EXPORT Entity : public Object, public IRenderable<Material3D, Material3DInstance>, public std::enable_shared_from_this<Entity>
 {
     friend class World;
 
@@ -37,9 +36,8 @@ public:
 
     bool is_started() const;
     
-    void use_mesh(const Shared<class Mesh>& new_mesh);
+    void set_mesh(const Shared<class Mesh>& new_mesh);
     void clear_mesh();
-    void use_texture(const Shared<Texture>& new_texture);
 
     void mark_matrix_dirty();
     
@@ -53,10 +51,10 @@ public:
     FORCEINLINE Vector3 get_scale() const;
     void set_scale(const Vector3& scale);
 
-    void use_collision(const Shared<Collision>& collision, const Vector3& offset = Vector3::zero());
+    void set_collision(const Shared<Collision>& collision, const Vector3& offset = Vector3::zero());
     void remove_collision();
 
-    void use_collision_mask(byte16 bits);
+    void set_collision_mask(byte16 bits);
     byte16 get_collision_mask() const;
 
     void set_gravity_enabled(bool state) const;
@@ -65,8 +63,9 @@ public:
     void make_body_dynamic() const;
     void make_body_kinematic() const;
 
-    void set_material(const Shared<Material>& material) override;
-    FORCEINLINE Shared<Material> get_material() const override;
+    void set_material(const Shared<Material3D>& material) override;
+    FORCEINLINE Shared<Material3D> get_material() const override { return material_; }
+    FORCEINLINE Shared<Material3DInstance> get_material_instance() const override;
 
     void add_component(const Shared<EntityComponent>& component);
     void remove_component(const Shared<EntityComponent>& component);
@@ -99,6 +98,7 @@ protected:
     
 private:
     void cache_matrix();
+    void material_changed();
     
     void start();
 
@@ -110,8 +110,8 @@ private:
     Weak<World> world_;
     Shared<Material3DInstance> material_instance_;
     Shared<Material3D> material_;
+    Shared<MaterialParameter<Matrix4x4>> model_parameter_;
     Shared<Mesh> mesh_;
-    Shared<Texture> texture_;
     bool pending_kill_;
     bool started_;
     reactphysics3d::RigidBody* rigid_body_;

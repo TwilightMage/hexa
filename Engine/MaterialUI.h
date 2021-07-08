@@ -4,6 +4,9 @@
 
 class EXPORT MaterialUI : public Material
 {
+public:
+    MaterialUI() : Material(){};
+    
 protected:
     void register_direct_parameters() override;
     void apply_params(const RenderData& render_data) const override;

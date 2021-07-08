@@ -24,7 +24,7 @@ void DebugPlayer::on_start()
         auto arrows_indices = arrows_mesh->get_indices();
         
         arrows_ = MakeShared<MeshEntity>(MakeShared<Mesh>("Axis Arrows", arrows_vertices, arrows_indices));
-        arrows_->use_texture(Texture::load_png(RESOURCES_ENGINE_TEXTURES + "axis_arrows.png"));
+        arrows_->get_material_instance()->set_param_value("texture", Texture::load_png(RESOURCES_ENGINE_TEXTURES + "axis_arrows.png"));
         arrows_->set_scale(Vector3(0.1f));
         world->spawn_entity(arrows_);
 

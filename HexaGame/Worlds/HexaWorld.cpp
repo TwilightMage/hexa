@@ -69,6 +69,7 @@ struct PathMove
 struct PathFindingData
 {
     List<PathMove> moves;
+    Map<TileIndex, bool> visited;
     PathConfig config;
     Vector3 to_vector;
     HexaWorld* world;
@@ -100,7 +101,7 @@ bool attempt_move(PathFindingData& data, const TileIndex& current_tile, const Ti
             bool enough_space_to_jump_down = true;
             for (uint j = 0; j < data.config.agent_height; j++)
             {
-                if (data.world->get_tile_id(next_tile.offset(0, 0, data.config.agent_height - 1 - j))->type != TileType::Air)
+                if (!(data.world->get_tile_id(next_tile.offset(0, 0, data.config.agent_height - 1 - j))->type & (TileType::Air | TileType::Complex)))
                 {
                     enough_space_to_jump_down = false;
                 }
@@ -137,8 +138,7 @@ bool attempt_move(PathFindingData& data, const TileIndex& current_tile, const Ti
             uint space = 0;
             for (uint i = 1; i < data.config.allowed_climb + data.config.agent_height; i++)
             {
-                const auto type = data.world->get_tile_id(next_tile.offset(0, 0, i))->type;
-                if (type == TileType::Air)
+                if (!!(data.world->get_tile_id(next_tile.offset(0, 0, i))->type & (TileType::Air | TileType::Complex)))
                 {
                     if (++space == data.config.agent_height)
                     {
@@ -158,7 +158,7 @@ bool attempt_move(PathFindingData& data, const TileIndex& current_tile, const Ti
                 bool has_space_to_climb = true;
                 for (uint i = 1; i < (climb_on.z - current_tile.z) + data.config.agent_height; i++)
                 {
-                    if (data.world->get_tile_id(current_tile.offset(0, 0, i))->type != TileType::Air)
+                    if (!(data.world->get_tile_id(current_tile.offset(0, 0, i))->type & (TileType::Air | TileType::Complex)))
                     {
                         has_space_to_climb = false;
                         break;
@@ -176,28 +176,25 @@ bool attempt_move(PathFindingData& data, const TileIndex& current_tile, const Ti
     return false;
 }
 
+FORCEINLINE bool can_step_at(const TileIndex& at, uint agent_height, HexaWorld* world)
+{
+    for (uint i = 0; i < agent_height; i++)
+    {
+        if (!(world->get_tile_id(at.offset(0, 0, i))->type & (TileType::Air | TileType::Complex))) return false;
+    }
+    if (world->get_tile_id(at.offset(0, 0, -1))->type != TileType::Solid) return false;
+    return true;
+}
+
 bool build_path_recursive(PathFindingData& data, const PathMove& current_move, bool is_first)
 {
-    if (data.moves.length() == 10) return false;
-    for (uint i = 0; i < data.config.agent_height; i++)
-    {
-        if (data.world->get_tile_id(current_move.to.offset(0, 0, i))->type != TileType::Air) return false;
-    }
-    if (data.world->get_tile_id(current_move.to.offset(0, 0, -1))->type != TileType::Solid) return false;
+    if (!can_step_at(current_move.to, data.config.agent_height, data.world)) return false;
 
     if (data.moves.length() > 0 && data.moves.first().from == current_move.to) return false;
-    
-    bool loop = false;
-    for (auto& move : data.moves)
-    {
-        if (move.to == current_move.to)
-        {
-            loop = true;
-            break;
-        }
-    }
 
-    if (loop) return false;
+    auto& visited = data.visited[current_move.to];
+    if (visited) return false;
+    visited = true;
 
     if (!is_first)
     {
@@ -316,13 +313,9 @@ Shared<WorldPath> HexaWorld::FindPath(const PathConfig& config)
 
     if ((uint)Math::abs(chunk_to.x - chunk_from.x) <= config.domain_size || (uint)Math::abs(chunk_to.y - chunk_from.y) <= config.domain_size)
     {
-        for (uint i = 0; i < config.agent_height; i++)
-        {
-            if (get_tile_id(config.to.offset(0, 0, i))->type != TileType::Air) return nullptr;
-        }
-        if (get_tile_id(config.to.offset(0, 0, -1))->type != TileType::Solid) return nullptr;
+        if (!can_step_at(config.to, config.agent_height, this)) return nullptr;
         
-        PathFindingData path_finding_data = { List<PathMove>(), config, config.to.to_vector(), this };
+        PathFindingData path_finding_data = { List<PathMove>(), {}, config, config.to.to_vector(), this };
         build_path_recursive(path_finding_data, {config.from, config.from, 0}, true);
         List<WorldPath::Segment> path_segments;
         for (const auto& path_move : path_finding_data.moves)
@@ -365,8 +358,7 @@ Shared<Entity> HexaWorld::spawn_drop(const TileIndex& tile, const ItemContainer&
     if (item.is_empty()) return nullptr;
     
     Shared<Entity> entity = MakeShared<ItemDrop>(item);
-    auto random = Random::global;
-    spawn_entity(MakeShared<ItemDrop>(item), tile.to_vector() - Vector3(random->number<float>(-0.2f, 0.2f), random->number<float>(-0.2f, 0.2f), item.item ? (item.item->mesh->get_bounds_center().z - item.item->mesh->get_bounds_half_size().z) : 0.0f), Quaternion(Vector3(0, 0, random->number(360.0f))));
+    spawn_entity(MakeShared<ItemDrop>(item), tile.to_vector() - Vector3(Random::static_number(Random::random_seed(), -0.2f, 0.2f), Random::static_number(Random::random_seed(), -0.2f, 0.2f), item.item ? (item.item->mesh->get_bounds_center().z - item.item->mesh->get_bounds_half_size().z) : 0.0f), Quaternion(Vector3(0, 0, Random::static_number(Random::random_seed(), 360.0f))));
     return entity;
 }
 

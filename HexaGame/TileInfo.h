@@ -5,7 +5,10 @@
 #include "TileType.h"
 #include "Engine/DatabaseEntry.h"
 
-class World;
+class ComplexTile;
+class HexaWorld;
+class Material3D;
+class Mesh;
 class Texture;
 
 class TileInfo : public DatabaseEntry
@@ -13,25 +16,65 @@ class TileInfo : public DatabaseEntry
 public:
     TileInfo(
         const String& key,
+        TileType type
+        )
+        : DatabaseEntry(key)
+        , type(type)
+    {}
+    
+    TileType type;
+
+    virtual void neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, const Shared<const TileInfo>& new_neighbor) const;
+    virtual List<ItemContainer> get_drops(const TileIndex& index, const Shared<HexaWorld>& world) const;
+};
+
+class AirTileInfo : public TileInfo
+{
+public:
+    AirTileInfo(const String& key)
+    : TileInfo(key, TileType::Air)
+    {}
+};
+
+class SolidTileInfo : public TileInfo
+{
+public:
+    SolidTileInfo(
+        const String& key,
         const Shared<Texture>& texture,
-        TileType type,
         bool randomize_ceil_uv_angle,
         bool randomize_floor_uv_angle
         )
-        : DatabaseEntry(key)
+        : TileInfo(key, TileType::Solid)
         , texture(texture)
-        , type(type)
         , randomize_ceil_uv_angle(randomize_ceil_uv_angle)
         , randomize_floor_uv_angle(randomize_floor_uv_angle)
     {}
     
     Shared<Texture> texture;
-    
-    TileType type;
-    
+
     bool randomize_ceil_uv_angle;
     bool randomize_floor_uv_angle;
+};
 
-    virtual void neighbor_changed(const TileIndex& index, TileSide side, const Shared<World>& world, const Shared<const TileInfo>& new_neighbor) const;
-    virtual List<ItemContainer> get_drops(const TileIndex& index, const Shared<World>& world) const;
+class ComplexTileInfo : public TileInfo
+{
+public:
+    ComplexTileInfo(
+        const String& key,
+        const Shared<Mesh>& mesh,
+        const Shared<Texture>& texture,
+        const Shared<Material3D>& material
+        )
+        : TileInfo(key, TileType::Complex)
+        , mesh(mesh)
+        , texture(texture)
+        , material(material)
+    {}
+
+    virtual void setup_spawned_entity(const Shared<ComplexTile>& new_tile) const;
+
+    Shared<Mesh> mesh;
+    Shared<Texture> texture;
+    Shared<Material3D> material;
 };

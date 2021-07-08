@@ -2,6 +2,7 @@
 
 #include "UIElement.h"
 #include "Engine/IRenderable.h"
+#include "Engine/MaterialParameters.h"
 #include "Engine/Rect.h"
 #include "Engine/Slot.h"
 #include "Engine/Texture.h"
@@ -9,7 +10,7 @@
 class MaterialUI;
 class MaterialUIInstance;
 
-class EXPORT Image : public UIElement, public IRenderable
+class EXPORT Image : public UIElement, public IRenderable<MaterialUI, MaterialUIInstance>
 {
 public:
     Image();
@@ -27,8 +28,9 @@ public:
     
     void use_texture(const Shared<Texture>& texture);
 
-    void set_material(const Shared<Material>& material) override;
-    Shared<Material> get_material() const override;
+    void set_material(const Shared<MaterialUI>& material) override;
+    FORCEINLINE Shared<MaterialUI> get_material() const override { return material_; }
+    FORCEINLINE Shared<MaterialUIInstance> get_material_instance() const override { return material_instance_; }
 
 protected:
     void on_register_render() override;
@@ -38,12 +40,14 @@ protected:
     
 private:
     void update_uv_rect();
+    void material_changed();
 
-    Shared<MaterialUIInstance> material_instance_;
     Shared<Texture> texture_;
     Rect rect_;
     bool have_rect_;
     Quaternion uv_rect_;
 
+    Shared<MaterialUIInstance> material_instance_;
     Shared<MaterialUI> material_;
+    Shared<MaterialParameter<Matrix4x4>> model_parameter_;
 };

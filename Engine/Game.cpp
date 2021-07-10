@@ -23,6 +23,7 @@
 #include "SpriteFont.h"
 #include "TextureAtlas.h"
 #include "World.h"
+#include "HexaGame/HexaSettings.h"
 #include "ui/Image.h"
 #include "ui/TextBlock.h"
 #include "ui/UIInputElement.h"
@@ -462,8 +463,6 @@ void Game::render_loop()
 	verbose("Game", "Starting...");
 	start();
 
-	float last_delta_time = 0.0f;
-
 	float fps_delta_time_stack = 0;
 	uint fps_count = 0;
 	uint fps_last_count = 0;
@@ -477,14 +476,15 @@ void Game::render_loop()
 	dcc_display->set_position(Vector2(0, 50));
 	add_ui(dcc_display);
 
-	int d;
-	glGetIntegerv(GL_MAX_VERTEX_UNIFORM_COMPONENTS, &d);
+	float tick_start = glfwGetTime();
 
 	while (!glfwWindowShouldClose(window_))
 	{
-		const auto tick_start = glfwGetTime();
+		while (glfwGetTime() - tick_start < 1.0f / settings_->get_fps_limit());
+		const float tick_time = glfwGetTime() - tick_start;
+		tick_start = glfwGetTime();
 
-		time_ += last_delta_time;
+		time_ += tick_time;
 		
 		main_thread_calls_mutex_.lock();
 		for (auto& func : main_thread_calls_)
@@ -512,7 +512,7 @@ void Game::render_loop()
 			last_mouse_pos_ = mouse_pos_;
 		}
 
-		fps_delta_time_stack += last_delta_time;
+		fps_delta_time_stack += tick_time;
 		fps_count++;
 		if (fps_delta_time_stack >= 1)
 		{
@@ -537,10 +537,10 @@ void Game::render_loop()
 			basic_material_3d_->set_param_value("sun_dir", -world_->sun_angle.forward());
 			
 			// ticking
-			if (last_delta_time > 0.0f)
+			if (tick_time > 0.0f)
 			{
-				tick(last_delta_time);
-				world_->tick(last_delta_time);
+				tick(tick_time);
+				world_->tick(tick_time);
 			}
 
 			if (current_camera_ && width > 0 && height > 0)
@@ -588,8 +588,6 @@ void Game::render_loop()
  
 		glfwSwapBuffers(window_);
 		glfwPollEvents();
-
-		last_delta_time = static_cast<float>(glfwGetTime() - tick_start);
 	}
 
 	Texture::print_usage_dump();

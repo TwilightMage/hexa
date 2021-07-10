@@ -32,7 +32,7 @@ void main()
     vec3 orig_world_pos = (model * vec4(obj_pos, 1)).xyz;
     
     float time_offset = length(orig_world_pos.xy);
-    vec2 shift = vec2(sin(time * 4) * pow(cos(time * 4), 2), cos(time * 4) * pow(sin(time * 4), 2));
+    vec2 shift = vec2(sin(time * 4 + time_offset) * pow(cos(time * 4 + time_offset), 2), cos(time * 4 + time_offset) * pow(sin(time * 4 + time_offset), 2));
     vec4 shifted_position = model * vec4(vPos + vec3(shift, 0) * 0.1 * rand(orig_world_pos) * alpha * sin((time + time_offset) / 4), 1.0);
     
     InstanceID = gl_InstanceID;

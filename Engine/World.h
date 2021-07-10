@@ -1,11 +1,13 @@
 ﻿#pragma once
 
+#include "SoundHandle.h"
 #include "List.h"
 #include "Entity.h"
 #include "Quaternion.h"
 #include "TimerHandle.h"
 #include "Vector3.h"
 
+class AudioChannel;
 struct RaycastResult;
 class Game;
 class Entity;
@@ -30,6 +32,9 @@ public:
     bool spawn_entity(const Shared<Entity>& entity, const Vector3& pos);
     bool spawn_entity(const Shared<Entity>& entity, const Quaternion& rot);
     bool spawn_entity(const Shared<Entity>& entity);
+
+    SoundHandle play_sound(const Shared<Audio>& audio, const Shared<AudioChannel>& channel = nullptr);
+    SoundHandle play_sound_3d(const Shared<Audio>& audio, const Vector3& location, const Shared<AudioChannel>& channel = nullptr);
 
     Shared<const RaycastResult> raycast(const Vector3& from, const Vector3& to) const;
     Shared<const RaycastResult> raycast(const Vector3& from, const Vector3& to, byte16 collision_mask) const;

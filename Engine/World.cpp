@@ -1,7 +1,10 @@
 ﻿#include "World.h"
 
 #include <reactphysics3d/reactphysics3d.h>
+#include <soloud/soloud_wav.h>
 
+#include "Audio.h"
+#include "AudioChannel.h"
 #include "Game.h"
 #include "ITickable.h"
 #include "Quaternion.h"
@@ -46,6 +49,32 @@ bool World::spawn_entity(const Shared<Entity>& entity)
     
     spawn_entity_internal(entity);
     return true;
+}
+
+SoundHandle World::play_sound(const Shared<Audio>& audio, const Shared<AudioChannel>& channel)
+{
+    if (audio == nullptr) return SoundHandle();
+    if (channel)
+    {
+        return SoundHandle(channel->bus_->play(*(audio->sample_)), Game::instance_->soloud_);
+    }
+    else
+    {
+        return SoundHandle(Game::instance_->soloud_->play(*(audio->sample_)), Game::instance_->soloud_);
+    }
+}
+
+SoundHandle World::play_sound_3d(const Shared<Audio>& audio, const Vector3& location, const Shared<AudioChannel>& channel)
+{
+    if (audio == nullptr) return SoundHandle();
+    if (channel)
+    {
+        return SoundHandle(channel->bus_->play3d(*(audio->sample_), location.x, location.y, location.z), Game::instance_->soloud_);
+    }
+    else
+    {
+        return SoundHandle(Game::instance_->soloud_->play3d(*(audio->sample_), location.x, location.y, location.z), Game::instance_->soloud_);
+    }
 }
 
 Shared<const RaycastResult> World::raycast(const Vector3& from, const Vector3& to) const
@@ -100,17 +129,22 @@ void World::tick(float delta_time)
 
     time_ += delta_time;
 
+    auto t1 = std::chrono::system_clock::now();
     // fixed tick for physics
     if (delta_time != 0.0f)
     {
         physics_tick_accum_ += delta_time;
         const auto interval = Game::get_settings()->get_physics_tick_interval();
-        while (physics_tick_accum_ > interval)
+        /*while (physics_tick_accum_ > interval)
         {
-            physics_tick_accum_ -= interval;
-            physics_world_->update(interval);
-        }
+            //physics_world_->update(interval);
+            //physics_tick_accum_ -= interval;
+            
+            physics_world_->update(physics_tick_accum_);
+            physics_tick_accum_ = 0;
+        }*/
     }
+    auto t2 = std::chrono::system_clock::now() - t1;
 
     // tick timers
     List<TimerHandle> expired_timers;

@@ -11,6 +11,16 @@ List<ItemContainer> TileInfo::get_drops(const TileIndex& index, const Shared<Hex
     return { HexaGame::item_database->get(key) };
 }
 
-void ComplexTileInfo::setup_spawned_entity(const Shared<ComplexTile>& new_tile) const
+void ComplexTileInfo::setup_spawned_entity(const Shared<ComplexTile>& new_tile, const Shared<ComplexTileCustomData>& custom_data) const
 {
+}
+
+bool ComplexTileInfo::can_place_at(const Shared<ComplexTile>& new_tile, const ItemContainer& item) const
+{
+    return true;
+}
+
+Shared<ComplexTileCustomData> ComplexTileInfo::create_custom_data() const
+{
+    return nullptr;
 }

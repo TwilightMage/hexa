@@ -1,10 +1,11 @@
 ﻿#pragma once
 
 #include "CharacterInfo.h"
-#include "ItemInfo.h"
 #include "TileInfo.h"
+#include "Engine/AudioChannel.h"
 #include "Engine/Database.h"
 #include "Engine/Game.h"
+#include "HexaGame/Database/items/ItemInfo.h"
 
 class DefaultWorldGenerator;
 class WorldGeneratorInfo;
@@ -20,13 +21,19 @@ public:
 
     static void register_world_generator(const Shared<WorldGeneratorInfo>& generator_info);
 
-    static Shared<Shader> tile_cap_shader;
-    static Shared<Shader> skybox_shader;
-    static Shared<Shader> foliage_shader;
+    inline static Shared<Shader> tile_cap_shader = nullptr;
+    inline static Shared<Shader> skybox_shader = nullptr;
+    inline static Shared<Shader> foliage_shader = nullptr;
 
-    static Shared<Material3D> tile_cap_material;
-    static Shared<Material3D> skybox_material;
-    static Shared<Material3D> foliage_material;
+    inline static Shared<Material3D> tile_cap_material = nullptr;
+    inline static Shared<Material3D> skybox_material = nullptr;
+    inline static Shared<Material3D> foliage_material = nullptr;
+
+    inline static Shared<Audio> plains_music = nullptr;
+
+    FORCEINLINE static const Shared<AudioChannel>& get_music_channel() { return music_channel_; }
+    FORCEINLINE static const Shared<AudioChannel>& get_ambient_channel() { return ambient_channel_; }
+    FORCEINLINE static const Shared<AudioChannel>& get_effects_channel() { return effects_channel_; }
     
 protected:
     void init_game_info(GameInfo& outInfo) override;
@@ -35,6 +42,7 @@ protected:
     void start() override;
     void tick(float delta_time) override;
     void loading_stage() override;
+    void unloading_stage() override;
 
 private:
     bool open_animation_editor(const String& entity_type, const String& entity_name) const;
@@ -42,4 +50,9 @@ private:
     void open_tile_test_world();
     
     Map<String, Shared<WorldGeneratorInfo>> generator_infos_;
+
+    inline static Shared<AudioChannel> general_channel_ = nullptr;
+    inline static Shared<AudioChannel> music_channel_ = nullptr;
+    inline static Shared<AudioChannel> ambient_channel_ = nullptr;
+    inline static Shared<AudioChannel> effects_channel_ = nullptr;
 };

@@ -8,6 +8,7 @@
 #include "Items.h"
 #include "Tiles.h"
 #include "WorldGenerator.h"
+#include "Engine/Audio.h"
 #include "Engine/GeometryEditor.h"
 #include "Engine/Logger.h"
 #include "Engine/Material.h"
@@ -17,14 +18,6 @@
 #include "ui/TileDatabaseViewer.h"
 #include "Worlds/GameWorld.h"
 #include "Worlds/TilePresentationWorld.h"
-
-Shared<Shader> HexaGame::tile_cap_shader = nullptr;
-Shared<Shader> HexaGame::skybox_shader = nullptr;
-Shared<Shader> HexaGame::foliage_shader = nullptr;
-
-Shared<Material3D> HexaGame::tile_cap_material = nullptr;
-Shared<Material3D> HexaGame::skybox_material = nullptr;
-Shared<Material3D> HexaGame::foliage_material = nullptr;
 
 HexaGame::HexaGame(int argc, char* argv[])
     : Game(argc, argv)
@@ -115,12 +108,26 @@ void HexaGame::loading_stage()
 
     foliage_material = MakeShared<Material3D>();
     foliage_material->init(foliage_shader, 0);
+
+    plains_music = Audio::load(RESOURCES_HEXA_AUDIO_MUSIC + "plains.ogg");
+    plains_music->set_looped(true);
+
+    general_channel_ = AudioChannel::create();
+    music_channel_ = AudioChannel::create(general_channel_);
+    ambient_channel_ = AudioChannel::create(general_channel_);
+    effects_channel_ = AudioChannel::create(general_channel_);
     
     Tiles::init(tile_database);
 
     Items::init(item_database);
 
     Characters::init(character_database);
+}
+
+void HexaGame::unloading_stage()
+{
+    music_channel_.reset();
+    ambient_channel_.reset();
 }
 
 bool HexaGame::open_animation_editor(const String& entity_type, const String& entity_name) const
@@ -163,6 +170,7 @@ void HexaGame::open_game_world()
             if (generator_infos_.contains(generator_name))
             {
                 auto generator = generator_infos_[generator_name]->create_generator();
+                generator->allocate_thread_pool();
                 generator->init(generator_settings.get_int("seed", 0));
                 generator->read_settings(generator_settings.get_object("settings"));
 

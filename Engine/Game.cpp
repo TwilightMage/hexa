@@ -5,6 +5,8 @@
 #include <GLFW/glfw3.h>
 #include <reactphysics3d/reactphysics3d.h>
 
+#include "Audio.h"
+#include "AudioChannel.h"
 #include "ICamera.h"
 #include "IControllable.h"
 #include "Logger.h"
@@ -30,6 +32,7 @@ Game* Game::instance_ = nullptr;
 Game::Game(int argc, char* argv[])
     : event_bus_(new EventBus())
 	, physics_(new reactphysics3d::PhysicsCommon)
+	, soloud_(new SoLoud::Soloud)
 	, ui_root_(new UIElement)
 {
 	if (instance_)
@@ -53,6 +56,7 @@ Game::Game(int argc, char* argv[])
 
 Game::~Game()
 {
+	instance_ = nullptr;
 }
 
 void Game::launch()
@@ -308,6 +312,10 @@ void Game::start()
 }
 
 void Game::tick(float delta_time)
+{
+}
+
+void Game::unloading_stage()
 {
 }
 
@@ -593,6 +601,8 @@ void Game::cleanup()
 {
 	verbose("Game", "Cleaning up...");
 
+	unloading_stage();
+	
 	for (auto& material_list : materials_)
 	{
 		for (auto& material : material_list->value)
@@ -601,9 +611,9 @@ void Game::cleanup()
 		}
 	}
 
-	for (auto& kvp : shaders_)
+	for (auto& shader : shaders_)
 	{
-		kvp.value->cleanup();
+		shader.value->cleanup();
 	}
 	
 	shaders_.clear();
@@ -611,6 +621,20 @@ void Game::cleanup()
 	Texture::unload_all_static();
 
 	meshes_.clear();
+
+	soloud_->stopAll();
+	
+	for (auto& audio : audios_)
+	{
+		audio.value->sample_.reset();
+	}
+
+	for (auto& audio_channel : audio_channels_)
+	{
+		audio_channel->bus_.reset();
+	}
+	
+	soloud_->deinit();
 }
 
 void Game::init_game()
@@ -621,6 +645,8 @@ void Game::init_game()
 
 	init_game_info(info_);
 	settings_ = generate_settings_object();
+
+	soloud_->init();
 }
 
 void Game::set_app_path(const Path& new_app_path)
@@ -638,7 +664,7 @@ void Game::key_callback(GLFWwindow* window, int key, int scancode, int action, i
 {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, GLFW_TRUE);
-	else
+	else if (instance_)
 	{
 		if (instance_->ui_input_element_)
 		{

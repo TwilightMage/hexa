@@ -3,6 +3,7 @@
 #include "TileIndex.h"
 #include "Tiles.h"
 #include "WorldChunk.h"
+#include "ComplexTileCustomData/TreeStemCustomData.h"
 #include "Engine/Random.h"
 
 #define rest()  std::this_thread::sleep_for(std::chrono::milliseconds(1));
@@ -37,7 +38,12 @@ void DefaultWorldGenerator::read_settings(const JSON& settings)
 
 void DefaultWorldGenerator::generate_chunk(const EditableChunk& editable)
 {
-    const static Shared<const TallGrassTile> flowers[3] = {
+    generate_plains(editable);
+}
+
+void DefaultWorldGenerator::generate_plains(const EditableChunk& editable)
+{
+    const static Shared<const TallGrassInfo> flowers[3] = {
         Tiles::blue_roses,
         Tiles::red_roses,
         Tiles::chamomile
@@ -60,7 +66,7 @@ void DefaultWorldGenerator::generate_chunk(const EditableChunk& editable)
                     editable.tile(TileIndex(c_x, c_y, c_z)) = Tiles::dirt;
                 }
             }
-            //rest();
+            rest();
         }
         //rest();
     }
@@ -108,7 +114,84 @@ void DefaultWorldGenerator::generate_chunk(const EditableChunk& editable)
                     break;
                 }
             }
-            //rest();
+            rest();
+        }
+        //rest();
+    }
+}
+
+void DefaultWorldGenerator::generate_forest(const EditableChunk& editable)
+{
+    const auto chunk = editable.get_chunk();
+
+    const auto chunk_pos = chunk->get_index().to_vector();
+    
+    for (uint c_x = 0; c_x < WorldChunk::chunk_size; c_x++)
+    {
+        for (uint c_y = 0; c_y < WorldChunk::chunk_size; c_y++)
+        {
+            for (uint c_z = 0; c_z < WorldChunk::chunk_height; c_z++)
+            {
+                const Vector3 world_position = chunk_pos + TileIndex(c_x, c_y, c_z).to_vector();
+
+                if (world_position.z < generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.01f, world_position.y * 0.01f, 0, 4) * ground_amplitude + ground_level)
+                {
+                    editable.tile(TileIndex(c_x, c_y, c_z)) = Tiles::dirt;
+                }
+            }
+            rest();
+        }
+        //rest();
+    }
+
+    for (uint c_x = 0; c_x < WorldChunk::chunk_size; c_x++)
+    {
+        for (uint c_y = 0; c_y < WorldChunk::chunk_size; c_y++)
+        {
+            uint free_tiles = 0;
+            for (int c_z = WorldChunk::chunk_height - 1; c_z >= 0; c_z--)
+            {
+                auto tile_index = TileIndex(c_x, c_y, c_z);
+                const Vector3 world_position = chunk_pos + tile_index.to_vector();
+                
+                auto& tile = editable.tile(tile_index);
+                if (tile != Tiles::air && tile != nullptr)
+                {
+                    if (tile == Tiles::dirt)
+                    {
+                        tile = Tiles::grass;
+
+                        if (free_tiles >= 15 && generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 4, world_position.y * 4, 2, 1) > 0.62f)
+                        {
+                            uint tree_height = Random::static_number(tile_index.x + tile_index.y + tile_index.z, 15, 20);
+                            for (uint t = 1; t <= tree_height; t++)
+                            {
+                                TileIndex cell_index = tile_index.offset(0, 0, t);
+                                editable.tile(cell_index) = Tiles::ash_stem;
+                                if (auto custom_data = cast<TreeStemCustomData>(Tiles::ash_stem->create_custom_data()))
+                                {
+                                    if (t == 1) custom_data->type = TreeStemCustomData::Type::Roots;
+                                    else if (t == tree_height) custom_data->type = TreeStemCustomData::Type::Top;
+                                    custom_data->tree_seed = Random::static_number<uint>(tile_index.x + tile_index.y + tile_index.z);
+                                    custom_data->cell_index = t - 1;
+                                    editable.set_complex_custom_data(cell_index, custom_data);
+                                }
+                            }
+                        }
+                        else if (free_tiles >= 1 && (generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.04f, world_position.y * 0.04f, 1, 1) * 0.8f + 0.2f) * generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 2, world_position.y * 2, 2, 1) > 0.3f)
+                        {
+                            editable.tile(tile_index.offset(0, 0, 1)) = Tiles::tall_grass;
+                        }
+                    }
+
+                    break;
+                }
+                else
+                {
+                    free_tiles++;
+                }
+            }
+            rest();
         }
         //rest();
     }

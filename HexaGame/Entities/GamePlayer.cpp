@@ -129,47 +129,10 @@ void GamePlayer::mouse_button_down(int button)
                     {
                         const ItemTileTarget tile_target = use_item_mode_ && selected_item.item ? selected_item.item->tile_target : TARGET_OUTSIDE;
                         const TileIndex tile_index = TileIndex::from_vector(hit.location + hit.normal * KINDA_SMALL_NUMBER * (tile_target == TARGET_OUTSIDE ? 1.0f : -1.0f));
-                        if (tile_index != get_character()->get_tile_position())
+                        
+                        if (use_item_mode_)
                         {
-                            if (use_item_mode_)
-                            {
-                                if (selected_item.item)
-                                {
-                                    auto item_copy = selected_item;
-                                    selected_item.item->apply_to_tile(item_copy, get_character(), tile_index, cast<HexaWorld>(get_world()));
-                                    if (item_copy != selected_item)
-                                    {
-                                        get_character()->get_inventory()->set_item(get_character()->get_inventory()->get_selected_hotbar(), item_copy);
-                                    }
-                                }
-                            }
-                            else
-                            {
-                                get_character()->go_to(tile_index);
-                                if (auto path = world->FindPath(get_character()->get_path_config(tile_index)))
-                                {
-                                    auto marker_mesh = GeometryEditor::get_unit_cube();
-                                    auto marker = MakeShared<MeshEntity>(marker_mesh);
-                                    marker->set_scale(Vector3(0.1f));
-                                    world->spawn_entity(marker, path->segments.first().from.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
-                                    markers.add(marker);
-                                    for (const auto& segment : path->segments)
-                                    {
-                                        marker = MakeShared<MeshEntity>(marker_mesh);
-                                        marker->set_scale(Vector3(0.1f));
-                                        world->spawn_entity(marker, segment.to.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
-                                        markers.add(marker);
-                                    }
-                                }
-                            }
-                        }
-                    }
-                    else if (cast<ComplexTile>(hit.entity))
-                    {
-                        if (use_item_mode_ && selected_item.item)
-                        {
-                            const TileIndex tile_index = TileIndex::from_vector(hit.location + hit.normal * -KINDA_SMALL_NUMBER);
-                            if (tile_index != get_character()->get_tile_position())
+                            if (selected_item.item)
                             {
                                 auto item_copy = selected_item;
                                 selected_item.item->apply_to_tile(item_copy, get_character(), tile_index, cast<HexaWorld>(get_world()));
@@ -177,6 +140,37 @@ void GamePlayer::mouse_button_down(int button)
                                 {
                                     get_character()->get_inventory()->set_item(get_character()->get_inventory()->get_selected_hotbar(), item_copy);
                                 }
+                            }
+                        }
+                        else if (tile_index != get_character()->get_tile_position())
+                        {
+                            get_character()->go_to(tile_index);
+                            if (auto path = world->FindPath(get_character()->get_path_config(tile_index)))
+                            {
+                                auto marker_mesh = GeometryEditor::get_unit_cube();
+                                auto marker = MakeShared<MeshEntity>(marker_mesh);
+                                marker->set_scale(Vector3(0.1f));
+                                world->spawn_entity(marker, path->segments.first().from.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
+                                markers.add(marker);
+                                for (const auto& segment : path->segments)
+                                {
+                                    marker = MakeShared<MeshEntity>(marker_mesh);
+                                    marker->set_scale(Vector3(0.1f));
+                                    world->spawn_entity(marker, segment.to.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
+                                    markers.add(marker);
+                                }
+                            }
+                        }
+                    }
+                    else if (auto complex_tile = cast<ComplexTile>(hit.entity))
+                    {
+                        if (use_item_mode_ && selected_item.item)
+                        {
+                            auto item_copy = selected_item;
+                            selected_item.item->apply_to_tile(item_copy, get_character(), complex_tile->get_index(), cast<HexaWorld>(get_world()));
+                            if (item_copy != selected_item)
+                            {
+                                get_character()->get_inventory()->set_item(get_character()->get_inventory()->get_selected_hotbar(), item_copy);
                             }
                         }
                     }
@@ -337,6 +331,8 @@ void GamePlayer::spawn_chunk_loaded(const Shared<WorldChunk>& sender)
                     world->spawn_drop(TileIndex(1, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::stone_bricks));
                     world->spawn_drop(TileIndex(1, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::stone_bricks));
                     world->spawn_drop(TileIndex(1, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::stone_bricks));
+
+                    background_music_handle_ = world->play_sound(HexaGame::plains_music, HexaGame::get_music_channel());
                 }
                 break;
             }

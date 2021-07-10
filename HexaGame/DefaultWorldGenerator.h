@@ -15,6 +15,9 @@ protected:
     void generate_chunk(const EditableChunk& editable) override;
 
 private:
+    void generate_plains(const EditableChunk& editable);
+    void generate_forest(const EditableChunk& editable);
+    
     float ground_level = 30.0f;
     float ground_amplitude = 10.0f;
 

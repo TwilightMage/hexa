@@ -132,7 +132,7 @@ void WorldChunk::set_tile(const TileIndex& index, const Shared<const TileInfo>& 
     if (new_tile->type == TileType::Complex)
     {
         auto& slot = complex_tiles_[index];
-        spawn_complex(index.to_absolute(index_), slot);
+        spawn_complex(index, slot);
         
         if ((uint)index.z > cap_z)
         {
@@ -487,8 +487,9 @@ void WorldChunk::neighbor_tile_changed(const ChunkIndex& chunk, const TileIndex&
     }
 }
 
-void WorldChunk::spawn_complex(const TileIndex& world_index, ComplexTileSlot& slot) const
+void WorldChunk::spawn_complex(const TileIndex& local_index, ComplexTileSlot& slot) const
 {
+    const TileIndex world_index = local_index.to_absolute(index_);
     if (auto world = world_.lock())
     {
         if (slot.entity)
@@ -500,8 +501,28 @@ void WorldChunk::spawn_complex(const TileIndex& world_index, ComplexTileSlot& sl
         entity->index_ = world_index;
         world->spawn_entity(entity, world_index.to_vector());
 
+        entity->tile_info_->setup_spawned_entity(entity, custom_data_.find_or_default(local_index, nullptr));
+
         slot.entity = entity;
     }
+}
+
+bool WorldChunk::can_claim(const TileIndex& local_index) const
+{
+    return complex_tiles_.contains(local_index.cycle_chunk());
+}
+
+bool WorldChunk::claim_tile(const TileIndex& local_index, const Shared<ComplexTile>& claimer)
+{
+    auto& slot = complex_tiles_[local_index];
+
+    if (slot.entity == nullptr)
+    {
+        slot = { nullptr, claimer };
+        return true;
+    }
+
+    return false;
 }
 
 void WorldChunk::regenerate_all_complex_tiles()
@@ -510,7 +531,7 @@ void WorldChunk::regenerate_all_complex_tiles()
     {
         for (auto& complex : complex_tiles_)
         {
-            spawn_complex(complex->key.to_absolute(index_), complex->value);
+            spawn_complex(complex->key, complex->value);
         }
     }
 }

@@ -52,6 +52,7 @@
 #pragma comment(lib, "glfw3dll.lib")
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "reactphysics3d.lib")
+#pragma comment(lib, "soloud.lib")
 
 // Platform-specific libs
 #if PLATFORM_WINDOWS

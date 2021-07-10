@@ -1,6 +1,6 @@
 ﻿#include "Inventory.h"
 
-#include "ItemInfo.h"
+#include "Database/items/ItemInfo.h"
 #include "Engine/Map.h"
 
 Inventory::Inventory(uint size)

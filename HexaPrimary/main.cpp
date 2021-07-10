@@ -2,7 +2,6 @@
 
 #include "HexaGame/HexaGame.h"
 
-
 int main(int argc, char* argv[])
 {
     HexaGame* game = new HexaGame(argc, argv);

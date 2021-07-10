@@ -5,6 +5,7 @@
 #include "TileType.h"
 #include "Engine/DatabaseEntry.h"
 
+class ComplexTileCustomData;
 class ComplexTile;
 class HexaWorld;
 class Material3D;
@@ -72,7 +73,9 @@ public:
         , material(material)
     {}
 
-    virtual void setup_spawned_entity(const Shared<ComplexTile>& new_tile) const;
+    virtual void setup_spawned_entity(const Shared<ComplexTile>& new_tile, const Shared<ComplexTileCustomData>& custom_data) const;
+    virtual bool can_place_at(const Shared<ComplexTile>& new_tile, const ItemContainer& item) const;
+    virtual Shared<ComplexTileCustomData> create_custom_data() const;
 
     Shared<Mesh> mesh;
     Shared<Texture> texture;

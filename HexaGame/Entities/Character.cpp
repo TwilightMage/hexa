@@ -85,9 +85,14 @@ void Character::on_character_un_possesed()
 {
 }
 
-float Character::get_reach_distance() const
+uint Character::get_reach_distance() const
 {
     return basic_reach_distance;
+}
+
+bool Character::can_reach(const TileIndex& world_index) const
+{
+    return TileIndex::distance_xy(tile_position_, world_index) <= get_reach_distance() && (uint)Math::abs(tile_position_.z - world_index.z) <= get_reach_distance() * 2;
 }
 
 TileIndex Character::get_tile_position() const

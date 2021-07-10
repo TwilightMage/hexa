@@ -37,7 +37,8 @@ public:
     virtual void on_character_possesed();
     virtual void on_character_un_possesed();
 
-    virtual float get_reach_distance() const;
+    virtual uint get_reach_distance() const;
+    bool can_reach(const TileIndex& world_index) const;
 
     TileIndex get_tile_position() const;
 
@@ -61,7 +62,7 @@ protected:
     AnimationSlot step_animation;
 
     uint initial_inventory_size = 40;
-    float basic_reach_distance = 2.0f;
+    uint basic_reach_distance = 2;
     float basic_movement_speed = 1.5f;
     
 private:

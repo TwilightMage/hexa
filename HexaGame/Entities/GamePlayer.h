@@ -3,6 +3,7 @@
 #include "Engine/IControllable.h"
 #include "Engine/ITickable.h"
 #include "Engine/Player.h"
+#include "Engine/SoundHandle.h"
 #include "HexaGame/CharacterController.h"
 #include "HexaGame/ChunkIndex.h"
 #include "HexaGame/TileIndex.h"
@@ -27,7 +28,7 @@ public:
     Vector2 move_;
 
     Shared<WorldChunkObserver> observer_;
-    uint load_distance_ = 2;
+    uint load_distance_ = 3;
 
 protected:
     CameraInfo get_camera_info() const override;
@@ -50,4 +51,5 @@ private:
     float camera_pitch_ = -45.0f;
     float camera_yaw_ = 0.0f;
     Quaternion camera_rotation_ = Quaternion(Vector3(0, 45, 0));
+    SoundHandle background_music_handle_;
 };

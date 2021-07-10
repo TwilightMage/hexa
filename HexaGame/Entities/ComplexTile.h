@@ -3,6 +3,7 @@
 #include "Engine/Entity.h"
 #include "HexaGame/TileIndex.h"
 
+class ComplexTileCustomData;
 class WorldChunk;
 class ComplexTileInfo;
 

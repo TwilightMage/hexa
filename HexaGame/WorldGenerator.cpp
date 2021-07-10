@@ -61,9 +61,10 @@ void add_poly(List<uint>& src_indices, List<uint> indices, int offset)
 
 WorldGenerator::~WorldGenerator()
 {
-	for (auto& kvp : threads_)
+	stop = true;
+	for (auto& thread : thread_pool_)
 	{
-		kvp.second->join();
+		thread->join();
 	}
 }
 
@@ -149,10 +150,24 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const Solid
 
 void WorldGenerator::request_chunk_generation(const Shared<WorldChunk>& chunk)
 {
-	if (pending_chunks_.contains(chunk) || threads_.contains(chunk)) return;
+	pending_chunks_mutex_.lock();
+	bool abort = false;
+	for (auto& pending_chunk : pending_chunks_)
+	{
+		if (pending_chunk.chunk == chunk)
+		{
+			abort = true;
+			break;
+		}
+	}
 	
-	pending_chunks_.add(chunk);
-	try_to_start_new_generation();
+	if (abort)
+	{
+		pending_chunks_mutex_.unlock();
+		return;
+	}
+	pending_chunks_.add({chunk, false});
+	pending_chunks_mutex_.unlock();
 }
 
 JSON WorldGenerator::write_settings() const
@@ -164,14 +179,15 @@ void WorldGenerator::read_settings(const JSON& settings)
 {
 }
 
-void WorldGenerator::try_to_start_new_generation()
+void WorldGenerator::allocate_thread_pool()
 {
-	if (threads_.size() < cast<HexaSettings>(Game::get_settings())->get_max_threads() && pending_chunks_.length() > 0)
+	auto q = std::thread::hardware_concurrency();
+	if (thread_pool_.length() == 0)
 	{
-		Shared<WorldChunk> chunk = pending_chunks_.first();
-		pending_chunks_.remove_at(0);
-		auto thread = MakeShared<std::thread>(&WorldGenerator::do_generate, this, chunk);
-		threads_[chunk] = thread;
+		for (uint i = 0; i < std::thread::hardware_concurrency(); i++)
+		{
+			thread_pool_.add(MakeShared<std::thread>(&WorldGenerator::thread_loop, this));
+		}
 	}
 }
 
@@ -201,8 +217,42 @@ void WorldGenerator::do_generate(const Shared<WorldChunk>& chunk)
 
 void WorldGenerator::finish_generation(const Shared<WorldChunk>& chunk)
 {
+	pending_chunks_mutex_.lock();
+	for (uint i = 0; i < pending_chunks_.length(); i++)
+	{
+		if (pending_chunks_[i].chunk == chunk)
+		{
+			pending_chunks_.remove_at(i);
+			break;
+		}
+	}
+	pending_chunks_mutex_.unlock();
+
 	chunk->set_state(WorldChunkDataState::Loaded);
-	threads_[chunk]->join();
-	threads_.erase(chunk);
-	try_to_start_new_generation();
+}
+
+void WorldGenerator::thread_loop()
+{
+	while (!stop)
+	{
+		Shared<WorldChunk> chunk_to_generate = nullptr;
+		pending_chunks_mutex_.lock();
+		for (auto& pending_chunk : pending_chunks_)
+		{
+			if (!pending_chunk.is_taken)
+			{
+				chunk_to_generate = pending_chunk.chunk;
+				pending_chunk.is_taken = true;
+				break;
+			}
+		}
+		pending_chunks_mutex_.unlock();
+
+		if (chunk_to_generate)
+		{
+			do_generate(chunk_to_generate);
+		}
+		
+		std::this_thread::sleep_for(std::chrono::milliseconds(10));
+	}
 }

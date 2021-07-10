@@ -6,11 +6,11 @@
 #include "Engine/Random.h"
 #include "Engine/Rect.h"
 #include "HexaGame/HexaSaveGame.h"
-#include "HexaGame/ItemInfo.h"
 #include "HexaGame/WorldChunk.h"
 #include "HexaGame/WorldChunkObserver.h"
 #include "HexaGame/WorldGenerator.h"
 #include "HexaGame/WorldPath.h"
+#include "HexaGame/Database/items/ItemInfo.h"
 #include "HexaGame/Entities/Character.h"
 #include "HexaGame/Entities/ItemDrop.h"
 
@@ -328,18 +328,18 @@ Shared<WorldPath> HexaWorld::FindPath(const PathConfig& config)
     return nullptr;
 }
 
-bool HexaWorld::spawn_character(const Shared<Character>& character, const TileIndex& tile_index)
+bool HexaWorld::spawn_character(const Shared<Character>& character, const TileIndex& world_index)
 {
     if (characters_.contains(character)) return false;
     
     for (auto charact : characters_)
     {
-        if (charact->get_tile_position() == tile_index) return false;
+        if (charact->get_tile_position() == world_index) return false;
     }
 
-    character->tile_position_ = tile_index;
+    character->tile_position_ = world_index;
     
-    if (spawn_entity(character, tile_index.to_vector()))
+    if (spawn_entity(character, world_index.to_vector()))
     {
         characters_.add(character);
 
@@ -351,6 +351,19 @@ bool HexaWorld::spawn_character(const Shared<Character>& character, const TileIn
     }
 
     return false;
+}
+
+Shared<Character> HexaWorld::get_character_at(const TileIndex& world_index) const
+{
+    for (auto& character : characters_)
+    {
+        if (character->get_tile_position() == world_index)
+        {
+            return character;
+        }
+    }
+
+    return nullptr;
 }
 
 Shared<Entity> HexaWorld::spawn_drop(const TileIndex& tile, const ItemContainer& item)

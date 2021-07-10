@@ -204,6 +204,9 @@
     <ClInclude Include="AnimationInstance.h" />
     <ClInclude Include="AnimationSlot.h" />
     <ClInclude Include="AnimatorComponent.h" />
+    <ClInclude Include="Audio.h" />
+    <ClInclude Include="AudioChannel.h" />
+    <ClInclude Include="SoundHandle.h" />
     <ClInclude Include="CameraInfo.h" />
     <ClInclude Include="ConversionPointer.h" />
     <ClInclude Include="Cubemap.h" />
@@ -328,6 +331,9 @@
     <ClCompile Include="AnimationHandle.cpp" />
     <ClCompile Include="AnimationInstance.cpp" />
     <ClCompile Include="AnimatorComponent.cpp" />
+    <ClCompile Include="Audio.cpp" />
+    <ClCompile Include="AudioChannel.cpp" />
+    <ClCompile Include="SoundHandle.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClInclude Include="Database.cpp" />

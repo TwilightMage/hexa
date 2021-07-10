@@ -37,6 +37,7 @@ public:
     bool is_started() const;
     
     void set_mesh(const Shared<class Mesh>& new_mesh);
+    FORCEINLINE const Shared<Mesh>& get_mesh() const { return mesh_; }
     void clear_mesh();
 
     void mark_matrix_dirty();

@@ -5,8 +5,8 @@
 #include "Engine/ui/Image.h"
 #include "Engine/ui/TextBlock.h"
 #include "HexaGame/CharacterInventory.h"
-#include "HexaGame/ItemInfo.h"
 #include "HexaGame/Paths.h"
+#include "HexaGame/Database/items/ItemInfo.h"
 
 void Toolbar::on_construct()
 {    

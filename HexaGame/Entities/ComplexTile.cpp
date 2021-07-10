@@ -21,6 +21,4 @@ void ComplexTile::on_start()
     set_collision_mask(initial_is_blocking ? HexaCollisionMaskBits::COMPLEX_BLOCK : HexaCollisionMaskBits::COMPLEX_NOBLOCK);
     make_body_kinematic();
     set_collision(MakeShared<ConcaveMeshCollision>(tile_info_->mesh));
-
-    tile_info_->setup_spawned_entity(cast<ComplexTile>(shared_from_this()));
 }

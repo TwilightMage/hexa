@@ -2,6 +2,7 @@
 
 #include <mutex>
 #include <optional>
+#include <soloud/soloud.h>
 
 #include "CameraInfo.h"
 #include "EventBus.h"
@@ -16,6 +17,8 @@
 #include "Vector3.h"
 #include "Version.h"
 
+class AudioChannel;
+class Audio;
 class Material;
 class Entity;
 class Mesh;
@@ -47,6 +50,8 @@ namespace reactphysics3d
 
 class EXPORT Game
 {
+    friend AudioChannel;
+    friend Audio;
     friend Material;
     friend World;
     friend Shader;
@@ -125,6 +130,7 @@ protected:
     virtual void loading_stage();
     virtual void start();
     virtual void tick(float delta_time);
+    virtual void unloading_stage();
     
 private:
     void setup_window();
@@ -174,6 +180,8 @@ private:
     Map<String, Shared<Texture>> textures_;
     Map<String, Shared<Animation>> animations_;
     SimpleMap<float, List<Shared<Material>>> materials_;
+    Map<String, Shared<Audio>> audios_;
+    List<Shared<AudioChannel>> audio_channels_;
     
     // Game
     Version game_version_ = {0, 1, 0};
@@ -195,6 +203,7 @@ private:
 
     // Core
     Shared<reactphysics3d::PhysicsCommon> physics_;
+    Shared<SoLoud::Soloud> soloud_;
     Shared<UIElement> ui_root_;
     Weak<UIElement> ui_under_mouse_;
     Weak<UIElement> pressed_ui_;

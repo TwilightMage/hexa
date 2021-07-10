@@ -32,7 +32,8 @@ public:
 
     Shared<WorldPath> FindPath(const PathConfig& config);
 
-    bool spawn_character(const Shared<Character>& character, const TileIndex& tile_index);
+    bool spawn_character(const Shared<Character>& character, const TileIndex& world_index);
+    Shared<Character> get_character_at(const TileIndex& world_index) const;
     Shared<Entity> spawn_drop(const TileIndex& tile, const ItemContainer& item);
 
     void set_tile(const TileIndex& index, const Shared<const TileInfo>& id) const;

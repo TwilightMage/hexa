@@ -7,6 +7,7 @@
 #include "WorldChunkDataState.h"
 #include "Engine/Entity.h"
 
+class ComplexTileCustomData;
 class ComplexTileInfo;
 class ComplexTile;
 class WorldChunkObserver;
@@ -82,7 +83,9 @@ private:
 
     void neighbor_tile_changed(const ChunkIndex& chunk, const TileIndex& index);
 
-    void spawn_complex(const TileIndex& world_index, ComplexTileSlot& tile) const;
+    void spawn_complex(const TileIndex& local_index, ComplexTileSlot& tile) const;
+    bool can_claim(const TileIndex& local_index) const;
+    bool claim_tile(const TileIndex& local_index, const Shared<ComplexTile>& claimer);
 
     public:
     void regenerate_all_complex_tiles();
@@ -111,6 +114,7 @@ private:
 
     List<List<Shared<Entity>>> mesh_entities_;
     SimpleMap<TileIndex, ComplexTileSlot> complex_tiles_;
+    Map<TileIndex, Shared<ComplexTileCustomData>> custom_data_;
     Shared<Entity> cap_entity_;
     Map<TileIndex, Shared<const TileInfo>> modifications_;
     bool dirty_;

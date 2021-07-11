@@ -10,8 +10,7 @@
 #include "WorldChunkMesh.h"
 #include "WorldGenerator.h"
 #include "Engine/GeometryEditor.h"
-#include "Engine/Material3D.h"
-#include "Engine/Random.h"
+#include "Engine/performance.h"
 #include "Engine/World.h"
 #include "Engine/Physics/ConcaveMeshCollision.h"
 #include "Entities/ComplexTile.h"
@@ -164,6 +163,25 @@ void WorldChunk::set_tile(const TileIndex& index, const Shared<const TileInfo>& 
     }
 }
 
+bool WorldChunk::damage_tile(const TileIndex& index, float damage)
+{
+    auto& tile_id = data[index.x][index.y][index.z];
+
+    if (tile_id == Tiles::air) return false;
+    
+    float& tile_damage = tile_damage_[index];
+    tile_damage += damage;
+    if (tile_damage >= tile_id->hardness)
+    {
+        set_tile(index, Tiles::air);
+        tile_damage_.remove(index);
+        
+        return true;
+    }
+
+    return false;
+}
+
 TileSide WorldChunk::get_tile_face_flags(const TileIndex& tile_index) const
 {
     auto flags = TileSide::None;
@@ -206,9 +224,18 @@ void WorldChunk::try_show_mesh()
 {
     if (load_counter_ == 0 && visibility_counter_ > 0)
     {
+        get_now(t1);
         regenerate_whole_mesh();
+        get_now(t2);
         regenerate_all_complex_tiles();
+        get_now(t3);
         regenerate_cap_mesh();
+        get_now(t4);
+
+        measure_time(q1, t1, t2);
+        measure_time(q2, t2, t3);
+        measure_time(q3, t3, t4);
+        auto a = 1;
     }
 }
 
@@ -496,13 +523,20 @@ void WorldChunk::spawn_complex(const TileIndex& local_index, ComplexTileSlot& sl
         {
             slot.entity->destroy();
         }
-        
+
+        get_now(t1);
         auto entity = MakeShared<ComplexTile>(slot.info);
+        get_now(t2);
         entity->index_ = world_index;
+        get_now(t3);
         world->spawn_entity(entity, world_index.to_vector());
-
+        get_now(t4);
         entity->tile_info_->setup_spawned_entity(entity, custom_data_.find_or_default(local_index, nullptr));
-
+        get_now(t5);
+        measure_time(q1, t1, t2);
+        measure_time(q2, t2, t3);
+        measure_time(q3, t3, t4);
+        measure_time(q4, t4, t5);
         slot.entity = entity;
     }
 }
@@ -531,7 +565,10 @@ void WorldChunk::regenerate_all_complex_tiles()
     {
         for (auto& complex : complex_tiles_)
         {
+            get_now(t1);
             spawn_complex(complex->key, complex->value);
+            measure_now(t2, t1);
+            auto q = 1;
         }
     }
 }
@@ -729,7 +766,7 @@ void WorldChunk::cap(uint z)
 }
 
 #define get_tile()			(data[pos.x][pos.y][pos.z])
-#define try_get_tile(name)	(name ? name->data[pos.x][pos.y][pos.z] : Tiles::air)
+#define try_get_tile(name)	(name ? name->data[pos.x][pos.y][pos.z] : (Shared<const TileInfo>)Tiles::air)
 
 Shared<const TileInfo> WorldChunk::front_tile(const TileIndex& index) const
 {

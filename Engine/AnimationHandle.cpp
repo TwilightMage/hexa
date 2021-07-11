@@ -4,7 +4,7 @@
 #include "AnimatorComponent.h"
 
 AnimationHandle::AnimationHandle()
-    : animator_(null_weak(AnimatorComponent))
+    : animator_(nullptr)
     , instance_id_(0)
 {
 }

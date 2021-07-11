@@ -2,6 +2,7 @@
 
 #include "Object.h"
 #include "Path.h"
+#include "Pointers.h"
 #include "Vector3.h"
 
 class World;

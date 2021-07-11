@@ -1,7 +1,6 @@
 ﻿#include "ItemToolInfo.h"
 
 #include "HexaGame/CharacterInventory.h"
-#include "HexaGame/HexaGame.h"
 #include "HexaGame/Tiles.h"
 #include "HexaGame/Entities/Character.h"
 #include "HexaGame/Worlds/HexaWorld.h"
@@ -13,13 +12,30 @@ void ItemToolInfo::apply_to_tile(ItemContainer& item, const Shared<Character>& c
         auto tile_id = world->get_tile_id(world_index);
         if (tile_id != Tiles::air)
         {
-            auto drops = tile_id->get_drops(world_index, world);
-            world->set_tile(world_index, Tiles::air);
-            for (auto& drop : drops)
+            float tile_damage = 0.0f;
+            if (tile_id->tags.contains(MetaTags::DIRT))
             {
-                if (!character->get_inventory()->add_item(drop))
+                tile_damage = 0.5f;
+            }
+            else if (tile_id->tags.contains(MetaTags::GRASS))
+            {
+                tile_damage = 1.0f;
+            }
+            else if (tile_id->tags.contains(MetaTags::STONE))
+            {
+                tile_damage = 0.1f;
+            }
+
+            if (tile_damage > 0 && world->damage_tile(world_index, tile_damage))
+            {
+                auto drops = tile_id->get_drops(world_index, world);
+                world->set_tile(world_index, Tiles::air);
+                for (auto& drop : drops)
                 {
-                    world->spawn_drop(world_index, drop);
+                    if (!character->get_inventory()->add_item(drop))
+                    {
+                        world->spawn_drop(world_index, drop);
+                    }
                 }
             }
         }

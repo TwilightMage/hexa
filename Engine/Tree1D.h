@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include <functional>
-#include <stack>
 
 
 #include "Engine/Math.h"
@@ -54,12 +53,12 @@ public:
         Iterator& operator++()
         {
             i_++;
-            if (stack_.top()->right)
+            if (stack_[stack_i_ - 1]->right != nullptr)
             {
-                stack_.push(stack_.top()->right);
-                while (stack_.top()->left != nullptr)
+                stack_[stack_i_++] = stack_[stack_i_ - 1]->right;
+                while (stack_[stack_i_ - 1]->left != nullptr)
                 {
-                    stack_.push(stack_.top()->left);
+                    stack_[stack_i_++] = stack_[stack_i_ - 1]->left;
                 }
             }
             else
@@ -67,27 +66,34 @@ public:
                 Node* prev;
                 do
                 {
-                    prev = stack_.top();
-                    stack_.pop();
+                    prev = stack_[--stack_i_];
                 }
-                while (stack_.size() > 0 && prev == stack_.top()->right);
+                while (stack_i_ != 0 && prev == stack_[stack_i_ - 1]->right);
             }
 
             return *this;
         }
 
-        Pair<KeyType, ValueType>& operator*() const { return stack_.top()->point; }
-        Pair<KeyType, ValueType>& operator->() { return stack_.top()->point; }
+        Pair<KeyType, ValueType>& operator*() const { return stack_[stack_i_ - 1]->point; }
+        Pair<KeyType, ValueType>& operator->() { return stack_[stack_i_ - 1]->point; }
    
         explicit Iterator(const Tree1D* tree)
             : Iterator(tree, 0)
         {
-            stack_.push(tree->root_);
-            while (stack_.top() != nullptr)
+            if (tree->root_ != nullptr)
             {
-                stack_.push(stack_.top()->left);
+                stack_ = new Node*[tree->root_->h + 1];
+                stack_[stack_i_++] = tree->root_;
+                while (stack_[stack_i_ - 1]->left != nullptr)
+                {
+                    stack_[stack_i_++] = stack_[stack_i_ - 1]->left;
+                }
             }
-            stack_.pop();
+        }
+
+        ~Iterator()
+        {
+            delete[] stack_;
         }
 
         static Iterator get_end(const Tree1D* tree)
@@ -104,7 +110,8 @@ public:
 
         const Tree1D* tree_;
         uint i_;
-        std::stack<Node*> stack_;
+        Node** stack_ = nullptr;
+        uint stack_i_ = 0;
     };
 
 private:
@@ -325,16 +332,6 @@ private:
         }
     }
 
-    static void fill_stack(std::stack<Node*> stack, Node* node)
-    {
-        if (node)
-        {
-            fill_stack(stack, node->left);
-            stack.push(node);
-            fill_stack(stack, node->right);
-        }
-    }
-
     static void destroy(Node*& node)
     {
         if (node)
@@ -432,16 +429,12 @@ public:
 
     Iterator begin()
     {
-        Iterator result = Iterator(this);
-        fill_stack(result.stack_, root_);
-        return result;
+        return Iterator(this);
     }
 
     const Iterator begin() const
     {
-        Iterator result = Iterator(this);
-        fill_stack(result.stack_, root_);
-        return result;
+        return Iterator(this);
     }
 
     Iterator end()

@@ -96,6 +96,10 @@ void HexaGame::loading_stage()
         RESOURCES_HEXA_SHADERS + "foliage.frag"
     });
 
+    auto a = CanEnableShared<Material3D>;
+    auto b = CanEnableShared<Material>;
+    auto c = CanEnableShared<EnableSharedFromThis<Material>>;
+    
     tile_cap_material = MakeShared<Material3D>();
     tile_cap_material->init(tile_cap_shader, 0);
     //tile_cap_material->set_param_value("void_skybox", Cubemap::load_png(RESOURCES_HEXA_TEXTURES_TILES + "cap.png"));

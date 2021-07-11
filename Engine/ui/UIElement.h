@@ -3,12 +3,13 @@
 #include "Engine/Color.h"
 #include "Engine/List.h"
 #include "Engine/Matrix4x4.h"
+#include "Engine/Pointers.h"
 #include "Engine/Quaternion.h"
 #include "Engine/Vector3.h"
 
 class Game;
 
-class EXPORT UIElement : public std::enable_shared_from_this<UIElement>
+class EXPORT UIElement : public EnableSharedFromThis<UIElement>
 {
     friend Game;
     

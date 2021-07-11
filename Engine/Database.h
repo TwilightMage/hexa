@@ -2,6 +2,7 @@
 
 #include "DatabaseBase.h"
 #include "Map.h"
+#include "Pointers.h"
 #include "String.h"
 
 template<class T>

@@ -140,11 +140,11 @@ Shared<Shader> Shader::compile(const String& name, const List<Path>& paths)
                 {
                     name_str = name_str.substring(5);
                     result->instance_count_ = result->instance_count_ == 0 ? layout_size : Math::min(result->instance_count_, (uint)layout_size);
-                    result->instance_uniforms_.add(UniformParam(layout_size, *type_info, is_array, name_str, layout));
+                    result->instance_uniforms_[Name(name_str)] = UniformParam(layout_size, *type_info, is_array, Name(name_str), layout);
                 }
                 else
                 {
-                    result->global_uniforms_.add(UniformParam(layout_size, *type_info, is_array, name_str, layout));
+                    result->global_uniforms_[Name(name_str)] = UniformParam(layout_size, *type_info, is_array, Name(name_str), layout);
                 }
             }
             else
@@ -172,7 +172,7 @@ Shared<Shader> Shader::compile(const String& name, const List<Path>& paths)
             const auto shader_data_type = static_cast<GLTypeEnum>(type);
             if (const auto type_info = shader_type_info.find(shader_data_type))
             {
-                result->vertex_params_.add(VertexParam(layout_size, *type_info, name_str, layout));
+                result->vertex_params_.add(VertexParam(layout_size, *type_info, Name(name_str), layout));
             }
             else
             {

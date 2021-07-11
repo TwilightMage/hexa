@@ -5,7 +5,7 @@
 class EXPORT HexaSettings : public Settings
 {
 public:
-
+    
 private:
     
 };

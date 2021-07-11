@@ -1,6 +1,9 @@
 ﻿#pragma once
 
+#include <functional>
+
 #include "Engine/DatabaseEntry.h"
+#include "Engine/Pointers.h"
 
 class Character;
 

@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "BasicTypes.h"
+#include "Pointers.h"
 #include "Delegate.h"
 #include "framework.h"
 

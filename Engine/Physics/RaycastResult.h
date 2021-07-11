@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "Engine/Pointers.h"
 #include "Engine/Vector3.h"
 
 class Entity;

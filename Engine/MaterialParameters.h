@@ -7,6 +7,7 @@
 #include "Game.h"
 #include "Map.h"
 #include "Matrix4x4.h"
+#include "Name.h"
 #include "Quaternion.h"
 #include "Texture.h"
 #include "Vector2.h"
@@ -130,7 +131,7 @@ struct GLType
     uint gl_size;
     GLTypeEnum gl_type;
     GLTypeEnum gl_primitive_type;
-    std::function<Shared<MaterialParameterBase>(const String& name)> parameter_producer;
+    std::function<Shared<MaterialParameterBase>(const Name& name)> parameter_producer;
 };
 
 struct GLParamSignature
@@ -147,7 +148,7 @@ public:
     virtual void reset() = 0;
     virtual void copy(MaterialParameterBase* to) const = 0;
 
-    String name;
+    Name name;
     const GLType* type;
 };
 
@@ -184,7 +185,7 @@ public:
     Shared<Cubemap> value;
 };
 
-#define GLTYPE(T, primitive_type, size, c_size, c_type) { GLTypeEnum::T, new GLType { #T, c_size, size, GLTypeEnum::T, GLTypeEnum::primitive_type, [](const String& name)->Shared<MaterialParameterBase>{ auto result = MakeShared<MaterialParameter<c_type>>(); result->name = name; result->type = shader_type_info[GLTypeEnum::T]; return result; } } }
+#define GLTYPE(T, primitive_type, size, c_size, c_type) { GLTypeEnum::T, new GLType { #T, c_size, size, GLTypeEnum::T, GLTypeEnum::primitive_type, [](const Name& name)->Shared<MaterialParameterBase>{ auto result = MakeShared<MaterialParameter<c_type>>(); result->name = Name(name); result->type = shader_type_info[GLTypeEnum::T]; return result; } } }
 const Map<GLTypeEnum, const GLType*> shader_type_info = {
     GLTYPE(Int,         Int,   1, sizeof(int),        int            ),
     GLTYPE(Uint,        Uint,  1, sizeof(uint),       uint           ),

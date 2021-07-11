@@ -2,6 +2,7 @@
 
 #include "Engine/BasicTypes.h"
 #include "Engine/framework.h"
+#include "Engine/Pointers.h"
 
 class Character;
 

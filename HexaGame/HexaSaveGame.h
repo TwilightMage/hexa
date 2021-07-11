@@ -4,6 +4,7 @@
 #include "TileIndex.h"
 #include "Engine/Map.h"
 #include "Engine/Path.h"
+#include "Engine/Pointers.h"
 #include "Engine/SaveGame.h"
 
 class JSON;

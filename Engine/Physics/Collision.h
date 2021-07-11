@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Engine/framework.h"
+#include "Engine/Pointers.h"
 
 namespace reactphysics3d {
     class CollisionShape;

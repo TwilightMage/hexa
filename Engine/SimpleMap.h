@@ -9,12 +9,12 @@ struct SimpleMap : public IMap<K, V>
 {
     List<Pair<K, V>*> entries;
     
-    V& operator[](const K& key) override
+    FORCEINLINE V& operator[](const K& key) override
     {
         return at(key);
     }
 
-    const V& operator[](const K& key) const override
+    FORCEINLINE const V& operator[](const K& key) const override
     {
         return at(key);
     }
@@ -34,12 +34,12 @@ struct SimpleMap : public IMap<K, V>
         return entries.end();
     }
 
-    const Pair<K, V>** begin() const
+    const Pair<K, V>* const* begin() const
     {
         return entries.begin();
     }
 
-    const Pair<K, V>** end() const
+    const Pair<K, V>* const* end() const
     {
         return entries.end();
     }

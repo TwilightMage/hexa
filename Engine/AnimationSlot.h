@@ -1,5 +1,6 @@
 ﻿#pragma once
-#include "BasicTypes.h"
+
+#include "Pointers.h"
 
 class Animation;
 

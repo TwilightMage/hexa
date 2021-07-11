@@ -17,7 +17,7 @@ public:
         uint layout_size;
         const GLType* type;
         bool is_array;
-        String name;
+        Name name;
         uint layout;
     };
 
@@ -25,7 +25,7 @@ public:
     {
         uint layout_size;
         const GLType* type;
-        String name;
+        Name name;
         uint layout;
         void* offset;
     };
@@ -51,8 +51,8 @@ public:
 
     FORCEINLINE uint get_instance_count() const { return instance_count_; }
     
-    FORCEINLINE const List<UniformParam>& get_instance_uniforms() const { return instance_uniforms_; }
-    FORCEINLINE const List<UniformParam>& get_global_uniforms() const { return global_uniforms_; }
+    FORCEINLINE const SimpleMap<Name, UniformParam>& get_instance_uniforms() const { return instance_uniforms_; }
+    FORCEINLINE const SimpleMap<Name, UniformParam>& get_global_uniforms() const { return global_uniforms_; }
     FORCEINLINE const List<VertexParam>& get_vertex_params() const { return vertex_params_; }
     
     void cleanup();
@@ -83,7 +83,7 @@ private:
     uint empty_vertex_ = 0;
     bool no_face_cull_ = false;
 
-    List<UniformParam> instance_uniforms_;
-    List<UniformParam> global_uniforms_;
+    SimpleMap<Name, UniformParam> instance_uniforms_;
+    SimpleMap<Name, UniformParam> global_uniforms_;
     List<VertexParam> vertex_params_;
 };

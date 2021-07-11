@@ -71,7 +71,6 @@
 #include "BasicTypes.h"
 
 
-
 // -------------------- Functionality ----------------------
 // memcpy   - when you move data backward: 0000xxxx0000 -> 00xxxx000000
 // memcpy_b - when you move data forward:  0000xxxx0000 -> 000000xxxx00
@@ -85,30 +84,6 @@ FORCEINLINE void memcpy_b(void* dst, void* src, size_t size)
     {
         _dst[size - i] = _src[size - i];
     }
-}
-
-template<typename To, typename From>
-FORCEINLINE To* cast(From* obj)
-{
-	return dynamic_cast<To*>(obj);
-}
-
-template<typename To, typename From>
-FORCEINLINE Shared<To> cast(const Shared<From>& obj)
-{
-	return std::dynamic_pointer_cast<To>(obj);
-}
-
-template<typename To, typename From>
-FORCEINLINE Shared<const To> cast(const Shared<const From>& obj)
-{
-	return std::dynamic_pointer_cast<const To>(obj);
-}
-
-template<typename To, typename From>
-FORCEINLINE Shared<To> cast(const Weak<From>& obj)
-{
-	return std::dynamic_pointer_cast<To>(obj.lock());
 }
 
 template<typename To, typename From>

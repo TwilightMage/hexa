@@ -206,6 +206,10 @@
     <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="Audio.h" />
     <ClInclude Include="AudioChannel.h" />
+    <ClInclude Include="FastOperator.h" />
+    <ClInclude Include="Name.h" />
+    <ClInclude Include="performance.h" />
+    <ClInclude Include="Pointers.h" />
     <ClInclude Include="SoundHandle.h" />
     <ClInclude Include="CameraInfo.h" />
     <ClInclude Include="ConversionPointer.h" />
@@ -333,6 +337,7 @@
     <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="AudioChannel.cpp" />
+    <ClCompile Include="Name.cpp" />
     <ClCompile Include="SoundHandle.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />

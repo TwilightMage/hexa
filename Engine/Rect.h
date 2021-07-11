@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "Pointers.h"
 #include "Vector2.h"
 
 class EXPORT Rect

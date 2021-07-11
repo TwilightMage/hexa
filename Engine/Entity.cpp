@@ -256,7 +256,7 @@ void Entity::remove_component(const Shared<EntityComponent>& component)
     {
         components_.remove(component);
         component->on_destroy();
-        component->owner = null_weak(Entity);
+        component->owner = nullptr;
     }
 }
 
@@ -265,7 +265,7 @@ void Entity::remove_all_components()
     for (auto& component : components_)
     {
         component->on_destroy();
-        component->owner = null_weak(Entity);
+        component->owner = nullptr;
     }
     components_.clear();
 }

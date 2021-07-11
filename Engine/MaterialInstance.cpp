@@ -33,17 +33,17 @@ void MaterialInstance::copy_parameters_from(const Shared<MaterialInstance>& anot
     
     for (auto& parameter : instance_parameters_)
     {
-        parameter->reset();
+        parameter->value->reset();
         for (auto& another_parameter : another_parameters)
         {
-            if (another_parameter->name == parameter->name)
+            if (another_parameter->value->name == parameter->value->name)
             {
-                if (another_parameter->type == parameter->type)
+                if (another_parameter->value->type == parameter->value->type)
                 {
-                    another_parameter->copy(parameter.get());
+                    another_parameter->value->copy(parameter->value.get());
                 }
                 
-                another_parameters.remove(another_parameter);
+                another_parameters.remove(another_parameter->key);
                 break;
             }
         }

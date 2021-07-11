@@ -127,13 +127,18 @@ public:
 
     List<Key> get_keys() const override
     {
-        List<Key> result;
-        for (auto& entry : data_)
+        if constexpr (std::is_default_constructible<Key>::value)
         {
-            result.add(entry.key);
+            List<Key> result;
+            for (auto& entry : data_)
+            {
+                result.add(entry.key);
+            }
+
+            return result;
         }
 
-        return result;
+        throw new std::runtime_error("Unable to fetch keys; type has no default constructor");
     }
 
     FORCEINLINE uint size() const override

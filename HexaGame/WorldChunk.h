@@ -17,7 +17,7 @@ class TileInfo;
 class HexaWorld;
 class WorldChunkMesh;
 
-class EXPORT WorldChunk : public std::enable_shared_from_this<WorldChunk>
+class EXPORT WorldChunk : public EnableSharedFromThis<WorldChunk>
 {
     friend EditableChunk;
     friend WorldGenerator;
@@ -49,6 +49,8 @@ public:
 
     void set_tile(const TileIndex& index, const Shared<const TileInfo>& new_tile);
 
+    bool damage_tile(const TileIndex& index, float damage);
+
     TileSide get_tile_face_flags(const TileIndex& tile_index) const;
 
     void save_if_dirty();
@@ -60,6 +62,8 @@ public:
     Delegate<const Shared<WorldChunk>&> on_loaded;
     Delegate<const Shared<WorldChunk>&> on_loading;
     Delegate<const ChunkIndex&, const TileIndex&> on_tile_change;
+
+    inline static const float tick_interval = 1.0f / 10.0f;
 
 private:
     void load();
@@ -119,6 +123,7 @@ private:
     Map<TileIndex, Shared<const TileInfo>> modifications_;
     bool dirty_;
     uint cap_z;
+    SimpleMap<TileIndex, float> tile_damage_;
 
     WorldChunkDataState state_;
 

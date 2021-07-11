@@ -413,6 +413,17 @@ Shared<const TileInfo> HexaWorld::get_tile_id(const TileIndex& index) const
     return nullptr;
 }
 
+bool HexaWorld::damage_tile(const TileIndex& index, float damage) const
+{
+    const auto chunk_index = index.get_chunk();
+    if (auto chunk = get_chunk_internal(chunk_index))
+    {
+        return chunk->damage_tile(index.cycle_chunk(), damage);
+    }
+
+    return false;
+}
+
 void HexaWorld::cap_chunks(uint z)
 {
     if (cap_chunk_z == z) return;

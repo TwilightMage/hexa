@@ -2,6 +2,7 @@
 
 #include "BasicTypes.h"
 #include "Path.h"
+#include "Pointers.h"
 
 class Game;
 class World;

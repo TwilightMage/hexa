@@ -1,9 +1,11 @@
 ﻿#pragma once
 
 #include "ItemContainer.h"
+#include "MetaTags.h"
 #include "TileIndex.h"
 #include "TileType.h"
 #include "Engine/DatabaseEntry.h"
+#include "Engine/Set.h"
 
 class ComplexTileCustomData;
 class ComplexTile;
@@ -17,13 +19,19 @@ class TileInfo : public DatabaseEntry
 public:
     TileInfo(
         const String& key,
-        TileType type
+        TileType type,
+        const Set<String> tags,
+        float hardness
         )
         : DatabaseEntry(key)
         , type(type)
+        , tags(tags)
+        , hardness(hardness)
     {}
     
     TileType type;
+    const Set<String> tags;
+    float hardness;
 
     virtual void neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, const Shared<const TileInfo>& new_neighbor) const;
     virtual List<ItemContainer> get_drops(const TileIndex& index, const Shared<HexaWorld>& world) const;
@@ -33,7 +41,7 @@ class AirTileInfo : public TileInfo
 {
 public:
     AirTileInfo(const String& key)
-    : TileInfo(key, TileType::Air)
+    : TileInfo(key, TileType::Air, { MetaTags::AIR }, 0.0f)
     {}
 };
 
@@ -42,11 +50,13 @@ class SolidTileInfo : public TileInfo
 public:
     SolidTileInfo(
         const String& key,
+        const Set<String>& tags,
+        float hardness,
         const Shared<Texture>& texture,
         bool randomize_ceil_uv_angle,
         bool randomize_floor_uv_angle
         )
-        : TileInfo(key, TileType::Solid)
+        : TileInfo(key, TileType::Solid, tags + Set{ MetaTags::SOLID }, hardness)
         , texture(texture)
         , randomize_ceil_uv_angle(randomize_ceil_uv_angle)
         , randomize_floor_uv_angle(randomize_floor_uv_angle)
@@ -63,11 +73,13 @@ class ComplexTileInfo : public TileInfo
 public:
     ComplexTileInfo(
         const String& key,
+        const Set<String>& tags,
+        float hardness,
         const Shared<Mesh>& mesh,
         const Shared<Texture>& texture,
         const Shared<Material3D>& material
         )
-        : TileInfo(key, TileType::Complex)
+        : TileInfo(key, TileType::Complex, tags + Set{ MetaTags::COMPLEX }, hardness)
         , mesh(mesh)
         , texture(texture)
         , material(material)

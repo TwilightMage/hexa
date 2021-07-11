@@ -15,7 +15,7 @@ class EXPORT ConcaveMeshCollision : public Collision
 {
     friend World;
     
-    struct DataBlock
+    struct EXPORT DataBlock
     {
         ~DataBlock();
 

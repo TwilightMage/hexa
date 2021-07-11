@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "IUsageCountable.h"
-#include "Object.h"
+#include "Pointers.h"
 
 class Path;
 

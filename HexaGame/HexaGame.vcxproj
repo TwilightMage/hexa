@@ -209,6 +209,7 @@
     <ClInclude Include="ItemContainer.h" />
     <ClInclude Include="Items.h" />
     <ClInclude Include="ItemType.h" />
+    <ClInclude Include="MetaTags.h" />
     <ClInclude Include="ui\Toolbar.h" />
     <ClInclude Include="WorldPath.h" />
     <ClInclude Include="PathConfig.h" />

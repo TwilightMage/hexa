@@ -18,7 +18,7 @@ void GameWorld::on_start()
     spawn_entity(skybox_);
 }
 
-void GameWorld::on_tick()
+void GameWorld::on_tick(float delta_time)
 {
     skybox_->set_position(Game::get_camera_info().position);
 }

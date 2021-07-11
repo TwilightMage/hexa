@@ -9,6 +9,7 @@
 #include "List.h"
 #include "Object.h"
 #include "Path.h"
+#include "Pointers.h"
 #include "Slot.h"
 #include "UsageCounter.h"
 
@@ -16,7 +17,7 @@ class Game;
 class UIElement;
 class Image;
 
-class EXPORT Texture : public Object, public ITexture, public IUsageCountable<Texture>, public std::enable_shared_from_this<Texture>
+class EXPORT Texture : public Object, public ITexture, public IUsageCountable<Texture>, public EnableSharedFromThis<Texture>
 {
     IMPLEMENT_USAGE_COUNTER(Texture);
     

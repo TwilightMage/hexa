@@ -17,7 +17,7 @@ namespace reactphysics3d
     class PhysicsWorld;
 }
 
-class EXPORT World : public std::enable_shared_from_this<World>
+class EXPORT World : public EnableSharedFromThis<World>
 {
     friend Game;
 
@@ -44,7 +44,7 @@ public:
     void start();
     void tick(float delta_time);
 
-    const List<Shared<Entity>>& get_entities() const;
+    const Set<Shared<Entity>>& get_entities() const;
 
     float get_time_scale() const;
     void set_time_scale(float val);
@@ -64,17 +64,16 @@ public:
     
 protected:
     virtual void on_start();
-    virtual void on_tick();
+    virtual void on_tick(float delta_time);
     virtual void on_close();
 
 private:
     void close();
     void spawn_entity_internal(const Shared<Entity>& entity);
-    bool ensure_child_not_exist(const Shared<Entity>& entity);
 
     void do_destroy(const Shared<Entity>& entity);
     
-    List<Shared<Entity>> entities_;
+    Set<Shared<Entity>> entities_;
     reactphysics3d::PhysicsWorld* physics_world_;
     float physics_tick_accum_;
     float time_scale_ = 1.0f;

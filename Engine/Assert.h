@@ -3,6 +3,8 @@
 #include "Utils.h"
 #include "Logger.h"
 
+#include <assert.h>
+
 #if DEBUG
     #define Assert(condition)\
     if (!(condition))\

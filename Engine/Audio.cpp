@@ -41,5 +41,5 @@ bool Audio::is_looped() const
 
 float Audio::get_duration() const
 {
-    return sample_->getLength();
+    return (float)sample_->getLength();
 }

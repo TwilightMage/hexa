@@ -2,6 +2,7 @@
 
 #include <rapidjson/document.h>
 
+#include "Pointers.h"
 #include "String.h"
 
 class EXPORT JSON
@@ -99,5 +100,5 @@ public:
     JSON& with_object_array(const String& name, const List<JSON>& value);
 
 private:
-    Unique<rapidjson::Document> document_;
+    Reference<rapidjson::Document> document_;
 };

@@ -288,7 +288,7 @@ public:
         return at(index);
     }
 
-    T& at(uint index)
+    FORCEINLINE T& at(uint index)
     {
         if (index >= length_)
         {
@@ -298,7 +298,7 @@ public:
         return inner_[index];
     }
 
-    const T& at(uint index) const
+    FORCEINLINE const T& at(uint index) const
     {
         if (index >= length_)
         {

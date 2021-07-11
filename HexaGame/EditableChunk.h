@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "TileIndex.h"
-#include "Engine/BasicTypes.h"
+#include "Engine/Pointers.h"
 
 class ComplexTileCustomData;
 class WorldChunk;

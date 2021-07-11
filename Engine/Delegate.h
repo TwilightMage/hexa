@@ -4,6 +4,8 @@
 #include <map>
 #include <stdexcept>
 
+#include "Map.h"
+
 template<typename... InTypes>
 class Delegate
 {
@@ -64,7 +66,7 @@ public:
 
 		for (auto& binding : bindings_copy)
 		{
-			binding.second(std::forward<InTypes>(args)...);
+			binding.value(std::forward<InTypes>(args)...);
 		}
 	}
 
@@ -77,7 +79,7 @@ public:
 	template<typename T>
 	void unbind(T* obj, void(T::* func)(InTypes...))
 	{
-		bindings_.erase(obj_func(obj, func_id::construct(func)));
+		bindings_.remove(obj_func(obj, func_id::construct(func)));
 	}
 
 	template<typename T>
@@ -188,7 +190,7 @@ private:
 		}
 	};
 
-	std::map<obj_func, std::function<void(InTypes...)>> bindings_;
+	Map<obj_func, std::function<void(InTypes...)>> bindings_;
 };
 
 template<typename... ArgTypes>

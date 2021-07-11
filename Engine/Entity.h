@@ -20,7 +20,7 @@ namespace reactphysics3d
     class Collider;
 }
 
-class EXPORT Entity : public Object, public IRenderable<Material3D, Material3DInstance>, public std::enable_shared_from_this<Entity>
+class EXPORT Entity : public Object, public IRenderable<Material3D, Material3DInstance>, public EnableSharedFromThis<Entity>
 {
     friend class World;
 
@@ -91,7 +91,7 @@ public:
     Delegate<const Shared<Entity>&> on_destroyed;
     
 protected:
-    virtual bool is_rigid_body() const { return false; }
+    FORCEINLINE virtual bool is_rigid_body() const { return false; }
 
     virtual void generate_components();
 

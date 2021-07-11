@@ -39,6 +39,8 @@ public:
     void set_tile(const TileIndex& index, const Shared<const TileInfo>& id) const;
     Shared<const TileInfo> get_tile_id(const TileIndex& index) const;
 
+    bool damage_tile(const TileIndex& index, float damage) const;
+
     void cap_chunks(uint z);
     void uncap_chunks();
     FORCEINLINE uint get_cap_chunk_z() const { return cap_chunk_z; }
@@ -46,6 +48,8 @@ public:
     void dump_observable_area();
 
     Delegate<const Shared<Character>&> on_character_spawned;
+
+protected:
 
 private:
     void character_destroyed_callback(const Shared<Entity>& character);

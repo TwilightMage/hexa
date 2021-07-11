@@ -4,6 +4,7 @@
 #include <fstream>
 
 #include "Path.h"
+#include "Pointers.h"
 
 class EXPORT File
 {

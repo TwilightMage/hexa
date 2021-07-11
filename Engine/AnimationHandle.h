@@ -3,6 +3,7 @@
 #include "BasicTypes.h"
 #include "Delegate.h"
 #include "framework.h"
+#include "Pointers.h"
 
 class AnimationInstance;
 class Animation;

@@ -169,7 +169,7 @@ Quaternion Quaternion::look_at(const Vector3& normal)
 Quaternion Quaternion::slerp(const Quaternion& a, const Quaternion& b, float alpha)
 {
     if (1 - Math::abs(a.dot(b)) <= KINDA_SMALL_NUMBER) return b;
-    return cast_object<Quaternion>(glm::slerp(cast_object<glm::quat>(a), cast_object<glm::quat>(b), alpha));
+    return cast_object<Quaternion>(glm::slerp(cast_object<glm::quat>(a), cast_object<glm::quat>(b), Math::clamp(alpha, 0.0f, 1.0f)));
 }
 
 Quaternion Quaternion::lerp(const Quaternion& from, const Quaternion& to, float alpha)

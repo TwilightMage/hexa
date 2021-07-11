@@ -8,6 +8,8 @@ class TreeStemInfo : public ComplexTileInfo
 public:
     TreeStemInfo(
         const String& key,
+        const Set<String>& tags,
+        float hardness,
         const Shared<Mesh>& mesh,
         const Shared<Texture>& texture,
         const Shared<Material3D>& material,
@@ -16,7 +18,7 @@ public:
         const Shared<Mesh>& krone_mesh,
         const Shared<Texture>& krone_texture
         )
-        : ComplexTileInfo(key, mesh, texture, material)
+        : ComplexTileInfo(key, tags + Set{ MetaTags::PLANT, MetaTags::WOOD }, hardness, mesh, texture, material)
         , roots_meshes(roots_meshes)
         , roots_textures(roots_textures)
         , krone_mesh(krone_mesh)

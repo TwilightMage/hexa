@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "Engine/BasicTypes.h"
+#include "Engine/Pointers.h"
 #include "Engine/String.h"
 
 class WorldGenerator;

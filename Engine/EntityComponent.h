@@ -2,11 +2,12 @@
 
 #include "BasicTypes.h"
 #include "framework.h"
+#include "Pointers.h"
 
 class World;
 class Entity;
 
-class EXPORT EntityComponent : public std::enable_shared_from_this<EntityComponent>
+class EXPORT EntityComponent : public EnableSharedFromThis<EntityComponent>
 {
     friend Entity;
     friend World;

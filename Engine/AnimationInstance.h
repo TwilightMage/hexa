@@ -4,6 +4,7 @@
 #include "BasicTypes.h"
 #include "Delegate.h"
 #include "List.h"
+#include "Pointers.h"
 
 class Animation;
 class AnimatorComponent;

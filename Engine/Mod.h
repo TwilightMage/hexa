@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "Path.h"
+#include "Pointers.h"
 #include "Version.h"
 
 class Game;

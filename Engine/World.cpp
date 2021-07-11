@@ -10,6 +10,7 @@
 #include "Quaternion.h"
 #include "Material.h"
 #include "Material3D.h"
+#include "performance.h"
 #include "Settings.h"
 #include "Physics/ConcaveMeshCollision.h"
 #include "Physics/ConvexMeshCollision.h"
@@ -17,7 +18,7 @@
 
 bool World::spawn_entity(const Shared<Entity>& entity, const Vector3& pos, const Quaternion& rot)
 {
-    if (!ensure_child_not_exist(entity)) return false;
+    if (entities_.contains(entity)) return false;
     
     entity->position_ = pos;
     entity->rotation_ = rot;
@@ -27,8 +28,7 @@ bool World::spawn_entity(const Shared<Entity>& entity, const Vector3& pos, const
 
 bool World::spawn_entity(const Shared<Entity>& entity, const Vector3& pos)
 {
-    if (!ensure_child_not_exist(entity)) return false;
-    
+    if (entities_.contains(entity)) return false;
     entity->position_ = pos;
     spawn_entity_internal(entity);
     return true;
@@ -36,7 +36,7 @@ bool World::spawn_entity(const Shared<Entity>& entity, const Vector3& pos)
 
 bool World::spawn_entity(const Shared<Entity>& entity, const Quaternion& rot)
 {
-    if (!ensure_child_not_exist(entity)) return false;
+    if (entities_.contains(entity)) return false;
     
     entity->rotation_ = rot;
     spawn_entity_internal(entity);
@@ -45,7 +45,7 @@ bool World::spawn_entity(const Shared<Entity>& entity, const Quaternion& rot)
 
 bool World::spawn_entity(const Shared<Entity>& entity)
 {
-    if (!ensure_child_not_exist(entity)) return false;
+    if (entities_.contains(entity)) return false;
     
     spawn_entity_internal(entity);
     return true;
@@ -165,21 +165,20 @@ void World::tick(float delta_time)
     }
 
     // tick in child
-    on_tick();
+    on_tick(delta_time);
 
     // tick entities
-    List<uint> to_delete;
+    Set<Shared<Entity>> to_delete;
     
-    for (uint i = 0; i < entities_.length(); i++)
+    for (auto& entity : entities_)
     {
-        auto& entity = entities_[i];
         if (entity->pending_kill_)
         {
             do_destroy(entity);
 
             entity->pending_kill_ = false;
             
-            to_delete.add(i);
+            to_delete.add(entity);
         }
         else if (time_scale_ != 0.0f)
         {
@@ -200,14 +199,14 @@ void World::tick(float delta_time)
     }
 
     // cleanup entities
-    for (uint i = 0; i < to_delete.length(); i++)
+    for (auto& entity : to_delete)
     {
-        entities_.remove_at(to_delete[to_delete.length() - 1 - i]);
+        entities_.remove(entity);
     }
     to_delete.clear();
 }
 
-const List<Shared<Entity>>& World::get_entities() const
+const Set<Shared<Entity>>& World::get_entities() const
 {
     return entities_;
 }
@@ -245,7 +244,7 @@ void World::on_start()
 {
 }
 
-void World::on_tick()
+void World::on_tick(float delta_time)
 {
 }
 
@@ -271,8 +270,11 @@ void World::close()
 
 void World::spawn_entity_internal(const Shared<Entity>& entity)
 {
+    get_now(t1);
     entity->generate_components();
+    get_now(t2);
     entity->world_ = weak_from_this();
+    get_now(t3);
     if (entity->is_rigid_body())
     {
         entity->rigid_body_ = physics_world_->createRigidBody(
@@ -283,19 +285,13 @@ void World::spawn_entity_internal(const Shared<Entity>& entity)
         );
         entity->rigid_body_->setUserData(entity.get());
     }
-        
+    get_now(t4);
     entities_.add(entity);
+    get_now(t5);
     entity->start();
-}
-
-bool World::ensure_child_not_exist(const Shared<Entity>& entity)
-{
-    for (auto& existing_entity : entities_)
-    {
-        if (existing_entity == entity) return false;
-    }
-
-    return true;
+    get_now(t6);
+    measure_time_all(q, t1, t2, t3, t4, t5, t6);
+    auto f = 1;
 }
 
 void World::do_destroy(const Shared<Entity>& entity)

@@ -6,6 +6,7 @@
 #include "WorldChunk.h"
 #include "Engine/Game.h"
 #include "Engine/Math.h"
+#include "Engine/performance.h"
 
 const Vector2 tex_size(60, 45);
 const Vector2 floor_uv_pos = Vector2(39, 33) / tex_size;

@@ -3,6 +3,7 @@
 #include <functional>
 
 #include "Path.h"
+#include "Pointers.h"
 #include "String.h"
 
 class Path;

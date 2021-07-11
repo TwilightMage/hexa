@@ -1,9 +1,12 @@
 ﻿#pragma once
 
 #include "BasicTypes.h"
+#include "framework.h"
 #include "Logger.h"
 #include "Material.h"
 #include "MaterialParameters.h"
+#include "Name.h"
+#include "performance.h"
 #include "Shader.h"
 #include "String.h"
 
@@ -11,7 +14,7 @@ class Material;
 class Mesh;
 class Shader;
 
-class EXPORT MaterialInstance : public std::enable_shared_from_this<MaterialInstance>
+class EXPORT MaterialInstance : public EnableSharedFromThis<MaterialInstance>
 {
     friend Material;
     
@@ -25,7 +28,7 @@ public:
     void set_visible(bool visible);
 
     template<typename T>
-    void set_param_value(const String& name, const T& value)
+    void set_param_value(const Name& name, const T& value)
     {
         String shader_name = "NULL";
         if (const auto material = get_material())
@@ -36,28 +39,31 @@ public:
             }
         }
         
-        for (auto& basic_param : instance_parameters_)
+        get_now(t1);
+        if (auto basic_param = instance_parameters_.find(name))
         {
-            if (basic_param->name == name)
+            get_now(t2);
+            if (auto param = cast<MaterialParameter<T>>(*basic_param))
             {
-                if (auto param = cast<MaterialParameter<T>>(basic_param))
-                {
-                    param->value = value;
-                    return;
-                }
-                print_warning("Material", "Attempting to assign a %s value to instance parameter %s %s on shader %s", typeid(T).name(), basic_param->type->name.c(), name.c(), shader_name.c());
+                get_now(t3);
+                param->value = value;
+                get_now(t4);
+                measure_time_all(qq, t1, t2, t3, t4);
+                uint q = 1;
                 return;
             }
+            print_warning("Material", "Attempting to assign a %s value to instance parameter %s %s on shader %s", typeid(T).name(), (*basic_param)->type->name.c(), name.to_string().c(), shader_name.c());
+            return;
         }
-        print_warning("Material", "Attempting to assign a value to instance parameter %s which doesn't exists on shader %s", name.c(), shader_name.c());
+        print_warning("Material", "Attempting to assign a value to instance parameter %s which doesn't exists on shader %s", name.to_string().c(), shader_name.c());
     }
 
     template<typename T>
-    Shared<MaterialParameter<T>> get_parameter(const String& name) const
+    Shared<MaterialParameter<T>> get_parameter(const Name& name) const
     {
-        for (auto& param : instance_parameters_)
+        if (auto param = instance_parameters_.find(name))
         {
-            if (param->name == name) return cast<MaterialParameter<T>>(param);
+            return cast<MaterialParameter<T>>(*param);
         }
         
         return nullptr;
@@ -75,5 +81,5 @@ private:
     Shared<Mesh> mesh_;
     bool visible_ = true;
 
-    List<Shared<MaterialParameterBase>> instance_parameters_;
+    SimpleMap<Name, Shared<MaterialParameterBase>> instance_parameters_;
 };

@@ -31,6 +31,7 @@ public:
     Set(const Set& rhs)
     {
         reallocate(rhs.length_);
+        length_ = rhs.length();
 
         for (uint i = 0; i < length_; i++)
         {
@@ -44,7 +45,7 @@ public:
 
         for (uint i = 0; i < length; i++)
         {
-            Add(data_ptr[i]);
+            add(data_ptr[i]);
         }
 
         slack();
@@ -52,11 +53,11 @@ public:
 
     Set(const std::initializer_list<T>& il)
     {
-        reallocate(il.size());
+        reallocate((uint)il.size());
 
-        for (uint i = 0; i < il.size(); i++)
+        for (const auto& item : il)
         {
-            Add(il[i]);
+            add(item);
         }
 
         slack();
@@ -155,6 +156,38 @@ public:
             }
         }
     }
+
+    void clear()
+    {
+        reallocate(0);
+        length_ = 0;
+    }
+
+    bool contains(const T& rhs) const
+    {
+        uint l = 0;
+        uint r = length_;
+        uint m = 0;
+
+        while (l < r)
+        {
+            m = (l + r) / 2;
+            if (inner_[m] < rhs)
+            {
+                l = m + 1;
+            }
+            else if (inner_[m] > rhs)
+            {
+                r = m;
+            }
+            else
+            {
+                return true;
+            }
+        }
+
+        return false;
+    }
     
     const T& operator[](uint index) const
     {
@@ -164,6 +197,28 @@ public:
         }
 
         return inner_[index];
+    }
+
+    Set operator+(const Set& rhs) const
+    {
+        Set result = *this;
+        for (auto& item : rhs)
+        {
+            result.add(item);
+        }
+
+        return result;
+    }
+
+    Set operator-(const Set& rhs) const
+    {
+        Set result = *this;
+        for (auto& item : rhs)
+        {
+            result.remove(item);
+        }
+
+        return result;
     }
 
 private:

@@ -10,12 +10,12 @@
 #include "ICamera.h"
 #include "IControllable.h"
 #include "Logger.h"
-#include "Mod.h"
-#include "Path.h"
-#include "Paths.h"
 #include "Material.h"
 #include "Material3D.h"
 #include "MaterialUI.h"
+#include "Mod.h"
+#include "Path.h"
+#include "Paths.h"
 #include "SaveGame.h"
 #include "Set.h"
 #include "Settings.h"
@@ -23,7 +23,6 @@
 #include "SpriteFont.h"
 #include "TextureAtlas.h"
 #include "World.h"
-#include "HexaGame/HexaSettings.h"
 #include "ui/Image.h"
 #include "ui/TextBlock.h"
 #include "ui/UIInputElement.h"
@@ -411,6 +410,7 @@ void Game::render_loop()
 	});
 
 	// Materials
+	static_assert(CanEnableShared<Material3D>);
 	basic_material_3d_ = MakeShared<Material3D>();
 	basic_material_3d_->init(basic_3d_shader_, 0);
 	
@@ -480,7 +480,7 @@ void Game::render_loop()
 
 	while (!glfwWindowShouldClose(window_))
 	{
-		while (glfwGetTime() - tick_start < 1.0f / settings_->get_fps_limit());
+		while (glfwGetTime() - tick_start < 1.0f / settings_->fps_limit);
 		const float tick_time = glfwGetTime() - tick_start;
 		tick_start = glfwGetTime();
 

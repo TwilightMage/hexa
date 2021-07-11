@@ -11,31 +11,31 @@ class Math
 {
 public:
     template<typename T>
-    static T pi()
+    FORCEINLINE static T pi()
     {
         return static_cast<T>(3.141592653589793238462643383279502884197169399375105820974944592);
     }
 
     template<typename T>
-    static T epsilon()
+    FORCEINLINE static T epsilon()
     {
         return static_cast<T>(2.2204460492503131e-016);
     }
 
     template<typename T>
-    static T min(T a, T b)
+    FORCEINLINE static T min(T a, T b)
     {
         return a < b ? a : b;
     }
 
     template<typename T>
-    static T max(T a, T b)
+    FORCEINLINE static T max(T a, T b)
     {
         return a > b ? a : b;
     }
 
     template<typename T>
-    static T clamp(T value, T min, T max)
+    FORCEINLINE static T clamp(T value, T min, T max)
     {
         return value < min ? min : value > max ? max : value;
     }
@@ -61,7 +61,7 @@ public:
     template<typename T>
     FORCEINLINE static T lerp(T from, T to, float alpha)
     {
-        return from + (to - from) * alpha;
+        return from + (to - from) * clamp(alpha, 0.0f, 1.0f);
     }
 
     template<typename T>
@@ -71,79 +71,79 @@ public:
     }
 
     template<typename T>
-    static T abs(T value)
+    FORCEINLINE static T abs(T value)
     {
         return std::abs(value);
     }
 
     template<typename T>
-    static T degrees(T radians)
+    FORCEINLINE static T degrees(T radians)
     {
         return radians / pi<T>() * static_cast<T>(180);
     }
 
     template<typename T>
-    static T radians(T degrees)
+    FORCEINLINE static T radians(T degrees)
     {
         return degrees / static_cast<T>(180) * pi<T>();
     }
     
     template<typename T>
-    static T sqr(T in)
+    FORCEINLINE static T sqr(T in)
     {
         return in * in;
     }
 
     template<typename T>
-    static T pow(T in, T pow)
+    FORCEINLINE static T pow(T in, T pow)
     {
         return std::pow(in, pow);
     }
 
     template<typename T>
-    static T log2(T from)
+    FORCEINLINE static T log2(T from)
     {
         return std::log2(from);
     }
 
     template<typename T>
-    static T sqrt(T in)
+    FORCEINLINE static T sqrt(T in)
     {
         return std::sqrt(in);
     }
 
     template<typename T>
-    static T sin_deg(T deg)
+    FORCEINLINE static T sin_deg(T deg)
     {
         return sin(radians(deg));
     }
 
     template<typename T>
-    static T sin_rad(T rad)
+    FORCEINLINE static T sin_rad(T rad)
     {
         return sin(rad);
     }
 
     template<typename T>
-    static T cos_deg(T deg)
+    FORCEINLINE static T cos_deg(T deg)
     {
         return cos(radians(deg));
     }
 
     template<typename T>
-    static T cos_rad(T rad)
+    FORCEINLINE static T cos_rad(T rad)
     {
         return cos(rad);
     }
 
     template<typename T>
-    static T acos_deg(T in)
+    FORCEINLINE static T acos_deg(T in)
     {
         return degrees(std::acos(in));
     }
 
     template<typename T>
-    static T acos_rad(T in)
+    FORCEINLINE static T acos_rad(T in)
     {
         return std::acos(in);
     }
@@ -158,19 +158,19 @@ public:
     }
 
     template<typename T>
-    static int floor(T in)
+    FORCEINLINE static int floor(T in)
     {
         return static_cast<int>(::floor(in));
     }
 
     template<typename T>
-    static int ceil(T in)
+    FORCEINLINE static int ceil(T in)
     {
         return static_cast<int>(::ceil(in));
     }
 
     template<typename T>
-    static int round(T in)
+    FORCEINLINE static int round(T in)
     {
         return static_cast<int>(::round(in));
     }

@@ -199,7 +199,7 @@ void Material::init(const Shared<Shader>& shader, float z_order)
 
     for (auto& uniform_parameter : shader->get_global_uniforms())
     {
-        global_parameters_.add(uniform_parameter.type->parameter_producer(uniform_parameter.name));
+        global_parameters_[uniform_parameter->value.name] = uniform_parameter->value.type->parameter_producer(uniform_parameter->value.name);
     }
 
     register_direct_parameters();
@@ -246,14 +246,14 @@ void Material::render(const RenderData& render_data) const
     glUseProgram(shader_->get_program());
 
     // Global parameters
-    uint parameter_count = shader_->get_global_uniforms().length();
+    uint parameter_count = shader_->get_global_uniforms().size();
                 
     for (uint i = 0; i < parameter_count; i++)
     {
-        const auto param = shader_->get_global_uniforms()[i];
-        void* parameter_buffer = malloc(param.type->c_size);
-        global_parameters_[i]->write_data(parameter_buffer);
-        apply_uniform(param.type->gl_type, param.layout, 1, parameter_buffer);
+        const auto param = shader_->get_global_uniforms().entries[i];
+        void* parameter_buffer = malloc(param->value.type->c_size);
+        global_parameters_.entries[i]->value->write_data(parameter_buffer);
+        apply_uniform(param->value.type->gl_type, param->value.layout, 1, parameter_buffer);
         free(parameter_buffer);
     }
 
@@ -278,15 +278,15 @@ void Material::render(const RenderData& render_data) const
                 const auto instance_count = shader_->get_instance_count() == 0 ? mesh_container->active_instances_.length() : std::min(mesh_container->active_instances_.length() - rendered_instance_count, shader_->get_instance_count());
 
                 // Instance parameters
-                for (uint i = 0; i < shader_->get_instance_uniforms().length(); i++)
+                for (uint i = 0; i < shader_->get_instance_uniforms().size(); i++)
                 {
-                    const auto& param = shader_->get_instance_uniforms()[i];
-                    void* parameter_buffer = malloc(param.type->c_size * instance_count);
+                    const auto& param = shader_->get_instance_uniforms().entries[i];
+                    void* parameter_buffer = malloc(param->value.type->c_size * instance_count);
                     for (uint j = 0; j < instance_count; j++)
                     {
-                        mesh_container->active_instances_[j + rendered_instance_count]->instance_parameters_[i]->write_data((byte*)parameter_buffer + j * param.type->c_size);
+                        mesh_container->active_instances_[j + rendered_instance_count]->instance_parameters_.entries[i]->value->write_data((byte*)parameter_buffer + j * param->value.type->c_size);
                     }
-                    apply_uniform(param.type->gl_type, param.layout, instance_count, parameter_buffer);
+                    apply_uniform(param->value.type->gl_type, param->value.layout, instance_count, parameter_buffer);
                     free(parameter_buffer);
                 }
 
@@ -324,9 +324,9 @@ Shared<MaterialInstance> Material::create_instance()
     instance->material_ = weak_from_this();
     for (auto& uniform_parameter : shader_->get_instance_uniforms())
     {
-        auto parameter = uniform_parameter.type->parameter_producer(uniform_parameter.name);
+        auto parameter = uniform_parameter->value.type->parameter_producer(uniform_parameter->value.name);
         parameter->reset();
-        instance->instance_parameters_.add(parameter);
+        instance->instance_parameters_[parameter->name] = parameter;
     }
     instance->register_direct_parameters();
     if (shader_->get_empty_vertex() > 0)
@@ -364,7 +364,7 @@ void Material::destroy_instance(const Shared<MaterialInstance>& instance)
             }
         }
         
-        instance->material_ = null_weak(Material);
+        instance->material_ = nullptr;
     }
 }
 

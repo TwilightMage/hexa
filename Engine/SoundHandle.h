@@ -2,6 +2,7 @@
 
 #include "BasicTypes.h"
 #include "framework.h"
+#include "Pointers.h"
 
 class World;
 

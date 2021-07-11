@@ -2,6 +2,7 @@
 
 #include "Engine/BasicTypes.h"
 #include "Engine/List.h"
+#include "Engine/Pointers.h"
 
 class Texture;
 class Mesh;

@@ -2,6 +2,7 @@
 
 #include "List.h"
 #include "Math.h"
+#include "Pointers.h"
 
 template<typename T>
 class Curve
@@ -76,7 +77,7 @@ public:
         }
     
     private:
-        Unique<Interpolator> interpolator;
+        Reference<Interpolator> interpolator;
     };
 
     struct Point

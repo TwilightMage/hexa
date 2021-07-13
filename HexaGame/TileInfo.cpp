@@ -15,6 +15,10 @@ void ComplexTileInfo::setup_spawned_entity(const Shared<ComplexTile>& new_tile, 
 {
 }
 
+void ComplexTileInfo::cleanup_destroyed_entity(const Shared<ComplexTile>& destroyed_tile, const Shared<ComplexTileCustomData>& custom_data) const
+{
+}
+
 bool ComplexTileInfo::can_place_at(const Shared<ComplexTile>& new_tile, const ItemContainer& item) const
 {
     return true;

@@ -10,5 +10,5 @@ public:
 protected:
     void on_start() override;
 
-    void tick(float delta_time) override;
+    void on_tick(float delta_time) override;
 };

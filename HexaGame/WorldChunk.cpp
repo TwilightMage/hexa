@@ -127,6 +127,8 @@ void WorldChunk::set_tile(const TileIndex& index, const Shared<const TileInfo>& 
     if (auto complex = complex_tiles_.find(index))
     {
         complex->entity->destroy();
+        complex->info->cleanup_destroyed_entity(complex->entity, custom_data_[index]);
+        custom_data_.remove(index);
     }
     if (new_tile->type == TileType::Complex)
     {
@@ -224,18 +226,9 @@ void WorldChunk::try_show_mesh()
 {
     if (load_counter_ == 0 && visibility_counter_ > 0)
     {
-        get_now(t1);
         regenerate_whole_mesh();
-        get_now(t2);
         regenerate_all_complex_tiles();
-        get_now(t3);
         regenerate_cap_mesh();
-        get_now(t4);
-
-        measure_time(q1, t1, t2);
-        measure_time(q2, t2, t3);
-        measure_time(q3, t3, t4);
-        auto a = 1;
     }
 }
 
@@ -413,6 +406,8 @@ void WorldChunk::dec_visibility()
         for (auto& complex : complex_tiles_)
         {
             complex->value.entity->destroy();
+            complex->value.info->cleanup_destroyed_entity(complex->value.entity, custom_data_[complex->key]);
+            
         }
         complex_tiles_.clear();
     }
@@ -514,7 +509,7 @@ void WorldChunk::neighbor_tile_changed(const ChunkIndex& chunk, const TileIndex&
     }
 }
 
-void WorldChunk::spawn_complex(const TileIndex& local_index, ComplexTileSlot& slot) const
+void WorldChunk::spawn_complex(const TileIndex& local_index, ComplexTileSlot& slot)
 {
     const TileIndex world_index = local_index.to_absolute(index_);
     if (auto world = world_.lock())
@@ -522,21 +517,14 @@ void WorldChunk::spawn_complex(const TileIndex& local_index, ComplexTileSlot& sl
         if (slot.entity)
         {
             slot.entity->destroy();
+            slot.info->cleanup_destroyed_entity(slot.entity, custom_data_[slot.entity->get_index()]);
+            custom_data_.remove(slot.entity->get_index());
         }
 
-        get_now(t1);
         auto entity = MakeShared<ComplexTile>(slot.info);
-        get_now(t2);
         entity->index_ = world_index;
-        get_now(t3);
         world->spawn_entity(entity, world_index.to_vector());
-        get_now(t4);
         entity->tile_info_->setup_spawned_entity(entity, custom_data_.find_or_default(local_index, nullptr));
-        get_now(t5);
-        measure_time(q1, t1, t2);
-        measure_time(q2, t2, t3);
-        measure_time(q3, t3, t4);
-        measure_time(q4, t4, t5);
         slot.entity = entity;
     }
 }
@@ -565,10 +553,7 @@ void WorldChunk::regenerate_all_complex_tiles()
     {
         for (auto& complex : complex_tiles_)
         {
-            get_now(t1);
             spawn_complex(complex->key, complex->value);
-            measure_now(t2, t1);
-            auto q = 1;
         }
     }
 }

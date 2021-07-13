@@ -84,7 +84,7 @@ void DebugPlayer::on_possess()
     Game::hide_mouse();
 }
 
-void DebugPlayer::tick(float delta_time)
+void DebugPlayer::on_tick(float delta_time)
 {
     static float speed = 3;
     auto pos = get_position();

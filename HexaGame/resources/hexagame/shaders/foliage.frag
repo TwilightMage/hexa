@@ -21,7 +21,7 @@ void main()
     vec3 diffuse = diff * sun_light;
 
     frag_color = texture(INST_texture[InstanceID], uv) * vec4((ambient_light + diffuse), 1.0);
-    if (frag_color.a < 0.1)
+    if (frag_color.a < 0.9)
     {
         discard;
     }

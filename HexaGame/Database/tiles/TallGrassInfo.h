@@ -7,7 +7,7 @@ class TallGrassInfo : public ComplexTileInfo
 public:
     TallGrassInfo(
         const String& key,
-        const Set<String>& tags,
+        const Set<Name>& tags,
         float hardness,
         const Shared<Mesh>& mesh,
         const Shared<Texture>& texture,

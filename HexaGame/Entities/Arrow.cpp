@@ -18,7 +18,7 @@ void Arrow::on_start()
     set_collision(MakeShared<BoxCollision>(Vector3(0.5f, 0.05f, 0.05f)));
 }
 
-void Arrow::tick(float delta_time)
+void Arrow::on_tick(float delta_time)
 {
     //const auto rot_axis = rotation_.forward().cross_product(Vector3::up());
     //rotation_ = rotation_.rotate_around(rot_axis, delta_time * -10);

@@ -34,9 +34,10 @@ void Audio::set_looped(bool looped)
     sample_->setLooping(looped);
 }
 
-bool Audio::is_looped() const
+void Audio::set_default_volume(float volume)
 {
-    return looped_;
+    default_volume_ = volume;
+    sample_->setVolume(volume);
 }
 
 float Audio::get_duration() const

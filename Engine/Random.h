@@ -1,95 +1,73 @@
 ﻿#pragma once
 
+#include <random>
+
 #include "framework.h"
 
-#define RANDOM_STEP 1375591
+#define RANDOM_MAX 2147483647
+
+typedef std::linear_congruential_engine<unsigned int, 48271, 0, 2147483647> random_engine;
 
 class Random
 {
 public:
     Random(uint seed)
-        : seed_(seed)
     {
+        rd = std::minstd_rand(seed);
     }
 
     template<typename T>
     T number()
     {
-        srand(seed_);
-        seed_ = rand();
-        return rand() % RAND_MAX;
+        return rd() % RANDOM_MAX;
     }
     template<typename T>
     T number(T max)
     {
-        srand(seed_);
-        seed_ = rand();
-        return rand() % max;
+        return rd() % max;
     }
     template<typename T>
     T number(T min, T max)
     {
-        srand(seed_);
-        seed_ = rand();
-        return min + rand() % (max - min);
+        return min + rd() % (max - min);
     }
 
     bool boolean()
     {
-        srand(seed_);
-        seed_ = rand();
-        return rand() % 2 == 1;
+        return rd() % 2 == 1;
     }
     
     template<typename T>
-    static T static_number(uint seed)
+    static T static_number()
     {
-        srand(seed);
-        srand(rand());
-        return rand() % RAND_MAX;
+        return static_rd() % RANDOM_MAX;
     }
     template<typename T>
-    static T static_number(uint seed, T max)
+    static T static_number(T max)
     {
-        srand(seed);
-        srand(rand());
-        return rand() % max;
+        return static_rd() % max;
     }
     template<typename T>
-    static T static_number(uint seed, T min, T max)
+    static T static_number(T min, T max)
     {
-        srand(seed);
-        srand(rand());
-        return min + rand() % (max - min);
+        return min + static_rd() % (max - min);
     }
 
-    static bool static_boolean(uint seed)
+    static bool static_boolean()
     {
-        srand(seed);
-        srand(rand());
-        return rand() % 2 == 1;
-    }
-
-    static uint random_seed()
-    {
-        const uint copy = static_seed_;
-        srand(static_seed_);
-        static_seed_ = rand();
-        return copy;
+        return static_rd() % 2 == 1;
     }
 
 private:
-    uint seed_ = 1;
+    random_engine rd;
 
-    inline static uint static_seed_ = 1;
+    inline static random_engine static_rd = random_engine(0);
 };
 
 template<>
 inline float Random::number()
 {
-    srand(seed_);
-    seed_ = rand();
-    return rand() / static_cast<float>(RAND_MAX);
+    return rd() % RANDOM_MAX / (float)(RANDOM_MAX);
 }
 template<>
 inline float Random::number(float max)
@@ -103,19 +81,17 @@ inline float Random::number(float min, float max)
 }
 
 template<>
-inline float Random::static_number(uint seed)
+inline float Random::static_number()
 {
-    srand(seed);
-    srand(rand());
-    return rand() / static_cast<float>(RAND_MAX);
+    return static_rd() % RANDOM_MAX / (float)(RANDOM_MAX);
 }
 template<>
-inline float Random::static_number(uint seed, float max)
+inline float Random::static_number(float max)
 {
-    return static_number<float>(seed) * max;
+    return static_number<float>() * max;
 }
 template<>
-inline float Random::static_number(uint seed, float min, float max)
+inline float Random::static_number(float min, float max)
 {
-    return min + static_number<float>(seed) * (max - min);
+    return min + static_number<float>() * (max - min);
 }

@@ -7,11 +7,12 @@
 
 #include "Audio.h"
 #include "AudioChannel.h"
+#include "File.h"
 #include "ICamera.h"
 #include "IControllable.h"
 #include "Logger.h"
-#include "Material.h"
 #include "Material3D.h"
+#include "Material.h"
 #include "MaterialUI.h"
 #include "Mod.h"
 #include "Path.h"
@@ -183,34 +184,39 @@ const Path& Game::get_app_path()
 	return instance_->app_path_;
 }
 
-Shared<Shader> Game::get_basic_shader()
+const Shared<Shader>& Game::get_basic_shader()
 {
 	return instance_->basic_3d_shader_;
 }
 
-Shared<Shader> Game::get_basic_ui_shader()
+const Shared<Shader>& Game::get_basic_ui_shader()
 {
 	return instance_->basic_ui_shader_;
 }
 
-Shared<Material3D> Game::get_basic_material_3d()
+const Shared<Material3D>& Game::get_basic_material_3d()
 {
 	return instance_->basic_material_3d_;
 }
 
-Shared<MaterialUI> Game::get_basic_material_ui()
+const Shared<MaterialUI>& Game::get_basic_material_ui()
 {
 	return instance_->basic_material_ui_;
 }
 
-Shared<Texture> Game::get_white_pixel()
+const Shared<Texture>& Game::get_white_pixel()
 {
 	return *instance_->white_pixel_;
 }
 
-Shared<SpriteFont> Game::get_default_font()
+const Shared<SpriteFont>& Game::get_default_font()
 {
 	return instance_->default_font_;
+}
+
+const Shared<AudioChannel>& Game::get_general_channel()
+{
+	return instance_->general_channel_;
 }
 
 uint Game::get_screen_width()
@@ -251,6 +257,47 @@ void Game::hide_mouse()
 void Game::show_mouse()
 {
 	glfwSetInputMode(instance_->window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+}
+
+void Game::set_cursor_texture(const Shared<Texture>& tex, uint hotspot_x, uint hotspot_y)
+{
+	if (instance_->cursor_)
+	{
+		glfwDestroyCursor(instance_->cursor_);
+		instance_->cursor_ = nullptr;
+	}
+
+	if (tex == nullptr)
+	{
+		glfwSetCursor(instance_->window_, nullptr);
+		return;
+	}
+	
+	uint scale = Math::round(instance_->ui_scale_);
+
+	Array2D<Color> cursor_pixels = Array2D<Color>(tex->get_width() * scale, tex->get_height() * scale);
+
+	for (uint x = 0; x < cursor_pixels.get_size_x(); x++)
+	{
+		for (uint y = 0; y < cursor_pixels.get_size_y(); y++)
+		{
+			cursor_pixels.at(x, y) = tex->get_pixel(x / scale, y / scale);
+		}
+	}
+
+	uint len = cursor_pixels.get_size_x() * cursor_pixels.get_size_y() * 4;
+	byte* pixels = new byte[len];
+	memcpy(pixels, cursor_pixels.to_list().get_data(), len);
+ 
+	GLFWimage image;
+	image.width = cursor_pixels.get_size_x();
+	image.height = cursor_pixels.get_size_y();
+	image.pixels = pixels;
+ 
+	instance_->cursor_ = glfwCreateCursor(&image, hotspot_x * scale, hotspot_y * scale);
+	glfwSetCursor(instance_->window_, instance_->cursor_);
+
+	delete pixels;
 }
 
 void Game::add_ui(const Shared<UIElement>& ui)
@@ -336,6 +383,22 @@ void Game::setup_window()
 		glfwTerminate();
 		exit(EXIT_FAILURE);
 	}
+
+	if (auto icon = Texture::load_png(get_info().icon))
+	{
+		const uint len = icon->get_width() * icon->get_height() * 4;
+		byte* pixels = new byte[len];
+		memcpy(pixels, icon->get_pixels().to_list().get_data(), len);
+		
+		GLFWimage icons[1];
+		icons[0].width = icon->get_width();
+		icons[0].height = icon->get_height();
+		icons[0].pixels = pixels;
+		
+		glfwSetWindowIcon(window_, 1, icons);
+
+		delete pixels;
+	}
 }
 
 void Game::prepare()
@@ -410,7 +473,6 @@ void Game::render_loop()
 	});
 
 	// Materials
-	static_assert(CanEnableShared<Material3D>);
 	basic_material_3d_ = MakeShared<Material3D>();
 	basic_material_3d_->init(basic_3d_shader_, 0);
 	
@@ -422,6 +484,10 @@ void Game::render_loop()
 
 	// Fonts
 	default_font_ = SpriteFont::load_fnt(RESOURCES_ENGINE_FONTS + "arial.fnt");
+
+	// Audio channels
+	general_channel_ = AudioChannel::create();
+	general_channel_->set_volume(settings_->get_general_channel_volume());
 	
 	loading_stage();
 	
@@ -475,6 +541,8 @@ void Game::render_loop()
 	dcc_display->set_z(10);
 	dcc_display->set_position(Vector2(0, 50));
 	add_ui(dcc_display);
+
+	soloud_->set3dListenerUp(0, 0, 1);
 
 	float tick_start = glfwGetTime();
 
@@ -545,10 +613,15 @@ void Game::render_loop()
 
 			if (current_camera_ && width > 0 && height > 0)
 			{
-				// 3d matrix
 				latest_camera_info_ = current_camera_->get_camera_info();
 				auto cam_from = latest_camera_info_.position;
 				auto cam_to = latest_camera_info_.position + latest_camera_info_.rotation.forward();
+				
+				// audio
+				soloud_->set3dListenerPosition(cam_from.x, cam_from.y, cam_from.z);
+				soloud_->set3dListenerAt(cam_to.x, cam_to.y, cam_to.z);
+				
+				// 3d matrix
 				cam_from.y *= -1;
 				cam_to.y *= -1;
 
@@ -642,7 +715,17 @@ void Game::init_game()
 	info_.title = "Untitled Game";
 
 	init_game_info(info_);
+	
 	settings_ = generate_settings_object();
+	const Path settings_path = "settings.json";
+	JSON settings_json;
+	if (settings_path.exists())
+	{
+		settings_json = JSON::parse(File::read_file(settings_path));
+	}
+	settings_->read_settings(settings_json);
+	settings_->write_settings(settings_json);
+	//File::write_file(settings_path, settings_json.to_string());
 
 	soloud_->init();
 }

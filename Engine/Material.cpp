@@ -364,7 +364,7 @@ void Material::destroy_instance(const Shared<MaterialInstance>& instance)
             }
         }
         
-        instance->material_ = nullptr;
+        instance->material_ = null_weak(Material);
     }
 }
 

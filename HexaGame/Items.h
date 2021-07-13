@@ -16,11 +16,13 @@ public:
     DECLARE_DATABASE_ENTRY(ItemToolInfo, iron_shovel);
     DECLARE_DATABASE_ENTRY(ItemTileInfo, stone_bricks);
     DECLARE_DATABASE_ENTRY(ItemTileInfo, dirt);
+    DECLARE_DATABASE_ENTRY(ItemInfo,     ash_log);
 
     DATABASE_INIT_FUNC(ItemInfo)
     {
-        INIT_ITEM_DATABASE_ENTRY(iron_shovel,  ItemToolInfo, RESOURCES_HEXA, "shovel", ItemType::Shovel, "Iron Shovel", 1, 1.0f, TARGET_INSIDE);
-        INIT_ITEM_DATABASE_ENTRY(stone_bricks, ItemTileInfo, RESOURCES_HEXA, "bricks", ItemType::Tile,   "Stone Bricks", 1.0f);
-        INIT_ITEM_DATABASE_ENTRY(dirt,         ItemTileInfo, RESOURCES_HEXA, "pile",   ItemType::Tile,   "Dirt Pile",    1.0f);
+        INIT_ITEM_DATABASE_ENTRY(iron_shovel,  ItemToolInfo, RESOURCES_HEXA, "shovel", ItemType::Shovel,                        "Iron Shovel",  1, 1.0f, TARGET_INSIDE);
+        INIT_ITEM_DATABASE_ENTRY(stone_bricks, ItemTileInfo, RESOURCES_HEXA, "bricks", ItemType::Tile | ItemType::Resource,     "Stone Bricks", 1.0f);
+        INIT_ITEM_DATABASE_ENTRY(dirt,         ItemTileInfo, RESOURCES_HEXA, "pile",   ItemType::Tile | ItemType::Resource,     "Dirt Pile",    1.0f);
+        INIT_ITEM_DATABASE_ENTRY(ash_log,      ItemInfo,     RESOURCES_HEXA, "log",    ItemType::Resource,                      "Ash Log",      99, 1.0f, TARGET_DEFAULT);
     }
 };

@@ -63,6 +63,7 @@ public:
     void save_to_file(const Path& path) override;
     
     FORCEINLINE void put_pixels(const Array2D<Color>& pixels);
+    FORCEINLINE const Array2D<Color>& get_pixels() const { return pixels_; }
     void put_pixels(uint width, uint height, const List<Color>& pixels);
 
     Shared<Editor> edit();
@@ -76,9 +77,7 @@ private:
     void edit_count_increase();
     void edit_count_decrease();
     
-    List<Color> pixels_;
-    uint width_ = 0;
-    uint height_ = 0;
+    Array2D<Color> pixels_;
     uint gl_texture_binding_ = 0;
     uint64 handle_arb_ = 0;
 

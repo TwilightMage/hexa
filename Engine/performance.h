@@ -2,6 +2,8 @@
 
 #include <chrono>
 
+#include "Map.h"
+
 template<typename... TimePointTypes>
 FORCEINLINE void measure_time_all_impl(Map<uint, std::chrono::duration<long long, std::ratio<1, 10000000>>>& map, TimePointTypes... time_points)
 {

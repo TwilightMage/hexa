@@ -367,7 +367,7 @@ void UIElement::remove_child_internal(const Shared<UIElement>& item)
     {
         children_.remove_at(index);
         on_child_removed(item);
-        item->parent_ = nullptr;
+        item->parent_ = null_weak(UIElement);
 
         item->removed_from_hierarchy();
     }

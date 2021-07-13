@@ -3,6 +3,7 @@
 #include "Material3DInstance.h"
 #include "MaterialInstance.h"
 
+
 void Material3D::register_direct_parameters()
 {
     view = get_parameter<Matrix4x4>("view");

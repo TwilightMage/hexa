@@ -30,6 +30,7 @@ public:
     Shared<World> get_world() const;
     
     virtual void on_start();
+    virtual void on_tick(float delta_time);
     virtual void on_destroy();
 
     void destroy();
@@ -60,9 +61,9 @@ public:
 
     void set_gravity_enabled(bool state) const;
 
-    void make_body_static() const;
-    void make_body_dynamic() const;
-    void make_body_kinematic() const;
+    void make_body_static();
+    void make_body_dynamic();
+    void make_body_kinematic();
 
     void set_material(const Shared<Material3D>& material) override;
     FORCEINLINE Shared<Material3D> get_material() const override { return material_; }
@@ -89,6 +90,8 @@ public:
     FORCEINLINE void set_visibility(bool visibility) const { material_instance_->set_visible(visibility); }
 
     Delegate<const Shared<Entity>&> on_destroyed;
+
+    bool tick_enabled = false;
     
 protected:
     FORCEINLINE virtual bool is_rigid_body() const { return false; }
@@ -102,6 +105,9 @@ private:
     void material_changed();
     
     void start();
+    void tick(float delta_time);
+
+    FORCEINLINE void update_physically_dynamic();
 
     Vector3 position_;
     Quaternion rotation_;
@@ -120,4 +126,6 @@ private:
     Shared<Collision> collision_;
     byte16 collision_mask_ = CollisionMaskBits::NONE;
     List<Shared<EntityComponent>> components_;
+    float distance_to_camera_ = 0;
+    bool is_physically_dynamic_ = false;
 };

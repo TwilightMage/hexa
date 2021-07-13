@@ -7,6 +7,8 @@
 class EXPORT Player : public Entity, public IControllable, public ICamera
 {
 public:
+    Player();
+    
     void on_possess() override;
 
     CameraInfo get_camera_info() const override;

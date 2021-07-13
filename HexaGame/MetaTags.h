@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include "Engine/String.h"
+#include "Engine/Name.h"
 
-#define META_TAG(name) inline static const String name = #name;
+#define META_TAG(name) inline static const Name name = #name;
 
 namespace MetaTags
 {

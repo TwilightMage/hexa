@@ -28,14 +28,17 @@ Texture::Editor::~Editor()
 
 void Texture::Editor::set_pixel(uint x, uint y, const Color& color) const
 {
-    target_->pixels_[y * target_->width_ * x] = color;
+    target_->pixels_.at(x, y) = color;
 }
 
 void Texture::Editor::process_pixels(Color(* processor)(uint x, uint y, const Color&)) const
 {
-    for (uint i = 0; i < target_->pixels_.length(); i++)
+    for (uint x = 0; x < target_->pixels_.get_size_x(); x++)
     {
-        target_->pixels_[i] = processor(i % target_->width_, i / target_->width_, target_->pixels_[i]);
+        for (uint y = 0; y < target_->pixels_.get_size_y(); y++)
+        {
+            target_->pixels_.at(x, y) = processor(x, y, target_->pixels_.at(x, y));
+        }
     }
 }
 
@@ -48,24 +51,21 @@ Texture::Editor::Editor(const Shared<Texture>& target)
 
 Texture::Texture(const String& name)
     : Object(name)
-    , pixels_(0)
     , edit_count_(0)
     , delayed_activation_(false)
 {
 }
 
 Texture::Texture(const String& name, const Array2D<Color>& pixels)
-    : Texture(name, pixels.get_size_x(), pixels.get_size_y(), pixels.to_list())
+    : Object(name)
+    , pixels_(pixels)
+    , edit_count_(0)
+    , delayed_activation_(false)
 {
 }
 
 Texture::Texture(const String& name, uint width, uint height, const List<Color>& pixels)
-    : Object(name)
-    , pixels_(pixels)
-    , width_(width)
-    , height_(height)
-    , edit_count_(0)
-    , delayed_activation_(false)
+    : Texture(name, Array2D(width, height, pixels))
 {
 }
 
@@ -86,9 +86,7 @@ Shared<Texture> Texture::load_png(const Path& path)
         {
             const uint size = tex_width * tex_height;
             auto result = MakeShared<Texture>(path.get_absolute_string());
-            result->pixels_ = pixels;
-            result->width_ = tex_width;
-            result->height_ = tex_height;
+            result->pixels_ = Array2D(tex_width, tex_height, pixels);
 
             Game::instance_->textures_[path.get_absolute_string()] = result;
             verbose("Texture", "Loaded texture %ix%i %s", tex_width, tex_height, path.get_absolute_string().c());
@@ -119,27 +117,27 @@ uint64 Texture::get_handle_arb() const
 
 uint Texture::get_width() const
 {
-    return width_;
+    return pixels_.get_size_x();
 }
 
 uint Texture::get_height() const
 {
-    return height_;
+    return pixels_.get_size_y();
 }
 
 Vector2 Texture::get_size() const
 {
-    return Vector2(static_cast<float>(width_), static_cast<float>(height_));
+    return Vector2(static_cast<float>(pixels_.get_size_x()), static_cast<float>(pixels_.get_size_y()));
 }
 
 Color Texture::get_pixel(uint x, uint y) const
 {
-    return pixels_[y * width_ + x];
+    return pixels_.at(x, y);
 }
 
 void Texture::save_to_file(const Path& path)
 {
-    stb::write_bmp(path, width_, height_, pixels_);
+    stb::write_bmp(path, pixels_.get_size_x(), pixels_.get_size_y(), pixels_.to_list());
 }
 
 void Texture::put_pixels(const Array2D<Color>& pixels)
@@ -149,11 +147,9 @@ void Texture::put_pixels(const Array2D<Color>& pixels)
 
 void Texture::put_pixels(uint width, uint height, const List<Color>& pixels)
 {
-    if (edit_count_ == 0 && width * height == pixels.length())
+    if (edit_count_ == 0 && pixels_.get_size_x() == width && pixels_.get_size_y() == height)
     {
-        width_ = width;
-        height_ = height;
-        pixels_ = pixels;
+        pixels_ = Array2D(width, height, pixels);
 
         if (usage_count() > 0)
         {
@@ -197,7 +193,7 @@ void Texture::load_internal()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width_, height_, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels_.get_data());
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, pixels_.get_size_x(), pixels_.get_size_y(), 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels_.to_list().get_data());
     glGenerateMipmap(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, 0);
 

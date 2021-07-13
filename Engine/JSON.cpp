@@ -16,7 +16,7 @@ using namespace rapidjson;
 
 FORCEINLINE GenericStringRef<char> str(const String& string)
 {
-    return StringRef(string.c(), string.length());
+    return StringRef(string.c_copy(), string.length());
 }
 
 JSON::JSON()

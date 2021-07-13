@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include <mutex>
-#include <optional>
 #include <soloud/soloud.h>
 
 #include "CameraInfo.h"
@@ -17,6 +16,7 @@
 #include "Vector3.h"
 #include "Version.h"
 
+class Material3D;
 class AudioChannel;
 class Audio;
 class Material;
@@ -24,7 +24,6 @@ class Entity;
 class Mesh;
 class Shader;
 class MaterialUI;
-class Material3D;
 class TextBlock;
 class ICamera;
 class Animation;
@@ -39,6 +38,7 @@ class UIElement;
 class Image;
 class Mod;
 class GLFWwindow;
+class GLFWcursor;
 class IControllable;
 class World;
 class Texture;
@@ -97,12 +97,13 @@ public:
     static bool is_app_path_set();
     static const Path& get_app_path();
 
-    static Shared<Shader> get_basic_shader();
-    static Shared<Shader> get_basic_ui_shader();
-    static Shared<Material3D> get_basic_material_3d();
-    static Shared<MaterialUI> get_basic_material_ui();
-    static Shared<Texture> get_white_pixel();
-    static Shared<SpriteFont> get_default_font();
+    static const Shared<Shader>& get_basic_shader();
+    static const Shared<Shader>& get_basic_ui_shader();
+    static const Shared<Material3D>& get_basic_material_3d();
+    static const Shared<MaterialUI>& get_basic_material_ui();
+    static const Shared<Texture>& get_white_pixel();
+    static const Shared<SpriteFont>& get_default_font();
+    static const Shared<AudioChannel>& get_general_channel();
 
     static uint get_screen_width();
     static uint get_screen_height();
@@ -113,6 +114,7 @@ public:
     static void unlock_mouse();
     static void hide_mouse();
     static void show_mouse();
+    static void set_cursor_texture(const Shared<Texture>& tex, uint hotspot_x, uint hotspot_y);
     static void add_ui(const Shared<UIElement>& ui);
     static float get_ui_scale();
     static Vector3 get_un_projected_mouse();
@@ -173,6 +175,7 @@ private:
     
     // GLFW
     GLFWwindow* window_;
+    GLFWcursor* cursor_;
 
     // Assets
     Map<String, Shared<Shader>> shaders_;
@@ -192,6 +195,7 @@ private:
     Shared<MaterialUI> basic_material_ui_;
     Slot<Texture> white_pixel_;
     Shared<SpriteFont> default_font_;
+    Shared<AudioChannel> general_channel_;
     List<Shared<Mod>> mods_;
     SimpleMap<String, uint> draw_call_counter_;
     

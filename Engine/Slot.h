@@ -1,6 +1,5 @@
 ﻿#pragma once
 
-#include "BasicTypes.h"
 #include "SlotBase.h"
 
 template<class C>
@@ -30,7 +29,6 @@ public:
         : item_(nullptr)
         , is_active_(true)
     {
-        if (is_active_) inc_ref(item_.get());
     }
     
     explicit Slot(bool state)
@@ -93,6 +91,27 @@ public:
                 }
             }
         }
+        return *this;
+    }
+
+    Slot& operator=(const Shared<C>& rhs)
+    {
+        if (item_ == rhs) return *this;
+
+        if (is_active_) dec_ref(item_.get());
+        item_ = rhs;
+        if (is_active_) inc_ref(item_.get());
+
+        return *this;
+    }
+
+    Slot& operator=(nullptr_t)
+    {
+        if (item_ == nullptr) return *this;
+
+        if (is_active_) dec_ref(item_.get());
+        item_ = nullptr;
+
         return *this;
     }
     

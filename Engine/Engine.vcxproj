@@ -238,11 +238,9 @@
     <ClInclude Include="ICamera.h" />
     <ClInclude Include="IControllable.h" />
     <ClInclude Include="ImageEditor.h" />
-    <ClInclude Include="IMap.h" />
     <ClInclude Include="Interpolators.h" />
     <ClInclude Include="IRenderable.h" />
     <ClInclude Include="ITexture.h" />
-    <ClInclude Include="ITickable.h" />
     <ClInclude Include="IUsageCountable.h" />
     <ClInclude Include="IUsageCountableBase.h" />
     <ClInclude Include="JSON.h" />
@@ -338,6 +336,7 @@
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="AudioChannel.cpp" />
     <ClCompile Include="Name.cpp" />
+    <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SoundHandle.cpp" />
     <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />

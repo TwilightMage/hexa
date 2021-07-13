@@ -5,6 +5,7 @@
 #include "Engine/AudioChannel.h"
 #include "Engine/Database.h"
 #include "Engine/Game.h"
+#include "Engine/Material3D.h"
 #include "HexaGame/Database/items/ItemInfo.h"
 
 class DefaultWorldGenerator;
@@ -30,6 +31,7 @@ public:
     inline static Shared<Material3D> foliage_material = nullptr;
 
     inline static Shared<Audio> plains_music = nullptr;
+    inline static Shared<Audio> wind_sound = nullptr;
 
     FORCEINLINE static const Shared<AudioChannel>& get_music_channel() { return music_channel_; }
     FORCEINLINE static const Shared<AudioChannel>& get_ambient_channel() { return ambient_channel_; }
@@ -51,7 +53,6 @@ private:
     
     Map<String, Shared<WorldGeneratorInfo>> generator_infos_;
 
-    inline static Shared<AudioChannel> general_channel_ = nullptr;
     inline static Shared<AudioChannel> music_channel_ = nullptr;
     inline static Shared<AudioChannel> ambient_channel_ = nullptr;
     inline static Shared<AudioChannel> effects_channel_ = nullptr;

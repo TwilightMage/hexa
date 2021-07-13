@@ -33,8 +33,15 @@ Name::Name(const char* c_str)
         data_size_ = (uint)len;
         memcpy(data_, c_str, data_size_);
 
+        const int p = 31;
+        const int m = 1e9 + 9;
         hash_ = 0;
-        for (uint i = 0; i < data_size_; i++) hash_ += data_[i] * i;
+        uint64 p_pow = 1;
+        for (uint i = 0; i < len; i++)
+        {
+            hash_ = (hash_ + (data_[i] - 'a' + 1) * p_pow) % m;
+            p_pow = (p_pow * p) % m;
+        }
     }
     else
     {

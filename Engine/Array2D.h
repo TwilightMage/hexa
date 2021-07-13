@@ -126,6 +126,16 @@ public:
         return data_[y * size_x_ + x];
     }
 
+    const T& at(uint x, uint y) const
+    {
+        assert(x >= 0);
+        assert(x < size_x_);
+        assert(y >= 0);
+        assert(y < size_y_);
+        
+        return data_[y * size_x_ + x];
+    }
+
     FORCEINLINE uint get_size_x() const
     {
         return size_x_;

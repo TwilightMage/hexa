@@ -6,10 +6,8 @@
 #include "Audio.h"
 #include "AudioChannel.h"
 #include "Game.h"
-#include "ITickable.h"
 #include "Quaternion.h"
 #include "Material.h"
-#include "Material3D.h"
 #include "performance.h"
 #include "Settings.h"
 #include "Physics/ConcaveMeshCollision.h"
@@ -54,27 +52,13 @@ bool World::spawn_entity(const Shared<Entity>& entity)
 SoundHandle World::play_sound(const Shared<Audio>& audio, const Shared<AudioChannel>& channel)
 {
     if (audio == nullptr) return SoundHandle();
-    if (channel)
-    {
-        return SoundHandle(channel->bus_->play(*(audio->sample_)), Game::instance_->soloud_);
-    }
-    else
-    {
-        return SoundHandle(Game::instance_->soloud_->play(*(audio->sample_)), Game::instance_->soloud_);
-    }
+    return SoundHandle((channel ? channel : Game::get_general_channel())->bus_->play(*(audio->sample_), audio->get_default_volume()), Game::instance_->soloud_);
 }
 
 SoundHandle World::play_sound_3d(const Shared<Audio>& audio, const Vector3& location, const Shared<AudioChannel>& channel)
 {
     if (audio == nullptr) return SoundHandle();
-    if (channel)
-    {
-        return SoundHandle(channel->bus_->play3d(*(audio->sample_), location.x, location.y, location.z), Game::instance_->soloud_);
-    }
-    else
-    {
-        return SoundHandle(Game::instance_->soloud_->play3d(*(audio->sample_), location.x, location.y, location.z), Game::instance_->soloud_);
-    }
+    return SoundHandle((channel ? channel : Game::get_general_channel())->bus_->play3d(*(audio->sample_), location.x, location.y, location.z, 0, 0, 0, audio->get_default_volume()), Game::instance_->soloud_);
 }
 
 Shared<const RaycastResult> World::raycast(const Vector3& from, const Vector3& to) const
@@ -129,7 +113,6 @@ void World::tick(float delta_time)
 
     time_ += delta_time;
 
-    auto t1 = std::chrono::system_clock::now();
     // fixed tick for physics
     if (delta_time != 0.0f)
     {
@@ -144,7 +127,6 @@ void World::tick(float delta_time)
             physics_tick_accum_ = 0;
         }*/
     }
-    auto t2 = std::chrono::system_clock::now() - t1;
 
     // tick timers
     List<TimerHandle> expired_timers;
@@ -169,31 +151,37 @@ void World::tick(float delta_time)
 
     // tick entities
     Set<Shared<Entity>> to_delete;
-    
-    for (auto& entity : entities_)
+
+    auto camera_info = Game::get_camera_info();
+
+    if (time_scale_ != 0.0f)
     {
-        if (entity->pending_kill_)
+        for (auto& entity : entities_)
         {
-            do_destroy(entity);
+            if (entity->pending_kill_)
+            {
+                do_destroy(entity);
 
-            entity->pending_kill_ = false;
+                entity->pending_kill_ = false;
             
-            to_delete.add(entity);
-        }
-        else if (time_scale_ != 0.0f)
-        {
-            if (auto tickable = cast<ITickable>(entity))
-            {
-                tickable->tick(delta_time);
-                for (auto component : entity->components_)
-                {
-                    component->on_tick(delta_time);
-                }
+                to_delete.add(entity);
             }
-
-            if (entity->rigid_body_ && !entity->rigid_body_->isSleeping() && entity->rigid_body_->getType() != reactphysics3d::BodyType::KINEMATIC || entity->is_matrix_dirty_)
+            else
             {
-                entity->cache_matrix();
+                if (entity->tick_enabled)
+                {
+                    entity->on_tick(delta_time);
+                    for (auto component : entity->components_)
+                    {
+                        component->on_tick(delta_time);
+                    }
+                }
+                if (entity->is_physically_dynamic_ || entity->is_matrix_dirty_)
+                {
+                    entity->cache_matrix();
+                }
+
+                entity->distance_to_camera_ = Vector3::distance(camera_info.position, entity->position_);
             }
         }
     }
@@ -270,11 +258,8 @@ void World::close()
 
 void World::spawn_entity_internal(const Shared<Entity>& entity)
 {
-    get_now(t1);
     entity->generate_components();
-    get_now(t2);
     entity->world_ = weak_from_this();
-    get_now(t3);
     if (entity->is_rigid_body())
     {
         entity->rigid_body_ = physics_world_->createRigidBody(
@@ -285,13 +270,8 @@ void World::spawn_entity_internal(const Shared<Entity>& entity)
         );
         entity->rigid_body_->setUserData(entity.get());
     }
-    get_now(t4);
     entities_.add(entity);
-    get_now(t5);
     entity->start();
-    get_now(t6);
-    measure_time_all(q, t1, t2, t3, t4, t5, t6);
-    auto f = 1;
 }
 
 void World::do_destroy(const Shared<Entity>& entity)

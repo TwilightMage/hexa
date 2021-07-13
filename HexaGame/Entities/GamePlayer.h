@@ -1,7 +1,6 @@
 ﻿#pragma once
 
 #include "Engine/IControllable.h"
-#include "Engine/ITickable.h"
 #include "Engine/Player.h"
 #include "Engine/SoundHandle.h"
 #include "HexaGame/CharacterController.h"
@@ -11,7 +10,7 @@
 class WorldChunk;
 class WorldChunkObserver;
 
-class EXPORT GamePlayer : public Player, public CharacterController, public ITickable
+class EXPORT GamePlayer : public Player, public CharacterController
 {
 public:
     void on_start() override;
@@ -20,7 +19,7 @@ public:
     void mouse_button_down(int button) override;
     void mouse_button_up(int button) override;
     void scroll(const Vector2& delta) override;
-    void tick(float delta_time) override;
+    void on_tick(float delta_time) override;
     
     Shared<const CharacterController> get_as_character_controller() const override;
     Shared<CharacterController> get_as_character_controller() override;

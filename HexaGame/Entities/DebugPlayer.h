@@ -2,7 +2,6 @@
 
 #include "MeshEntity.h"
 #include "Engine/Entity.h"
-#include "Engine/ITickable.h"
 #include "Engine/Player.h"
 #include "HexaGame/ChunkIndex.h"
 
@@ -10,7 +9,7 @@ class TextBlock;
 class WorldChunkObserver;
 class Camera;
 
-class EXPORT DebugPlayer : public Player, public ITickable
+class EXPORT DebugPlayer : public Player
 {
 public:
     void on_start() override;
@@ -21,7 +20,7 @@ public:
 
     void on_possess() override;
 
-    void tick(float delta_time) override;
+    void on_tick(float delta_time) override;
     
 private:
     float move_forward_ = 0;

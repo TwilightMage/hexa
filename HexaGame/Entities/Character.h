@@ -3,7 +3,6 @@
 #include "Engine/AnimatedField.h"
 #include "Engine/AnimationSlot.h"
 #include "Engine/Entity.h"
-#include "Engine/ITickable.h"
 #include "HexaGame/Direction.h"
 #include "HexaGame/PathConfig.h"
 #include "HexaGame/TileIndex.h"
@@ -15,7 +14,7 @@ class AnimatorComponent;
 class HexaWorld;
 class CharacterController;
 
-class EXPORT Character : public Entity, public ITickable, public Animated
+class EXPORT Character : public Entity, public Animated
 {
     friend CharacterController;
     friend HexaWorld;
@@ -24,7 +23,7 @@ public:
     Character();
 
     void on_start() override;
-    void tick(float delta_time) override;
+    void on_tick(float delta_time) override;
     
     bool go_to(const TileIndex& tile_position);
 

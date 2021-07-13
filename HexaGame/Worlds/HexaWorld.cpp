@@ -371,7 +371,7 @@ Shared<Entity> HexaWorld::spawn_drop(const TileIndex& tile, const ItemContainer&
     if (item.is_empty()) return nullptr;
     
     Shared<Entity> entity = MakeShared<ItemDrop>(item);
-    spawn_entity(MakeShared<ItemDrop>(item), tile.to_vector() - Vector3(Random::static_number(Random::random_seed(), -0.2f, 0.2f), Random::static_number(Random::random_seed(), -0.2f, 0.2f), item.item ? (item.item->mesh->get_bounds_center().z - item.item->mesh->get_bounds_half_size().z) : 0.0f), Quaternion(Vector3(0, 0, Random::static_number(Random::random_seed(), 360.0f))));
+    spawn_entity(MakeShared<ItemDrop>(item), tile.to_vector() - Vector3(Random::static_number(-0.2f, 0.2f), Random::static_number(-0.2f, 0.2f), item.item ? (item.item->mesh->get_bounds_center().z - item.item->mesh->get_bounds_half_size().z) : 0.0f), Quaternion(Vector3(0, 0, Random::static_number(360.0f))));
     return entity;
 }
 

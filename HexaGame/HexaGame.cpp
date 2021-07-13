@@ -12,7 +12,6 @@
 #include "Engine/GeometryEditor.h"
 #include "Engine/Logger.h"
 #include "Engine/Material.h"
-#include "Engine/Material3D.h"
 #include "Engine/AnimationEditor/AnimationEditorWorld.h"
 #include "Entities/Characters/Slime.h"
 #include "ui/TileDatabaseViewer.h"
@@ -32,6 +31,7 @@ void HexaGame::register_world_generator(const Shared<WorldGeneratorInfo>& genera
 void HexaGame::init_game_info(GameInfo& outInfo)
 {
     outInfo.title = "Hexa";
+    outInfo.icon = RESOURCES_HEXA_TEXTURES + "icon.png";
 }
 
 Shared<Settings> HexaGame::generate_settings_object()
@@ -81,6 +81,8 @@ void HexaGame::tick(float delta_time)
 
 void HexaGame::loading_stage()
 {
+    set_cursor_texture(Texture::load_png(RESOURCES_HEXA_TEXTURES_UI + "cursor.png"), 0, 0);
+    
     tile_cap_shader = Shader::compile("tile cap", {
         RESOURCES_ENGINE_SHADERS + "basic_3d.vert",
         RESOURCES_HEXA_SHADERS + "tile_cap.frag"
@@ -96,10 +98,6 @@ void HexaGame::loading_stage()
         RESOURCES_HEXA_SHADERS + "foliage.frag"
     });
 
-    auto a = CanEnableShared<Material3D>;
-    auto b = CanEnableShared<Material>;
-    auto c = CanEnableShared<EnableSharedFromThis<Material>>;
-    
     tile_cap_material = MakeShared<Material3D>();
     tile_cap_material->init(tile_cap_shader, 0);
     //tile_cap_material->set_param_value("void_skybox", Cubemap::load_png(RESOURCES_HEXA_TEXTURES_TILES + "cap.png"));
@@ -116,10 +114,16 @@ void HexaGame::loading_stage()
     plains_music = Audio::load(RESOURCES_HEXA_AUDIO_MUSIC + "plains.ogg");
     plains_music->set_looped(true);
 
-    general_channel_ = AudioChannel::create();
-    music_channel_ = AudioChannel::create(general_channel_);
-    ambient_channel_ = AudioChannel::create(general_channel_);
-    effects_channel_ = AudioChannel::create(general_channel_);
+    wind_sound = Audio::load(RESOURCES_HEXA_AUDIO_MUSIC + "wind.ogg");
+    wind_sound->set_looped(true);
+    wind_sound->set_default_volume(0.3f);
+
+    music_channel_ = AudioChannel::create(get_general_channel());
+    music_channel_->set_volume(get_settings<HexaSettings>().audio_music);
+    ambient_channel_ = AudioChannel::create(get_general_channel());
+    ambient_channel_->set_volume(get_settings<HexaSettings>().audio_ambient);
+    effects_channel_ = AudioChannel::create(get_general_channel());
+    effects_channel_->set_volume(get_settings<HexaSettings>().audio_effects);
     
     Tiles::init(tile_database);
 

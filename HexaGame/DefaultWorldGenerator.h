@@ -17,6 +17,8 @@ protected:
 private:
     void generate_plains(const EditableChunk& editable);
     void generate_forest(const EditableChunk& editable);
+
+    FORCEINLINE void generate_land(const EditableChunk& editable) const;
     
     float ground_level = 30.0f;
     float ground_amplitude = 10.0f;

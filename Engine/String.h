@@ -62,6 +62,8 @@ public:
 
 	static bool replace_single(String& src, const String& from, const String& to);
 
+	static uint64 hash(const String& str);
+
 	template<typename T>
 	static String join(List<T> items, const String& glue)
 	{

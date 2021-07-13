@@ -4,6 +4,7 @@
 
 #include "AxisArrows.h"
 #include "ComplexTile.h"
+#include "DebugPlayer.h"
 #include "ItemDrop.h"
 #include "MeshEntity.h"
 #include "Characters/Slime.h"
@@ -70,30 +71,58 @@ Map<int, uint> hotbar = {
 void GamePlayer::key_down(int key)
 {
     Player::key_down(key);
-    
-    if (key == GLFW_KEY_W) move_.x += 1;
-    else if (key == GLFW_KEY_S) move_.x -= 1;
-    else if (key == GLFW_KEY_D) move_.y += 1;
-    else if (key == GLFW_KEY_A) move_.y -= 1;
-    else if (key == GLFW_KEY_LEFT_SHIFT) use_item_mode_ = true;
-    else if (hotbar.contains(key))
+
+    switch (key)
     {
-        if (const auto& character = get_character())
+    case GLFW_KEY_W:
+        move_.x += 1;
+        break;
+    case GLFW_KEY_S:
+        move_.x -= 1;
+        break;
+    case GLFW_KEY_D:
+        move_.y += 1;
+        break;
+    case GLFW_KEY_A:
+        move_.y -= 1;
+        break;
+    case GLFW_KEY_LEFT_SHIFT:
+        use_item_mode_ = true;
+        break;
+    default:
+        if (hotbar.contains(key))
         {
-            character->get_inventory()->set_selected_hotbar(hotbar[key]);
+            if (const auto& character = get_character())
+            {
+                character->get_inventory()->set_selected_hotbar(hotbar[key]);
+            }
         }
+        break;
     }
 }
 
 void GamePlayer::key_up(int key)
 {
     Player::key_up(key);
-    
-    if (key == GLFW_KEY_W) move_.x -= 1;
-    else if (key == GLFW_KEY_S) move_.x += 1;
-    else if (key == GLFW_KEY_D) move_.y -= 1;
-    else if (key == GLFW_KEY_A) move_.y += 1;
-    else if (key == GLFW_KEY_LEFT_SHIFT) use_item_mode_ = false;
+
+    switch (key)
+    {
+    case GLFW_KEY_W:
+        move_.x -= 1;
+        break;
+    case GLFW_KEY_S:
+        move_.x += 1;
+        break;
+    case GLFW_KEY_D:
+        move_.y -= 1;
+        break;
+    case GLFW_KEY_A:
+        move_.y += 1;
+        break;
+    case GLFW_KEY_LEFT_SHIFT:
+        use_item_mode_ = false;
+        break;
+    }
 }
 
 List<Shared<Entity>> markers;
@@ -208,10 +237,10 @@ void GamePlayer::mouse_button_up(int button)
 
 void GamePlayer::scroll(const Vector2& delta)
 {
-    desired_camera_distance_ = Math::clamp(desired_camera_distance_ - delta.y, 1.0f, 8.0f);
+    desired_camera_distance_ = Math::clamp(desired_camera_distance_ - delta.y, 1.0f, 12.0f);
 }
 
-void GamePlayer::tick(float delta_time)
+void GamePlayer::on_tick(float delta_time)
 {    
     if (auto world = cast<HexaWorld>(get_world()))
     {
@@ -316,8 +345,9 @@ void GamePlayer::spawn_chunk_loaded(const Shared<WorldChunk>& sender)
                 auto toolbar_ui = MakeShared<Toolbar>();
                 toolbar_ui->bind(character->get_inventory());
                 Game::add_ui(toolbar_ui);
-                
-                if (world->spawn_character(character, TileIndex(0, 0, WorldChunk::chunk_height - i)))
+
+                const uint Z = WorldChunk::chunk_height - i;
+                if (world->spawn_character(character, TileIndex(0, 0, Z)))
                 {
                     character->on_tile_position_changed.bind(this, &GamePlayer::character_position_changed);
 
@@ -327,12 +357,16 @@ void GamePlayer::spawn_chunk_loaded(const Shared<WorldChunk>& sender)
                     set_position(character->get_tile_position().to_vector());
                     camera_pivot_z_ = desired_camera_pivot_z = character->get_tile_position().z * HexaMath::tile_height;
 
-                    world->spawn_drop(TileIndex(0, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::iron_shovel));
-                    world->spawn_drop(TileIndex(1, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::stone_bricks));
-                    world->spawn_drop(TileIndex(1, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::stone_bricks));
-                    world->spawn_drop(TileIndex(1, 1, WorldChunk::chunk_height - i + 1), ItemContainer(Items::stone_bricks));
+                    world->spawn_drop(TileIndex(0, 1, Z + 1), ItemContainer(Items::iron_shovel));
+                    world->spawn_drop(TileIndex(1, 1, Z + 1), ItemContainer(Items::stone_bricks));
+                    world->spawn_drop(TileIndex(1, 1, Z + 1), ItemContainer(Items::stone_bricks));
+                    world->spawn_drop(TileIndex(1, 1, Z + 1), ItemContainer(Items::stone_bricks));
+                    world->spawn_drop(TileIndex(2, 1, Z + 1), ItemContainer(Items::ash_log));
+                    world->spawn_drop(TileIndex(2, 1, Z + 1), ItemContainer(Items::ash_log));
+                    world->spawn_drop(TileIndex(2, 1, Z + 1), ItemContainer(Items::ash_log));
 
                     background_music_handle_ = world->play_sound(HexaGame::plains_music, HexaGame::get_music_channel());
+                    const auto wind_sound_handle = world->play_sound(HexaGame::wind_sound, HexaGame::get_ambient_channel());
                 }
                 break;
             }

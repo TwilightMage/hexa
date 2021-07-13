@@ -87,7 +87,7 @@ private:
 
     void neighbor_tile_changed(const ChunkIndex& chunk, const TileIndex& index);
 
-    void spawn_complex(const TileIndex& local_index, ComplexTileSlot& tile) const;
+    void spawn_complex(const TileIndex& local_index, ComplexTileSlot& tile);
     bool can_claim(const TileIndex& local_index) const;
     bool claim_tile(const TileIndex& local_index, const Shared<ComplexTile>& claimer);
 

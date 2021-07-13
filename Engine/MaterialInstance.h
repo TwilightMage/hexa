@@ -39,16 +39,11 @@ public:
             }
         }
         
-        get_now(t1);
         if (auto basic_param = instance_parameters_.find(name))
         {
-            get_now(t2);
             if (auto param = cast<MaterialParameter<T>>(*basic_param))
             {
-                get_now(t3);
                 param->value = value;
-                get_now(t4);
-                measure_time_all(qq, t1, t2, t3, t4);
                 uint q = 1;
                 return;
             }

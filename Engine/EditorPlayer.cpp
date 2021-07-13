@@ -2,7 +2,7 @@
 
 #include "Game.h"
 
-void EditorPlayer::tick(float delta_time)
+void EditorPlayer::on_tick(float delta_time)
 {
     distance_ = Math::lerp(distance_, target_distance_, delta_time * 10);
     

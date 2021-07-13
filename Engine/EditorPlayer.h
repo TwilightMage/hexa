@@ -1,15 +1,14 @@
 ﻿#pragma once
 
 #include "BasicTypes.h"
-#include "ITickable.h"
 #include "Player.h"
 
 class Entity;
 
-class EXPORT EditorPlayer : public Player, public ITickable
+class EXPORT EditorPlayer : public Player
 {
 public:
-    void tick(float delta_time) override;
+    void on_tick(float delta_time) override;
 
     void mouse_button_down(int button) override;
     void mouse_button_up(int button) override;

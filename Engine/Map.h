@@ -2,13 +2,12 @@
 
 #include <stdexcept>
 
-#include "IMap.h"
 #include "List.h"
 #include "Pair.h"
 #include "Tree1D.h"
 
 template<typename Key, typename Value>
-class Map : public IMap<Key, Value>
+class Map
 {
 public:
     Map()
@@ -50,17 +49,17 @@ public:
         return *data_.find(key);
     }
 
-    FORCEINLINE Value& operator[](const Key& key) override
+    FORCEINLINE Value& operator[](const Key& key)
     {
         return at(key);
     }
 
-    FORCEINLINE const Value& operator[](const Key& key) const override
+    FORCEINLINE const Value& operator[](const Key& key) const
     {
         return at(key);
     }
 
-    Value& at(const Key& key) override
+    Value& at(const Key& key)
     {
         if (auto value = data_.find(key))
         {
@@ -71,7 +70,7 @@ public:
         return *data_.find(key);
     }
 
-    const Value& at(const Key& key) const override
+    const Value& at(const Key& key) const
     {
         if (auto value = data_.find(key))
         {
@@ -81,22 +80,22 @@ public:
         throw std::runtime_error("Unable to find value in map");
     }
 
-    FORCEINLINE bool contains(const Key& key) const override
+    FORCEINLINE bool contains(const Key& key) const
     {
         return data_.find(key) != nullptr;
     }
 
-    FORCEINLINE void remove(const Key& key) override
+    FORCEINLINE void remove(const Key& key)
     {
         data_.remove(key);
     }
 
-    FORCEINLINE void clear() override
+    FORCEINLINE void clear()
     {
         data_.clear();
     }
 
-    FORCEINLINE Value* find(const Key& key) const override
+    FORCEINLINE Value* find(const Key& key) const
     {
         return data_.find(key);
     }
@@ -125,23 +124,18 @@ public:
         }
     }
 
-    List<Key> get_keys() const override
+    List<Key> get_keys() const requires std::is_default_constructible<Key>::value
     {
-        if constexpr (std::is_default_constructible<Key>::value)
+        List<Key> result;
+        for (auto& entry : data_)
         {
-            List<Key> result;
-            for (auto& entry : data_)
-            {
-                result.add(entry.key);
-            }
-
-            return result;
+            result.add(entry.key);
         }
 
-        throw new std::runtime_error("Unable to fetch keys; type has no default constructor");
+        return result;
     }
 
-    FORCEINLINE uint size() const override
+    FORCEINLINE uint size() const
     {
         return data_.size();
     }

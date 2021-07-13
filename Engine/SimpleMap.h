@@ -1,25 +1,24 @@
 ﻿#pragma once
 
-#include "IMap.h"
 #include "List.h"
 #include "Pair.h"
 
 template<typename K, typename V>
-struct SimpleMap : public IMap<K, V>
+struct SimpleMap
 {
     List<Pair<K, V>*> entries;
     
-    FORCEINLINE V& operator[](const K& key) override
+    FORCEINLINE V& operator[](const K& key)
     {
         return at(key);
     }
 
-    FORCEINLINE const V& operator[](const K& key) const override
+    FORCEINLINE const V& operator[](const K& key) const
     {
         return at(key);
     }
 
-    void clear() override
+    void clear()
     {
         entries.clear();
     }
@@ -44,12 +43,12 @@ struct SimpleMap : public IMap<K, V>
         return entries.end();
     }
 
-    uint size() const override
+    uint size() const
     {
         return entries.length();
     }
 
-    void remove(const K& key) override
+    void remove(const K& key)
     {
         uint l = 0;
         uint r = entries.length();
@@ -74,7 +73,7 @@ struct SimpleMap : public IMap<K, V>
         }
     }
 
-    bool contains(const K& key) const override
+    bool contains(const K& key) const
     {
         uint l = 0;
         uint r = entries.length();
@@ -100,7 +99,7 @@ struct SimpleMap : public IMap<K, V>
         return false;
     }
 
-    V& at(const K& key) override
+    V& at(const K& key)
     {
         uint l = 0;
         uint r = entries.length();
@@ -129,7 +128,7 @@ struct SimpleMap : public IMap<K, V>
         return entries[m]->value;
     }
 
-    const V& at(const K& key) const override
+    const V& at(const K& key) const
     {
         uint l = 0;
         uint r = entries.length();
@@ -155,7 +154,7 @@ struct SimpleMap : public IMap<K, V>
         throw std::runtime_error("Unable to find value in simple map");
     }
 
-    V* find(const K& key) const override
+    V* find(const K& key) const
     {
         uint l = 0;
         uint r = entries.length();
@@ -181,7 +180,7 @@ struct SimpleMap : public IMap<K, V>
         return nullptr;
     }
 
-    List<K> get_keys() const override
+    List<K> get_keys() const
     {
         List<K> result;
 

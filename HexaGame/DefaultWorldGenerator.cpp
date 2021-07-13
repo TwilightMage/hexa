@@ -1,20 +1,20 @@
 ﻿#include "DefaultWorldGenerator.h"
 
+#include "HexaMath.h"
 #include "TileIndex.h"
 #include "Tiles.h"
 #include "WorldChunk.h"
 #include "ComplexTileCustomData/TreeStemCustomData.h"
 #include "Engine/Random.h"
 
-#define rest()  std::this_thread::sleep_for(std::chrono::milliseconds(1));
-
 void DefaultWorldGenerator::init(uint seed)
 {
     srand(seed);
     std::array<byte, 256> permutation;
+    Random random(seed);
     for (uint i = 0; i < permutation.size(); i++)
     {
-        permutation[i] = Random::static_number<byte>(seed + i * RANDOM_STEP);
+        permutation[i] = random.number<byte>();
     }
     generator_.deserialize(permutation);
     generator_.reseed(seed);
@@ -38,7 +38,19 @@ void DefaultWorldGenerator::read_settings(const JSON& settings)
 
 void DefaultWorldGenerator::generate_chunk(const EditableChunk& editable)
 {
-    generate_plains(editable);
+    const auto chunk_world_position = editable.get_chunk()->get_index().to_vector();
+
+    const float forest_h = (float)generator_.accumulatedOctaveNoise3D_0_1(chunk_world_position.x * 0.001f, chunk_world_position.y * 0.001f, 10, 4);
+    const float plains_h = (float)generator_.accumulatedOctaveNoise3D_0_1(chunk_world_position.x * 0.001f, chunk_world_position.y * 0.001f, 11, 4);
+    
+    if (forest_h > plains_h)
+    {
+        generate_forest(editable);
+    }
+    else
+    {
+        generate_plains(editable);
+    }
 }
 
 void DefaultWorldGenerator::generate_plains(const EditableChunk& editable)
@@ -48,28 +60,11 @@ void DefaultWorldGenerator::generate_plains(const EditableChunk& editable)
         Tiles::red_roses,
         Tiles::chamomile
     };
-    
-    const auto chunk = editable.get_chunk();
 
+    const auto chunk = editable.get_chunk();
     const auto chunk_pos = chunk->get_index().to_vector();
     
-    for (uint c_x = 0; c_x < WorldChunk::chunk_size; c_x++)
-    {
-        for (uint c_y = 0; c_y < WorldChunk::chunk_size; c_y++)
-        {
-            for (uint c_z = 0; c_z < WorldChunk::chunk_height; c_z++)
-            {
-                const Vector3 world_position = chunk_pos + TileIndex(c_x, c_y, c_z).to_vector();
-
-                if (world_position.z < generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.01f, world_position.y * 0.01f, 0, 4) * ground_amplitude + ground_level)
-                {
-                    editable.tile(TileIndex(c_x, c_y, c_z)) = Tiles::dirt;
-                }
-            }
-            rest();
-        }
-        //rest();
-    }
+    generate_land(editable);
 
     for (uint c_x = 0; c_x < WorldChunk::chunk_size; c_x++)
     {
@@ -114,44 +109,25 @@ void DefaultWorldGenerator::generate_plains(const EditableChunk& editable)
                     break;
                 }
             }
-            rest();
         }
-        //rest();
     }
 }
 
 void DefaultWorldGenerator::generate_forest(const EditableChunk& editable)
 {
     const auto chunk = editable.get_chunk();
-
     const auto chunk_pos = chunk->get_index().to_vector();
-    
-    for (uint c_x = 0; c_x < WorldChunk::chunk_size; c_x++)
-    {
-        for (uint c_y = 0; c_y < WorldChunk::chunk_size; c_y++)
-        {
-            for (uint c_z = 0; c_z < WorldChunk::chunk_height; c_z++)
-            {
-                const Vector3 world_position = chunk_pos + TileIndex(c_x, c_y, c_z).to_vector();
 
-                if (world_position.z < generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.01f, world_position.y * 0.01f, 0, 4) * ground_amplitude + ground_level)
-                {
-                    editable.tile(TileIndex(c_x, c_y, c_z)) = Tiles::dirt;
-                }
-            }
-            rest();
-        }
-        //rest();
-    }
+    generate_land(editable);
 
-    for (uint c_x = 0; c_x < WorldChunk::chunk_size; c_x++)
+    for (uint x = 0; x < WorldChunk::chunk_size; x++)
     {
-        for (uint c_y = 0; c_y < WorldChunk::chunk_size; c_y++)
+        for (uint y = 0; y < WorldChunk::chunk_size; y++)
         {
             uint free_tiles = 0;
-            for (int c_z = WorldChunk::chunk_height - 1; c_z >= 0; c_z--)
+            for (int z = WorldChunk::chunk_height - 1; z >= 0; z--)
             {
-                auto tile_index = TileIndex(c_x, c_y, c_z);
+                auto tile_index = TileIndex(x, y, z);
                 const Vector3 world_position = chunk_pos + tile_index.to_vector();
                 
                 auto& tile = editable.tile(tile_index);
@@ -163,7 +139,7 @@ void DefaultWorldGenerator::generate_forest(const EditableChunk& editable)
 
                         if (free_tiles >= 15 && generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 4, world_position.y * 4, 2, 1) > 0.62f)
                         {
-                            uint tree_height = Random::static_number(tile_index.x + tile_index.y + tile_index.z, 15, 20);
+                            uint tree_height = Random(tile_index.x + tile_index.y + tile_index.z).number(15, 20);
                             for (uint t = 1; t <= tree_height; t++)
                             {
                                 TileIndex cell_index = tile_index.offset(0, 0, t);
@@ -172,7 +148,8 @@ void DefaultWorldGenerator::generate_forest(const EditableChunk& editable)
                                 {
                                     if (t == 1) custom_data->type = TreeStemCustomData::Type::Roots;
                                     else if (t == tree_height) custom_data->type = TreeStemCustomData::Type::Top;
-                                    custom_data->tree_seed = Random::static_number<uint>(tile_index.x + tile_index.y + tile_index.z);
+                                    else if (Random(x + y + z + t).number(6) == 0) custom_data->type = TreeStemCustomData::Type::Branched;
+                                    custom_data->tree_seed = Random(x + y + z).number<uint>();
                                     custom_data->cell_index = t - 1;
                                     editable.set_complex_custom_data(cell_index, custom_data);
                                 }
@@ -191,8 +168,43 @@ void DefaultWorldGenerator::generate_forest(const EditableChunk& editable)
                     free_tiles++;
                 }
             }
-            rest();
         }
-        //rest();
+    }
+}
+
+void DefaultWorldGenerator::generate_land(const EditableChunk& editable) const
+{
+    const auto chunk_pos = editable.get_chunk()->get_index().to_vector();
+    
+    float heightmaps[10][10][2];
+    for (uint x = 0; x < 10; x++)
+    {
+        for (uint y = 0; y < 10; y++)
+        {
+            const Vector3 world_position = chunk_pos + TileIndex(x, y, 0).to_vector();
+
+            heightmaps[x][y][0] = (float)generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.01f, world_position.y * 0.01f, 0, 4) * ground_amplitude + ground_level;
+            heightmaps[x][y][1] = heightmaps[x][y][0] - ((float)generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.01f, world_position.y * 0.01f, 0, 4) * 2 + 2);
+        }
+    }
+    
+    for (uint x = 0; x < WorldChunk::chunk_size; x++)
+    {
+        for (uint y = 0; y < WorldChunk::chunk_size; y++)
+        {
+            for (uint z = 0; z < WorldChunk::chunk_height; z++)
+            {
+                const float Z = z * HexaMath::tile_height;
+                if (Z < heightmaps[x][y][1])
+                {
+                    editable.tile(TileIndex(x, y, z)) = Tiles::stone;
+                }
+                else if (Z < heightmaps[x][y][0])
+                {
+                    editable.tile(TileIndex(x, y, z)) = Tiles::dirt;
+                }
+                else break;
+            }
+        }
     }
 }

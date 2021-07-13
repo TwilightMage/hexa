@@ -267,6 +267,7 @@
     <ClCompile Include="Entities\Skybox.cpp" />
     <ClCompile Include="Entities\TileDemoDomainEntity.cpp" />
     <ClCompile Include="HexaSaveGame.cpp" />
+    <ClCompile Include="HexaSettings.cpp" />
     <ClCompile Include="Inventory.cpp" />
     <ClCompile Include="TileInfo.cpp" />
     <ClCompile Include="ui\Toolbar.cpp" />
@@ -311,7 +312,6 @@
     <Natvis Include="HexaGame.natvis" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="HexaCollisionMaskBits.h" />
     <Content Include="resources\hexagame\fonts\arial.fnt" />
     <Content Include="resources\hexagame\fonts\arial_0.png" />
     <Content Include="resources\hexagame\fonts\berkshire_swash.fnt" />

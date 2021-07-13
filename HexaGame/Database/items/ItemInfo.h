@@ -13,7 +13,8 @@ class Texture;
 enum ItemTileTarget
 {
     TARGET_INSIDE,
-    TARGET_OUTSIDE
+    TARGET_OUTSIDE,
+    TARGET_DEFAULT = TARGET_OUTSIDE
 };
 
 class EXPORT ItemInfo : public DatabaseEntry

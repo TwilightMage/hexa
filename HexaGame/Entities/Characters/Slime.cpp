@@ -22,7 +22,7 @@ void Slime::on_start()
     get_material_instance()->set_param_value("texture", Texture::load_png(RESOURCES_HEXA_TEXTURES_CHARACTERS + "slime.png"));
 }
 
-void Slime::tick(float delta_time)
+void Slime::on_tick(float delta_time)
 {
-    Character::tick(delta_time);
+    Character::on_tick(delta_time);
 }

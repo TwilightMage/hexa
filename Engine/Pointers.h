@@ -1,17 +1,29 @@
 ﻿#pragma once
 
-#pragma warning(disable: 4150)
+//#define USE_OWN_SHARED_POINTERS
 
 #include "Assert.h"
 #include "BasicTypes.h"
-#include "FastOperator.h"
 #include "framework.h"
+
+#ifdef USE_OWN_SHARED_POINTERS
+
+#pragma warning(disable: 4150)
+
+#include <concepts>
 
 template<typename T>
 class Weak;
 
 template<typename T>
 class Shared;
+
+struct MemBlock
+{
+    uint64 shared_references;
+    uint64 weak_references;
+};
+
 
 template<typename T>
 class EXPORT EnableSharedFromThis
@@ -23,13 +35,13 @@ public:
 
     Weak<T> weak_from_this() const;
 
-    uint64* last_valid_counter = nullptr;
+    MemBlock* last_valid_mem_block = nullptr;
 };
 
 template<typename T>
 concept CanEnableShared = requires
 {
-    { T::last_valid_counter } -> std::same_as<uint64*&>;
+    { T::last_valid_mem_block } -> std::same_as<MemBlock*&>;
 };
 
 template<typename T>
@@ -41,34 +53,35 @@ class EXPORT Shared
 public:
     Shared()
         : ptr_(nullptr)
-        , counter_(nullptr)
+        , mem_block_(nullptr)
     {}
 
-    Shared(T* ptr) requires CanEnableShared<T>
-            : ptr_(ptr)
-            , counter_(new uint64(1))
-    {
-        ptr->last_valid_counter = counter_;
-    }
-
     Shared(T* ptr)
-            : ptr_(ptr)
-            , counter_(new uint64(1))
+        : ptr_(ptr)
+        , mem_block_(nullptr)
     {
+        if (ptr)
+        {
+            mem_block_ = new MemBlock{1, 0};
+            if constexpr (CanEnableShared<T>)
+            {
+                ptr->last_valid_mem_block = mem_block_;
+            }
+        }
     }
 
-    Shared(T* ptr, uint64* counter)
+    Shared(T* ptr, MemBlock* mem_block)
         : ptr_(ptr)
-        , counter_(counter)
+        , mem_block_(mem_block)
     {
-        if (ptr_) (*counter_)++;
+        if (ptr_) incref();
     }
 
     Shared(const Shared& rhs)
         : ptr_(rhs.ptr_)
-        , counter_(rhs.counter_)
+        , mem_block_(rhs.mem_block_)
     {
-        if (ptr_) (*counter_)++;
+        if (ptr_) incref();
     }
 
     ~Shared()
@@ -89,25 +102,29 @@ public:
         }
 
         ptr_ = rhs.ptr_;
-        counter_ = rhs.counter_;
+        mem_block_ = rhs.mem_block_;
 
-        (*counter_)++;
+        if (ptr_)
+        {
+            incref();
+        }
         
         return *this;
     }
 
-    template<typename T1>
-    FORCEINLINE operator Shared<T1>() const
+    template<typename To>
+    requires std::is_convertible<T*, To*>::value
+    FORCEINLINE operator Shared<To>() const
     {
-        return Shared<T1>(ptr_, counter_);
+        return Shared<To>(ptr_, mem_block_);
     }
 
-    uint64* get_counter() const
+    MemBlock* get_mem_block() const
     {
-        return counter_;
+        return mem_block_;
     }
 
-    Shared& operator=(nullptr_t null)
+    Shared& operator=(nullptr_t)
     {
         if (ptr_)
         {
@@ -115,7 +132,7 @@ public:
         }
 
         ptr_ = nullptr;
-        counter_ = nullptr;
+        mem_block_ = nullptr;
         
         return *this;
     }
@@ -128,7 +145,7 @@ public:
         }
 
         ptr_ = nullptr;
-        counter_ = nullptr;
+        mem_block_ = nullptr;
     }
 
     FORCEINLINE T* get() const { return ptr_; }
@@ -139,8 +156,8 @@ public:
     FORCEINLINE T* operator->() { return ptr_; }
     FORCEINLINE T* operator->() const { return ptr_; }
 
-    FORCEINLINE bool operator==(nullptr_t null) const { return ptr_ == nullptr; }
-    FORCEINLINE bool operator!=(nullptr_t null) const { return ptr_ != nullptr; }
+    FORCEINLINE bool operator==(nullptr_t) const { return ptr_ == nullptr; }
+    FORCEINLINE bool operator!=(nullptr_t) const { return ptr_ != nullptr; }
     FORCEINLINE operator bool() const { return ptr_; }
 
     template<typename T1>
@@ -148,24 +165,29 @@ public:
     {
         if (T1* casted = dynamic_cast<T1*>(from.get()))
         {
-            return Shared<T1>(casted, from.get_counter());
+            return Shared<T1>(casted, from.get_mem_block());
         }
 
         return nullptr;
     }
-
+    
 private:
     FORCEINLINE void decref() const
     {
-        if (--(*counter_) == 0)
+        if (--(*mem_block_).shared_references == 0)
         {
             delete ptr_;
-            delete counter_;
+            delete mem_block_;
         }
     }
-    
+
+    FORCEINLINE void incref() const
+    {
+        ++(*mem_block_).shared_references;
+    }
+
     T* ptr_;
-    uint64* counter_;
+    MemBlock* mem_block_;
 };
 
 template<class T, class... ArgTypes>
@@ -184,53 +206,85 @@ class EXPORT Weak
 public:
     Weak()
         : ptr_(nullptr)
-        , counter_(nullptr)
+        , mem_block_(nullptr)
     {}
 
-    Weak(T* ptr, uint64* counter)
+    Weak(T* ptr, MemBlock* mem_block)
         : ptr_(ptr)
-        , counter_(counter)
-    {}
+        , mem_block_(mem_block)
+    {
+        if (ptr_) incref();
+    }
 
     Weak(const Shared<T>& rhs)
         : ptr_(rhs.ptr_)
-        , counter_(rhs.counter_)
+        , mem_block_(rhs.mem_block_)
     {
+        if (mem_block_) incref();
     }
 
-    template<typename T1>
-    FORCEINLINE operator Weak<T1>() const
+    ~Weak()
     {
-        return Weak<T1>(ptr_, counter_);
+        if (ptr_)
+        {
+            decref();
+        }
+    }
+
+    template<typename To>
+    requires std::is_convertible<T*, To*>::value
+    FORCEINLINE operator Weak<To>() const
+    {
+        return Weak<To>(ptr_, mem_block_);
     }
 
     Weak& operator=(const Weak& rhs)
     {
         if (&rhs == this) return *this;
 
+        if (ptr_)
+        {
+            decref();
+        }
+
         ptr_ = rhs.ptr_;
-        counter_ = rhs.counter_;
+        mem_block_ = rhs.mem_block_;
+
+        if (ptr_)
+        {
+            incref();
+        }
         
         return *this;
     }
 
-    Weak& operator=(nullptr_t null)
+    Weak& operator=(nullptr_t)
     {
+        if (ptr_)
+        {
+            decref();
+        }
+        
         ptr_ = nullptr;
-        counter_ = nullptr;
+        mem_block_ = nullptr;
         
         return *this;
     }
 
     FORCEINLINE Shared<T> lock() const
     {
-        return Shared<T>(ptr_, counter_);
+        return ptr_ && mem_block_->shared_references > 0 ? Shared<T>(ptr_, mem_block_) : nullptr;
     }
 
     FORCEINLINE void reset()
     {
+        if (ptr_)
+        {
+            decref();
+        }
+        
         ptr_ = nullptr;
-        counter_ = nullptr;
+        mem_block_ = nullptr;
     }
 
     FORCEINLINE T* get() const { return ptr_; }
@@ -241,20 +295,26 @@ public:
     FORCEINLINE T& operator->() { return *ptr_; }
     FORCEINLINE const T& operator->() const { return *ptr_; }
 
-    FAST_OPERATOR(Weak, ==, ptr_);
-    FAST_OPERATOR(Weak, <=, ptr_);
-    FAST_OPERATOR(Weak, <, ptr_);
-    FAST_OPERATOR(Weak, !=, ptr_);
-    FAST_OPERATOR(Weak, >, ptr_);
-    FAST_OPERATOR(Weak, >=, ptr_);
-
-    FORCEINLINE bool operator==(nullptr_t null) const { return ptr_ == nullptr; }
-    FORCEINLINE bool operator!=(nullptr_t null) const { return ptr_ != nullptr; }
+    FORCEINLINE bool operator==(nullptr_t) const { return ptr_ == nullptr; }
+    FORCEINLINE bool operator!=(nullptr_t) const { return ptr_ != nullptr; }
     FORCEINLINE operator bool() const { return ptr_; }
 
 private:
+    FORCEINLINE void decref() const
+    {
+        if (--(*mem_block_).weak_references == 0 && (*mem_block_).shared_references == 0)
+        {
+            delete mem_block_;
+        }
+    }
+    
+    FORCEINLINE void incref() const
+    {
+        ++(*mem_block_).weak_references;
+    }
+    
     T* ptr_;
-    uint64* counter_;
+    MemBlock* mem_block_;
 };
 
 template<typename T>
@@ -300,15 +360,15 @@ private:
 template <typename T>
 Shared<T> EnableSharedFromThis<T>::shared_from_this() const
 {
-    AssertMsg(last_valid_counter != nullptr, "Memory", "Object was never constructed as shared");
-    return Shared<T>((T*)this, last_valid_counter);
+    AssertMsg(last_valid_mem_block != nullptr, "Memory", "Object was never constructed as shared");
+    return Shared<T>((T*)this, last_valid_mem_block);
 }
 
 template <typename T>
 Weak<T> EnableSharedFromThis<T>::weak_from_this() const
 {
-    AssertMsg(last_valid_counter != nullptr, "Memory", "Object was never constructed as shared");
-    return Weak<T>((T*)this, last_valid_counter);
+    AssertMsg(last_valid_mem_block != nullptr, "Memory", "Object was never constructed as shared");
+    return Weak<T>((T*)this, last_valid_mem_block);
 }
 
 template<typename To, typename From>
@@ -352,3 +412,76 @@ FORCEINLINE bool operator>(const Shared<T1>& lhs, const Shared<T2>& rhs) { retur
 
 template<typename T1, typename T2>
 FORCEINLINE bool operator>=(const Shared<T1>& lhs, const Shared<T2>& rhs) { return lhs.get() >= rhs.get(); };
+
+
+template<typename T1, typename T2>
+FORCEINLINE bool operator==(const Weak<T1>& lhs, const Weak<T2>& rhs) { return lhs.get() == rhs.get(); };
+
+template<typename T1, typename T2>
+FORCEINLINE bool operator<=(const Weak<T1>& lhs, const Weak<T2>& rhs) { return lhs.get() <= rhs.get(); };
+
+template<typename T1, typename T2>
+FORCEINLINE bool operator<(const Weak<T1>& lhs, const Weak<T2>& rhs) { return lhs.get() < rhs.get(); };
+
+template<typename T1, typename T2>
+FORCEINLINE bool operator!=(const Weak<T1>& lhs, const Weak<T2>& rhs) { return lhs.get() != rhs.get(); };
+
+template<typename T1, typename T2>
+FORCEINLINE bool operator>(const Weak<T1>& lhs, const Weak<T2>& rhs) { return lhs.get() > rhs.get(); };
+
+template<typename T1, typename T2>
+FORCEINLINE bool operator>=(const Weak<T1>& lhs, const Weak<T2>& rhs) { return lhs.get() >= rhs.get(); };
+
+#define null_weak(type) (nullptr)
+
+#else
+
+#include <memory>
+
+template<typename T>
+using Reference = std::unique_ptr<T>;
+
+template<typename T>
+using Weak = std::weak_ptr<T>;
+
+#define null_weak(type) (Weak<type>())
+
+template<typename T>
+using Shared = std::shared_ptr<T>;
+
+template<class T, class... Types>
+Shared<T> MakeShared(Types&&... Args)
+{
+    return std::make_shared<T>(std::forward<Types>(Args)...);
+}
+
+#define MakeSharedInternal(T, ...) (Shared<T>(new T(__VA_ARGS__)))
+
+template<typename T>
+using EnableSharedFromThis = std::enable_shared_from_this<T>;
+
+template<typename To, typename From>
+FORCEINLINE To* cast(From* obj)
+{
+    return dynamic_cast<To*>(obj);
+}
+
+template<typename To, typename From>
+FORCEINLINE Shared<To> cast(const Shared<From>& obj)
+{
+    return std::dynamic_pointer_cast<To>(obj);
+}
+
+template<typename To, typename From>
+FORCEINLINE Shared<const To> cast(const Shared<const From>& obj)
+{
+    return std::dynamic_pointer_cast<const To>(obj);
+}
+
+template<typename To, typename From>
+FORCEINLINE Shared<To> cast(const Weak<From>& obj)
+{
+    return std::dynamic_pointer_cast<To>(obj.lock());
+}
+
+#endif

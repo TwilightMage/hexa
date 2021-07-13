@@ -33,6 +33,10 @@ void Entity::on_start()
 {
 }
 
+void Entity::on_tick(float delta_time)
+{
+}
+
 void Entity::on_destroy()
 {
 }
@@ -195,35 +199,41 @@ void Entity::set_gravity_enabled(bool state) const
     rigid_body_->enableGravity(state);
 }
 
-void Entity::make_body_static() const
+void Entity::make_body_static()
 {
     if (!rigid_body_)
     {
         print_warning("Physics", "Attempt to make entity static which is not a rigid body!");
         return;
     }
+
+    update_physically_dynamic();
     
     rigid_body_->setType(reactphysics3d::BodyType::STATIC);
 }
 
-void Entity::make_body_dynamic() const
+void Entity::make_body_dynamic()
 {
     if (!rigid_body_)
     {
         print_warning("Physics", "Attempt to make entity dynamic which is not a rigid body!");
         return;
     }
+
+    update_physically_dynamic();
     
     rigid_body_->setType(reactphysics3d::BodyType::DYNAMIC);
 }
 
-void Entity::make_body_kinematic() const
+void Entity::make_body_kinematic()
 {
     if (!rigid_body_)
     {
         print_warning("Physics", "Attempt to make entity kinematic which is not a rigid body!");
         return;
     }
+
+    update_physically_dynamic();
     
     rigid_body_->setType(reactphysics3d::BodyType::KINEMATIC);
 }
@@ -256,7 +266,7 @@ void Entity::remove_component(const Shared<EntityComponent>& component)
     {
         components_.remove(component);
         component->on_destroy();
-        component->owner = nullptr;
+        component->owner = null_weak(Entity);
     }
 }
 
@@ -265,7 +275,7 @@ void Entity::remove_all_components()
     for (auto& component : components_)
     {
         component->on_destroy();
-        component->owner = nullptr;
+        component->owner = null_weak(Entity);
     }
     components_.clear();
 }
@@ -308,6 +318,18 @@ void Entity::material_changed()
 void Entity::start()
 {
     started_ = true;
+
+    update_physically_dynamic();
     
     on_start();
+}
+
+void Entity::tick(float delta_time)
+{
+    on_tick(delta_time);
+}
+
+void Entity::update_physically_dynamic()
+{
+    is_physically_dynamic_ = rigid_body_ == nullptr || rigid_body_->isSleeping() || rigid_body_->getType() == reactphysics3d::BodyType::KINEMATIC;
 }

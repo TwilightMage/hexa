@@ -12,6 +12,7 @@ Character::Character()
     : Entity()
     , inventory_(MakeShared<CharacterInventory>(initial_inventory_size))
 {
+    tick_enabled = true;
 }
 
 void Character::on_start()
@@ -22,7 +23,7 @@ void Character::on_start()
     }
 }
 
-void Character::tick(float delta_time)
+void Character::on_tick(float delta_time)
 {
     set_rotation(Quaternion::slerp(get_rotation(), target_rotation_, delta_time * 10));
     

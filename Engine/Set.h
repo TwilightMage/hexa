@@ -199,6 +199,18 @@ public:
         return inner_[index];
     }
 
+    template<typename... ArgTypes>
+    static Set of(ArgTypes... args)
+    {
+        const std::initializer_list<T> args_list = {args...};
+        Set result;
+        for (auto& arg : args_list)
+        {
+            result.add(arg);
+        }
+        return result;
+    }
+
     Set operator+(const Set& rhs) const
     {
         Set result = *this;

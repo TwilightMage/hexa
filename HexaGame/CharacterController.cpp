@@ -21,7 +21,7 @@ void CharacterController::un_posses_character()
     if (character_)
     {
         character_->on_character_un_possesed();
-        character_->controller_ = nullptr;
+        character_->controller_ = null_weak(CharacterController);
         character_ = nullptr;
     }
 }

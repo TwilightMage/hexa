@@ -84,13 +84,13 @@ public:
     static const GameInfo& get_info();
     static const Shared<Settings>& get_settings();
     template<typename T>
-    FORCEINLINE static T get_settings() { return cast<T>(get_settings()); }
+    FORCEINLINE static Shared<T> get_settings() { return cast<T>(get_settings()); }
     static const Shared<SaveGame>& get_save_game();
     template<typename T>
-    FORCEINLINE static T get_save_game() { return cast<T>(get_save_game()); }
+    FORCEINLINE static Shared<T> get_save_game() { return cast<T>(get_save_game()); }
     static const Shared<EventBus>& get_event_bus();
     template<typename T>
-    FORCEINLINE static T get_event_bus() { return cast<T>(get_event_bus()); }
+    FORCEINLINE static Shared<T> get_event_bus() { return cast<T>(get_event_bus()); }
 
     static void call_on_main_thread(std::function<void()> func);
 

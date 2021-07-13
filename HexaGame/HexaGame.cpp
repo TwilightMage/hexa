@@ -119,11 +119,11 @@ void HexaGame::loading_stage()
     wind_sound->set_default_volume(0.3f);
 
     music_channel_ = AudioChannel::create(get_general_channel());
-    music_channel_->set_volume(get_settings<HexaSettings>().audio_music);
+    music_channel_->set_volume(get_settings<HexaSettings>()->audio_music);
     ambient_channel_ = AudioChannel::create(get_general_channel());
-    ambient_channel_->set_volume(get_settings<HexaSettings>().audio_ambient);
+    ambient_channel_->set_volume(get_settings<HexaSettings>()->audio_ambient);
     effects_channel_ = AudioChannel::create(get_general_channel());
-    effects_channel_->set_volume(get_settings<HexaSettings>().audio_effects);
+    effects_channel_->set_volume(get_settings<HexaSettings>()->audio_effects);
     
     Tiles::init(tile_database);
 

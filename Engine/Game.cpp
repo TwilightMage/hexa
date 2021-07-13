@@ -487,7 +487,7 @@ void Game::render_loop()
 
 	// Audio channels
 	general_channel_ = AudioChannel::create();
-	general_channel_->set_volume(settings_->get_general_channel_volume());
+	general_channel_->set_volume(settings_->audio_general);
 	
 	loading_stage();
 	

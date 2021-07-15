@@ -1,11 +1,16 @@
 ﻿#include "TreeStemInfo.h"
 
+#include <HexaGame/HexaCollisionMaskBits.h>
+
 #include "Engine/Random.h"
 #include "Engine/World.h"
 #include "HexaGame/HexaGame.h"
 #include "HexaGame/HexaMath.h"
 #include "HexaGame/ComplexTileCustomData/TreeStemCustomData.h"
+#include "HexaGame/Database/Items.h"
+#include "HexaGame/Database/Tiles.h"
 #include "HexaGame/Entities/ComplexTile.h"
+#include "HexaGame/Worlds/HexaWorld.h"
 
 Shared<ComplexTileCustomData> TreeStemInfo::create_custom_data() const
 {
@@ -26,6 +31,7 @@ void TreeStemInfo::setup_spawned_entity(const Shared<ComplexTile>& new_tile, con
 
         Random random(tree_custom_data->tree_seed + tree_custom_data->cell_index);
         new_tile->set_rotation(Quaternion(Vector3(0, 0, tree_random.number(360.0f) + random.number<uint>(6) * 60.0f)));
+        new_tile->set_collision_mask(HexaCollisionMaskBits::COMPLEX_BLOCK);
 
         switch (tree_custom_data->type)
         {
@@ -100,9 +106,9 @@ void TreeStemInfo::setup_spawned_entity(const Shared<ComplexTile>& new_tile, con
     }
 }
 
-void TreeStemInfo::cleanup_destroyed_entity(const Shared<ComplexTile>& destroyed_tile, const Shared<ComplexTileCustomData>& custom_data) const
+void TreeStemInfo::on_tile_destroyed(const TileIndex& index, const Shared<ComplexTile>& destroyed_tile, const Shared<HexaWorld>& world) const
 {
-    if (const auto tree_custom_data = cast<TreeStemCustomData>(custom_data))
+    if (const auto tree_custom_data = cast<TreeStemCustomData>(world->get_custom_data(index)))
     {
         for (auto& sub_part : tree_custom_data->tree_sub_parts)
         {
@@ -110,5 +116,18 @@ void TreeStemInfo::cleanup_destroyed_entity(const Shared<ComplexTile>& destroyed
         }
 
         tree_custom_data->tree_sub_parts.clear();
+    }
+
+    world->spawn_drop(index, HexaGame::item_database->get(log_item_name), Quaternion(Vector3(0, 0, Random::static_number(360.0f))).forward() * 1.0f * Random::static_number<float>() + Vector3(0, 0, 0.2f));
+}
+
+void TreeStemInfo::neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, const Shared<const TileInfo>& new_neighbor) const
+{
+    if (new_neighbor == Tiles::air)
+    {
+        if (side == TileSide::Down)
+        {
+            world->set_tile(index, Tiles::air);
+        }
     }
 }

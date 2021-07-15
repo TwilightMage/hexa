@@ -1,7 +1,7 @@
 ﻿#include "ItemTileInfo.h"
 
 #include "HexaGame/HexaGame.h"
-#include "HexaGame/Tiles.h"
+#include "HexaGame/Database/Tiles.h"
 #include "HexaGame/Entities/Character.h"
 #include "HexaGame/Worlds/HexaWorld.h"
 

@@ -11,6 +11,7 @@
 #include "Path.h"
 #include "SimpleMap.h"
 #include "Slot.h"
+#include "SoundHandle.h"
 #include "String.h"
 #include "Vector2.h"
 #include "Vector3.h"
@@ -52,6 +53,7 @@ class EXPORT Game
 {
     friend AudioChannel;
     friend Audio;
+    friend SoundHandle;
     friend Material;
     friend World;
     friend Shader;

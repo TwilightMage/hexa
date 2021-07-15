@@ -6,8 +6,9 @@ enum class ItemType
     Sword = 1,
     Shovel = 2,
     Axe = 4,
-    Tile = 8,
-    Resource = 16
+    Pickaxe = 8,
+    Tile = 16,
+    Resource = 32
 };
 
 IMPLEMENT_ENUM_FLAGS(ItemType);

@@ -1,21 +1,21 @@
 ﻿#pragma once
 
-#include "HexaGame.h"
-#include "Paths.h"
-#include "TileInfo.h"
-#include "Database/tiles/TreeStemInfo.h"
 #include "Engine/DatabaseHelpers.h"
 #include "Engine/Mesh.h"
 #include "Engine/Texture.h"
+#include "HexaGame/HexaGame.h"
+#include "HexaGame/Paths.h"
+#include "HexaGame/TileInfo.h"
 #include "HexaGame/Database/tiles/GrassInfo.h"
 #include "HexaGame/Database/tiles/TallGrassInfo.h"
+#include "HexaGame/Database/tiles/TreeStemInfo.h"
 
 #define LOAD_MESH(domain, subdomain, name) (Mesh::load_obj(domain##_##subdomain + name + ".obj"))
 #define LOAD_TEX(domain, subdomain, name) (Texture::load_png(domain##_##subdomain + name + ".png"))
 
 #define INIT_SOLID_TILE_DATABASE_ENTRY(name, type, tags, hardness, resources_path_root, ...)  INIT_DATABASE_ENTRY(name, type, tags, hardness, LOAD_TEX(resources_path_root, TEXTURES_TILES, #name), __VA_ARGS__);
 #define INIT_COMPLEX_TILE_DATABASE_ENTRY(name, type, tags, hardness, resources_path_root, mesh_name, ...) INIT_DATABASE_ENTRY(name, type, tags, hardness, LOAD_MESH(resources_path_root, MESHES_TILES, mesh_name), LOAD_TEX(resources_path_root, TEXTURES_COMPLEXTILES, #name), __VA_ARGS__);
-#define INIT_TREE_STEM_DATABASE_ENTRY(name, type, tags, hardness, resources_path_root, plant_name, ...) INIT_COMPLEX_TILE_DATABASE_ENTRY(name, type, tags, hardness, resources_path_root, plant_name + "_stem", Game::get_basic_material_3d(), LOAD_MESH(resources_path_root, MESHES_TILES, plant_name + "_root"), LOAD_TEX(resources_path_root, TEXTURES_COMPLEXTILES, #name + "_root"), LOAD_MESH(resources_path_root, MESHES_TILES, plant_name + "_krone"), LOAD_TEX(resources_path_root, TEXTURES_COMPLEXTILES, #name + "_krone"), LOAD_MESH(resources_path_root, MESHES_TILES, plant_name + "_branch"), LOAD_TEX(resources_path_root, TEXTURES_COMPLEXTILES, #name + "_branch"), LOAD_MESH(resources_path_root, MESHES_TILES, plant_name + "_branch_krone"), LOAD_TEX(resources_path_root, TEXTURES_COMPLEXTILES, #name + "_branch_krone"))
+#define INIT_TREE_STEM_DATABASE_ENTRY(name, type, tags, hardness, resources_path_root, plant_name, drop_name, ...) INIT_COMPLEX_TILE_DATABASE_ENTRY(name, type, tags, hardness, resources_path_root, plant_name + "_stem", Game::get_basic_material_3d(), LOAD_MESH(resources_path_root, MESHES_TILES, plant_name + "_root"), LOAD_TEX(resources_path_root, TEXTURES_COMPLEXTILES, #name + "_root"), LOAD_MESH(resources_path_root, MESHES_TILES, plant_name + "_krone"), LOAD_TEX(resources_path_root, TEXTURES_COMPLEXTILES, #name + "_krone"), LOAD_MESH(resources_path_root, MESHES_TILES, plant_name + "_branch"), LOAD_TEX(resources_path_root, TEXTURES_COMPLEXTILES, #name + "_branch"), LOAD_MESH(resources_path_root, MESHES_TILES, plant_name + "_branch_krone"), LOAD_TEX(resources_path_root, TEXTURES_COMPLEXTILES, #name + "_branch_krone"), drop_name)
 
 class EXPORT Tiles
 {
@@ -52,6 +52,6 @@ public:
         INIT_COMPLEX_TILE_DATABASE_ENTRY(red_roses, TallGrassInfo, { MetaTags::FLOWER }, 0.1f, RESOURCES_HEXA, "tall_grass", HexaGame::foliage_material);
         INIT_COMPLEX_TILE_DATABASE_ENTRY(chamomile, TallGrassInfo, { MetaTags::FLOWER }, 0.1f, RESOURCES_HEXA, "tall_grass", HexaGame::foliage_material);
 
-        INIT_TREE_STEM_DATABASE_ENTRY(ash_stem, TreeStemInfo, Set<Name>::of(MetaTags::PLANT, MetaTags::WOOD), 0.1f, RESOURCES_HEXA, "tree");
+        INIT_TREE_STEM_DATABASE_ENTRY(ash_stem, TreeStemInfo, {}, 1.0f, RESOURCES_HEXA, "tree", "ash_log");
     }
 };

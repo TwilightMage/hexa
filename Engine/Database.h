@@ -2,6 +2,7 @@
 
 #include "DatabaseBase.h"
 #include "Map.h"
+#include "Name.h"
 #include "Pointers.h"
 #include "String.h"
 
@@ -13,11 +14,11 @@ public:
 
     template<class SubT>
     Shared<const SubT> add(SubT* record);
-    Shared<const T> get(const String& key) const;
-    const Map<String, Shared<T>>& records() const;
+    Shared<const T> get(const Name& key) const;
+    const Map<Name, Shared<T>>& records() const;
 
 private:
-    Map<String, Shared<T>> data_;
+    Map<Name, Shared<T>> data_;
 };
 
 #include "Database.cpp"

@@ -16,16 +16,17 @@ public:
     Vector3(const Vector2& vec2, float z);
     Vector3(const Vector3& rhs);
 
-    float magnitude() const;
-    float dot_product(const Vector3& rhs) const;
-    Vector3 cross_product(const Vector3& rhs) const;
+    FORCEINLINE float magnitude() const;
+    FORCEINLINE float dot_product(const Vector3& rhs) const;
+    FORCEINLINE Vector3 cross_product(const Vector3& rhs) const;
     Vector3 normalized() const;
     void normalize();
-    String to_string() const;
+    FORCEINLINE String to_string() const;
 
     FORCEINLINE static float angle_deg(const Vector3& a, const Vector3& b) { return Math::acos_deg(a.normalized().dot_product(b.normalized())); }
     FORCEINLINE static float angle_rad(const Vector3& a, const Vector3& b) { return Math::acos_rad(a.normalized().dot_product(b.normalized())); }
     FORCEINLINE static float distance(const Vector3& a, const Vector3& b) { return (a - b).magnitude(); }
+    FORCEINLINE static Vector3 reflect(const Vector3& in_vec, const Vector3& normal);
     
     Vector3 operator+(const Vector3& rhs) const;
     Vector3 operator-(const Vector3& rhs) const;
@@ -48,15 +49,15 @@ public:
 
     Vector3 operator-() const;
 
-    float sum_all() const;
+    FORCEINLINE float sum_all() const;
     
     float x;
     float y;
     float z;
 
-    static Vector3 zero();
-    static Vector3 one();
-    static Vector3 forward();
-    static Vector3 right();
-    static Vector3 up();
+    FORCEINLINE static Vector3 zero()    { return {0, 0, 0}; }
+    FORCEINLINE static Vector3 one()     { return {1, 1, 1}; }
+    FORCEINLINE static Vector3 forward() { return {1, 0, 0}; }
+    FORCEINLINE static Vector3 right()   { return {0, 1, 0}; }
+    FORCEINLINE static Vector3 up()      { return {0, 0, 1}; }
 };

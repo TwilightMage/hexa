@@ -6,7 +6,8 @@ class ItemToolInfo : public ItemInfo
 {
 public:
     ItemToolInfo(
-        const String& key,
+        const Name& key,
+        const Set<Name>& tags,
         const Shared<Texture>& icon,
         const Shared<Mesh>& mesh,
         const Shared<Texture>& mesh_texture,
@@ -16,7 +17,7 @@ public:
         float mass,
         ItemTileTarget tile_target
         )
-        : ItemInfo(key, icon, mesh, mesh_texture, type, name, stack_size, mass, tile_target)
+        : ItemInfo(key, tags, icon, mesh, mesh_texture, type, name, stack_size, mass, tile_target)
     {}
 
     void apply_to_tile(ItemContainer& item, const Shared<Character>& character, const TileIndex& world_index, const Shared<HexaWorld>& world) const override;

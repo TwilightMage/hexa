@@ -184,9 +184,11 @@
     <ClInclude Include="ChunkMeshEntity.h" />
     <ClInclude Include="ComplexTileCustomData.h" />
     <ClInclude Include="ComplexTileCustomData\TreeStemCustomData.h" />
+    <ClInclude Include="Database\Items.h" />
     <ClInclude Include="Database\items\ItemInfo.h" />
     <ClInclude Include="Database\items\ItemTileInfo.h" />
     <ClInclude Include="Database\items\ItemToolInfo.h" />
+    <ClInclude Include="Database\Tiles.h" />
     <ClInclude Include="Database\tiles\GrassInfo.h" />
     <ClInclude Include="Database\tiles\TallGrassInfo.h" />
     <ClInclude Include="Database\tiles\TreeStemInfo.h" />
@@ -207,7 +209,6 @@
     <ClInclude Include="CharacterController.h" />
     <ClInclude Include="Inventory.h" />
     <ClInclude Include="ItemContainer.h" />
-    <ClInclude Include="Items.h" />
     <ClInclude Include="ItemType.h" />
     <ClInclude Include="MetaTags.h" />
     <ClInclude Include="ui\Toolbar.h" />
@@ -230,7 +231,6 @@
     <ClInclude Include="pch.h" />
     <ClInclude Include="TileIndex.h" />
     <ClInclude Include="TileInfo.h" />
-    <ClInclude Include="Tiles.h" />
     <ClInclude Include="TileSide.h" />
     <ClInclude Include="ui\DialoguePanel.h" />
     <ClInclude Include="ui\MainMenu.h" />

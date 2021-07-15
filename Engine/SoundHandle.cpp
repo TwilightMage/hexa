@@ -2,50 +2,35 @@
 
 #include <soloud/soloud.h>
 
+#include "Game.h"
+
 SoundHandle::SoundHandle()
     : handle_(0)
-    , engine_(nullptr)
 {
 }
 
 void SoundHandle::stop()
 {
-    if (engine_ && handle_)
-    {
-        engine_->stop(handle_);
-        handle_ = 0;
-        engine_ = nullptr;
-    }
+    Game::instance_->soloud_->stop(handle_);
+    handle_ = 0;
 }
 
 void SoundHandle::set_pause(bool pause) const
 {
-    if (engine_ && handle_)
-    {
-        engine_->setPause(handle_, pause);
-    }
+    Game::instance_->soloud_->setPause(handle_, pause);
 }
 
 void SoundHandle::set_volume(float vol) const
 {
-    if (engine_ && handle_)
-    {
-        engine_->setVolume(handle_, vol);
-    }
+    Game::instance_->soloud_->setVolume(handle_, vol);
 }
 
 float SoundHandle::get_volume() const
 {
-    if (engine_ && handle_)
-    {
-        return engine_->getVolume(handle_);
-    }
-
-    return 0.0f;
+    return Game::instance_->soloud_->getVolume(handle_);
 }
 
-SoundHandle::SoundHandle(int handle, Shared<SoLoud::Soloud> engine)
+SoundHandle::SoundHandle(int handle)
     : handle_(handle)
-    , engine_(engine)
 {
 }

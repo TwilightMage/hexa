@@ -11,7 +11,7 @@ class EXPORT CharacterInfo : public DatabaseEntry
 {
 public:
     CharacterInfo(
-        const String& key,
+        const Name& key,
         std::function<Shared<Character>()> character_supplier
         )
         : DatabaseEntry(key)

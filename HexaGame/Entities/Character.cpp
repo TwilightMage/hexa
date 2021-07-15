@@ -3,9 +3,9 @@
 #include "Engine/AnimatorComponent.h"
 #include "HexaGame/CharacterInventory.h"
 #include "HexaGame/HexaMath.h"
-#include "HexaGame/Tiles.h"
 #include "HexaGame/WorldChunk.h"
 #include "HexaGame/WorldPath.h"
+#include "HexaGame/Database/Tiles.h"
 #include "HexaGame/Worlds/HexaWorld.h"
 
 Character::Character()

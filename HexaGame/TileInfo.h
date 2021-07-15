@@ -18,7 +18,7 @@ class TileInfo : public DatabaseEntry
 {
 public:
     TileInfo(
-        const String& key,
+        const Name& key,
         TileType type,
         const Set<Name> tags,
         float hardness
@@ -40,7 +40,7 @@ public:
 class AirTileInfo : public TileInfo
 {
 public:
-    AirTileInfo(const String& key)
+    AirTileInfo(const Name& key)
     : TileInfo(key, TileType::Air, { MetaTags::AIR }, 0.0f)
     {}
 };
@@ -49,7 +49,7 @@ class SolidTileInfo : public TileInfo
 {
 public:
     SolidTileInfo(
-        const String& key,
+        const Name& key,
         const Set<Name>& tags,
         float hardness,
         const Shared<Texture>& texture,
@@ -72,7 +72,7 @@ class ComplexTileInfo : public TileInfo
 {
 public:
     ComplexTileInfo(
-        const String& key,
+        const Name& key,
         const Set<Name>& tags,
         float hardness,
         const Shared<Mesh>& mesh,
@@ -86,7 +86,7 @@ public:
     {}
 
     virtual void setup_spawned_entity(const Shared<ComplexTile>& new_tile, const Shared<ComplexTileCustomData>& custom_data) const;
-    virtual void cleanup_destroyed_entity(const Shared<ComplexTile>& destroyed_tile, const Shared<ComplexTileCustomData>& custom_data) const;
+    virtual void on_tile_destroyed(const TileIndex& index, const Shared<ComplexTile>& destroyed_tile, const Shared<HexaWorld>& world) const;
     virtual bool can_place_at(const Shared<ComplexTile>& new_tile, const ItemContainer& item) const;
     virtual Shared<ComplexTileCustomData> create_custom_data() const;
 

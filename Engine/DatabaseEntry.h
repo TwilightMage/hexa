@@ -1,13 +1,14 @@
 ﻿#pragma once
 
+#include "Name.h"
 #include "String.h"
 
 class EXPORT DatabaseEntry
 {
 public:
-    DatabaseEntry(const String& key)
+    DatabaseEntry(const Name& key)
         : key(key)
     {}
     
-    String key;
+    Name key;
 };

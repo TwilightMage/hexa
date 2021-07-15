@@ -4,8 +4,8 @@
 #include "Engine/Physics/ConcaveMeshCollision.h"
 #include "Engine/Physics/ConvexMeshCollision.h"
 #include "HexaGame/HexaGame.h"
-#include "HexaGame/Tiles.h"
 #include "HexaGame/WorldGenerator.h"
+#include "HexaGame/Database/Tiles.h"
 #include "HexaGame/Entities/DebugPlayer.h"
 #include "HexaGame/Entities/SingleTile.h"
 #include "HexaGame/Entities/TileDemoEntity.h"
@@ -26,7 +26,7 @@ void TilePresentationWorld::on_start()
             WorldGenerator::generate_tile_mesh(TileSide::All, solid_entry, vertices, indices, pos.x + pos.y + pos.z);
             GeometryEditor::remove_indices(vertices, indices);
 
-            Shared<Mesh> mesh = MakeShared<Mesh>(String::format("tile %s", entry.value->key.c()), vertices);
+            Shared<Mesh> mesh = MakeShared<Mesh>(String::format("tile %s", entry.value->key.to_string().c()), vertices);
         
             const auto entity = MakeShared<SingleTile>();
             entity->set_mesh(mesh);

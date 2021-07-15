@@ -6,14 +6,14 @@ class TallGrassInfo : public ComplexTileInfo
 {
 public:
     TallGrassInfo(
-        const String& key,
+        const Name& key,
         const Set<Name>& tags,
         float hardness,
         const Shared<Mesh>& mesh,
         const Shared<Texture>& texture,
         const Shared<Material3D>& material
         )
-        : ComplexTileInfo(key, tags + Set{ MetaTags::PLANT, MetaTags::GRASS }, hardness, mesh, texture, material)
+        : ComplexTileInfo(key, tags + Set{ MetaTags::PLANT, MetaTags::GRASS, MetaTags::PLANT }, hardness, mesh, texture, material)
     {}
 
     void neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, const Shared<const TileInfo>& new_neighbor) const override;

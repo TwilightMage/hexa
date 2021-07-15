@@ -20,12 +20,12 @@
 #include "HexaGame/HexaCollisionMaskBits.h"
 #include "HexaGame/HexaGame.h"
 #include "HexaGame/HexaMath.h"
-#include "HexaGame/Items.h"
 #include "HexaGame/TileIndex.h"
-#include "HexaGame/Tiles.h"
 #include "HexaGame/WorldChunk.h"
 #include "HexaGame/WorldChunkObserver.h"
 #include "HexaGame/WorldPath.h"
+#include "HexaGame/Database/Items.h"
+#include "HexaGame/Database/Tiles.h"
 #include "HexaGame/Entities/Character.h"
 #include "HexaGame/ui/Toolbar.h"
 #include "HexaGame/Worlds/HexaWorld.h"
@@ -355,15 +355,19 @@ void GamePlayer::spawn_chunk_loaded(const Shared<WorldChunk>& sender)
                     
                     posses_character(character);
                     set_position(character->get_tile_position().to_vector());
+                    camera_rotation_ = Quaternion(Vector3(0, 30, 180.0f));
                     camera_pivot_z_ = desired_camera_pivot_z = character->get_tile_position().z * HexaMath::tile_height;
 
-                    world->spawn_drop(TileIndex(0, 1, Z + 1), ItemContainer(Items::iron_shovel));
-                    world->spawn_drop(TileIndex(1, 1, Z + 1), ItemContainer(Items::stone_bricks));
-                    world->spawn_drop(TileIndex(1, 1, Z + 1), ItemContainer(Items::stone_bricks));
-                    world->spawn_drop(TileIndex(1, 1, Z + 1), ItemContainer(Items::stone_bricks));
-                    world->spawn_drop(TileIndex(2, 1, Z + 1), ItemContainer(Items::ash_log));
-                    world->spawn_drop(TileIndex(2, 1, Z + 1), ItemContainer(Items::ash_log));
-                    world->spawn_drop(TileIndex(2, 1, Z + 1), ItemContainer(Items::ash_log));
+                    world->spawn_drop(TileIndex(0, 1, Z + 2), ItemContainer(Items::iron_shovel));
+                    world->spawn_drop(TileIndex(0, 1, Z + 2), ItemContainer(Items::iron_axe));
+                    
+                    world->spawn_drop(TileIndex(1, 1, Z + 2), ItemContainer(Items::stone_bricks));
+                    world->spawn_drop(TileIndex(1, 1, Z + 2), ItemContainer(Items::stone_bricks));
+                    world->spawn_drop(TileIndex(1, 1, Z + 2), ItemContainer(Items::stone_bricks));
+                    
+                    world->spawn_drop(TileIndex(2, 1, Z + 2), ItemContainer(Items::ash_log));
+                    world->spawn_drop(TileIndex(2, 1, Z + 2), ItemContainer(Items::ash_log));
+                    world->spawn_drop(TileIndex(2, 1, Z + 2), ItemContainer(Items::ash_log));
 
                     background_music_handle_ = world->play_sound(HexaGame::plains_music, HexaGame::get_music_channel());
                     const auto wind_sound_handle = world->play_sound(HexaGame::wind_sound, HexaGame::get_ambient_channel());

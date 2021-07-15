@@ -35,7 +35,7 @@ Shared<const SubT> Database<T>::add(SubT* record)
 }
 
 template <class T>
-Shared<const T> Database<T>::get(const String& key) const
+Shared<const T> Database<T>::get(const Name& key) const
 {
     if (auto found = data_.find(key))
     {
@@ -46,7 +46,7 @@ Shared<const T> Database<T>::get(const String& key) const
 }
 
 template <class T>
-const Map<String, Shared<T>>& Database<T>::records() const
+const Map<Name, Shared<T>>& Database<T>::records() const
 {
     return data_;
 }

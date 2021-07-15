@@ -2,9 +2,9 @@
 
 #include "HexaMath.h"
 #include "TileIndex.h"
-#include "Tiles.h"
 #include "WorldChunk.h"
 #include "ComplexTileCustomData/TreeStemCustomData.h"
+#include "Database/Tiles.h"
 #include "Engine/Random.h"
 
 void DefaultWorldGenerator::init(uint seed)

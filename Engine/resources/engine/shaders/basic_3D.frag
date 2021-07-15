@@ -15,9 +15,7 @@ out vec4 frag_color;
 
 void main()
 {
-    vec3 N = normalize(norm);
-    
-    float diff = max(dot(N, sun_dir), 0.0);
+    float diff = max(dot(norm, sun_dir), 0.0);
     vec3 diffuse = diff * sun_light;
 
     frag_color = texture(INST_texture[InstanceID], uv) * vec4((ambient_light + diffuse), 1.0);

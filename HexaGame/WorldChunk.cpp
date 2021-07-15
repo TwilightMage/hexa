@@ -6,11 +6,10 @@
 #include "HexaCollisionMaskBits.h"
 #include "HexaGame.h"
 #include "HexaSaveGame.h"
-#include "Tiles.h"
 #include "WorldChunkMesh.h"
 #include "WorldGenerator.h"
+#include "Database/Tiles.h"
 #include "Engine/GeometryEditor.h"
-#include "Engine/performance.h"
 #include "Engine/World.h"
 #include "Engine/Physics/ConcaveMeshCollision.h"
 #include "Entities/ComplexTile.h"
@@ -101,66 +100,66 @@ const Shared<const TileInfo>& WorldChunk::get_tile(const TileIndex& index) const
 
 void WorldChunk::set_tile(const TileIndex& index, const Shared<const TileInfo>& new_tile)
 {
-    auto old_tile = data[index.x][index.y][index.z];
-    
-    modifications_[index] = new_tile;
-    data[index.x][index.y][index.z] = new_tile;
-    dirty_ = true;
-
-    generate_metadata(index.z);
-
     if (auto world = world_.lock())
     {
+        auto old_tile = data[index.x][index.y][index.z];
+    
+        modifications_[index] = new_tile;
+        data[index.x][index.y][index.z] = new_tile;
+        dirty_ = true;
+
+        generate_metadata(index.z);
+
         for (byte b = 0; b < 8; b++)
         {
             auto side = (TileSide)(1 << b);
             TileIndex neighbor = index + TileIndex::offset_from_side(side);
             if (neighbor.is_inside_chunk())
             {
-                data[neighbor.x][neighbor.y][neighbor.z]->neighbor_changed(neighbor, tile_side_opposite(side), world, new_tile);
+                data[neighbor.x][neighbor.y][neighbor.z]->neighbor_changed(neighbor.to_absolute(index_), tile_side_opposite(side), world, new_tile);
             }
         }
-    }
     
-    on_tile_change(index_, index);
+        on_tile_change(index_, index);
 
-    if (auto complex = complex_tiles_.find(index))
-    {
-        complex->entity->destroy();
-        complex->info->cleanup_destroyed_entity(complex->entity, custom_data_[index]);
-        custom_data_.remove(index);
-    }
-    if (new_tile->type == TileType::Complex)
-    {
-        auto& slot = complex_tiles_[index];
-        spawn_complex(index, slot);
+        if (auto complex = complex_tiles_.find(index))
+        {
+            complex->entity->destroy();
+            complex->info->on_tile_destroyed(index.to_absolute(index_), complex->entity, world);
+            custom_data_.remove(index);
+        }
+        if (new_tile->type == TileType::Complex)
+        {
+            auto& slot = complex_tiles_[index];
+            spawn_complex(index, slot);
         
-        if ((uint)index.z > cap_z)
-        {
-            slot.entity->set_visibility(false);
+            if ((uint)index.z > cap_z)
+            {
+                slot.entity->set_visibility(false);
+            }
         }
-    }
 
-    if (old_tile->type == TileType::Complex && new_tile->type != TileType::Complex)
-    {
-        complex_tiles_.remove(index);
-    }
-    
-    if (count_difference(new_tile->type | old_tile->type) >= 2)
-    {
-        if (index.z > 0 && count_difference(new_tile->type | data[index.x][index.y][index.z - 1]->type) >= 2)
+        if (old_tile->type == TileType::Complex && new_tile->type != TileType::Complex)
         {
-            regenerate_mesh(index.z - 1);
-        }
-        regenerate_mesh(index.z);
-        if (index.z < chunk_height - 1 && count_difference(new_tile->type | data[index.x][index.y][index.z + 1]->type) >= 2)
-        {
-            regenerate_mesh(index.z + 1);
+            complex_tiles_.remove(index);
         }
     
-        if (index.z == cap_z - 1)
+        if (count_difference(new_tile->type | old_tile->type) >= 2)
         {
-            regenerate_cap_mesh();
+            if (index.z > 0 && count_difference(new_tile->type | data[index.x][index.y][index.z - 1]->type) >= 2)
+            {
+                regenerate_mesh(index.z - 1);
+            }
+            regenerate_mesh(index.z);
+            if (index.z < chunk_height - 1 && count_difference(new_tile->type | data[index.x][index.y][index.z + 1]->type) >= 2)
+            {
+                regenerate_mesh(index.z + 1);
+            }
+    
+            if (index.z == cap_z - 1)
+            {
+                regenerate_cap_mesh();
+            }
         }
     }
 }
@@ -175,13 +174,23 @@ bool WorldChunk::damage_tile(const TileIndex& index, float damage)
     tile_damage += damage;
     if (tile_damage >= tile_id->hardness)
     {
-        set_tile(index, Tiles::air);
+        set_tile(index.to_absolute(index_), Tiles::air);
         tile_damage_.remove(index);
         
         return true;
     }
 
     return false;
+}
+
+Shared<ComplexTileCustomData> WorldChunk::get_custom_data(const TileIndex& index) const
+{
+    if (auto data = custom_data_.find(index))
+    {
+        return *data;
+    }
+
+    return nullptr;
 }
 
 TileSide WorldChunk::get_tile_face_flags(const TileIndex& tile_index) const
@@ -403,11 +412,13 @@ void WorldChunk::dec_visibility()
             cap_entity_ = nullptr;
         }
 
-        for (auto& complex : complex_tiles_)
+        if (auto world = world_.lock())
         {
-            complex->value.entity->destroy();
-            complex->value.info->cleanup_destroyed_entity(complex->value.entity, custom_data_[complex->key]);
-            
+            for (auto& complex : complex_tiles_)
+            {
+                complex->value.entity->destroy();
+                complex->value.info->on_tile_destroyed(complex->key.to_absolute(index_), complex->value.entity, world);
+            }
         }
         complex_tiles_.clear();
     }
@@ -517,7 +528,7 @@ void WorldChunk::spawn_complex(const TileIndex& local_index, ComplexTileSlot& sl
         if (slot.entity)
         {
             slot.entity->destroy();
-            slot.info->cleanup_destroyed_entity(slot.entity, custom_data_[slot.entity->get_index()]);
+            slot.info->on_tile_destroyed(slot.entity->get_index().to_absolute(index_), slot.entity, world);
             custom_data_.remove(slot.entity->get_index());
         }
 
@@ -650,7 +661,7 @@ void WorldChunk::regenerate_mesh(uint z, bool fill_complex)
 
         for (auto& kvp : type_vertices)
         {
-            auto mesh = MakeShared<Mesh>(String::format("Chunk {%i %i %i} %s", index_.x, index_.y, z, kvp.first->key.c()), kvp.second);
+            auto mesh = MakeShared<Mesh>(String::format("Chunk {%i %i %i} %s", index_.x, index_.y, z, kvp.first->key.to_string().c()), kvp.second);
             
             auto mesh_entity = MakeShared<ChunkMeshEntity>();
             mesh_entity->set_mesh(mesh);

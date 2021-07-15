@@ -83,6 +83,11 @@ String Vector3::to_string() const
     return String::format("{ x=%f, y=%f, z=%f }", x, y, z);
 }
 
+Vector3 Vector3::reflect(const Vector3& in_vec, const Vector3& normal)
+{
+    return in_vec - normal * in_vec.dot_product(normal) * 2.f;
+}
+
 Vector3 Vector3::operator+(const Vector3& rhs) const
 {
     return Vector3(x + rhs.x, y + rhs.y, z + rhs.z);
@@ -197,29 +202,4 @@ Vector3 Vector3::operator-() const
 float Vector3::sum_all() const
 {
     return x + y + z;
-}
-
-Vector3 Vector3::zero()
-{
-    return Vector3(0.0f, 0.0f, 0.0f);
-}
-
-Vector3 Vector3::one()
-{
-    return Vector3(1.0f, 1.0f, 1.0f);
-}
-
-Vector3 Vector3::forward()
-{
-    return Vector3(1.0f, 0.0f, 0.0f);
-}
-
-Vector3 Vector3::right()
-{
-    return Vector3(0.0f, 1.0f, 0.0f);
-}
-
-Vector3 Vector3::up()
-{
-    return Vector3(0.0f, 0.0f, 1.0f);
 }

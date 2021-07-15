@@ -2,13 +2,14 @@
 
 #include "HexaGame/ChunkIndex.h"
 #include "HexaGame/TileIndex.h"
-#include "Engine/Tree2D.h"
 #include "Engine/Array2D.h"
 #include "Engine/Rect.h"
 #include "Engine/World.h"
 #include "HexaGame/ItemContainer.h"
 #include "HexaGame/PathConfig.h"
 
+class ComplexTileCustomData;
+class ItemDrop;
 class WorldPath;
 class Character;
 class TileInfo;
@@ -34,12 +35,13 @@ public:
 
     bool spawn_character(const Shared<Character>& character, const TileIndex& world_index);
     Shared<Character> get_character_at(const TileIndex& world_index) const;
-    Shared<Entity> spawn_drop(const TileIndex& tile, const ItemContainer& item);
+    Shared<ItemDrop> spawn_drop(const TileIndex& tile, const ItemContainer& item, const Vector3& throw_force = Vector3(0, 0, 0.2f));
 
     void set_tile(const TileIndex& index, const Shared<const TileInfo>& id) const;
     Shared<const TileInfo> get_tile_id(const TileIndex& index) const;
 
     bool damage_tile(const TileIndex& index, float damage) const;
+    Shared<ComplexTileCustomData> get_custom_data(const TileIndex& index);
 
     void cap_chunks(uint z);
     void uncap_chunks();

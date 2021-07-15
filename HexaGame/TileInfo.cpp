@@ -15,7 +15,7 @@ void ComplexTileInfo::setup_spawned_entity(const Shared<ComplexTile>& new_tile, 
 {
 }
 
-void ComplexTileInfo::cleanup_destroyed_entity(const Shared<ComplexTile>& destroyed_tile, const Shared<ComplexTileCustomData>& custom_data) const
+void ComplexTileInfo::on_tile_destroyed(const TileIndex& index, const Shared<ComplexTile>& destroyed_tile, const Shared<HexaWorld>& world) const
 {
 }
 

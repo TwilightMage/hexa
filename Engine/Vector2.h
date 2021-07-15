@@ -14,11 +14,11 @@ public:
     Vector2(const Vector3& rhs);
     Vector2(const Vector2& rhs);
 
-    float magnitude() const;
-    float dot_product(const Vector2& rhs) const;
+    FORCEINLINE float magnitude() const;
+    FORCEINLINE float dot_product(const Vector2& rhs) const;
     Vector2 normalized() const;
     void normalize();
-    String to_string() const;
+    FORCEINLINE String to_string() const;
     
     static float angle_global(const Vector2& from, const Vector2& to);
     FORCEINLINE static float distance(const Vector2& a, const Vector2& b) { return (a - b).magnitude(); }

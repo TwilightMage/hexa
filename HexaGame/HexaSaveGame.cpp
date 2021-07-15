@@ -2,8 +2,8 @@
 
 
 #include "HexaGame.h"
-#include "Tiles.h"
 #include "WorldChunk.h"
+#include "Database/Tiles.h"
 #include "Engine/File.h"
 #include "Engine/JSON.h"
 
@@ -51,7 +51,7 @@ Shared<Map<TileIndex, Shared<const TileInfo>>> HexaSaveGame::get_chunk_modificat
                     name += ch;
                 }
 
-                if (const auto tile_id = HexaGame::tile_database->get(name))
+                if (const auto tile_id = HexaGame::tile_database->get(Name(name)))
                 {
                     result->insert(TileIndex(x, y, z), tile_id);
                 }
@@ -80,7 +80,7 @@ void HexaSaveGame::save_chunk_modifications(const ChunkIndex& index, const Map<T
             write(stream, static_cast<byte>(kvp.key.y));
             write(stream, static_cast<byte16>(kvp.key.z));
 
-            for (auto& ch : kvp.value->key)
+            for (auto& ch : kvp.value->key.to_string())
             {
                 write(stream, ch);
             }

@@ -3,8 +3,8 @@
 
 #include "Engine/GeometryEditor.h"
 #include "Engine/Mesh.h"
-#include "HexaGame/Tiles.h"
 #include "HexaGame/WorldGenerator.h"
+#include "HexaGame/Database/Tiles.h"
 
 DemoMeshEntity::DemoMeshEntity()
     : Entity()

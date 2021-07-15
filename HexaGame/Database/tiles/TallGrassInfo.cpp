@@ -1,7 +1,7 @@
 ﻿#include "TallGrassInfo.h"
 
 #include "Engine/Random.h"
-#include "HexaGame/Tiles.h"
+#include "HexaGame/Database/Tiles.h"
 #include "HexaGame/Entities/ComplexTile.h"
 #include "HexaGame/Worlds/HexaWorld.h"
 

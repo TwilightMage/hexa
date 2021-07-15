@@ -10,6 +10,8 @@
 #include "Material.h"
 #include "performance.h"
 #include "Settings.h"
+#include "HexaGame/TileIndex.h"
+#include "HexaGame/Entities/ItemDrop.h"
 #include "Physics/ConcaveMeshCollision.h"
 #include "Physics/ConvexMeshCollision.h"
 #include "Physics/RaycastCallback.h"

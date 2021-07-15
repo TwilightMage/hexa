@@ -1,6 +1,8 @@
 ﻿#pragma once
 
 #include "Engine/DatabaseEntry.h"
+#include "Engine/Name.h"
+#include "Engine/Set.h"
 #include "HexaGame/ItemContainer.h"
 #include "HexaGame/ItemType.h"
 #include "HexaGame/TileIndex.h"
@@ -21,7 +23,8 @@ class EXPORT ItemInfo : public DatabaseEntry
 {
 public:
     ItemInfo(
-        const String& key,
+        const Name& key,
+        const Set<Name>& tags,
         const Shared<Texture>& icon,
         const Shared<Mesh>& mesh,
         const Shared<Texture>& mesh_texture,
@@ -32,6 +35,7 @@ public:
         ItemTileTarget tile_target
         )
         : DatabaseEntry(key)
+        , tags(tags)
         , icon(icon)
         , mesh(mesh)
         , mesh_texture(mesh_texture)
@@ -42,6 +46,8 @@ public:
         , tile_target(tile_target)
     {}
 
+    Set<Name> tags;
+    
     Shared<Texture> icon;
 
     Shared<Mesh> mesh;

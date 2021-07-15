@@ -724,7 +724,7 @@ void Game::init_game()
 		settings_json = JSON::parse(File::read_file(settings_path));
 	}
 	settings_->read_settings(settings_json);
-	settings_->write_settings(settings_json);
+	//settings_->write_settings(settings_json);
 	//File::write_file(settings_path, settings_json.to_string());
 
 	soloud_->init();

@@ -24,10 +24,9 @@ public:
     
     void set_volume(float vol) const;
     float get_volume() const;
-
+    
 private:
-    SoundHandle(int handle, Shared<SoLoud::Soloud> engine);
+    SoundHandle(int handle);
     
     int handle_ = 0;
-    Shared<SoLoud::Soloud> engine_ = nullptr;
 };

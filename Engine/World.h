@@ -7,6 +7,7 @@
 #include "TimerHandle.h"
 #include "Vector3.h"
 
+class ItemDrop;
 class AudioChannel;
 struct RaycastResult;
 class Game;

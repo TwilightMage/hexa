@@ -366,12 +366,14 @@ Shared<Character> HexaWorld::get_character_at(const TileIndex& world_index) cons
     return nullptr;
 }
 
-Shared<Entity> HexaWorld::spawn_drop(const TileIndex& tile, const ItemContainer& item)
+Shared<ItemDrop> HexaWorld::spawn_drop(const TileIndex& tile, const ItemContainer& item, const Vector3& throw_force)
 {
     if (item.is_empty()) return nullptr;
     
-    Shared<Entity> entity = MakeShared<ItemDrop>(item);
-    spawn_entity(MakeShared<ItemDrop>(item), tile.to_vector() - Vector3(Random::static_number(-0.2f, 0.2f), Random::static_number(-0.2f, 0.2f), item.item ? (item.item->mesh->get_bounds_center().z - item.item->mesh->get_bounds_half_size().z) : 0.0f), Quaternion(Vector3(0, 0, Random::static_number(360.0f))));
+    Shared<ItemDrop> entity = MakeShared<ItemDrop>(item);
+    entity->offset = item.item->mesh->get_bounds_center().z - item.item->mesh->get_bounds_half_size().z;
+    spawn_entity(entity, tile.to_vector() - Vector3(Random::static_number(-0.2f, 0.2f), Random::static_number(-0.2f, 0.2f), entity->offset), Quaternion(Vector3(0, 0, Random::static_number(360.0f))));
+    entity->set_force(throw_force);
     return entity;
 }
 
@@ -422,6 +424,17 @@ bool HexaWorld::damage_tile(const TileIndex& index, float damage) const
     }
 
     return false;
+}
+
+Shared<ComplexTileCustomData> HexaWorld::get_custom_data(const TileIndex& index)
+{
+    const auto chunk_index = index.get_chunk();
+    if (const auto chunk = get_chunk_internal(chunk_index))
+    {
+        return chunk->get_custom_data(index.cycle_chunk());
+    }
+
+    return nullptr;
 }
 
 void HexaWorld::cap_chunks(uint z)

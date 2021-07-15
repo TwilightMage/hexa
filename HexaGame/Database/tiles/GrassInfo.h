@@ -6,7 +6,7 @@ class GrassInfo : public SolidTileInfo
 {
 public:
     GrassInfo(
-        const String& key,
+        const Name& key,
         const Set<Name>& tags,
         float hardness,
         const Shared<Texture>& texture,

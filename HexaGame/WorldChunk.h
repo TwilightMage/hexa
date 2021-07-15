@@ -51,6 +51,8 @@ public:
 
     bool damage_tile(const TileIndex& index, float damage);
 
+    Shared<ComplexTileCustomData> get_custom_data(const TileIndex& index) const;
+
     TileSide get_tile_face_flags(const TileIndex& tile_index) const;
 
     void save_if_dirty();

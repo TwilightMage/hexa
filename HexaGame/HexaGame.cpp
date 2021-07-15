@@ -5,8 +5,8 @@
 #include "DefaultWorldGeneratorInfo.h"
 #include "HexaSaveGame.h"
 #include "HexaSettings.h"
-#include "Items.h"
-#include "Tiles.h"
+#include "Database/Items.h"
+#include "Database/Tiles.h"
 #include "WorldGenerator.h"
 #include "Engine/Audio.h"
 #include "Engine/GeometryEditor.h"
@@ -118,6 +118,9 @@ void HexaGame::loading_stage()
     wind_sound->set_looped(true);
     wind_sound->set_default_volume(0.3f);
 
+    wood_chop_sound = Audio::load(RESOURCES_HEXA_AUDIO_EFFECTS + "wood_chop.ogg");
+    wood_chop_sound->set_default_volume(2.0f);
+
     music_channel_ = AudioChannel::create(get_general_channel());
     music_channel_->set_volume(get_settings<HexaSettings>()->audio_music);
     ambient_channel_ = AudioChannel::create(get_general_channel());
@@ -145,7 +148,7 @@ bool HexaGame::open_animation_editor(const String& entity_type, const String& en
             
     if (entity_type == "character")
     {
-        if (const auto character_info = character_database->get(entity_name))
+        if (const auto character_info = character_database->get(Name(entity_name)))
         {
             editor->open(character_info->character_supplier());
             return true;

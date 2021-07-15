@@ -3,8 +3,8 @@
 #include "Engine/Animation.h"
 #include "Engine/Mesh.h"
 #include "Engine/World.h"
-#include "HexaGame/Items.h"
 #include "HexaGame/Paths.h"
+#include "HexaGame/Database/Items.h"
 
 Slime::Slime()
 {

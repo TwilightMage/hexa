@@ -1,7 +1,15 @@
 ﻿#pragma once
 
+#include <concepts>
+
 #include "List.h"
 #include "Pair.h"
+
+template<typename K, typename V>
+concept SimpleMapComparable = requires(K, V){
+    typename std::equality_comparable<K>;
+    typename std::equality_comparable<V>;
+};
 
 template<typename K, typename V>
 struct SimpleMap
@@ -190,5 +198,17 @@ struct SimpleMap
         }
 
         return result;
+    }
+
+    bool operator==(const SimpleMap<K, V>& rhs) const requires SimpleMapComparable<K, V>
+    {
+        if (size() != rhs.size()) return false;
+
+        for (uint i = 0; i < size(); i++)
+        {
+            if (entries[i]->key != rhs.entries[i]->key || entries[i]->value != rhs.entries[i]->value) return false;
+        }
+
+        return true;
     }
 };

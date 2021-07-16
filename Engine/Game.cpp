@@ -417,6 +417,9 @@ void Game::prepare()
 	glfwSetWindowSizeCallback(window_, window_size_callback);
 }
 
+const uint SHADOW_WIDTH = 1024;
+const uint SHADOW_HEIGHT = 1024;
+
 void Game::render_loop()
 {	
 	const String GPU_name(reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
@@ -597,6 +600,18 @@ void Game::render_loop()
 			dcc_string += "\n" + dcc->key + ": " + String::make(dcc->value);
 		}
 		dcc_display->set_text(dcc_string);
+
+		uint sun_shadow_depth;
+		glGenFramebuffers(1, &sun_shadow_depth);
+
+		uint sun_shadow_tex;
+		glGenTextures(1, &sun_shadow_tex);
+		glBindTexture(GL_TEXTURE_2D, sun_shadow_tex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
 		if (world_)
 		{

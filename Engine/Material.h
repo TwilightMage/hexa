@@ -60,7 +60,7 @@ public:
 
     void init(const Shared<Shader>& shader, float z_order);
     
-    void render(const RenderData& render_data) const;
+    void render(const RenderData& render_data, Shader::ProgramType program_type) const;
     void cleanup() const;
 
     Shared<MaterialInstance> create_instance();

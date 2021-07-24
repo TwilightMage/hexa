@@ -7,6 +7,8 @@
 #include "WorldChunkDataState.h"
 #include "Engine/Entity.h"
 
+class NavConnection;
+class NavNode;
 class ComplexTileCustomData;
 class ComplexTileInfo;
 class ComplexTile;
@@ -49,11 +51,15 @@ public:
 
     void set_tile(const TileIndex& index, const Shared<const TileInfo>& new_tile);
 
+    void break_tile(const TileIndex& index);
     bool damage_tile(const TileIndex& index, float damage);
 
     Shared<ComplexTileCustomData> get_custom_data(const TileIndex& index) const;
 
     TileSide get_tile_face_flags(const TileIndex& tile_index) const;
+
+    const NavNode* get_nav_node(const TileIndex& world_index) const;
+    SimpleMap<TileIndex, NavConnection*> get_nav_connections(const TileIndex& tile_index) const;
 
     void save_if_dirty();
 
@@ -67,7 +73,7 @@ public:
 
     inline static const float tick_interval = 1.0f / 10.0f;
 
-private:
+private:    
     void load();
     
     void try_show_mesh();
@@ -92,6 +98,19 @@ private:
     void spawn_complex(const TileIndex& local_index, ComplexTileSlot& tile);
     bool can_claim(const TileIndex& local_index) const;
     bool claim_tile(const TileIndex& local_index, const Shared<ComplexTile>& claimer);
+
+    void generate_nav_graph();
+    FORCEINLINE void nav_gen(const TileIndex& from, int off_x, int off_y, TileSide front, TileSide back, WorldChunk* to_chunk);
+    FORCEINLINE void nav_gen_climb(const TileIndex& from, const TileIndex& local_index, int off_x, int off_y, TileSide front, TileSide back, WorldChunk* to_chunk);
+    void destroy_nav_graph();
+
+    void add_nav_node(const TileIndex& tile_index);
+    void remove_nav_node(const TileIndex& tile_index);
+
+    void add_step_connection(const TileIndex& a, const TileIndex& b, WorldChunk* b_chunk);
+    void add_climb_fall_connection(const TileIndex& a, const TileIndex& b, WorldChunk* b_chunk, uint bottom_offset, uint top_lowpass);
+    void add_fall_connection(const TileIndex& a, const TileIndex& b, WorldChunk* b_chunk, uint top_lowpass);
+    void remove_nav_connection(const TileIndex& a, const TileIndex& b);
 
     public:
     void regenerate_all_complex_tiles();
@@ -131,6 +150,8 @@ private:
 
     Shared<const TileInfo> data[chunk_size][chunk_size][chunk_height];
     TileType plane_metadata[chunk_height];
+
+    Map<TileIndex, Shared<NavNode>> nav_nodes_;
     
     WorldChunk* front_ = nullptr;
     WorldChunk* right_ = nullptr;

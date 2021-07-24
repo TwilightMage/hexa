@@ -209,6 +209,8 @@ void WorldGenerator::do_generate(const Shared<WorldChunk>& chunk)
 		}
 	}
 	chunk->generate_metadata();
+
+	chunk->generate_nav_graph();
 	
 	Game::call_on_main_thread([this, chunk]()
 	{

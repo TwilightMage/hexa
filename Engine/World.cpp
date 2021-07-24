@@ -54,13 +54,13 @@ bool World::spawn_entity(const Shared<Entity>& entity)
 SoundHandle World::play_sound(const Shared<Audio>& audio, const Shared<AudioChannel>& channel)
 {
     if (audio == nullptr) return SoundHandle();
-    return SoundHandle((channel ? channel : Game::get_general_channel())->bus_->play(*(audio->sample_), audio->get_default_volume()), Game::instance_->soloud_);
+    return SoundHandle((channel ? channel : Game::get_general_channel())->bus_->play(*(audio->sample_), audio->get_default_volume()));
 }
 
 SoundHandle World::play_sound_3d(const Shared<Audio>& audio, const Vector3& location, const Shared<AudioChannel>& channel)
 {
     if (audio == nullptr) return SoundHandle();
-    return SoundHandle((channel ? channel : Game::get_general_channel())->bus_->play3d(*(audio->sample_), location.x, location.y, location.z, 0, 0, 0, audio->get_default_volume()), Game::instance_->soloud_);
+    return SoundHandle((channel ? channel : Game::get_general_channel())->bus_->play3d(*(audio->sample_), location.x, location.y, location.z, 0, 0, 0, audio->get_default_volume()));
 }
 
 Shared<const RaycastResult> World::raycast(const Vector3& from, const Vector3& to) const

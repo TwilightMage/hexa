@@ -65,9 +65,9 @@ String Vector2::to_string() const
 
 float Vector2::angle_global(const Vector2& from, const Vector2& to)
 {
-    Vector2 delta_norm = (to - from).normalized();
-    float dot_right = right().dot_product(delta_norm);
-    float dot_up = up().dot_product(delta_norm);
+    const Vector2 delta_norm = (to - from).normalized();
+    const float dot_right = right().dot_product(delta_norm);
+    const float dot_up = up().dot_product(delta_norm);
 
     float angle = Math::acos_deg(dot_right);
     if (dot_up > 0) angle *= -1;

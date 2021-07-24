@@ -142,10 +142,10 @@ void GamePlayer::mouse_button_down(int button)
 
             if (get_character())
             {
-                auto raycast_mask = HexaCollisionMaskBits::GROUND | HexaCollisionMaskBits::ITEM;
+                auto raycast_mask = HexaCollisionMaskBits::GROUND | HexaCollisionMaskBits::ITEM | HexaCollisionMaskBits::COMPLEX_BLOCK;
                 if (use_item_mode_)
                 {
-                    raycast_mask |= HexaCollisionMaskBits::COMPLEX_NOBLOCK | HexaCollisionMaskBits::COMPLEX_BLOCK;
+                    raycast_mask |= HexaCollisionMaskBits::COMPLEX_NOBLOCK;
                 }
                 auto hits = world->raycast_all(camera_position_, camera_position_ + Game::get_un_projected_mouse() * 10, raycast_mask, true);
                 for (const auto& hit : hits)
@@ -193,13 +193,38 @@ void GamePlayer::mouse_button_down(int button)
                     }
                     else if (auto complex_tile = cast<ComplexTile>(hit.entity))
                     {
-                        if (use_item_mode_ && selected_item.item)
+                        const ItemTileTarget tile_target = use_item_mode_ && selected_item.item ? selected_item.item->tile_target : TARGET_OUTSIDE;
+                        const TileIndex tile_index = TileIndex::from_vector(hit.location + hit.normal * KINDA_SMALL_NUMBER * (tile_target == TARGET_OUTSIDE ? 1.0f : -1.0f));
+                        
+                        if (use_item_mode_)
                         {
-                            auto item_copy = selected_item;
-                            selected_item.item->apply_to_tile(item_copy, get_character(), complex_tile->get_index(), cast<HexaWorld>(get_world()));
-                            if (item_copy != selected_item)
+                            if (selected_item.item)
                             {
-                                get_character()->get_inventory()->set_item(get_character()->get_inventory()->get_selected_hotbar(), item_copy);
+                                auto item_copy = selected_item;
+                                selected_item.item->apply_to_tile(item_copy, get_character(), complex_tile->get_index(), cast<HexaWorld>(get_world()));
+                                if (item_copy != selected_item)
+                                {
+                                    get_character()->get_inventory()->set_item(get_character()->get_inventory()->get_selected_hotbar(), item_copy);
+                                }
+                            }
+                        }
+                        else if (tile_index != get_character()->get_tile_position())
+                        {
+                            get_character()->go_to(tile_index);
+                            if (auto path = world->FindPath(get_character()->get_path_config(tile_index)))
+                            {
+                                auto marker_mesh = GeometryEditor::get_unit_cube();
+                                auto marker = MakeShared<MeshEntity>(marker_mesh);
+                                marker->set_scale(Vector3(0.1f));
+                                world->spawn_entity(marker, path->segments.first().from.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
+                                markers.add(marker);
+                                for (const auto& segment : path->segments)
+                                {
+                                    marker = MakeShared<MeshEntity>(marker_mesh);
+                                    marker->set_scale(Vector3(0.1f));
+                                    world->spawn_entity(marker, segment.to.to_vector() + Vector3(0, 0, HexaMath::tile_height / 2));
+                                    markers.add(marker);
+                                }
                             }
                         }
                     }
@@ -355,7 +380,7 @@ void GamePlayer::spawn_chunk_loaded(const Shared<WorldChunk>& sender)
                     
                     posses_character(character);
                     set_position(character->get_tile_position().to_vector());
-                    camera_rotation_ = Quaternion(Vector3(0, 30, 180.0f));
+                    //camera_rotation_ = Quaternion(Vector3(0, 30, 180.0f));
                     camera_pivot_z_ = desired_camera_pivot_z = character->get_tile_position().z * HexaMath::tile_height;
 
                     world->spawn_drop(TileIndex(0, 1, Z + 2), ItemContainer(Items::iron_shovel));

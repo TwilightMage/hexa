@@ -17,6 +17,7 @@ protected:
 private:
     void generate_plains(const EditableChunk& editable);
     void generate_forest(const EditableChunk& editable);
+    void generate_debug(const EditableChunk& editable);
 
     FORCEINLINE void generate_land(const EditableChunk& editable) const;
     

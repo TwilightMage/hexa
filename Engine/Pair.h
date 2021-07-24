@@ -6,6 +6,12 @@ struct Pair
     K key;
     V value;
 
+    Pair()
+        : key(K())
+        , value(V())
+    {
+    }
+
     Pair(const K& key, const V& value)
         : key(key)
         , value(value)

@@ -1,5 +1,7 @@
 ﻿#include "TallGrassInfo.h"
 
+#include <HexaGame/HexaCollisionMaskBits.h>
+
 #include "Engine/Random.h"
 #include "HexaGame/Database/Tiles.h"
 #include "HexaGame/Entities/ComplexTile.h"
@@ -15,6 +17,7 @@ void TallGrassInfo::neighbor_changed(const TileIndex& index, TileSide side, cons
 
 void TallGrassInfo::setup_spawned_entity(const Shared<ComplexTile>& new_entity, const Shared<ComplexTileCustomData>& custom_data) const
 {
+    new_entity->set_collision_mask(HexaCollisionMaskBits::COMPLEX_NOBLOCK);
     new_entity->get_material_instance()->set_param_value("height", mesh->get_bounds_half_size().z * 2);
     
     Random random(new_entity->get_index().x + new_entity->get_index().y + new_entity->get_index().z);

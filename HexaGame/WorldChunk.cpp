@@ -1,11 +1,11 @@
 ﻿#include "WorldChunk.h"
 
-
-
 #include "ChunkMeshEntity.h"
 #include "HexaCollisionMaskBits.h"
 #include "HexaGame.h"
+#include "HexaMath.h"
 #include "HexaSaveGame.h"
+#include "Nav.h"
 #include "WorldChunkMesh.h"
 #include "WorldGenerator.h"
 #include "Database/Tiles.h"
@@ -164,17 +164,30 @@ void WorldChunk::set_tile(const TileIndex& index, const Shared<const TileInfo>& 
     }
 }
 
+void WorldChunk::break_tile(const TileIndex& index)
+{
+    if (const auto world = world_.lock())
+    {
+        auto& old_tile_id = data[index.x][index.y][index.z];
+
+        if (old_tile_id == Tiles::air) return;
+        
+        old_tile_id->on_tile_break(index.to_absolute(index_), world);
+        set_tile(index, Tiles::air);
+    }
+}
+
 bool WorldChunk::damage_tile(const TileIndex& index, float damage)
 {
-    auto& tile_id = data[index.x][index.y][index.z];
+    auto& old_tile_id = data[index.x][index.y][index.z];
 
-    if (tile_id == Tiles::air) return false;
+    if (old_tile_id == Tiles::air) return false;
     
     float& tile_damage = tile_damage_[index];
     tile_damage += damage;
-    if (tile_damage >= tile_id->hardness)
+    if (tile_damage >= old_tile_id->hardness)
     {
-        set_tile(index.to_absolute(index_), Tiles::air);
+        break_tile(index);
         tile_damage_.remove(index);
         
         return true;
@@ -211,6 +224,26 @@ TileSide WorldChunk::get_tile_face_flags(const TileIndex& tile_index) const
     return flags;
 }
 
+const NavNode* WorldChunk::get_nav_node(const TileIndex& world_index) const
+{
+    if (auto node = nav_nodes_.find_or_default(world_index))
+    {
+        return node.get();
+    }
+
+    return nullptr;
+}
+
+SimpleMap<TileIndex, NavConnection*> WorldChunk::get_nav_connections(const TileIndex& tile_index) const
+{
+    if (auto node = nav_nodes_.find_or_default(tile_index))
+    {
+        return node->connected_nodes;
+    }
+
+    return {};
+}
+
 void WorldChunk::save_if_dirty()
 {
     if (dirty_)
@@ -238,6 +271,25 @@ void WorldChunk::try_show_mesh()
         regenerate_whole_mesh();
         regenerate_all_complex_tiles();
         regenerate_cap_mesh();
+
+        for (auto& node : nav_nodes_)
+        {
+            const auto local_index = node.key.cycle_chunk();
+            
+            if (local_index.x == chunk_size - 1)
+            {
+                nav_gen(node.key, 1, 0, TileSide::Front, TileSide::Back, front_);
+
+                nav_gen(node.key, 1, 1, TileSide::FrontRight, TileSide::BackLeft, local_index.y < chunk_size - 1 ? front_ : front_right_);
+            }
+
+            if (local_index.y == chunk_size - 1)
+            {
+                nav_gen(node.key, 0, 1, TileSide::BackRight, TileSide::FrontLeft, right_);
+
+                nav_gen(node.key, 1, 1, TileSide::FrontRight, TileSide::BackLeft, local_index.x < chunk_size - 1 ? right_ : front_right_);
+            }
+        }
     }
 }
 
@@ -556,6 +608,273 @@ bool WorldChunk::claim_tile(const TileIndex& local_index, const Shared<ComplexTi
     }
 
     return false;
+}
+
+FORCEINLINE bool coll_at(TileSide coll, TileSide side) { return !!(coll & side); }
+
+void WorldChunk::generate_nav_graph()
+{
+    if (auto world = world_.lock())
+    {
+        destroy_nav_graph();
+    
+        for (uint x = 0; x < chunk_size; x++)
+        {
+            for (uint y = 0; y < chunk_size; y++)
+            {
+                bool ground = false;
+                for (uint z = 0; z < chunk_height; z++)
+                {
+                    auto coll = data[x][y][z]->get_collision_sides(TileIndex(x, y, z), world.get());
+
+                    if (ground && !!(~coll & (TileSide::All & ~TileSide::Up)))
+                    {
+                        add_nav_node(TileIndex(x, y, z).to_absolute(index_));
+                    }
+                
+                    ground = coll_at(coll, TileSide::Up);
+                }
+            }
+        }
+
+        for (auto& node : nav_nodes_)
+        {
+            const auto local_index = node.key.cycle_chunk();
+            if (local_index.x < chunk_size - 1)
+            {
+                nav_gen(node.key, 1, 0, TileSide::Front, TileSide::Back, this);
+            }
+
+            if (local_index.y < chunk_size - 1)
+            {
+                nav_gen(node.key, 0, 1, TileSide::BackRight, TileSide::FrontLeft, this);
+            }
+
+            if (local_index.x < chunk_size - 1 && local_index.y < chunk_size - 1)
+            {
+                nav_gen(node.key, 1, 1, TileSide::FrontRight, TileSide::BackLeft, this);
+            }
+        }
+    }
+}
+
+enum class NavClimbState
+{
+    Jump,
+    Climb,
+    StandUp,
+    LookingForFall,
+    LookingForFallWall
+};
+
+void WorldChunk::nav_gen(const TileIndex& from, int off_x, int off_y, TileSide front, TileSide back, WorldChunk* to_chunk)
+{
+    if (auto world = to_chunk->world_.lock())
+    {
+        const auto local_index = from.cycle_chunk();
+        const auto to_index = local_index.offset(off_x, off_y, 0).cycle_chunk();
+    
+        // Climb up
+        nav_gen_climb(from, local_index, off_x, off_y, front, back, to_chunk);
+
+        // Step
+        if (coll_at(to_chunk->data[to_index.x][to_index.y][to_index.z - 1]->get_collision_sides(to_index.offset(0, 0, -1), world.get()), TileSide::Up))
+        {
+            add_step_connection(from, from.offset(off_x, off_y, 0), to_chunk);
+        }
+        // Climb down
+        else
+        {
+            for (int z = 1; z < local_index.z - 1; z++)
+            {
+                if (coll_at(to_chunk->data[to_index.x][to_index.y][to_index.z - z - 1]->get_collision_sides(to_index.offset(0, 0, -z - 1), world.get()), TileSide::Up))
+                {
+                    const auto to_fall = to_index.offset(0, 0, -z);
+                    to_chunk->nav_gen_climb(to_fall.to_absolute(index_), to_fall, -off_x, -off_y, back, front, to_chunk);
+                    break;
+                }
+            }
+        }
+    }
+}
+
+void WorldChunk::nav_gen_climb(const TileIndex& from, const TileIndex& local_index, int off_x, int off_y, TileSide front, TileSide back, WorldChunk* to_chunk)
+{
+    if (auto world = to_chunk->world_.lock())
+    {
+        const auto to_index = local_index.offset(off_x, off_y, 0).cycle_chunk();
+    
+        uint bottom_offset = 0;
+        uint top_lowpass = 0;
+        uint fall_lowpass = 0;
+        uint fall_z = 0;
+        NavClimbState state = NavClimbState::Jump;
+        bool fail = false;
+        uint climb_z = 0;
+        bool found_climb = false;
+        for (uint z = 0; z < chunk_height - local_index.z - 1 && !fail; z++)
+        {
+            const auto coll_t = data[local_index.x][local_index.y][local_index.z + z + 1]->get_collision_sides(local_index.offset(0, 0, z + 1), world.get());
+
+            if (coll_at(coll_t, TileSide::Down) || local_index.z + z == chunk_height) break;
+
+            const auto coll = data[local_index.x][local_index.y][local_index.z + z]->get_collision_sides(local_index.offset(0, 0, z), world.get());
+            const auto coll_f = to_chunk->data[to_index.x][to_index.y][to_index.z + z]->get_collision_sides(to_index.offset(0, 0, z), world.get());
+            
+            switch (state)
+            {
+            case NavClimbState::Jump:
+                if (coll_at(coll_f, back) || coll_at(coll, front))
+                {
+                    state = NavClimbState::Climb;
+                }
+                else
+                {
+                    bottom_offset++;
+                }
+                break;
+            case NavClimbState::Climb:
+                if (!coll_at(coll_f, back) && !coll_at(coll, front))
+                {
+                    if (coll_at(to_chunk->data[to_index.x][to_index.y][to_index.z + z - 1]->get_collision_sides(to_index.offset(0, 0, z - 1), world.get()), TileSide::Up))
+                    {
+                        state = NavClimbState::StandUp;
+                        found_climb = true;
+                        climb_z = z;
+                    }
+                    else
+                    {
+                        fail = true;
+                    }
+                }
+                break;
+            case NavClimbState::StandUp:
+                if (coll_at(coll_f, back) || coll_at(coll, front))
+                {
+                    state = NavClimbState::LookingForFallWall;
+                }
+                else
+                {
+                    top_lowpass++;
+                }
+                break;
+            case NavClimbState::LookingForFallWall:
+                if (!coll_at(coll_f, back) && !coll_at(coll, front) && coll_at(to_chunk->data[to_index.x][to_index.y][to_index.z + z - 1]->get_collision_sides(to_index.offset(0, 0, z - 1), world.get()), TileSide::Up))
+                {
+                    state = NavClimbState::LookingForFall;
+                    fall_z = z;
+                    fall_lowpass = 0;
+                }
+                break;
+            case NavClimbState::LookingForFall:
+                if (coll_at(coll_f, back) || coll_at(coll, front))
+                {
+                    add_fall_connection(from.offset(off_x, off_y, fall_z), from, this, fall_lowpass);
+                }
+                else
+                {
+                    fall_lowpass++;
+                }
+                break;
+            }
+        }
+
+        if (state == NavClimbState::LookingForFall)
+        {
+            add_fall_connection(from.offset(off_x, off_y, fall_z), from, this, fall_lowpass);
+        }
+        
+        if (found_climb && !fail)
+        {
+            add_climb_fall_connection(from, from.offset(off_x, off_y, climb_z), this, bottom_offset, top_lowpass);
+        }
+    }
+}
+
+void WorldChunk::destroy_nav_graph()
+{
+    for (auto& node : nav_nodes_)
+    {
+        for (auto connection : node.value->connected_nodes.get_keys())
+        {
+            node.value->connected_nodes[connection]->destroy();
+        }
+    }
+
+    nav_nodes_.clear();
+}
+
+void WorldChunk::add_nav_node(const TileIndex& tile_index)
+{
+    auto& node = nav_nodes_[tile_index];
+    if (node == nullptr)
+    {
+        node = MakeShared<NavNode>();
+        node->tile_index = tile_index;
+    }
+}
+
+void WorldChunk::remove_nav_node(const TileIndex& tile_index)
+{        
+    if (const auto node = nav_nodes_.find(tile_index))
+    {
+        for (auto& connection_key : (*node)->connected_nodes.get_keys())
+        {
+            (*node)->connected_nodes[connection_key]->destroy();
+        }
+        (*node)->connected_nodes.clear();
+        nav_nodes_.remove((*node)->tile_index);
+    }
+}
+
+void WorldChunk::add_step_connection(const TileIndex& a, const TileIndex& b, WorldChunk* b_chunk)
+{
+    if (const auto node_a = nav_nodes_.find(a))
+    {
+        if (const auto node_b = b_chunk->nav_nodes_.find(b))
+        {
+            const auto connection = new NavStepConnection(*node_a, *node_b);
+            (*node_a)->connected_nodes[b] = connection;
+            (*node_b)->connected_nodes[a] = connection;
+        }
+    }
+}
+
+void WorldChunk::add_climb_fall_connection(const TileIndex& a, const TileIndex& b, WorldChunk* b_chunk, uint bottom_offset, uint top_lowpass)
+{
+    if (const auto node_a = nav_nodes_.find(a))
+    {
+        if (const auto node_b = b_chunk->nav_nodes_.find(b))
+        {
+            const auto connection = new NavClimbFallConnection(*node_a, *node_b, bottom_offset, top_lowpass);
+            (*node_a)->connected_nodes[b] = connection;
+            (*node_b)->connected_nodes[a] = connection;
+        }
+    }
+}
+
+void WorldChunk::add_fall_connection(const TileIndex& a, const TileIndex& b, WorldChunk* b_chunk, uint top_lowpass)
+{
+    if (const auto node_a = nav_nodes_.find(a))
+    {
+        if (const auto node_b = b_chunk->nav_nodes_.find(b))
+        {
+            const auto connection = new NavFallConnection(*node_a, *node_b, top_lowpass);
+            (*node_a)->connected_nodes[b] = connection;
+            (*node_b)->connected_nodes[a] = connection;
+        }
+    }
+}
+
+void WorldChunk::remove_nav_connection(const TileIndex& a, const TileIndex& b)
+{
+    if (const auto node_a = nav_nodes_.find(a))
+    {
+        if (const auto connection = (*node_a)->connected_nodes.find(b))
+        {
+            (*connection)->destroy();
+        }
+    }
 }
 
 void WorldChunk::regenerate_all_complex_tiles()

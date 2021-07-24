@@ -61,7 +61,6 @@ void ItemToolInfo::apply_to_tile(ItemContainer& item, const Shared<Character>& c
                         }
 
                         auto chop_sound_handle = world->play_sound_3d(HexaGame::wood_chop_sound, world_index.to_vector(), HexaGame::get_effects_channel());
-                        chop_sound_handle->set_pitch();
                     }
                     break;
                 case ItemType::Pickaxe:

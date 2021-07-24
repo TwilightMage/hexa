@@ -6,6 +6,10 @@ void TileInfo::neighbor_changed(const TileIndex& index, TileSide side, const Sha
 {
 }
 
+void TileInfo::on_tile_break(const TileIndex& index, const Shared<HexaWorld>& world) const
+{
+}
+
 List<ItemContainer> TileInfo::get_drops(const TileIndex& index, const Shared<HexaWorld>& world) const
 {
     return { HexaGame::item_database->get(key) };

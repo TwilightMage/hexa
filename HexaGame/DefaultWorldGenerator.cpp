@@ -38,6 +38,9 @@ void DefaultWorldGenerator::read_settings(const JSON& settings)
 
 void DefaultWorldGenerator::generate_chunk(const EditableChunk& editable)
 {
+    //generate_debug(editable);
+    //return;
+    
     const auto chunk_world_position = editable.get_chunk()->get_index().to_vector();
 
     const float forest_h = (float)generator_.accumulatedOctaveNoise3D_0_1(chunk_world_position.x * 0.001f, chunk_world_position.y * 0.001f, 10, 4);
@@ -148,7 +151,7 @@ void DefaultWorldGenerator::generate_forest(const EditableChunk& editable)
                                 {
                                     if (t == 1) custom_data->type = TreeStemCustomData::Type::Roots;
                                     else if (t == tree_height) custom_data->type = TreeStemCustomData::Type::Top;
-                                    else if (Random(x + y + z + t).number(6) == 0) custom_data->type = TreeStemCustomData::Type::Branched;
+                                    else if (t > 2 && Random(x + y + z + t).number(6) == 0) custom_data->type = TreeStemCustomData::Type::Branched;
                                     custom_data->tree_seed = Random(x + y + z).number<uint>();
                                     custom_data->cell_index = t - 1;
                                     editable.set_complex_custom_data(cell_index, custom_data);
@@ -170,6 +173,30 @@ void DefaultWorldGenerator::generate_forest(const EditableChunk& editable)
             }
         }
     }
+}
+
+void DefaultWorldGenerator::generate_debug(const EditableChunk& editable)
+{
+    for (uint x = 0; x < WorldChunk::chunk_size; x++)
+    {
+        for (uint y = 0; y < WorldChunk::chunk_size; y++)
+        {
+            for (uint z = 0; z < 10; z++)
+            {
+                editable.tile(x, y, z) = Tiles::stone;
+            }
+        }
+    }
+
+    if (editable.get_chunk()->get_index().x != 0 || editable.get_chunk()->get_index().y != 0) return;
+    
+    editable.tile(3, 3, 10) = Tiles::grass;
+    editable.tile(3, 4, 10) = Tiles::dirt;
+    editable.tile(3, 4, 11) = Tiles::grass;
+    editable.tile(3, 4, 16) = Tiles::grass;
+    editable.tile(3, 5, 13) = Tiles::grass;
+    editable.tile(4, 5, 16) = Tiles::grass;
+    editable.tile(4, 6, 16) = Tiles::grass;
 }
 
 void DefaultWorldGenerator::generate_land(const EditableChunk& editable) const

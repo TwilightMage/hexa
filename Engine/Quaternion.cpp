@@ -141,11 +141,6 @@ Quaternion Quaternion::from_axis_angle(const Vector3& axis, float angle)
     return Quaternion(axis.x * factor, axis.y * factor, axis.z * factor, cos(glm::radians(angle) / 2.0f)).normalized();
 }
 
-Quaternion Quaternion::look_at(const Vector3& from, const Vector3& to)
-{
-    return look_at((to - from).normalized());
-}
-
 Quaternion Quaternion::look_at(const Vector3& normal)
 {
     float dot = Vector3::forward().dot_product(normal);

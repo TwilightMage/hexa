@@ -5,6 +5,7 @@
 #include "Engine/Physics/ConcaveMeshCollision.h"
 #include "Engine/Physics/RaycastResult.h"
 #include "HexaGame/HexaCollisionMaskBits.h"
+#include "HexaGame/HexaGame.h"
 #include "HexaGame/WorldChunk.h"
 #include "HexaGame/Database/items/ItemInfo.h"
 #include "HexaGame/Worlds/HexaWorld.h"
@@ -85,6 +86,8 @@ void ItemDrop::fixed_tick(const Shared<World>& world)
                     bound_chunk_->on_tile_change.bind(this, &ItemDrop::chunk_tile_change);
                 }
             }
+
+            world->play_sound_3d(HexaGame::drop_sound, fall_pos_, HexaGame::get_ambient_channel());
         }
         else
         {

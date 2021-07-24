@@ -21,7 +21,7 @@ public:
 protected:
     bool is_rigid_body() const override { return true; }
 
-    bool initial_is_blocking = false;
+    bool initial_is_blocking = true;
 
 private:
     Shared<const ComplexTileInfo> tile_info_;

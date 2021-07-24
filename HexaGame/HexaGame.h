@@ -31,10 +31,12 @@ public:
     inline static Shared<Material3D> foliage_material = nullptr;
 
     inline static Shared<Audio> plains_music = nullptr;
-    inline static Shared<Audio> wind_sound = nullptr;
 
     inline static Shared<Audio> wood_chop_sound = nullptr;
 
+    inline static Shared<Audio> wind_sound = nullptr;
+    inline static Shared<Audio> drop_sound = nullptr;
+    
     FORCEINLINE static const Shared<AudioChannel>& get_music_channel() { return music_channel_; }
     FORCEINLINE static const Shared<AudioChannel>& get_ambient_channel() { return ambient_channel_; }
     FORCEINLINE static const Shared<AudioChannel>& get_effects_channel() { return effects_channel_; }

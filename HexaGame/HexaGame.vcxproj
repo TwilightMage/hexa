@@ -211,6 +211,7 @@
     <ClInclude Include="ItemContainer.h" />
     <ClInclude Include="ItemType.h" />
     <ClInclude Include="MetaTags.h" />
+    <ClInclude Include="Nav.h" />
     <ClInclude Include="ui\Toolbar.h" />
     <ClInclude Include="WorldPath.h" />
     <ClInclude Include="PathConfig.h" />
@@ -269,6 +270,7 @@
     <ClCompile Include="HexaSaveGame.cpp" />
     <ClCompile Include="HexaSettings.cpp" />
     <ClCompile Include="Inventory.cpp" />
+    <ClCompile Include="Nav.cpp" />
     <ClCompile Include="TileInfo.cpp" />
     <ClCompile Include="ui\Toolbar.cpp" />
     <ClCompile Include="WorldPath.cpp" />

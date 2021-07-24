@@ -34,7 +34,9 @@ public:
     float hardness;
 
     virtual void neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, const Shared<const TileInfo>& new_neighbor) const;
+    virtual void on_tile_break(const TileIndex& index, const Shared<HexaWorld>& world) const;
     virtual List<ItemContainer> get_drops(const TileIndex& index, const Shared<HexaWorld>& world) const;
+    FORCEINLINE virtual TileSide get_collision_sides(const TileIndex& world_index, const HexaWorld* world) const { return TileSide::All; }
 };
 
 class AirTileInfo : public TileInfo
@@ -43,6 +45,8 @@ public:
     AirTileInfo(const Name& key)
     : TileInfo(key, TileType::Air, { MetaTags::AIR }, 0.0f)
     {}
+
+    FORCEINLINE TileSide get_collision_sides(const TileIndex& world_index, const HexaWorld* world) const override { return TileSide::None; }
 };
 
 class SolidTileInfo : public TileInfo

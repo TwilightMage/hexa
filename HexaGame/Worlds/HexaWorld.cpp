@@ -1,11 +1,14 @@
 ﻿#include "HexaWorld.h"
 
+#include <queue>
+
 #include "Engine/Game.h"
 #include "Engine/Logger.h"
 #include "Engine/Math.h"
 #include "Engine/Random.h"
 #include "Engine/Rect.h"
 #include "HexaGame/HexaSaveGame.h"
+#include "HexaGame/Nav.h"
 #include "HexaGame/WorldChunk.h"
 #include "HexaGame/WorldChunkObserver.h"
 #include "HexaGame/WorldGenerator.h"
@@ -59,249 +62,120 @@ Shared<WorldChunk> HexaWorld::get_chunk(const ChunkIndex& chunk_index) const
 
 // pathfinding
 
-struct PathMove
-{
-    TileIndex from;
-    TileIndex to;
-    float weight;
-};
-
 struct PathFindingData
 {
-    List<PathMove> moves;
-    Map<TileIndex, bool> visited;
     PathConfig config;
-    Vector3 to_vector;
     HexaWorld* world;
+    float max_cost;
+    List<WorldPath::Segment> moves;
 };
-
-bool build_path_recursive(PathFindingData& data, const PathMove& current_move, bool is_first);
-
-float weight_moves(const List<PathMove>& moves)
-{
-    float result = 0;
-    for (const auto& move : moves)
-    {
-        result += move.weight;
-    }
-
-    return result;
-}
-
-bool attempt_move(PathFindingData& data, const TileIndex& current_tile, const TileIndex& next_tile, bool vertical_priority)
-{
-    if (build_path_recursive(data, PathMove(current_tile, next_tile, 1), false)) return true;
-
-    // try to jump down/climb
-    for (byte v = 0; v < 2; v++)
-    {
-        // try to jump down
-        if (v == (byte)vertical_priority)
-        {
-            bool enough_space_to_jump_down = true;
-            for (uint j = 0; j < data.config.agent_height; j++)
-            {
-                if (!(data.world->get_tile_id(next_tile.offset(0, 0, data.config.agent_height - 1 - j))->type & (TileType::Air | TileType::Complex)))
-                {
-                    enough_space_to_jump_down = false;
-                }
-            }
-
-            if (enough_space_to_jump_down)
-            {
-                TileIndex jump_to;
-                bool has_land_to_jump_down = false;
-                
-                for (int j = 1; j < (int)data.config.allowed_fall + 1; j++)
-                {
-                    jump_to = next_tile.offset(0, 0, -j - 1);
-                    if (data.world->get_tile_id(jump_to)->type == TileType::Solid)
-                    {
-                        has_land_to_jump_down = true;
-                        jump_to = jump_to.offset(0, 0, 1);
-                        break;
-                    }
-                }
-
-                if (has_land_to_jump_down)
-                {
-                    if (build_path_recursive(data, PathMove(current_tile, jump_to, (current_tile.z - jump_to.z) * 1.2f), false)) return true;
-                }
-            }
-        }
-
-        // try to climb
-        if (v != (byte)vertical_priority)
-        {
-            TileIndex climb_on;
-            bool has_land_to_climb_on = false;
-            uint space = 0;
-            for (uint i = 1; i < data.config.allowed_climb + data.config.agent_height; i++)
-            {
-                if (!!(data.world->get_tile_id(next_tile.offset(0, 0, i))->type & (TileType::Air | TileType::Complex)))
-                {
-                    if (++space == data.config.agent_height)
-                    {
-                        climb_on = next_tile.offset(0, 0, i - data.config.agent_height + 1);
-                        has_land_to_climb_on = true;
-                        break;
-                    }
-                }
-                else if (space > 0)
-                {
-                    break;
-                }
-            }
-
-            if (has_land_to_climb_on)
-            {
-                bool has_space_to_climb = true;
-                for (uint i = 1; i < (climb_on.z - current_tile.z) + data.config.agent_height; i++)
-                {
-                    if (!(data.world->get_tile_id(current_tile.offset(0, 0, i))->type & (TileType::Air | TileType::Complex)))
-                    {
-                        has_space_to_climb = false;
-                        break;
-                    }
-                }
-
-                if (has_space_to_climb)
-                {
-                    if (build_path_recursive(data, PathMove(current_tile, climb_on, (climb_on.z - current_tile.z) * 1.2f), false)) return true;
-                }
-            }
-        }
-    }
-
-    return false;
-}
 
 FORCEINLINE bool can_step_at(const TileIndex& at, uint agent_height, HexaWorld* world)
 {
-    for (uint i = 0; i < agent_height; i++)
+    const auto chunk = world->get_chunk(at.get_chunk());
+    const auto local_at = at.cycle_chunk();
+    const auto local_at_down = local_at.offset(0, 0, -1);
+    
+    if (at.z <= 0 ||
+        !(chunk->get_tile(local_at_down)->get_collision_sides(local_at_down, world) & TileSide::Up) &&
+        !(chunk->get_tile(local_at)->get_collision_sides(local_at, world) & TileSide::Down)) return false; // have floor
+    
+    for (uint i = at.z + 1; i < Math::min(at.z + agent_height, WorldChunk::chunk_height - 1); i++)
     {
-        if (!(world->get_tile_id(at.offset(0, 0, i))->type & (TileType::Air | TileType::Complex))) return false;
+        const auto index = TileIndex(local_at.x, local_at.y, i);
+        const auto index_down = TileIndex(local_at.x, local_at.y, i - 1);
+        if (!!(chunk->get_tile(index)->get_collision_sides(index, world) & TileSide::Down) || !!(chunk->get_tile(index_down)->get_collision_sides(index_down, world) & TileSide::Up)) return false;
     }
-    if (world->get_tile_id(at.offset(0, 0, -1))->type != TileType::Solid) return false;
+
     return true;
 }
 
-bool build_path_recursive(PathFindingData& data, const PathMove& current_move, bool is_first)
+#define SORT_BUBBLE_BEGIN(size)\
+for (uint i = 0; i < size - 1; i++)\
+{\
+    for (uint j = i + 1; j < size; j++)\
+    {\
+
+#define SORT_BUBBLE_END(list)\
+        {\
+            std::swap(list[i], list[j]);\
+        }\
+    }\
+}\
+
+struct NodeData
 {
-    if (!can_step_at(current_move.to, data.config.agent_height, data.world)) return false;
+    const NavNode* node;
+    const NavConnection* from;
+    float total_cost;
+};
 
-    if (data.moves.length() > 0 && data.moves.first().from == current_move.to) return false;
-
-    auto& visited = data.visited[current_move.to];
-    if (visited) return false;
-    visited = true;
-
-    if (!is_first)
+void build_path(PathFindingData& data)
+{
+    typedef std::pair<float, const NavNode*> pair;
+    
+    if (const auto start_node = data.world->get_nav_node(data.config.from))
     {
-        data.moves.add(current_move);
-    }
-
-    if (current_move.to == data.config.to)
-    {
-        return true;
-    }
-
-    const float angle_to = current_move.to.x != data.config.to.x || current_move.to.y != data.config.to.y ? -Vector2::angle_global(current_move.to.to_vector(), data.to_vector) : 0.0f;
-    const bool vertical_priority = data.config.to.z > current_move.to.z;
-    
-    const TileSide side_try_f = tile_side_from_angle_xy(angle_to);
-    const TileSide side_try_r = tile_side_right(side_try_f);
-    const TileSide side_try_l = tile_side_left(side_try_f);
-    const TileSide side_try_rr = tile_side_right(side_try_r);
-    const TileSide side_try_ll = tile_side_left(side_try_l);
-    const TileSide side_try_b = tile_side_right(side_try_rr);
-    
-    {    
-        const TileIndex next_tile_f = current_move.to.offset(side_try_f);
-
-        if (attempt_move(data, current_move.to, next_tile_f, vertical_priority)) return true;
-    }
-    
-    {    
-        
-        const TileIndex next_tile_r = current_move.to.offset(side_try_r);
-        PathFindingData data_r = data;
-        const bool move_r = attempt_move(data_r, current_move.to, next_tile_r, vertical_priority);
-    
-        const TileIndex next_tile_l = current_move.to.offset(side_try_l);
-        PathFindingData data_l = data;
-        const bool move_l = attempt_move(data_l, current_move.to, next_tile_l, vertical_priority);
-
-        if (move_r && move_l)
+        if (const auto end_node = data.world->get_nav_node(data.config.to))
         {
-            if (weight_moves(data_l.moves) < weight_moves(data_r.moves))
-            {
-                data = data_l;
-            }
-            else
-            {
-                data = data_r;
-            }
+            std::priority_queue<pair, std::vector<pair>, std::greater<pair>> frontier;
+            frontier.push(std::pair{0.0f, start_node});
 
-            return true;
-        }
-        else if (move_r)
-        {
-            data = data_r;
-            return true;
-        }
-        else if (move_l)
-        {
-            data = data_l;
-            return true;
-        }
-    }
+            Map<const NavNode*, NodeData> node_datas;
+            node_datas[start_node] = { start_node, nullptr, 0.0f };
 
-    {
-        const TileIndex next_tile_rr = current_move.to.offset(side_try_rr);
-        PathFindingData data_rr = data;
-        const bool move_rr = attempt_move(data_rr, current_move.to, next_tile_rr, vertical_priority);
-    
-        const TileIndex next_tile_ll = current_move.to.offset(side_try_ll);
-        PathFindingData data_ll = data;
-        const bool move_ll = attempt_move(data_ll, current_move.to, next_tile_ll, vertical_priority);
+            bool finished = false;
+            bool unreachable = false;
+            
+            while (!frontier.empty() && !finished && !unreachable)
+            {
+                auto current = frontier.top().second;
+                frontier.pop();
 
-        if (move_rr && move_ll)
-        {
-            if (weight_moves(data_ll.moves) < weight_moves(data_rr.moves))
-            {
-                data = data_ll;
-            }
-            else
-            {
-                data = data_rr;
+                auto current_data = node_datas[current];
+
+                for (auto connection : current->connected_nodes)
+                {
+                    if (auto next = connection->value->pass(current, data.config))
+                    {
+                        if (next == start_node) continue;
+                        
+                        const float next_cost = current_data.total_cost + connection->value->cost(current, data.config);
+
+                        if (can_step_at(next->tile_index, data.config.agent_height, data.world) && next_cost < data.max_cost)
+                        {
+                            auto& next_data = node_datas[next];
+                            next_data.node = next;
+                            if (next_data.from == nullptr)
+                            {
+                                next_data.from = connection->value;
+                                next_data.total_cost = next_cost;
+                                frontier.emplace(pair{next_data.total_cost, next});
+
+                                if (next == end_node)
+                                {
+                                    finished = true;
+                                }
+                            }
+                        }
+                        else if (next == end_node)
+                        {
+                            unreachable = true;
+                        }
+                    }
+                }
             }
 
-            return true;
-        }
-        else if (move_rr)
-        {
-            data = data_rr;
-            return true;
-        }
-        else if (move_ll)
-        {
-            data = data_ll;
-            return true;
+            auto last = end_node;
+            while (const auto node_data = node_datas.find(last))
+            {
+                const auto from = node_data->from->get_opposite(node_data->node);
+                data.moves.add({ from->tile_index, node_data->node->tile_index });
+                if (from == start_node) break;
+                last = from;
+            }
         }
     }
-    
-    {    
-        const TileIndex next_tile_b = current_move.to.offset(side_try_b);
-
-        if (attempt_move(data, current_move.to, next_tile_b, vertical_priority)) return true;
-    }
-
-    if (!is_first)
-    {
-        data.moves.remove_at(data.moves.length() - 1);
-    }
-    return false;
 }
 
 Shared<WorldPath> HexaWorld::FindPath(const PathConfig& config)
@@ -315,14 +189,15 @@ Shared<WorldPath> HexaWorld::FindPath(const PathConfig& config)
     {
         if (!can_step_at(config.to, config.agent_height, this)) return nullptr;
         
-        PathFindingData path_finding_data = { List<PathMove>(), {}, config, config.to.to_vector(), this };
-        build_path_recursive(path_finding_data, {config.from, config.from, 0}, true);
-        List<WorldPath::Segment> path_segments;
-        for (const auto& path_move : path_finding_data.moves)
+        PathFindingData path_finding_data = { config, this, 50.0f };
+        build_path(path_finding_data);
+        if (path_finding_data.moves.length() == 0) return nullptr;
+        List<WorldPath::Segment> moves(path_finding_data.moves.length());
+        for (uint i = 0; i < path_finding_data.moves.length(); i++)
         {
-            path_segments.add({ path_move.from, path_move.to });
+            moves[path_finding_data.moves.length() - 1 - i] = path_finding_data.moves[i];
         }
-        return MakeShared<WorldPath>(path_segments);
+        return MakeShared<WorldPath>(moves);
     }
 
     return nullptr;
@@ -377,12 +252,12 @@ Shared<ItemDrop> HexaWorld::spawn_drop(const TileIndex& tile, const ItemContaine
     return entity;
 }
 
-void HexaWorld::set_tile(const TileIndex& index, const Shared<const TileInfo>& id) const
+void HexaWorld::set_tile(const TileIndex& world_index, const Shared<const TileInfo>& id) const
 {
-    const auto chunk_index = index.get_chunk();
+    const auto chunk_index = world_index.get_chunk();
     if (auto chunk = get_chunk_internal(chunk_index))
     {
-        chunk->set_tile(index.cycle_chunk(), id);
+        chunk->set_tile(world_index.cycle_chunk(), id);
     }
     else
     {
@@ -390,51 +265,82 @@ void HexaWorld::set_tile(const TileIndex& index, const Shared<const TileInfo>& i
         {
             if (auto modifications = save_game->get_chunk_modifications(chunk_index))
             {
-                modifications->insert(index.cycle_chunk(), id);
+                modifications->insert(world_index.cycle_chunk(), id);
                 save_game->save_chunk_modifications(chunk_index, *modifications);
             }
             else
             {
                 Map<TileIndex, Shared<const TileInfo>> new_modifications;
-                new_modifications.insert(index.cycle_chunk(), id);
+                new_modifications.insert(world_index.cycle_chunk(), id);
                 save_game->save_chunk_modifications(chunk_index, new_modifications);
             }
         }
     }
 }
 
-Shared<const TileInfo> HexaWorld::get_tile_id(const TileIndex& index) const
+Shared<const TileInfo> HexaWorld::get_tile_id(const TileIndex& world_index) const
 {
-    const auto chunk_index = index.get_chunk();
+    const auto chunk_index = world_index.get_chunk();
     if (const auto chunk = get_chunk_internal(chunk_index))
     {
-        return chunk->get_tile(index.cycle_chunk());
+        return chunk->get_tile(world_index.cycle_chunk());
     }
 
-    print_debug("World", "Unable to get tile {$i;$i;$i}, chunk {$i;$i} is not loaded", index.x, index.y, index.z, chunk_index.x, chunk_index.y);
+    print_debug("World", "Unable to get tile {$i;$i;$i}, chunk {$i;$i} is not loaded", world_index.x, world_index.y, world_index.z, chunk_index.x, chunk_index.y);
     return nullptr;
 }
 
-bool HexaWorld::damage_tile(const TileIndex& index, float damage) const
+void HexaWorld::break_tile(const TileIndex& world_index) const
 {
-    const auto chunk_index = index.get_chunk();
+    const auto chunk_index = world_index.get_chunk();
     if (auto chunk = get_chunk_internal(chunk_index))
     {
-        return chunk->damage_tile(index.cycle_chunk(), damage);
+        chunk->break_tile(world_index.cycle_chunk());
+    }
+}
+
+bool HexaWorld::damage_tile(const TileIndex& world_index, float damage) const
+{
+    const auto chunk_index = world_index.get_chunk();
+    if (auto chunk = get_chunk_internal(chunk_index))
+    {
+        return chunk->damage_tile(world_index.cycle_chunk(), damage);
     }
 
     return false;
 }
 
-Shared<ComplexTileCustomData> HexaWorld::get_custom_data(const TileIndex& index)
+Shared<ComplexTileCustomData> HexaWorld::get_custom_data(const TileIndex& world_index)
 {
-    const auto chunk_index = index.get_chunk();
+    const auto chunk_index = world_index.get_chunk();
     if (const auto chunk = get_chunk_internal(chunk_index))
     {
-        return chunk->get_custom_data(index.cycle_chunk());
+        return chunk->get_custom_data(world_index.cycle_chunk());
     }
 
     return nullptr;
+}
+
+const NavNode* HexaWorld::get_nav_node(const TileIndex& world_index) const
+{
+    const auto chunk_index = world_index.get_chunk();
+    if (const auto chunk = get_chunk_internal(chunk_index))
+    {
+        return chunk->get_nav_node(world_index);
+    }
+
+    return nullptr;
+}
+
+SimpleMap<TileIndex, NavConnection*> HexaWorld::get_nav_connections(const TileIndex& world_index) const
+{
+    const auto chunk_index = world_index.get_chunk();
+    if (const auto chunk = get_chunk_internal(chunk_index))
+    {
+        return chunk->get_nav_connections(world_index.cycle_chunk());
+    }
+
+    return {};
 }
 
 void HexaWorld::cap_chunks(uint z)

@@ -28,7 +28,7 @@ public:
     float dot(const Quaternion& rhs) const;
 
     static Quaternion from_axis_angle(const Vector3& axis, float angle);
-    FORCEINLINE static Quaternion look_at(const Vector3& from, const Vector3& to);
+    FORCEINLINE static Quaternion look_at(const Vector3& from, const Vector3& to) { return look_at((to - from).normalized()); }
     static Quaternion look_at(const Vector3& normal);
     static Quaternion slerp(const Quaternion& a, const Quaternion& b, float alpha);
     static Quaternion lerp(const Quaternion& from, const Quaternion& to, float alpha);

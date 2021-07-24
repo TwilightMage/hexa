@@ -18,4 +18,5 @@ public:
 
     void neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, const Shared<const TileInfo>& new_neighbor) const override;
     void setup_spawned_entity(const Shared<ComplexTile>& new_entity, const Shared<ComplexTileCustomData>& custom_data) const override;
+    FORCEINLINE TileSide get_collision_sides(const TileIndex& world_index, const HexaWorld* world) const override { return TileSide::None; }
 };

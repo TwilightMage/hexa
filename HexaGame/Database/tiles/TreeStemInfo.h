@@ -37,6 +37,7 @@ public:
 
     Shared<ComplexTileCustomData> create_custom_data() const override;
     void setup_spawned_entity(const Shared<ComplexTile>& new_tile, const Shared<ComplexTileCustomData>& custom_data) const override;
+    void on_tile_break(const TileIndex& index, const Shared<HexaWorld>& world) const override;
     void on_tile_destroyed(const TileIndex& index, const Shared<ComplexTile>& destroyed_tile, const Shared<HexaWorld>& world) const override;
     void neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, const Shared<const TileInfo>& new_neighbor) const override;
 

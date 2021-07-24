@@ -114,12 +114,15 @@ void HexaGame::loading_stage()
     plains_music = Audio::load(RESOURCES_HEXA_AUDIO_MUSIC + "plains.ogg");
     plains_music->set_looped(true);
 
-    wind_sound = Audio::load(RESOURCES_HEXA_AUDIO_MUSIC + "wind.ogg");
-    wind_sound->set_looped(true);
-    wind_sound->set_default_volume(0.3f);
-
     wood_chop_sound = Audio::load(RESOURCES_HEXA_AUDIO_EFFECTS + "wood_chop.ogg");
     wood_chop_sound->set_default_volume(2.0f);
+
+    wind_sound = Audio::load(RESOURCES_HEXA_AUDIO_AMBIENT + "wind.ogg");
+    wind_sound->set_looped(true);
+    wind_sound->set_default_volume(0.3f);
+    
+    drop_sound = Audio::load(RESOURCES_HEXA_AUDIO_AMBIENT + "drop.ogg");
+    drop_sound->set_default_volume(0.5f);
 
     music_channel_ = AudioChannel::create(get_general_channel());
     music_channel_->set_volume(get_settings<HexaSettings>()->audio_music);

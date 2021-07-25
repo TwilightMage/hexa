@@ -1,6 +1,6 @@
 ﻿#include "Mesh.h"
 
-#include <OBJ-Loader/Source/OBJ_Loader.h>
+#include <OBJ-Loader/OBJ_Loader.h>
 
 #include "Assert.h"
 #include "File.h"

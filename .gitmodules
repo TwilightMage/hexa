@@ -1,4 +1,0 @@
-[submodule "ThirdParty/include/OBJ-Loader"]
-	path = ThirdParty/include/OBJ-Loader
-	url = git@github.com:Bly7/OBJ-Loader.git
-	

@@ -15,6 +15,8 @@
 #include "Entities/ComplexTile.h"
 #include "Worlds/HexaWorld.h"
 
+FORCEINLINE bool coll_at(TileSide coll, TileSide side) { return !!(coll & side); }
+
 FORCEINLINE byte count_difference(TileType flags)
 {
     int int_flags = static_cast<int>(flags);
@@ -100,15 +102,92 @@ const Shared<const TileInfo>& WorldChunk::get_tile(const TileIndex& index) const
 
 void WorldChunk::set_tile(const TileIndex& index, const Shared<const TileInfo>& new_tile)
 {
-    if (auto world = world_.lock())
+    if (const auto world = world_.lock())
     {
-        auto old_tile = data[index.x][index.y][index.z];
+        const auto old_tile = data[index.x][index.y][index.z];
     
         modifications_[index] = new_tile;
         data[index.x][index.y][index.z] = new_tile;
         dirty_ = true;
 
         generate_metadata(index.z);
+
+        const auto index_absolute = index.to_absolute(index_);
+        const auto top_index = index.offset(0, 0, 1);
+        const auto top_index_absolute = index_absolute.offset(0, 0, 1);
+
+        bool update_current = false;
+        bool update_top = false;
+
+        if (can_stay_at(top_index, world.get()))
+        {
+            if (!nav_nodes_.contains(top_index_absolute))
+            {
+                add_nav_node(top_index_absolute);
+
+                update_top = true;
+            }
+        }
+        else
+        {
+            if (nav_nodes_.contains(top_index_absolute))
+            {
+                remove_nav_node(top_index_absolute);
+            }
+        }
+        
+        if (can_stay_at(index, world.get()))
+        {
+            if (!nav_nodes_.contains(index_absolute))
+            {
+                add_nav_node(index_absolute);
+
+                update_current = true;
+            }
+        }
+        else
+        {
+            if (nav_nodes_.contains(index_absolute))
+            {
+                remove_nav_node(index_absolute);
+            }
+        }
+
+        if (update_top)
+        {
+            for (byte b = 0; b < 6; b++)
+            {
+                const auto side = (TileSide)(1 << b);
+                const auto off = TileIndex::offset_from_side(side);
+                const auto off_index = top_index + off;
+
+                auto to_chunk = this;
+                if (!off_index.is_inside_chunk() && visibility_counter_ > 0)
+                {
+                    to_chunk = world->get_chunk(off_index.to_absolute(index_).get_chunk()).get();
+                }
+                            
+                nav_gen(top_index_absolute, off.x, off.y, side, tile_side_opposite(side), to_chunk);
+            }
+        }
+
+        if (update_current)
+        {
+            for (byte b = 0; b < 6; b++)
+            {
+                const auto side = (TileSide)(1 << b);
+                const auto off = TileIndex::offset_from_side(side);
+                const auto off_index = index + off;
+
+                auto to_chunk = this;
+                if (!off_index.is_inside_chunk() && visibility_counter_ > 0)
+                {
+                    to_chunk = world->get_chunk(off_index.to_absolute(index_).get_chunk()).get();
+                }
+                            
+                nav_gen(index_absolute, off.x, off.y, side, tile_side_opposite(side), to_chunk);
+            }
+        }
 
         for (byte b = 0; b < 8; b++)
         {
@@ -610,8 +689,6 @@ bool WorldChunk::claim_tile(const TileIndex& local_index, const Shared<ComplexTi
     return false;
 }
 
-FORCEINLINE bool coll_at(TileSide coll, TileSide side) { return !!(coll & side); }
-
 void WorldChunk::generate_nav_graph()
 {
     if (auto world = world_.lock())
@@ -622,17 +699,17 @@ void WorldChunk::generate_nav_graph()
         {
             for (uint y = 0; y < chunk_size; y++)
             {
-                bool ground = false;
+                bool have_ground = false;
                 for (uint z = 0; z < chunk_height; z++)
                 {
                     auto coll = data[x][y][z]->get_collision_sides(TileIndex(x, y, z), world.get());
 
-                    if (ground && !!(~coll & (TileSide::All & ~TileSide::Up)))
+                    if (have_ground && !data[x][y][z]->block_nav)
                     {
                         add_nav_node(TileIndex(x, y, z).to_absolute(index_));
                     }
                 
-                    ground = coll_at(coll, TileSide::Up);
+                    have_ground = data[x][y][z]->block_nav || coll_at(coll, TileSide::Up);
                 }
             }
         }
@@ -663,42 +740,47 @@ enum class NavClimbState
     Jump,
     Climb,
     StandUp,
-    LookingForFall,
-    LookingForFallWall
+    LookingForFallWall,
+    LookingForFallFloor
 };
 
 void WorldChunk::nav_gen(const TileIndex& from, int off_x, int off_y, TileSide front, TileSide back, WorldChunk* to_chunk)
 {
     if (auto world = to_chunk->world_.lock())
     {
-        const auto local_index = from.cycle_chunk();
-        const auto to_index = local_index.offset(off_x, off_y, 0).cycle_chunk();
+        const auto local_from = from.cycle_chunk();
+        const auto local_to = local_from.offset(off_x, off_y, 0).cycle_chunk();
     
         // Climb up
-        nav_gen_climb(from, local_index, off_x, off_y, front, back, to_chunk);
+        nav_gen_climb(from, local_from, off_x, off_y, front, back, to_chunk);
 
-        // Step
-        if (coll_at(to_chunk->data[to_index.x][to_index.y][to_index.z - 1]->get_collision_sides(to_index.offset(0, 0, -1), world.get()), TileSide::Up))
+        if (local_from.z > 0)
         {
-            add_step_connection(from, from.offset(off_x, off_y, 0), to_chunk);
-        }
-        // Climb down
-        else
-        {
-            for (int z = 1; z < local_index.z - 1; z++)
+            auto local_down_index = local_to.offset(0, 0, -1);
+            auto down = to_chunk->data[local_down_index.x][local_down_index.y][local_down_index.z];
+            if (down->block_nav || coll_at(down->get_collision_sides(local_down_index, world.get()), TileSide::Up)) // Step
             {
-                if (coll_at(to_chunk->data[to_index.x][to_index.y][to_index.z - z - 1]->get_collision_sides(to_index.offset(0, 0, -z - 1), world.get()), TileSide::Up))
+                add_step_connection(from, from.offset(off_x, off_y, 0), to_chunk);
+            }
+            else // Climb down
+            {
+                for (int z = 1; z < local_from.z - 1; z++)
                 {
-                    const auto to_fall = to_index.offset(0, 0, -z);
-                    to_chunk->nav_gen_climb(to_fall.to_absolute(index_), to_fall, -off_x, -off_y, back, front, to_chunk);
-                    break;
+                    local_down_index = local_to.offset(0, 0, -z - 1);
+                    down = to_chunk->data[local_down_index.x][local_down_index.y][local_down_index.z];
+                    if (down->block_nav || coll_at(down->get_collision_sides(local_down_index, world.get()), TileSide::Up))
+                    {
+                        const auto to_fall = local_down_index.offset(0, 0, 1);
+                        to_chunk->nav_gen_climb(to_fall.to_absolute(to_chunk->index_), to_fall, -off_x, -off_y, back, front, this);
+                        break;
+                    }
                 }
             }
         }
     }
 }
 
-void WorldChunk::nav_gen_climb(const TileIndex& from, const TileIndex& local_index, int off_x, int off_y, TileSide front, TileSide back, WorldChunk* to_chunk)
+void WorldChunk::nav_gen_climb(const TileIndex& from, const TileIndex& local_index, int off_x, int off_y, TileSide front_side, TileSide back_side, WorldChunk* to_chunk)
 {
     if (auto world = to_chunk->world_.lock())
     {
@@ -714,17 +796,25 @@ void WorldChunk::nav_gen_climb(const TileIndex& from, const TileIndex& local_ind
         bool found_climb = false;
         for (uint z = 0; z < chunk_height - local_index.z - 1 && !fail; z++)
         {
-            const auto coll_t = data[local_index.x][local_index.y][local_index.z + z + 1]->get_collision_sides(local_index.offset(0, 0, z + 1), world.get());
+            const auto top_index = local_index.offset(0, 0, z + 1);
+            
+            if (top_index.z == chunk_height) break;
+            
+            const auto top = data[top_index.x][top_index.y][top_index.z];
 
-            if (coll_at(coll_t, TileSide::Down) || local_index.z + z == chunk_height) break;
+            if (top->block_nav || coll_at(top->get_collision_sides(top_index, world.get()), TileSide::Down)) break;
 
             const auto coll = data[local_index.x][local_index.y][local_index.z + z]->get_collision_sides(local_index.offset(0, 0, z), world.get());
-            const auto coll_f = to_chunk->data[to_index.x][to_index.y][to_index.z + z]->get_collision_sides(to_index.offset(0, 0, z), world.get());
+
+            const auto front_index = to_index.offset(0, 0, z);
+            const auto front = to_chunk->data[front_index.x][front_index.y][front_index.z];
+            const auto coll_front = front->get_collision_sides(front_index, world.get());
+            const bool can_climb = front->block_nav || coll_at(coll_front, back_side) || coll_at(coll, front_side);
             
             switch (state)
             {
             case NavClimbState::Jump:
-                if (coll_at(coll_f, back) || coll_at(coll, front))
+                if (can_climb)
                 {
                     state = NavClimbState::Climb;
                 }
@@ -734,13 +824,17 @@ void WorldChunk::nav_gen_climb(const TileIndex& from, const TileIndex& local_ind
                 }
                 break;
             case NavClimbState::Climb:
-                if (!coll_at(coll_f, back) && !coll_at(coll, front))
+                if (!can_climb)
                 {
-                    if (coll_at(to_chunk->data[to_index.x][to_index.y][to_index.z + z - 1]->get_collision_sides(to_index.offset(0, 0, z - 1), world.get()), TileSide::Up))
+                    const auto front_down_index = front_index.offset(0, 0, -1);
+                    const auto front_down = to_chunk->data[front_down_index.x][front_down_index.y][front_down_index.z];
+                    
+                    if (front_down->block_nav || coll_at(front_down->get_collision_sides(front_down_index, world.get()), TileSide::Up) || coll_at(front->get_collision_sides(front_index, world.get()), TileSide::Down))
                     {
                         state = NavClimbState::StandUp;
                         found_climb = true;
                         climb_z = z;
+                        top_lowpass = 1;
                     }
                     else
                     {
@@ -749,27 +843,33 @@ void WorldChunk::nav_gen_climb(const TileIndex& from, const TileIndex& local_ind
                 }
                 break;
             case NavClimbState::StandUp:
-                if (coll_at(coll_f, back) || coll_at(coll, front))
+                if (can_climb)
                 {
-                    state = NavClimbState::LookingForFallWall;
+                    state = NavClimbState::LookingForFallFloor;
                 }
                 else
                 {
                     top_lowpass++;
                 }
                 break;
-            case NavClimbState::LookingForFallWall:
-                if (!coll_at(coll_f, back) && !coll_at(coll, front) && coll_at(to_chunk->data[to_index.x][to_index.y][to_index.z + z - 1]->get_collision_sides(to_index.offset(0, 0, z - 1), world.get()), TileSide::Up))
+            case NavClimbState::LookingForFallFloor:
+                if (!can_climb)
                 {
-                    state = NavClimbState::LookingForFall;
-                    fall_z = z;
-                    fall_lowpass = 0;
+                    const auto front_down_index = front_index.offset(0, 0, -1);
+                    const auto front_down = to_chunk->data[front_down_index.x][front_down_index.y][front_down_index.z];
+                    if (front_down->block_nav || coll_at(front_down->get_collision_sides(front_down_index, world.get()), TileSide::Up) || coll_at(front->get_collision_sides(front_index, world.get()), TileSide::Down))
+                    {
+                        state = NavClimbState::LookingForFallWall;
+                        fall_z = z;
+                        fall_lowpass = 0;
+                    }
                 }
                 break;
-            case NavClimbState::LookingForFall:
-                if (coll_at(coll_f, back) || coll_at(coll, front))
+            case NavClimbState::LookingForFallWall:
+                if (can_climb)
                 {
-                    add_fall_connection(from.offset(off_x, off_y, fall_z), from, this, fall_lowpass);
+                    add_fall_connection(from.offset(off_x, off_y, fall_z), from, to_chunk, fall_lowpass);
+                    state = NavClimbState::LookingForFallFloor;
                 }
                 else
                 {
@@ -779,14 +879,14 @@ void WorldChunk::nav_gen_climb(const TileIndex& from, const TileIndex& local_ind
             }
         }
 
-        if (state == NavClimbState::LookingForFall)
+        if (state == NavClimbState::LookingForFallWall)
         {
-            add_fall_connection(from.offset(off_x, off_y, fall_z), from, this, fall_lowpass);
+            add_fall_connection(from.offset(off_x, off_y, fall_z), from, to_chunk, fall_lowpass);
         }
         
         if (found_climb && !fail)
         {
-            add_climb_fall_connection(from, from.offset(off_x, off_y, climb_z), this, bottom_offset, top_lowpass);
+            add_climb_fall_connection(from, from.offset(off_x, off_y, climb_z), to_chunk, bottom_offset, top_lowpass);
         }
     }
 }

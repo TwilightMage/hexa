@@ -23,9 +23,13 @@ const NavNode* NavClimbFallConnection::pass(const NavNode* from, const PathConfi
     if (path_config.agent_height / 2 > top_lowpass) return nullptr;
     
     const auto to = a.get() == from ? b.get() : a.get();
-    if (from->tile_index.z < to->tile_index.z) // up
+    if (from->tile_index.z < to->tile_index.z) // move up
     {
-        if (path_config.agent_height / 2 < bottom_offset) return nullptr;
+        if (to->tile_index.z - from->tile_index.z > (int)path_config.allowed_climb || path_config.agent_height / 2 < bottom_offset) return nullptr;
+    }
+    else
+    {
+        if (from->tile_index.z - to->tile_index.z > (int)path_config.allowed_fall) return nullptr;
     }
     
     return to;
@@ -56,7 +60,17 @@ const NavNode* NavFallConnection::pass(const NavNode* from, const PathConfig& pa
 {
     if (path_config.agent_height / 2 > top_lowpass) return nullptr;
 
-    return a.get() == from ? b.get() : nullptr;
+    const auto to = a.get() == from ? b.get() : a.get();
+    if (from->tile_index.z < to->tile_index.z) // move up
+    {
+        return nullptr;
+    }
+    else
+    {
+        if (from->tile_index.z - to->tile_index.z > (int)path_config.allowed_fall) return nullptr;
+    }
+
+    return to;
 }
 
 float NavFallConnection::cost(const NavNode* from, const PathConfig& path_config) const

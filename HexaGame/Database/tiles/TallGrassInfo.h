@@ -13,7 +13,7 @@ public:
         const Shared<Texture>& texture,
         const Shared<Material3D>& material
         )
-        : ComplexTileInfo(key, tags + Set{ MetaTags::PLANT, MetaTags::GRASS, MetaTags::PLANT }, hardness, mesh, texture, material)
+        : ComplexTileInfo(key, tags + Set{ MetaTags::PLANT, MetaTags::GRASS, MetaTags::PLANT }, hardness, false, mesh, texture, material)
     {}
 
     void neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, const Shared<const TileInfo>& new_neighbor) const override;

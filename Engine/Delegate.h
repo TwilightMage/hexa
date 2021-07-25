@@ -66,7 +66,10 @@ public:
 
 		for (auto& binding : bindings_copy)
 		{
-			binding.value(std::forward<InTypes>(args)...);
+			try
+			{
+				binding.value(std::forward<InTypes>(args)...);
+			} catch (...) {}
 		}
 	}
 

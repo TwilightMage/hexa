@@ -2,6 +2,7 @@
 
 #include "ChunkIndex.h"
 #include "TileIndex.h"
+#include "TileInfo.h"
 #include "TileSide.h"
 #include "TileType.h"
 #include "WorldChunkDataState.h"
@@ -99,9 +100,19 @@ private:
     bool can_claim(const TileIndex& local_index) const;
     bool claim_tile(const TileIndex& local_index, const Shared<ComplexTile>& claimer);
 
+    FORCEINLINE bool can_stay_at(const TileIndex& at, HexaWorld* world) { return
+        at.z > 0 &&
+        !data[at.x][at.y][at.z]->block_nav && (
+            data[at.x][at.y][at.z - 1]->block_nav ||
+            !!(data[at.x][at.y][at.z - 1]->get_collision_sides(at.offset(0, 0, -1), world) & TileSide::Up) ||
+                at.z < chunk_height - 1 &&
+                !!(data[at.x][at.y][at.z]->get_collision_sides(at, world) & TileSide::Down)
+        );
+    }
+
     void generate_nav_graph();
     FORCEINLINE void nav_gen(const TileIndex& from, int off_x, int off_y, TileSide front, TileSide back, WorldChunk* to_chunk);
-    FORCEINLINE void nav_gen_climb(const TileIndex& from, const TileIndex& local_index, int off_x, int off_y, TileSide front, TileSide back, WorldChunk* to_chunk);
+    FORCEINLINE void nav_gen_climb(const TileIndex& from, const TileIndex& local_index, int off_x, int off_y, TileSide front_side, TileSide back_side, WorldChunk* to_chunk);
     void destroy_nav_graph();
 
     void add_nav_node(const TileIndex& tile_index);

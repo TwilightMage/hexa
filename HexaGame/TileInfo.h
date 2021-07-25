@@ -21,17 +21,20 @@ public:
         const Name& key,
         TileType type,
         const Set<Name> tags,
-        float hardness
+        float hardness,
+        bool block_nav
         )
         : DatabaseEntry(key)
         , type(type)
         , tags(tags)
         , hardness(hardness)
+        , block_nav(block_nav)
     {}
     
     TileType type;
     const Set<Name> tags;
     float hardness;
+    bool block_nav;
 
     virtual void neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, const Shared<const TileInfo>& new_neighbor) const;
     virtual void on_tile_break(const TileIndex& index, const Shared<HexaWorld>& world) const;
@@ -43,7 +46,7 @@ class AirTileInfo : public TileInfo
 {
 public:
     AirTileInfo(const Name& key)
-    : TileInfo(key, TileType::Air, { MetaTags::AIR }, 0.0f)
+    : TileInfo(key, TileType::Air, { MetaTags::AIR }, 0.0f, false)
     {}
 
     FORCEINLINE TileSide get_collision_sides(const TileIndex& world_index, const HexaWorld* world) const override { return TileSide::None; }
@@ -60,7 +63,7 @@ public:
         bool randomize_ceil_uv_angle,
         bool randomize_floor_uv_angle
         )
-        : TileInfo(key, TileType::Solid, tags + Set{ MetaTags::SOLID }, hardness)
+        : TileInfo(key, TileType::Solid, tags + Set{ MetaTags::SOLID }, hardness, true)
         , texture(texture)
         , randomize_ceil_uv_angle(randomize_ceil_uv_angle)
         , randomize_floor_uv_angle(randomize_floor_uv_angle)
@@ -79,11 +82,12 @@ public:
         const Name& key,
         const Set<Name>& tags,
         float hardness,
+        bool block_nav,
         const Shared<Mesh>& mesh,
         const Shared<Texture>& texture,
         const Shared<Material3D>& material
         )
-        : TileInfo(key, TileType::Complex, tags + Set{ MetaTags::COMPLEX }, hardness)
+        : TileInfo(key, TileType::Complex, tags + Set{ MetaTags::COMPLEX }, hardness, block_nav)
         , mesh(mesh)
         , texture(texture)
         , material(material)

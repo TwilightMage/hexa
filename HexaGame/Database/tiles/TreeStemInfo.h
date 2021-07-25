@@ -23,7 +23,7 @@ public:
         const Shared<Texture>& branch_krone_texture,
         const Name& log_item_name
         )
-        : ComplexTileInfo(key, tags + Set{ MetaTags::PLANT, MetaTags::WOOD, MetaTags::STEM }, hardness, mesh, texture, material)
+        : ComplexTileInfo(key, tags + Set{ MetaTags::PLANT, MetaTags::WOOD, MetaTags::STEM }, hardness, true, mesh, texture, material)
         , roots_mesh(roots_mesh)
         , roots_texture(roots_texture)
         , krone_mesh(krone_mesh)

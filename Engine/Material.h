@@ -57,6 +57,7 @@ public:
     };
 
     Material();
+    ~Material();
 
     void init(const Shared<Shader>& shader, float z_order);
     
@@ -117,6 +118,8 @@ private:
     Shared<Shader> shader_ = nullptr;
     SimpleMap<Name, Shared<MaterialParameterBase>> global_parameters_;
     bool is_valid_ = false;
+
+    List<void*> global_batch;
 
     static const inline int min_buffer_size = 1024 * 1024 * 1;
     static const inline int max_buffer_size = 1024 * 1024 * 1;

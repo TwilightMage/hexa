@@ -417,6 +417,9 @@ void Game::prepare()
 	glfwSetWindowSizeCallback(window_, window_size_callback);
 }
 
+const uint SHADOW_WIDTH = 1024;
+const uint SHADOW_HEIGHT = 1024;
+
 void Game::render_loop()
 {	
 	const String GPU_name(reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
@@ -475,6 +478,7 @@ void Game::render_loop()
 	// Materials
 	basic_material_3d_ = MakeShared<Material3D>();
 	basic_material_3d_->init(basic_3d_shader_, 0);
+	basic_material_3d_->cast_shadows = true;
 	
 	basic_material_ui_ = MakeShared<MaterialUI>();
 	basic_material_ui_->init(basic_ui_shader_, 1);
@@ -598,6 +602,25 @@ void Game::render_loop()
 		}
 		dcc_display->set_text(dcc_string);
 
+		uint sun_shadow_tex;
+		glGenTextures(1, &sun_shadow_tex);
+		
+		glBindTexture(GL_TEXTURE_2D, sun_shadow_tex);
+		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+
+		uint sun_shadow_fbo;
+		glGenFramebuffers(1, &sun_shadow_fbo);
+		
+		glBindFramebuffer(GL_FRAMEBUFFER, sun_shadow_fbo);
+		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, sun_shadow_tex, 0);
+		glDrawBuffer(GL_NONE);
+		glReadBuffer(GL_NONE);
+		glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
 		if (world_)
 		{
 			basic_material_3d_->set_param_value("ambient_light", world_->ambient_color.to_vector3() * world_->ambient_intensity);
@@ -632,21 +655,69 @@ void Game::render_loop()
 						0.0, 0.0, 0.0, 1.0
 					);
 
-				auto proj = Matrix4x4::perspective(latest_camera_info_.fov, static_cast<float>(width) / static_cast<float>(height), 0.01f, 1000.0f);
+				auto proj_3d = Matrix4x4::perspective(latest_camera_info_.fov, static_cast<float>(width) / static_cast<float>(height), 0.01f, 1000.0f);
 
-				un_projected_mouse_ = Matrix4x4::un_project(Vector2(mouse_pos_.x, mouse_pos_.y), Vector2(static_cast<float>(width), static_cast<float>(height)), Matrix4x4().translate(latest_camera_info_.position), view, proj);
+				un_projected_mouse_ = Matrix4x4::un_project(Vector2(mouse_pos_.x, mouse_pos_.y), Vector2(static_cast<float>(width), static_cast<float>(height)), Matrix4x4().translate(latest_camera_info_.position), view, proj_3d);
 				
 				// UI matrix
-				auto ui_proj = Matrix4x4::ortho(0.0f, static_cast<float>(width), static_cast<float>(-height), 0.0f, -1000.0f, 0.0001f);
+				auto proj_ui = Matrix4x4::ortho(0.0f, static_cast<float>(width), static_cast<float>(-height), 0.0f, -1000.0f, 0.0001f);
 
 				// rendering
-				Material::RenderData render_data = {world_, view, proj, ui_proj };
+				Material::RenderData render_data = {world_, view, proj_3d, proj_ui };
+
+				auto view_shadow_sun = Matrix4x4::look_at(cam_from + -world_->sun_angle.forward() * 500.0f, cam_from) * Matrix4x4(
+						1.0, 0.0, 0.0, 0.0,
+						0.0, 1.0, 0.0, 0.0,
+						0.0, 0.0, 1.0, 0.0,
+						0.0, 0.0, 0.0, 1.0
+					);
+				auto proj_shadow_sun = Matrix4x4::ortho(-10, 10, 10, -10, 0.01f, 1000.0f);
+				Material::RenderData render_data_shadow = {world_, view_shadow_sun, proj_shadow_sun, Matrix4x4() };
 
 				draw_call_counter_.clear();
 			
 				is_render_stage_ = true;
 				glEnable(GL_DEPTH_TEST);
 				glDepthFunc(GL_LESS);
+
+				glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
+				glBindFramebuffer(GL_FRAMEBUFFER, sun_shadow_fbo);
+				glClear(GL_DEPTH_BUFFER_BIT);
+				for (auto& material_list : materials_)
+				{
+					for (auto& material : material_list->value)
+					{
+						if (auto material3d = cast<Material3D>(material))
+						{
+							if (material3d->cast_shadows)
+							{
+								material->render(render_data_shadow);
+							}
+						}
+					}
+				}
+				if (test)
+				{
+					auto depth = Array2D<float>(SHADOW_WIDTH, SHADOW_HEIGHT);
+					
+					glBindTexture(GL_TEXTURE_2D, sun_shadow_tex);
+					glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_FLOAT, depth.begin());
+
+					auto pixels = Array2D<Color>(SHADOW_WIDTH, SHADOW_HEIGHT);
+					for (uint i = 0; i < pixels.size(); i++)
+					{
+						byte b = (int)(depth.begin()[i] * 255000) % 255;
+						pixels.begin()[i] = Color(b, b, b);
+					}
+
+					auto tex = MakeShared<Texture>("shadow", pixels);
+					tex->save_to_file("test.bmp");
+
+					test = false;
+				}
+
+				glViewport(0, 0, width, height);
+				glBindFramebuffer(GL_FRAMEBUFFER, 0);
 				for (auto& material_list : materials_)
 				{
 					glClear(GL_DEPTH_BUFFER_BIT);

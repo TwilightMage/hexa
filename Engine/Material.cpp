@@ -189,6 +189,14 @@ Material::Material()
 {
 }
 
+Material::~Material()
+{
+    for (auto& batch : global_batch)
+    {
+        free(batch);
+    }
+}
+
 void Material::init(const Shared<Shader>& shader, float z_order)
 {
     if (!shader) return;
@@ -200,6 +208,7 @@ void Material::init(const Shared<Shader>& shader, float z_order)
     for (auto& uniform_parameter : shader->get_global_uniforms())
     {
         global_parameters_[uniform_parameter->value.name] = uniform_parameter->value.type->parameter_producer(uniform_parameter->value.name);
+        global_batch.add(malloc(uniform_parameter->value.type->c_size));
     }
 
     register_direct_parameters();

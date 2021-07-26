@@ -7,6 +7,15 @@ template<typename K, typename V>
 struct SimpleMap
 {
     List<Pair<K, V>*> entries;
+
+    ~SimpleMap()
+    {
+        /*for (uint i = 0; i < entries.length(); i++)
+        {
+            auto ptr = entries[i];
+            delete ptr;
+        }*/
+    }
     
     FORCEINLINE V& operator[](const K& key)
     {
@@ -20,6 +29,7 @@ struct SimpleMap
 
     void clear()
     {
+        /*for (uint i = 0; i < entries.length(); i++) delete entries[i];*/
         entries.clear();
     }
 

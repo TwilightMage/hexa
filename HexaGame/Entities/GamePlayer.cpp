@@ -250,6 +250,10 @@ void GamePlayer::mouse_button_down(int button)
     {
         rotate_camera_ = true;
     }
+    else if (button == 1)
+    {
+        Game::get_instance()->test = true;
+    }
 }
 
 void GamePlayer::mouse_button_up(int button)

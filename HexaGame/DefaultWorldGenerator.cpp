@@ -181,22 +181,19 @@ void DefaultWorldGenerator::generate_debug(const EditableChunk& editable)
     {
         for (uint y = 0; y < WorldChunk::chunk_size; y++)
         {
-            for (uint z = 0; z < 10; z++)
-            {
-                editable.tile(x, y, z) = Tiles::stone;
-            }
+            editable.tile(x, y, 0) = Tiles::stone;
         }
     }
 
     if (editable.get_chunk()->get_index().x != 0 || editable.get_chunk()->get_index().y != 0) return;
     
-    editable.tile(3, 3, 10) = Tiles::grass;
-    editable.tile(3, 4, 10) = Tiles::dirt;
-    editable.tile(3, 4, 11) = Tiles::grass;
-    editable.tile(3, 4, 16) = Tiles::grass;
-    editable.tile(3, 5, 13) = Tiles::grass;
-    editable.tile(4, 5, 16) = Tiles::grass;
-    editable.tile(4, 6, 16) = Tiles::grass;
+    editable.tile(3, 3, 1) = Tiles::grass;
+    editable.tile(3, 4, 1) = Tiles::dirt;
+    editable.tile(3, 4, 2) = Tiles::grass;
+    editable.tile(3, 4, 7) = Tiles::grass;
+    editable.tile(3, 5, 4) = Tiles::grass;
+    editable.tile(4, 5, 7) = Tiles::grass;
+    editable.tile(4, 6, 7) = Tiles::grass;
 }
 
 void DefaultWorldGenerator::generate_land(const EditableChunk& editable) const

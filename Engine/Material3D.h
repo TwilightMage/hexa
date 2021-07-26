@@ -5,6 +5,9 @@
 
 class EXPORT Material3D : public Material
 {
+public:
+    bool cast_shadows;
+    
 protected:
     void register_direct_parameters() override;
     void apply_params(const RenderData& render_data) const override;

@@ -124,7 +124,7 @@ enum class GLTypeEnum
     AtomicUint = GL_UNSIGNED_INT_ATOMIC_COUNTER
 };
 
-struct GLType
+struct GLTypeInfo
 {
     String name;
     uint c_size;
@@ -134,9 +134,11 @@ struct GLType
     std::function<Shared<MaterialParameterBase>(const Name& name)> parameter_producer;
 };
 
+typedef const GLTypeInfo* gltype;
+
 struct GLParamSignature
 {
-    const GLType* type;
+    gltype type;
     String name;
     bool is_instance;
 };
@@ -149,7 +151,7 @@ public:
     virtual void copy(MaterialParameterBase* to) const = 0;
 
     Name name;
-    const GLType* type;
+    gltype type;
 };
 
 template<typename T>
@@ -185,8 +187,8 @@ public:
     Shared<Cubemap> value;
 };
 
-#define GLTYPE(T, primitive_type, size, c_size, c_type) { GLTypeEnum::T, new GLType { #T, c_size, size, GLTypeEnum::T, GLTypeEnum::primitive_type, [](const Name& name)->Shared<MaterialParameterBase>{ auto result = MakeShared<MaterialParameter<c_type>>(); result->name = Name(name); result->type = shader_type_info[GLTypeEnum::T]; return result; } } }
-const Map<GLTypeEnum, const GLType*> shader_type_info = {
+#define GLTYPE(T, primitive_type, size, c_size, c_type) { GLTypeEnum::T, new GLTypeInfo { #T, c_size, size, GLTypeEnum::T, GLTypeEnum::primitive_type, [](const Name& name)->Shared<MaterialParameterBase>{ auto result = MakeShared<MaterialParameter<c_type>>(); result->name = Name(name); result->type = shader_type_info[GLTypeEnum::T]; return result; } } }
+const Map<GLTypeEnum, gltype> shader_type_info = {
     GLTYPE(Int,         Int,   1, sizeof(int),        int            ),
     GLTYPE(Uint,        Uint,  1, sizeof(uint),       uint           ),
     GLTYPE(Bool,        Bool,  1, sizeof(bool),       bool           ),

@@ -110,6 +110,7 @@ void HexaGame::loading_stage()
 
     foliage_material = MakeShared<Material3D>();
     foliage_material->init(foliage_shader, 0);
+    foliage_material->cast_shadows = true;
 
     plains_music = Audio::load(RESOURCES_HEXA_AUDIO_MUSIC + "plains.ogg");
     plains_music->set_looped(true);

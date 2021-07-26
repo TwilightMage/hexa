@@ -14,7 +14,7 @@ public:
     struct UniformParam
     {
         uint layout_size;
-        const GLType* type;
+        gltype type;
         bool is_array;
         Name name;
         uint layout;
@@ -23,7 +23,7 @@ public:
     struct VertexParam
     {
         uint layout_size;
-        const GLType* type;
+        gltype type;
         Name name;
         uint layout;
         void* offset;

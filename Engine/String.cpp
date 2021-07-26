@@ -234,15 +234,16 @@ String String::substring(uint start, uint num) const
 {
 	if (start >= length_) return "";
 	
-	const uint min = Math::min(length_, start + num);
-	char* result = new char[min - start];
+	const uint result_end = Math::min(length_, start + num);
 
-	for (uint i = start; i < min; i++)
+	String result(' ', result_end - start);
+
+	for (uint i = start; i < result_end; i++)
 	{
 		result[i - start] = inner_[i];
 	}
 
-	return String(result, min - start);
+	return result;
 }
 
 String String::substring(uint start) const
@@ -256,7 +257,7 @@ String String::replace(const String& from, const String& to) const
 	const int offset = to.length_ - from.length_;
 
 	const uint newLength = static_cast<uint>(length_ + positions.length() * offset);
-	char* result = new char[newLength];
+    String result = String(' ', newLength);
 
 	uint counter = 0;
 	for (uint i = 0; i < newLength; i++)
@@ -273,7 +274,7 @@ String String::replace(const String& from, const String& to) const
 		}
 	}
 
-	return String(result, newLength);
+	return result;
 }
 
 String String::remove(const String& substring) const
@@ -294,20 +295,20 @@ String String::fit(int new_length, char filler) const
 
 	if (static_cast<int>(length_) < new_length)
 	{
-		char* result = new char[new_length];
+		String result = String(' ', new_length);
 
 		if (keepLeft)
 		{
-			memcpy(result, inner_, length_);
-			memcpy(result + length_, std::string(new_length - length_, filler).c_str(), (new_length - length_));
+			memcpy(result.inner_, inner_, length_);
+			memcpy(result.inner_ + length_, std::string(new_length - length_, filler).c_str(), (new_length - length_));
 		}
 		else
 		{
-			memcpy(result, std::string(new_length - length_, filler).c_str(), (new_length - length_));
-			memcpy(result + (new_length - length_), inner_, length_);
+			memcpy(result.inner_, std::string(new_length - length_, filler).c_str(), (new_length - length_));
+			memcpy(result.inner_ + (new_length - length_), inner_, length_);
 		}
 
-		return String(result, new_length);
+		return result;
 	}
 
 	return *this;
@@ -519,7 +520,7 @@ String String::operator*(uint rhs) const
 {
 	if (rhs == 0) return "";
 
-	char* result = new char[length_ * rhs];
+	String result = String(' ', length_ * rhs);
 
 	for (uint i = 0; i < rhs; i++)
 	{
@@ -529,17 +530,17 @@ String String::operator*(uint rhs) const
 		}
 	}
 
-	return String(result, length_ * rhs);
+	return result;
 }
 
 String String::operator+(const String& rhs) const
 {
-	char* result = new char[length_ + rhs.length_];
+	String result = String(' ', length_ + rhs.length_);
 
-	memcpy(result, inner_, length_);
-	memcpy(result + length_, rhs.inner_ , rhs.length_);
+	memcpy(result.inner_, inner_, length_);
+	memcpy(result.inner_ + length_, rhs.inner_ , rhs.length_);
 
-	return String(result, length_ + rhs.length_);
+	return result;
 }
 
 void String::operator+=(const String& rhs)

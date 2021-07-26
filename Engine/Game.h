@@ -125,6 +125,8 @@ public:
 
     static bool is_loading_stage();
     static bool is_render_stage();
+
+    bool test = false;
     
 protected:
     virtual void init_game_info(GameInfo& out_info) = 0;

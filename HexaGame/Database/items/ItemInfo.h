@@ -9,7 +9,7 @@
 
 class Character;
 class HexaWorld;
-class Mesh;
+class StaticMesh;
 class Texture;
 
 enum ItemTileTarget
@@ -26,7 +26,7 @@ public:
         const Name& key,
         const Set<Name>& tags,
         const Shared<Texture>& icon,
-        const Shared<Mesh>& mesh,
+        const Shared<StaticMesh>& mesh,
         const Shared<Texture>& mesh_texture,
         ItemType type,
         const String& name,
@@ -50,7 +50,7 @@ public:
     
     Shared<Texture> icon;
 
-    Shared<Mesh> mesh;
+    Shared<StaticMesh> mesh;
     Shared<Texture> mesh_texture;
 
     ItemType type;

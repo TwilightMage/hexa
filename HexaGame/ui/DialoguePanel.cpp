@@ -30,13 +30,13 @@ void DialoguePanel::on_construct()
     panel_ = MakeShared<Panel>();
     add_child(panel_);
     
-    frame_ = MakeShared<Image>(Texture::load_png(RESOURCES_HEXA_TEXTURES_UI +  "frame.png"));
+    frame_ = MakeShared<Image>(Texture::load_png(RESOURCES_TEXTURES_UI +  "frame.png"));
     frame_->set_position(Vector2(10.0f, 10.0f));
     frame_->set_size(Vector2(38.0f, 38.0f) * 2.0f);
     frame_->set_z(0.1f);
     panel_->add_child(frame_);
     
-    avatar_ = MakeShared<Image>(Texture::load_png(RESOURCES_HEXA_TEXTURES_UI + "dragon.png"));
+    avatar_ = MakeShared<Image>(Texture::load_png(RESOURCES_TEXTURES_UI + "dragon.png"));
     avatar_->set_position(Vector2(3.0f, 3.0f) * 2.0f);
     avatar_->set_size(Vector2(32.0f, 32.0f) * 2.0f);
     frame_->add_child(avatar_);

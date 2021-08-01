@@ -16,8 +16,8 @@
 
 void AnimationEditorUI::on_construct()
 {
-    point_texture_ = Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI_ANIMATION_EDITOR + "point.png");
-    point_active_texture_ = Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI_ANIMATION_EDITOR + "point_active.png");
+    point_texture_ = Texture::load_png(RESOURCES_TEXTURES_UI_ANIMATION_EDITOR + "point.png");
+    point_active_texture_ = Texture::load_png(RESOURCES_TEXTURES_UI_ANIMATION_EDITOR + "point_active.png");
     
     panel_ = MakeShared<Panel>();
     add_child(panel_);
@@ -38,26 +38,26 @@ void AnimationEditorUI::on_construct()
     play_controls_ = MakeShared<Panel>();
     play_controls_->set_size(Vector2(90, 30));
 
-    play_reversed_button_ = MakeShared<ButtonImage>(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI_ANIMATION_EDITOR + "play_reversed.png"));
+    play_reversed_button_ = MakeShared<ButtonImage>(Texture::load_png(RESOURCES_TEXTURES_UI_ANIMATION_EDITOR + "play_reversed.png"));
     play_reversed_button_->set_size(Vector2(20, 20));
     play_reversed_button_->set_position(Vector2(5, 5));
     play_reversed_button_->on_click.bind(this, &AnimationEditorUI::play_reversed_pressed);
     play_controls_->add_child(play_reversed_button_);
 
 
-    play_button_ = MakeShared<ButtonImage>(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI_ANIMATION_EDITOR + "play.png"));
+    play_button_ = MakeShared<ButtonImage>(Texture::load_png(RESOURCES_TEXTURES_UI_ANIMATION_EDITOR + "play.png"));
     play_button_->set_size(Vector2(20, 20));
     play_button_->set_position(Vector2(25, 5));
     play_button_->on_click.bind(this, &AnimationEditorUI::play_pressed);
     play_controls_->add_child(play_button_);
 
-    pause_button_ = MakeShared<ButtonImage>(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI_ANIMATION_EDITOR + "pause.png"));
+    pause_button_ = MakeShared<ButtonImage>(Texture::load_png(RESOURCES_TEXTURES_UI_ANIMATION_EDITOR + "pause.png"));
     pause_button_->set_size(Vector2(20, 20));
     pause_button_->set_position(Vector2(45, 5));
     pause_button_->on_click.bind(this, &AnimationEditorUI::pause_pressed);
     play_controls_->add_child(pause_button_);
 
-    stop_button_ = MakeShared<ButtonImage>(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI_ANIMATION_EDITOR + "stop.png"));
+    stop_button_ = MakeShared<ButtonImage>(Texture::load_png(RESOURCES_TEXTURES_UI_ANIMATION_EDITOR + "stop.png"));
     stop_button_->set_size(Vector2(20, 20));
     stop_button_->set_position(Vector2(65, 5));
     stop_button_->on_click.bind(this, &AnimationEditorUI::stop_pressed);
@@ -79,21 +79,21 @@ void AnimationEditorUI::on_construct()
     insert_linear_segment_->set_position(Vector2(5, 5));
     insert_linear_segment_->set_size(Vector2(35, 25));
     insert_linear_segment_->on_click.bind(this, &AnimationEditorUI::add_linear_segment);
-    insert_linear_segment_->set_image_texture(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI_ANIMATION_EDITOR + "add_linear.png"));
+    insert_linear_segment_->set_image_texture(Texture::load_png(RESOURCES_TEXTURES_UI_ANIMATION_EDITOR + "add_linear.png"));
     point_controls_->add_child(insert_linear_segment_);
 
     Shared<ButtonImagePanel> insert_sinusoid_segment_ = MakeShared<ButtonImagePanel>();
     insert_sinusoid_segment_->set_position(Vector2(45, 5));
     insert_sinusoid_segment_->set_size(Vector2(35, 25));
     insert_sinusoid_segment_->on_click.bind(this, &AnimationEditorUI::add_sinusoid_segment);
-    insert_sinusoid_segment_->set_image_texture(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI_ANIMATION_EDITOR + "add_sinusoid.png"));
+    insert_sinusoid_segment_->set_image_texture(Texture::load_png(RESOURCES_TEXTURES_UI_ANIMATION_EDITOR + "add_sinusoid.png"));
     point_controls_->add_child(insert_sinusoid_segment_);
 
     Shared<ButtonImagePanel> remove_point_ = MakeShared<ButtonImagePanel>();
     remove_point_->set_size(Vector2(25, 25));
     remove_point_->set_position(Vector2(150 - remove_point_->get_size().x - 5, 5));
     remove_point_->on_click.bind(this, &AnimationEditorUI::remove_point_clicked);
-    remove_point_->set_image_texture(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI_ANIMATION_EDITOR + "remove.png"));
+    remove_point_->set_image_texture(Texture::load_png(RESOURCES_TEXTURES_UI_ANIMATION_EDITOR + "remove.png"));
     point_controls_->add_child(remove_point_);
 
     point_time_input_label_ = MakeShared<TextBlock>("Time");
@@ -123,14 +123,14 @@ void AnimationEditorUI::on_construct()
     use_linear_segment_->set_position(Vector2(5, 5));
     use_linear_segment_->set_size(Vector2(35, 25));
     use_linear_segment_->on_click.bind(this, &AnimationEditorUI::use_linear_segment);
-    use_linear_segment_->set_image_texture(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI_ANIMATION_EDITOR + "linear.png"));
+    use_linear_segment_->set_image_texture(Texture::load_png(RESOURCES_TEXTURES_UI_ANIMATION_EDITOR + "linear.png"));
     segment_controls_->add_child(use_linear_segment_);
 
     Shared<ButtonImagePanel> use_sinusoid_segment_ = MakeShared<ButtonImagePanel>();
     use_sinusoid_segment_->set_position(Vector2(45, 5));
     use_sinusoid_segment_->set_size(Vector2(35, 25));
     use_sinusoid_segment_->on_click.bind(this, &AnimationEditorUI::use_sinusoid_segment);
-    use_sinusoid_segment_->set_image_texture(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI_ANIMATION_EDITOR + "sinusoid.png"));
+    use_sinusoid_segment_->set_image_texture(Texture::load_png(RESOURCES_TEXTURES_UI_ANIMATION_EDITOR + "sinusoid.png"));
     segment_controls_->add_child(use_sinusoid_segment_);
 }
 
@@ -279,7 +279,7 @@ void AnimationEditorUI::add_curve(uint id)
     auto& points = curve->get_points();
     auto& segments = curve->get_segments();
 
-    curve_data.remove_button = MakeShared<ButtonImagePanel>(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI_ANIMATION_EDITOR + "remove_small.png"));
+    curve_data.remove_button = MakeShared<ButtonImagePanel>(Texture::load_png(RESOURCES_TEXTURES_UI_ANIMATION_EDITOR + "remove_small.png"));
     curve_data.remove_button->set_size(Vector2(15, 15));
     curve_data.remove_button->set_position(Vector2(5, curve_start + (curve_height + 5) * id + (curve_height - curve_data.remove_button->get_size().y) / 2));
     panel_->add_child(curve_data.remove_button);
@@ -317,7 +317,7 @@ void AnimationEditorUI::add_curve(uint id)
     
     for (uint j = 0; j < points.length(); j++)
     {
-        auto curve_point = MakeShared<ButtonImage>(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI_ANIMATION_EDITOR + "point.png"));
+        auto curve_point = MakeShared<ButtonImage>(Texture::load_png(RESOURCES_TEXTURES_UI_ANIMATION_EDITOR + "point.png"));
         curve_point->set_size(Vector2(5, 5));
         curve_point->set_z(0.003f);
         curve_point->on_click.bind(this, &AnimationEditorUI::point_selected);

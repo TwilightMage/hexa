@@ -5,14 +5,14 @@
 #include "Engine/Pointers.h"
 
 class Texture;
-class Mesh;
+class StaticMesh;
 
 class EXPORT WorldChunkMesh
 {
 public:
     struct Domain
     {
-        Shared<Mesh> mesh;
+        Shared<StaticMesh> mesh;
         Shared<Texture> texture;
     };
 

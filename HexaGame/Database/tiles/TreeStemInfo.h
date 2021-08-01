@@ -10,16 +10,16 @@ public:
         const Name& key,
         const Set<Name>& tags,
         float hardness,
-        const Shared<Mesh>& mesh,
+        const Shared<StaticMesh>& mesh,
         const Shared<Texture>& texture,
         const Shared<Material3D>& material,
-        const Shared<Mesh>& roots_mesh,
+        const Shared<StaticMesh>& roots_mesh,
         const Shared<Texture>& roots_texture,
-        const Shared<Mesh>& krone_mesh,
+        const Shared<StaticMesh>& krone_mesh,
         const Shared<Texture>& krone_texture,
-        const Shared<Mesh>& branch_mesh,
+        const Shared<StaticMesh>& branch_mesh,
         const Shared<Texture>& branch_texture,
-        const Shared<Mesh>& branch_krone_mesh,
+        const Shared<StaticMesh>& branch_krone_mesh,
         const Shared<Texture>& branch_krone_texture,
         const Name& log_item_name
         )
@@ -41,13 +41,13 @@ public:
     void on_tile_destroyed(const TileIndex& index, const Shared<ComplexTile>& destroyed_tile, const Shared<HexaWorld>& world) const override;
     void neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, const Shared<const TileInfo>& new_neighbor) const override;
 
-    Shared<Mesh> roots_mesh;
+    Shared<StaticMesh> roots_mesh;
     Shared<Texture> roots_texture;
-    Shared<Mesh> krone_mesh;
+    Shared<StaticMesh> krone_mesh;
     Shared<Texture> krone_texture;
-    Shared<Mesh> branch_mesh;
+    Shared<StaticMesh> branch_mesh;
     Shared<Texture> branch_texture;
-    Shared<Mesh> branch_krone_mesh;
+    Shared<StaticMesh> branch_krone_mesh;
     Shared<Texture> branch_krone_texture;
     Name log_item_name;
 };

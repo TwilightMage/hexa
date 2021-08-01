@@ -35,5 +35,5 @@ private:
         TileSide::Wall & ~(TileSide::Front | TileSide::FrontRight) | TileSide::Down | TileSide::Up
     };
 
-    List<Shared<Entity>> child_domains_;
+    Shared<MeshComponent> mesh_component_;
 };

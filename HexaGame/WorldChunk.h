@@ -7,6 +7,7 @@
 #include "TileType.h"
 #include "WorldChunkDataState.h"
 #include "Engine/Entity.h"
+#include "Engine/SimpleMap.h"
 
 class NavConnection;
 class NavNode;

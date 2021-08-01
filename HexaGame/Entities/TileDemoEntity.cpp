@@ -1,8 +1,7 @@
 ﻿#include "TileDemoEntity.h"
 
-
-#include "TileDemoDomainEntity.h"
 #include "Engine/GeometryEditor.h"
+#include "Engine/MeshComponent.h"
 #include "Engine/World.h"
 #include "Engine/Physics/ConcaveMeshCollision.h"
 #include "HexaGame/TileIndex.h"
@@ -11,41 +10,32 @@
 TileDemoEntity::TileDemoEntity(const std::array<Shared<const SolidTileInfo>, 6>& tiles)
     : tiles_(tiles)
 {
+    mesh_component_ = create_component<MeshComponent>();
 }
 
 void TileDemoEntity::on_start()
 {
     if (auto world = get_world())
     {
-        std::map<Shared<Texture>, List<Mesh::Vertex>> domains;
+        SimpleMap<Shared<const TileInfo>, StaticMesh::SubMesh> sub_meshes;
         for (uint i = 0; i < 6; i++)
         {
             if (tiles_[i])
             {
-                List<Mesh::Vertex> tile_vertices;
+                List<StaticMesh::Vertex> tile_vertices;
                 List<uint> tile_indices;
         
                 WorldGenerator::generate_tile_mesh(masks[i], tiles_[i], tile_vertices, tile_indices, 0.0f);
-                GeometryEditor::remove_indices(tile_vertices, tile_indices);
                 GeometryEditor::translate(tile_vertices, tile_positions[i].to_vector());
 
-                domains[tiles_[i]->texture] += tile_vertices;
+                sub_meshes[tiles_[i]].add(tile_vertices, tile_indices);
             }
         }
 
-        for (auto& domain : domains)
+        mesh_component_->set_mesh(StaticMesh::construct("tile demo", sub_meshes.get_values(), AutoCollisionMode::Complex));
+        for (uint i = 0; i < sub_meshes.size(); i++)
         {
-            auto domain_mesh = MakeShared<TileDemoDomainEntity>();
-            domain_mesh->set_position(get_position());
-            domain_mesh->set_rotation(get_rotation());
-            domain_mesh->set_scale(get_scale());
-            auto mesh = MakeShared<Mesh>("Tile demo mesh", domain.second);
-            domain_mesh->set_mesh(mesh);
-            domain_mesh->get_material_instance()->set_param_value("texture", domain.first);
-            world->spawn_entity(domain_mesh);
-            domain_mesh->set_collision(MakeShared<ConcaveMeshCollision>(mesh));
-
-            child_domains_.add(domain_mesh);
+            mesh_component_->set_material(sub_meshes.entries[i]->key->material, i);
         }
     }
 }

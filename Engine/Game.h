@@ -1,15 +1,16 @@
 ﻿#pragma once
 
 #include <mutex>
-#include <soloud/soloud.h>
+#include <OGRE/Bites/OgreApplicationContext.h>
+#include <OGRE/Bites/OgreTrays.h>
+#include <OGRE/Bites/OgreWindowEventUtilities.h>
 
-#include "CameraInfo.h"
 #include "EventBus.h"
 #include "GameInfo.h"
 #include "List.h"
 #include "Map.h"
+#include "Module.h"
 #include "Path.h"
-#include "SimpleMap.h"
 #include "Slot.h"
 #include "SoundHandle.h"
 #include "String.h"
@@ -17,16 +18,16 @@
 #include "Vector3.h"
 #include "Version.h"
 
-class Material3D;
+namespace OgreBites {
+    class TrayManager;
+}
+
+class CameraComponent;
 class AudioChannel;
 class Audio;
-class Material;
 class Entity;
-class Mesh;
-class Shader;
-class MaterialUI;
+class StaticMesh;
 class TextBlock;
-class ICamera;
 class Animation;
 class UIInputElement;
 class SystemIO;
@@ -49,15 +50,29 @@ namespace reactphysics3d
     class PhysicsCommon;
 }
 
-class EXPORT Game
+namespace SoLoud
+{
+    class Soloud;
+}
+
+namespace Ogre
+{
+    class RenderWindow;
+    class Root;
+
+    namespace RTShader
+    {
+        class ShaderGenerator;
+    }
+}
+
+class EXPORT Game : public OgreBites::ApplicationContext, public OgreBites::InputListener, OgreBites::WindowEventListener/*, public OgreBites::TrayListener*/, public Module
 {
     friend AudioChannel;
     friend Audio;
     friend SoundHandle;
-    friend Material;
     friend World;
-    friend Shader;
-    friend Mesh;
+    friend StaticMesh;
     friend Texture;
     friend Entity;
     friend UIElement;
@@ -66,14 +81,14 @@ class EXPORT Game
     friend Animation;
     
 public:
-    Game(int argc, char* argv[]);
+    Game(const String& name, int argc, char* argv[]);
     ~Game();
 
     void launch();
 
     static void possess(const Shared<IControllable>& controllable);
     static void focus_ui(const Shared<UIInputElement>& ui_input_reciever);
-    static void use_camera(const Shared<ICamera>& camera);
+    static void use_camera(const Shared<CameraComponent>& camera);
     
     static void open_world(const Shared<World>& world);
     static void close_world();
@@ -96,13 +111,8 @@ public:
 
     static void call_on_main_thread(std::function<void()> func);
 
-    static bool is_app_path_set();
     static const Path& get_app_path();
 
-    static const Shared<Shader>& get_basic_shader();
-    static const Shared<Shader>& get_basic_ui_shader();
-    static const Shared<Material3D>& get_basic_material_3d();
-    static const Shared<MaterialUI>& get_basic_material_ui();
     static const Shared<Texture>& get_white_pixel();
     static const Shared<SpriteFont>& get_default_font();
     static const Shared<AudioChannel>& get_general_channel();
@@ -120,13 +130,12 @@ public:
     static void add_ui(const Shared<UIElement>& ui);
     static float get_ui_scale();
     static Vector3 get_un_projected_mouse();
-    static CameraInfo& get_camera_info();
     static float get_time();
 
     static bool is_loading_stage();
     static bool is_render_stage();
 
-    bool test = false;
+    void on_add_resource_directories(Set<String>& local, Set<String>& global) override;
     
 protected:
     virtual void init_game_info(GameInfo& out_info) = 0;
@@ -137,24 +146,26 @@ protected:
     virtual void start();
     virtual void tick(float delta_time);
     virtual void unloading_stage();
+
+    bool windowClosing(Ogre::RenderWindow* rw) override;
+
+    void setup() override;
     
 private:
-    void setup_window();
-    void prepare();
     void render_loop();
+    
     void cleanup();
 
     void init_game();
 
-    void set_app_path(const Path& new_app_path);
-
-    static void error_callback(int error, const char* description);
-    static void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
-    static void character_callback(GLFWwindow* window, uint codepoint);
-    static void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
-    static void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
-    static void cursor_position_callback(GLFWwindow* window, double x_pos, double y_pos);
-    static void window_size_callback(GLFWwindow* window, int width, int height);
+    bool keyPressed(const OgreBites::KeyboardEvent& evt) override;
+    bool keyReleased(const OgreBites::KeyboardEvent& evt) override;
+    bool textInput(const OgreBites::TextInputEvent& evt) override;
+    bool mousePressed(const OgreBites::MouseButtonEvent& evt) override;
+    bool mouseReleased(const OgreBites::MouseButtonEvent& evt) override;
+    bool axisMoved(const OgreBites::AxisEvent& evt) override;
+    bool mouseMoved(const OgreBites::MouseMotionEvent& evt) override;
+    void windowResized(Ogre::RenderWindow* rw) override;
 
     static Game* instance_;
 
@@ -167,44 +178,36 @@ private:
 
     // Common
     Path app_path_;
-    bool app_path_set_;
     bool has_mouse_pos_;
     Vector2 mouse_pos_;
     Vector2 last_mouse_pos_;
     Vector2 mouse_delta_;
     bool lock_mouse_;
     Vector3 un_projected_mouse_;
-    CameraInfo latest_camera_info_;
     float time_;
+    bool close = false;
     
     // GLFW
     GLFWwindow* window_;
     GLFWcursor* cursor_;
 
     // Assets
-    Map<String, Shared<Shader>> shaders_;
-    Map<String, Shared<Mesh>> meshes_;
+    Map<String, Shared<StaticMesh>> meshes_;
     Map<String, Shared<Texture>> textures_;
     Map<String, Shared<Animation>> animations_;
-    SimpleMap<float, List<Shared<Material>>> materials_;
     Map<String, Shared<Audio>> audios_;
     List<Shared<AudioChannel>> audio_channels_;
     
     // Game
     Version game_version_ = {0, 1, 0};
     float ui_scale_ = 2;
-    Shared<Shader> basic_3d_shader_;
-    Shared<Shader> basic_ui_shader_;
-    Shared<Material3D> basic_material_3d_;
-    Shared<MaterialUI> basic_material_ui_;
     Slot<Texture> white_pixel_;
     Shared<SpriteFont> default_font_;
     Shared<AudioChannel> general_channel_;
     List<Shared<Mod>> mods_;
-    SimpleMap<String, uint> draw_call_counter_;
     
     // Game Play
-    Shared<ICamera> current_camera_;
+    Shared<CameraComponent> current_camera_;
     Shared<IControllable> current_controllable_;
     Shared<UIInputElement> ui_input_element_;
     Shared<World> world_;
@@ -212,6 +215,9 @@ private:
     // Core
     Shared<reactphysics3d::PhysicsCommon> physics_;
     Shared<SoLoud::Soloud> soloud_;
+    Ogre::Root* ogre_;
+    Shared<OgreBites::TrayManager> ogre_ui_;
+    Ogre::RTShader::ShaderGenerator* shader_generator_;
     Shared<UIElement> ui_root_;
     Weak<UIElement> ui_under_mouse_;
     Weak<UIElement> pressed_ui_;

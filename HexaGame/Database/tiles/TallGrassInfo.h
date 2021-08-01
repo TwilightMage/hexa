@@ -9,7 +9,7 @@ public:
         const Name& key,
         const Set<Name>& tags,
         float hardness,
-        const Shared<Mesh>& mesh,
+        const Shared<StaticMesh>& mesh,
         const Shared<Texture>& texture,
         const Shared<Material3D>& material
         )

@@ -172,7 +172,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
   </ItemDefinitionGroup>
@@ -202,7 +202,6 @@
     <ClInclude Include="Entities\ItemDrop.h" />
     <ClInclude Include="Entities\SingleTile.h" />
     <ClInclude Include="Entities\Skybox.h" />
-    <ClInclude Include="Entities\TileDemoDomainEntity.h" />
     <ClInclude Include="HexaEventBus.h" />
     <ClInclude Include="HexaSettings.h" />
     <ClInclude Include="HexaSaveGame.h" />
@@ -266,7 +265,6 @@
     <ClCompile Include="Entities\ItemDrop.cpp" />
     <ClCompile Include="Entities\SingleTile.cpp" />
     <ClCompile Include="Entities\Skybox.cpp" />
-    <ClCompile Include="Entities\TileDemoDomainEntity.cpp" />
     <ClCompile Include="HexaSaveGame.cpp" />
     <ClCompile Include="HexaSettings.cpp" />
     <ClCompile Include="Inventory.cpp" />
@@ -314,36 +312,89 @@
     <Natvis Include="HexaGame.natvis" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="resources\hexagame\fonts\arial.fnt" />
-    <Content Include="resources\hexagame\fonts\arial_0.png" />
-    <Content Include="resources\hexagame\fonts\berkshire_swash.fnt" />
-    <Content Include="resources\hexagame\fonts\berkshire_swash_0.png" />
-    <Content Include="resources\hexagame\fonts\harrington.fnt" />
-    <Content Include="resources\hexagame\fonts\harrington_0.png" />
-    <Content Include="resources\hexagame\meshes\arrow.obj" />
-    <Content Include="resources\hexagame\meshes\hexagon_tile.obj" />
-    <Content Include="resources\hexagame\meshes\items\bricks.obj" />
-    <Content Include="resources\hexagame\meshes\items\pile.obj" />
-    <Content Include="resources\hexagame\meshes\items\shovel.obj" />
-    <Content Include="resources\hexagame\meshes\items\sword.obj" />
-    <Content Include="resources\hexagame\meshes\tiles\grass.obj" />
-    <Content Include="resources\hexagame\shaders\foliage.frag" />
-    <Content Include="resources\hexagame\shaders\foliage.vert" />
-    <Content Include="resources\hexagame\shaders\skybox.frag" />
-    <Content Include="resources\hexagame\shaders\tile_cap.frag" />
-    <Content Include="resources\hexagame\textures\arrow.png" />
-    <Content Include="resources\hexagame\textures\axis_arrows.png" />
-    <Content Include="resources\hexagame\textures\tiles\dirt.png" />
-    <Content Include="resources\hexagame\textures\tiles\grass.png" />
-    <Content Include="resources\hexagame\textures\tiles\iron_ore.png" />
-    <Content Include="resources\hexagame\textures\tiles\ore_preset.png" />
-    <Content Include="resources\hexagame\textures\tiles\sand.png" />
-    <Content Include="resources\hexagame\textures\tiles\stone.png" />
-    <Content Include="resources\hexagame\textures\tiles\stone_bricks.png" />
-    <Content Include="resources\hexagame\textures\ui\dragon.png" />
-    <Content Include="resources\hexagame\textures\ui\frame.png" />
-    <Content Include="resources\hexagame\textures\ui\panel.png" />
     <ClInclude Include="TileType.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="resources\animations\slime_step.anim" />
+    <Content Include="resources\audio\ambient\drop.ogg" />
+    <Content Include="resources\audio\ambient\wind.ogg" />
+    <Content Include="resources\audio\effects\wood_chop.ogg" />
+    <Content Include="resources\audio\music\plains.ogg" />
+    <Content Include="resources\fonts\arial.fnt" />
+    <Content Include="resources\fonts\arial_0.png" />
+    <Content Include="resources\fonts\berkshire_swash.fnt" />
+    <Content Include="resources\fonts\berkshire_swash_0.png" />
+    <Content Include="resources\fonts\courgette.fnt" />
+    <Content Include="resources\fonts\courgette_0.png" />
+    <Content Include="resources\fonts\harrington.fnt" />
+    <Content Include="resources\fonts\harrington_0.png" />
+    <Content Include="resources\materials\tile.material" />
+    <Content Include="resources\materials\tile.program" />
+    <Content Include="resources\meshes\arrow.obj" />
+    <Content Include="resources\meshes\characters\slime.obj" />
+    <Content Include="resources\meshes\hexagon_tile.obj" />
+    <Content Include="resources\meshes\items\axe.obj" />
+    <Content Include="resources\meshes\items\bricks.obj" />
+    <Content Include="resources\meshes\items\log.obj" />
+    <Content Include="resources\meshes\items\pickaxe.obj" />
+    <Content Include="resources\meshes\items\pile.obj" />
+    <Content Include="resources\meshes\items\shovel.obj" />
+    <Content Include="resources\meshes\items\sword.obj" />
+    <Content Include="resources\meshes\tiles\bush.obj" />
+    <Content Include="resources\meshes\tiles\tall_grass.obj" />
+    <Content Include="resources\meshes\tiles\tree_branch.obj" />
+    <Content Include="resources\meshes\tiles\tree_branch_krone.obj" />
+    <Content Include="resources\meshes\tiles\tree_krone.obj" />
+    <Content Include="resources\meshes\tiles\tree_root.obj" />
+    <Content Include="resources\meshes\tiles\tree_stem.obj" />
+    <Content Include="resources\shaders\foliage.frag" />
+    <Content Include="resources\shaders\foliage.vert" />
+    <Content Include="resources\shaders\skybox.frag" />
+    <Content Include="resources\shaders\tile.frag" />
+    <Content Include="resources\shaders\tile.vert" />
+    <Content Include="resources\shaders\tile_cap.frag" />
+    <Content Include="resources\textures\actions\sickle.png" />
+    <Content Include="resources\textures\arrow.png" />
+    <Content Include="resources\textures\axis_arrows.png" />
+    <Content Include="resources\textures\characters\slime.png" />
+    <Content Include="resources\textures\complex_tiles\ash_stem.png" />
+    <Content Include="resources\textures\complex_tiles\ash_stem_branch.png" />
+    <Content Include="resources\textures\complex_tiles\ash_stem_branch_krone.png" />
+    <Content Include="resources\textures\complex_tiles\ash_stem_krone.png" />
+    <Content Include="resources\textures\complex_tiles\ash_stem_root.png" />
+    <Content Include="resources\textures\complex_tiles\blue_roses.png" />
+    <Content Include="resources\textures\complex_tiles\bush.png" />
+    <Content Include="resources\textures\complex_tiles\chamomile.png" />
+    <Content Include="resources\textures\complex_tiles\red_roses.png" />
+    <Content Include="resources\textures\complex_tiles\tall_grass.png" />
+    <Content Include="resources\textures\icon.png" />
+    <Content Include="resources\textures\items\ash_log.png" />
+    <Content Include="resources\textures\items\ash_log_mesh.png" />
+    <Content Include="resources\textures\items\dirt.png" />
+    <Content Include="resources\textures\items\dirt_mesh.png" />
+    <Content Include="resources\textures\items\iron_axe.png" />
+    <Content Include="resources\textures\items\iron_axe_mesh.png" />
+    <Content Include="resources\textures\items\iron_shovel.png" />
+    <Content Include="resources\textures\items\iron_shovel_mesh.png" />
+    <Content Include="resources\textures\items\iron_sword.png" />
+    <Content Include="resources\textures\items\iron_sword_mesh.png" />
+    <Content Include="resources\textures\items\stone_bricks.png" />
+    <Content Include="resources\textures\items\stone_bricks_mesh.png" />
+    <Content Include="resources\textures\space.png" />
+    <Content Include="resources\textures\tiles\dirt.png" />
+    <Content Include="resources\textures\tiles\grass.png" />
+    <Content Include="resources\textures\tiles\iron_ore.png" />
+    <Content Include="resources\textures\tiles\ore_preset.png" />
+    <Content Include="resources\textures\tiles\sand.png" />
+    <Content Include="resources\textures\tiles\stone.png" />
+    <Content Include="resources\textures\tiles\stone_bricks.png" />
+    <Content Include="resources\textures\ui\cross.png" />
+    <Content Include="resources\textures\ui\cursor.png" />
+    <Content Include="resources\textures\ui\dragon.png" />
+    <Content Include="resources\textures\ui\frame.png" />
+    <Content Include="resources\textures\ui\rarity_marker.png" />
+    <Content Include="resources\textures\ui\toolbar.png" />
+    <Content Include="resources\textures\ui\toolbar_selection.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

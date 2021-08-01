@@ -267,7 +267,6 @@ void UIElement::color_updated(const Color& color)
 void UIElement::set_size_internal(const Vector2& vec2_size)
 {
     size_ = vec2_size;
-    size_.z = 1.0f;
 
     update_matrix();
 }

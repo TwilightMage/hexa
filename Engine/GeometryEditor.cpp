@@ -9,13 +9,13 @@ Vector3 GeometryEditor::compute_normal(const Vector3& a, const Vector3& b, const
     return (c - a).cross_product(b - a).normalized();
 }
 
-void GeometryEditor::optimize(List<Mesh::Vertex>& vertices, List<uint>& indices)
+void GeometryEditor::optimize(List<StaticMesh::Vertex>& vertices, List<uint>& indices)
 {
     for (uint i = 0; i < vertices.length() - 1; i++)
     {
         for (uint j = i + 1; j < vertices.length(); j++)
         {
-            if (memcmp(&vertices[i], &vertices[j], sizeof(Mesh::Vertex)) == 0)
+            if (memcmp(&vertices[i], &vertices[j], sizeof(StaticMesh::Vertex)) == 0)
             {
                 for (uint k = 0; k < indices.length(); k++)
                 {
@@ -31,7 +31,7 @@ void GeometryEditor::optimize(List<Mesh::Vertex>& vertices, List<uint>& indices)
     }
 }
 
-void GeometryEditor::optimize_collision(List<Mesh::Vertex>& vertices, List<uint>& indices)
+void GeometryEditor::optimize_collision(List<StaticMesh::Vertex>& vertices, List<uint>& indices)
 {
     for (uint i = 0; i < vertices.length() - 1; i++)
     {
@@ -57,7 +57,7 @@ void GeometryEditor::optimize_collision(List<Mesh::Vertex>& vertices, List<uint>
     }
 }
 
-void GeometryEditor::remove_indices(List<Mesh::Vertex>& vertices, List<uint>& indices)
+void GeometryEditor::remove_indices(List<StaticMesh::Vertex>& vertices, List<uint>& indices)
 {
     /*for (uint i = 0; i < indices.length() - 1; i++)
     {
@@ -72,7 +72,7 @@ void GeometryEditor::remove_indices(List<Mesh::Vertex>& vertices, List<uint>& in
         }
     }*/
 
-    List<Mesh::Vertex> result;
+    List<StaticMesh::Vertex> result;
     for (auto index : indices)
     {
         result.add(vertices[index]);
@@ -82,7 +82,7 @@ void GeometryEditor::remove_indices(List<Mesh::Vertex>& vertices, List<uint>& in
     indices = List<uint>::generate(indices.length(), [](uint i)->uint{ return i; });
 }
 
-void GeometryEditor::invert_vertices(List<Mesh::Vertex>& vertices)
+void GeometryEditor::invert_vertices(List<StaticMesh::Vertex>& vertices)
 {
     for (uint i = 0; i < vertices.length(); i += 3)
     {
@@ -101,7 +101,7 @@ void GeometryEditor::invert_indices(List<uint>& indices)
     }
 }
 
-void GeometryEditor::mirror_x(List<Mesh::Vertex>& vertices)
+void GeometryEditor::mirror_x(List<StaticMesh::Vertex>& vertices)
 {
     for (auto& vertex : vertices)
     {
@@ -110,7 +110,7 @@ void GeometryEditor::mirror_x(List<Mesh::Vertex>& vertices)
     }
 }
 
-void GeometryEditor::mirror_y(List<Mesh::Vertex>& vertices)
+void GeometryEditor::mirror_y(List<StaticMesh::Vertex>& vertices)
 {
     for (auto& vertex : vertices)
     {
@@ -119,7 +119,7 @@ void GeometryEditor::mirror_y(List<Mesh::Vertex>& vertices)
     }
 }
 
-void GeometryEditor::mirror_z(List<Mesh::Vertex>& vertices)
+void GeometryEditor::mirror_z(List<StaticMesh::Vertex>& vertices)
 {
     for (auto& vertex : vertices)
     {
@@ -128,7 +128,7 @@ void GeometryEditor::mirror_z(List<Mesh::Vertex>& vertices)
     }
 }
 
-void GeometryEditor::translate(List<Mesh::Vertex>& vertices, const Vector3& offset)
+void GeometryEditor::translate(List<StaticMesh::Vertex>& vertices, const Vector3& offset)
 {
     for (auto& vertex : vertices)
     {
@@ -136,7 +136,7 @@ void GeometryEditor::translate(List<Mesh::Vertex>& vertices, const Vector3& offs
     }
 }
 
-void GeometryEditor::rotate(List<Mesh::Vertex>& vertices, const Quaternion& quat)
+void GeometryEditor::rotate(List<StaticMesh::Vertex>& vertices, const Quaternion& quat)
 {
     for (auto& vertex : vertices)
     {
@@ -145,7 +145,7 @@ void GeometryEditor::rotate(List<Mesh::Vertex>& vertices, const Quaternion& quat
     }
 }
 
-void GeometryEditor::scale(List<Mesh::Vertex>& vertices, const Vector3& factor)
+void GeometryEditor::scale(List<StaticMesh::Vertex>& vertices, const Vector3& factor)
 {
     for (auto& vertex : vertices)
     {
@@ -153,7 +153,7 @@ void GeometryEditor::scale(List<Mesh::Vertex>& vertices, const Vector3& factor)
     }
 }
 
-void GeometryEditor::move_to_center(List<Mesh::Vertex>& vertices)
+void GeometryEditor::move_to_center(List<StaticMesh::Vertex>& vertices)
 {
     Vector3 sum;
     for (const auto& vertex : vertices)
@@ -195,7 +195,7 @@ FORCEINLINE float angle(const Vector3& point, const Vector3& front, const Vector
     return Math::unwind_angle(angle);
 }
 
-void GeometryEditor::compute_faces(const List<Mesh::Vertex>& vertices, const List<uint>& indices, List<Face>& out_faces, List<uint>& out_indices)
+void GeometryEditor::compute_faces(const List<StaticMesh::Vertex>& vertices, const List<uint>& indices, List<Face>& out_faces, List<uint>& out_indices)
 {
     out_faces.clear();
     out_indices.clear();
@@ -267,7 +267,7 @@ void GeometryEditor::compute_faces(const List<Mesh::Vertex>& vertices, const Lis
     }
 }
 
-void GeometryEditor::compute_normals(const List<Mesh::Vertex>& vertices, const List<uint>& indices, List<Vector3>& out_normals, bool invert)
+void GeometryEditor::compute_normals(const List<StaticMesh::Vertex>& vertices, const List<uint>& indices, List<Vector3>& out_normals, bool invert)
 {
     out_normals.clear();
 
@@ -279,7 +279,7 @@ void GeometryEditor::compute_normals(const List<Mesh::Vertex>& vertices, const L
     }
 }
 
-void GeometryEditor::compute_normals(List<Mesh::Vertex>& vertices, const List<uint>& indices, bool invert)
+void GeometryEditor::compute_normals(List<StaticMesh::Vertex>& vertices, const List<uint>& indices, bool invert)
 {
     List<List<Vector3>> vertex_normals = List<List<Vector3>>(vertices.length());
     
@@ -304,39 +304,66 @@ void GeometryEditor::compute_normals(List<Mesh::Vertex>& vertices, const List<ui
         {
             normal_sum += norm;
         }
-        vertices[i].norm = (normal_sum / vertex_normals.length()).normalized();
+        vertices[index].norm = (normal_sum / vertex_normals.length()).normalized();
     }
 }
 
-Shared<Mesh> GeometryEditor::get_unit_cube()
+Shared<StaticMesh> GeometryEditor::get_unit_cube()
 {
-    static Shared<Mesh> result;
+    static Shared<StaticMesh> result;
     if (result == nullptr)
     {
-        List<Mesh::Vertex> vertices = {
-            {{0, 0, 0}, {0.5f, 0.5f}, Vector3::one()},
-            {{1, 0, 0}, {0.5f, 0.5f}, Vector3::one()},
-            {{0, 1, 0}, {0.5f, 0.5f}, Vector3::one()},
-            {{1, 1, 0}, {0.5f, 0.5f}, Vector3::one()},
-            {{0, 0, 1}, {0.5f, 0.5f}, Vector3::one()},
-            {{1, 0, 1}, {0.5f, 0.5f}, Vector3::one()},
-            {{0, 1, 1}, {0.5f, 0.5f}, Vector3::one()},
-            {{1, 1, 1}, {0.5f, 0.5f}, Vector3::one()}
+        List<StaticMesh::Vertex> vertices = {
+            // down
+            {{0, 0, 0}, {0, 1}, -Vector3::up()},
+            {{1, 0, 0}, {1, 1}, -Vector3::up()},
+            {{1, 0, 1}, {1, 0}, -Vector3::up()},
+            {{0, 0, 1}, {0, 0}, -Vector3::up()},
+
+            // left
+            {{0, 0, 0}, {0, 1}, -Vector3::right()},
+            {{0, 0, 1}, {1, 1}, -Vector3::right()},
+            {{0, 1, 1}, {1, 0}, -Vector3::right()},
+            {{0, 1, 0}, {0, 0}, -Vector3::right()},
+
+            // back
+            {{0, 0, 1}, {0, 1}, -Vector3::front()},
+            {{1, 0, 1}, {1, 1}, -Vector3::front()},
+            {{1, 1, 1}, {1, 0}, -Vector3::front()},
+            {{0, 1, 1}, {0, 0}, -Vector3::front()},
+
+            // up
+            {{0, 1, 1}, {0, 1}, Vector3::up()},
+            {{1, 1, 1}, {1, 1}, Vector3::up()},
+            {{1, 1, 0}, {1, 0}, Vector3::up()},
+            {{0, 1, 0}, {0, 0}, Vector3::up()},
+
+            // right
+            {{1, 0, 1}, {0, 1}, Vector3::right()},
+            {{1, 0, 0}, {1, 1}, Vector3::right()},
+            {{1, 1, 0}, {1, 0}, Vector3::right()},
+            {{1, 1, 1}, {0, 0}, Vector3::right()},
+
+            // front
+            {{1, 0, 0}, {0, 1}, Vector3::front()},
+            {{0, 0, 0}, {1, 1}, Vector3::front()},
+            {{0, 1, 0}, {1, 0}, Vector3::front()},
+            {{1, 1, 0}, {0, 0}, Vector3::front()},
         };
 
         List<uint> indices = {
-            0, 2, 1,   3, 1, 2,
-            4, 5, 6,   7, 6, 5,
-            0, 4, 2,   6, 2, 4,
-            1, 3, 5,   7, 5, 3,
-            1, 5, 0,   4, 0, 5,
-            2, 6, 3,   7, 3, 6
+            0,  1,  2,   0,  2,  3,
+            4,  5,  6,   4,  6,  7,
+            8,  9,  10,  8,  10, 11,
+            12, 13, 14,  12, 14, 15,
+            16, 17, 18,  16, 18, 19,
+            20, 21, 22,  20, 22, 23,
         };
 
         translate(vertices, Vector3::one() * -0.5f);
-        remove_indices(vertices, indices);
+        scale(vertices, Vector3(100));
         
-        result = MakeShared<Mesh>("Unit Cube", vertices, indices);
+        result = StaticMesh::construct("Unit Cube", { StaticMesh::SubMesh(vertices, indices) });
     }
     
     return result;

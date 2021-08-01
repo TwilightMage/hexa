@@ -11,7 +11,6 @@
 #include "Engine/Audio.h"
 #include "Engine/GeometryEditor.h"
 #include "Engine/Logger.h"
-#include "Engine/Material.h"
 #include "Engine/AnimationEditor/AnimationEditorWorld.h"
 #include "Entities/Characters/Slime.h"
 #include "ui/TileDatabaseViewer.h"
@@ -19,7 +18,7 @@
 #include "Worlds/TilePresentationWorld.h"
 
 HexaGame::HexaGame(int argc, char* argv[])
-    : Game(argc, argv)
+    : Game("Hexa", argc, argv)
 {
 }
 
@@ -31,7 +30,7 @@ void HexaGame::register_world_generator(const Shared<WorldGeneratorInfo>& genera
 void HexaGame::init_game_info(GameInfo& outInfo)
 {
     outInfo.title = "Hexa";
-    outInfo.icon = RESOURCES_HEXA_TEXTURES + "icon.png";
+    outInfo.icon = RESOURCES_TEXTURES + "icon.png";
 }
 
 Shared<Settings> HexaGame::generate_settings_object()
@@ -63,8 +62,8 @@ void HexaGame::start()
     }
     else
     {
-        open_game_world();
-        //open_tile_test_world();
+        //open_game_world();
+        open_tile_test_world();
     }
 }
 
@@ -72,18 +71,18 @@ void HexaGame::tick(float delta_time)
 {
     if (auto world = get_world())
     {
-        foliage_material->set_param_value("time", world->get_time());
-        foliage_material->set_param_value("ambient_light", world->ambient_color.to_vector3() * world->ambient_intensity);
-        foliage_material->set_param_value("sun_light", world->sun_color.to_vector3() * world->sun_intensity);
-        foliage_material->set_param_value("sun_dir", -world->sun_angle.forward());
+        //foliage_material->set_param_value("time", world->get_time());
+        //foliage_material->set_param_value("ambient_light", world->ambient_color.to_vector3() * world->ambient_intensity);
+        //foliage_material->set_param_value("sun_light", world->sun_color.to_vector3() * world->sun_intensity);
+        //foliage_material->set_param_value("sun_dir", -world->sun_angle.forward());
     }
 }
 
 void HexaGame::loading_stage()
 {
-    set_cursor_texture(Texture::load_png(RESOURCES_HEXA_TEXTURES_UI + "cursor.png"), 0, 0);
+    set_cursor_texture(Texture::load_png(RESOURCES_TEXTURES_UI + "cursor.png"), 0, 0);
     
-    tile_cap_shader = Shader::compile("tile cap", {
+    /*tile_cap_shader = Shader::compile("tile cap", {
         RESOURCES_ENGINE_SHADERS + "basic_3d.vert",
         RESOURCES_HEXA_SHADERS + "tile_cap.frag"
     });
@@ -110,19 +109,19 @@ void HexaGame::loading_stage()
 
     foliage_material = MakeShared<Material3D>();
     foliage_material->init(foliage_shader, 0);
-    foliage_material->cast_shadows = true;
+    foliage_material->cast_shadows = true;*/
 
-    plains_music = Audio::load(RESOURCES_HEXA_AUDIO_MUSIC + "plains.ogg");
+    plains_music = Audio::load(RESOURCES_AUDIO_MUSIC + "plains.ogg");
     plains_music->set_looped(true);
 
-    wood_chop_sound = Audio::load(RESOURCES_HEXA_AUDIO_EFFECTS + "wood_chop.ogg");
+    wood_chop_sound = Audio::load(RESOURCES_AUDIO_EFFECTS + "wood_chop.ogg");
     wood_chop_sound->set_default_volume(2.0f);
 
-    wind_sound = Audio::load(RESOURCES_HEXA_AUDIO_AMBIENT + "wind.ogg");
+    wind_sound = Audio::load(RESOURCES_AUDIO_AMBIENT + "wind.ogg");
     wind_sound->set_looped(true);
     wind_sound->set_default_volume(0.3f);
     
-    drop_sound = Audio::load(RESOURCES_HEXA_AUDIO_AMBIENT + "drop.ogg");
+    drop_sound = Audio::load(RESOURCES_AUDIO_AMBIENT + "drop.ogg");
     drop_sound->set_default_volume(0.5f);
 
     music_channel_ = AudioChannel::create(get_general_channel());

@@ -1,8 +1,13 @@
 #pragma once
 
 #pragma warning( disable : 4251 )
+#pragma warning( disable : 4193 )
+#pragma warning( disable : 4267 )
+#pragma warning( disable : 4275 )
 
 // ------------------------ Defines ------------------------
+#define STRINGIFY(a) #a
+
 // Platform definitions
 #define PLATFORM_WINDOWS 0
 
@@ -46,13 +51,30 @@
 
 
 // ------------------------- Libs --------------------------
-//#pragma comment(lib, "vulkan-1.lib")
+#define ADD_LIB(name) __pragma(comment(lib, name + ".lib"))
+#if DEBUG
+#	define ADD_LIB_D(name) __pragma(comment(lib, name + "_d.lib"))
+#else
+#	define ADD_LIB_D(name) __pragma(comment(lib, name + ".lib"))
+#endif
+
 #pragma comment(lib, "glfw3.lib")
 #pragma comment(lib, "glfw3_mt.lib")
 #pragma comment(lib, "glfw3dll.lib")
 #pragma comment(lib, "opengl32.lib")
 #pragma comment(lib, "reactphysics3d.lib")
 #pragma comment(lib, "soloud.lib")
+#if DEBUG
+#	pragma comment(lib, "OgreMain_d.lib")
+#	pragma comment(lib, "OgreBites_d.lib")
+#	pragma comment(lib, "OgreOverlay_d.lib")
+#	pragma comment(lib, "OgreRTShaderSystem_d.lib")
+#else
+#	pragma comment(lib, "OgreMain.lib")
+#	pragma comment(lib, "OgreBites.lib")
+#	pragma comment(lib, "OgreOverlay.lib")
+#	pragma comment(lib, "OgreRTShaderSystem.lib")
+#endif
 
 // Platform-specific libs
 #if PLATFORM_WINDOWS

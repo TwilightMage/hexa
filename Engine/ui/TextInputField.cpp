@@ -1,8 +1,5 @@
 ﻿#include "TextInputField.h"
 
-#define GLFW_INCLUDE_NONE
-#include <GLFW/glfw3.h>
-
 #include "Image.h"
 #include "Panel.h"
 #include "TextBlock.h"
@@ -19,7 +16,7 @@ TextInputField::TextInputField()
 }
 
 TextInputField::TextInputField(uint max_length)
-    : texture_(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI + "input_panel.png"))
+    : texture_(Texture::load_png(RESOURCES_TEXTURES_UI + "input_panel.png"))
     , state_(STATE_UNFOCUSED)
     , max_length_(max_length)
 {
@@ -43,7 +40,7 @@ void TextInputField::on_unfocus()
 
 void TextInputField::key_down(int key)
 {
-    if (key == GLFW_KEY_BACKSPACE)
+    /*if (key == GLFW_KEY_BACKSPACE)
     {
         if (caret_position_ > 0)
         {
@@ -98,7 +95,7 @@ void TextInputField::key_down(int key)
     else if (key == GLFW_KEY_ENTER)
     {
         Game::focus_ui(nullptr);
-    }
+    }*/
 }
 
 void TextInputField::key_hold(int key)

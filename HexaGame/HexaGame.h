@@ -5,7 +5,6 @@
 #include "Engine/AudioChannel.h"
 #include "Engine/Database.h"
 #include "Engine/Game.h"
-#include "Engine/Material3D.h"
 #include "HexaGame/Database/items/ItemInfo.h"
 
 class DefaultWorldGenerator;
@@ -21,10 +20,6 @@ public:
     inline const static Shared<Database<CharacterInfo>> character_database = MakeShared<Database<CharacterInfo>>("Character Database");
 
     static void register_world_generator(const Shared<WorldGeneratorInfo>& generator_info);
-
-    inline static Shared<Shader> tile_cap_shader = nullptr;
-    inline static Shared<Shader> skybox_shader = nullptr;
-    inline static Shared<Shader> foliage_shader = nullptr;
 
     inline static Shared<Material3D> tile_cap_material = nullptr;
     inline static Shared<Material3D> skybox_material = nullptr;

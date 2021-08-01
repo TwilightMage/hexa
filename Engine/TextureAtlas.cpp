@@ -1,7 +1,5 @@
 ﻿#include "TextureAtlas.h"
 
-#include <glad/glad.h>
-
 #include "File.h"
 #include "Game.h"
 #include "ImageEditor.h"
@@ -179,14 +177,14 @@ void TextureAtlas::bind(uint storage_slot) const
 {
     if (Game::is_render_stage())
     {
-        glBindTexture(GL_TEXTURE_2D, gl_texture_binding_);
-        glBindBufferBase(GL_SHADER_STORAGE_BUFFER, storage_slot, gl_mods_storage_binding_);
+        //glBindTexture(GL_TEXTURE_2D, gl_texture_binding_);
+        //glBindBufferBase(GL_SHADER_STORAGE_BUFFER, storage_slot, gl_mods_storage_binding_);
     }
 }
 
 uint TextureAtlas::get_gl_texture_id()
 {
-    return gl_texture_binding_;
+    return 0;//gl_texture_binding_;
 }
 
 Shared<TextureAtlas> TextureAtlas::load_png(const Path& path)
@@ -227,7 +225,7 @@ Shared<TextureAtlas> TextureAtlas::load_png(const Path& path)
 
 void TextureAtlas::generate_buffers()
 {
-    if (gl_texture_binding_ || gl_mods_storage_binding_)
+    /*if (gl_texture_binding_ || gl_mods_storage_binding_)
     {
         print_warning("Texture Atlas", "Attempt to generate buffers while texture buffer is %s and storage buffer is %s", gl_texture_binding_ ? "active" : "inactive", gl_mods_storage_binding_ ? "active" : "inactive");
     }
@@ -247,12 +245,12 @@ void TextureAtlas::generate_buffers()
     glGenBuffers(1, &gl_mods_storage_binding_);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, gl_mods_storage_binding_);
     glBufferData(GL_SHADER_STORAGE_BUFFER, sizeof(UVMod) * cached_uv_mods_.length(), cached_uv_mods_.get_data(), GL_STATIC_DRAW);
-    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+    glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);*/
 }
 
 void TextureAtlas::cleanup()
 {
-    if (gl_texture_binding_)
+    /*if (gl_texture_binding_)
     {
         glDeleteTextures(1, &gl_texture_binding_);
         gl_texture_binding_ = 0;
@@ -262,5 +260,5 @@ void TextureAtlas::cleanup()
     {
         glDeleteBuffers(1, &gl_mods_storage_binding_);
         gl_mods_storage_binding_ = 0;
-    }
+    }*/
 }

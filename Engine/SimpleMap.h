@@ -190,13 +190,25 @@ struct SimpleMap
         return nullptr;
     }
 
-    List<K> get_keys() const
+    List<K> get_keys() const requires std::is_default_constructible<K>::value
     {
         List<K> result;
 
         for (auto& entry : entries)
         {
             result.add(entry->key);
+        }
+
+        return result;
+    }
+
+    List<V> get_values() const requires std::is_default_constructible<V>::value
+    {
+        List<V> result;
+
+        for (auto& entry : entries)
+        {
+            result.add(entry->value);
         }
 
         return result;

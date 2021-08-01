@@ -10,7 +10,7 @@
 
 void Toolbar::on_construct()
 {    
-    auto background = MakeShared<Image>(Texture::load_png(RESOURCES_HEXA_TEXTURES_UI + "toolbar.png"));
+    auto background = MakeShared<Image>(Texture::load_png(RESOURCES_TEXTURES_UI + "toolbar.png"));
     background->set_size(Vector2(373, 40));
     background->set_position(Vector2(1, 1));
     background->set_mouse_detection(false);
@@ -41,7 +41,7 @@ void Toolbar::on_construct()
         add_child(label);
     }
 
-    selection_frame_ = MakeShared<Image>(Texture::load_png(RESOURCES_HEXA_TEXTURES_UI + "toolbar_selection.png"));
+    selection_frame_ = MakeShared<Image>(Texture::load_png(RESOURCES_TEXTURES_UI + "toolbar_selection.png"));
     selection_frame_->set_size(Vector2(42, 42));
     selection_frame_->set_z(KINDA_SMALL_NUMBER);
     selection_frame_->set_mouse_detection(false);

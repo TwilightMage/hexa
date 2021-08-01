@@ -22,9 +22,6 @@ public:
 
     float offset = 0;
 
-protected:
-    bool is_rigid_body() const override { return true; }
-
 private:
     void fixed_tick(const Shared<World>& world);
     void chunk_tile_change(const ChunkIndex& chunk_index, const TileIndex& tile_index);

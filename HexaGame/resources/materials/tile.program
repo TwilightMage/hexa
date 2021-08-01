@@ -1,0 +1,25 @@
+vertex_program Hexa/TileVS glsl
+{
+    source tile.vert
+    profiles glsl330
+    
+    default_params					
+    {
+        param_named_auto mvp worldviewproj_matrix
+        param_named_auto model world_matrix
+    }
+}
+
+fragment_program Hexa/TileFS glsl
+{
+    source tile.frag
+    profiles glsl330
+    
+    default_params
+    {
+        param_named tile_texture int 0
+        param_named_auto ambient_light ambient_light_colour
+        param_named_auto sun_diff light_diffuse_colour 0
+        param_named_auto sun_dir light_direction 0
+    }
+}

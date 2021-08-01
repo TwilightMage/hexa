@@ -52,10 +52,6 @@ public:
     Delegate<const Shared<Character>&, const Shared<WorldPath>&, const Shared<WorldPath>&> on_path_changed;
 
 protected:
-    void generate_components() override;
-
-    void modify_matrix_params(Vector3& position, Quaternion& rotation, Vector3& scale) override;
-
     virtual void modify_path_config(PathConfig& config) const;
 
     AnimationSlot step_animation;
@@ -72,9 +68,6 @@ private:
     void update_target_rotation();
 
     void parent_chunk_changed(const ChunkIndex& chunk, const TileIndex& index);
-
-    Vector3 anim_offset_ = Vector3::zero();
-    Vector3 anim_scale_ = Vector3::one();
     
     TileIndex tile_position_;
     Direction looking_direction_;
@@ -98,54 +91,6 @@ private:
     Shared<AnimatorComponent> animator_;
 
 public:
-    ANIMATED_FIELD(float, scale_x, 1,
-        [this]() -> float{ return anim_scale_.x; },
-        [this](float val) -> void
-        {
-            anim_scale_.x = val;
-            mark_matrix_dirty();
-        }
-    );
-    ANIMATED_FIELD(float, scale_y, 1,
-        [this]() -> float{ return anim_scale_.y; },
-        [this](float val) -> void
-        {
-            anim_scale_.y = val;
-            mark_matrix_dirty();
-        }
-    );
-    ANIMATED_FIELD(float, scale_z, 1,
-        [this]() -> float{ return anim_scale_.z; },
-        [this](float val) -> void
-        {
-            anim_scale_.z = val;
-            mark_matrix_dirty();
-        }
-    );
-    ANIMATED_FIELD(float, offset_x, 0,
-        [this]() -> float{ return anim_offset_.x; },
-        [this](float val) -> void
-        {
-            anim_offset_.x = val;
-            mark_matrix_dirty();
-        }
-    );
-    ANIMATED_FIELD(float, offset_y, 0,
-        [this]() -> float{ return anim_offset_.y; },
-        [this](float val) -> void
-        {
-            anim_offset_.y = val;
-            mark_matrix_dirty();
-        }
-    );
-    ANIMATED_FIELD(float, offset_z, 0,
-        [this]() -> float{ return anim_offset_.z; },
-        [this](float val) -> void
-        {
-            anim_offset_.z = val;
-            mark_matrix_dirty();
-        }
-    );
     ANIMATED_FIELD(float, move_x, 0,
         [this]() -> float{ return move_x; },
         [this](float val) -> void { move_x = val; }

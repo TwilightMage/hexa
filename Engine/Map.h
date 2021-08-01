@@ -135,6 +135,17 @@ public:
         return result;
     }
 
+    List<Value> get_values() const requires std::is_default_constructible<Value>::value
+    {
+        List<Value> result;
+        for (auto& entry : data_)
+        {
+            result.add(entry.value);
+        }
+
+        return result;
+    }
+
     FORCEINLINE uint size() const
     {
         return data_.size();

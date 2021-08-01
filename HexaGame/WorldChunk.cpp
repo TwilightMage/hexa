@@ -214,7 +214,7 @@ void WorldChunk::set_tile(const TileIndex& index, const Shared<const TileInfo>& 
         
             if ((uint)index.z > cap_z)
             {
-                slot.entity->set_visibility(false);
+                //slot.entity->set_visibility(false);
             }
         }
 
@@ -1024,7 +1024,7 @@ void WorldChunk::regenerate_mesh(uint z, bool fill_complex)
     
     if (auto world = world_.lock())
     {
-        std::map<Shared<const SolidTileInfo>, List<Mesh::Vertex>> type_vertices;
+        std::map<Shared<const SolidTileInfo>, List<StaticMesh::Vertex>> type_vertices;
 
         const TileType plane_metadata_front_right = front_right_->plane_metadata[z];
         const TileType plane_metadata_back_left = back_left_->plane_metadata[z];
@@ -1055,7 +1055,7 @@ void WorldChunk::regenerate_mesh(uint z, bool fill_complex)
                             if (side_flags != TileSide::None)
                             {
                                 Vector3 world_pos = index.to_vector();
-                                List<Mesh::Vertex> tile_vertices;
+                                List<StaticMesh::Vertex> tile_vertices;
                                 List<uint> tile_indices;
                                 WorldGenerator::generate_tile_mesh(side_flags, solid_tile, tile_vertices, tile_indices, world_pos.sum_all());
 
@@ -1080,16 +1080,16 @@ void WorldChunk::regenerate_mesh(uint z, bool fill_complex)
 
         for (auto& kvp : type_vertices)
         {
-            auto mesh = MakeShared<Mesh>(String::format("Chunk {%i %i %i} %s", index_.x, index_.y, z, kvp.first->key.to_string().c()), kvp.second);
+            //auto mesh = MakeShared<StaticMesh>(String::format("Chunk {%i %i %i} %s", index_.x, index_.y, z, kvp.first->key.to_string().c()), kvp.second);
             
             auto mesh_entity = MakeShared<ChunkMeshEntity>();
-            mesh_entity->set_mesh(mesh);
-            mesh_entity->get_material_instance()->set_param_value("texture", kvp.first->texture);
-            world->spawn_entity(mesh_entity, index_.to_vector());
+            //mesh_entity->set_mesh(mesh);
+            //mesh_entity->get_material_instance()->set_param_value("texture", kvp.first->texture);
+            //world->spawn_entity(mesh_entity, index_.to_vector());
 
-            mesh_entity->set_collision(MakeShared<ConcaveMeshCollision>(mesh));
+            //mesh_entity->set_collision(MakeShared<ConcaveMeshCollision>(mesh));
 
-            mesh_entity->set_visibility(z < cap_z);
+            //mesh_entity->set_visibility(z < cap_z);
         
             mesh_entities_[z].add(mesh_entity);
         }
@@ -1106,7 +1106,7 @@ void WorldChunk::regenerate_cap_mesh()
     
     if (auto world = world_.lock())
     {
-        List<Mesh::Vertex> cap_vertices;
+        List<StaticMesh::Vertex> cap_vertices;
         for (int x = 0; x < chunk_size; x++)
         {
             for (int y = 0; y < chunk_size; y++)
@@ -1121,7 +1121,7 @@ void WorldChunk::regenerate_cap_mesh()
                     if (!!(~side_flags & TileSide::Up))
                     {
                         Vector3 world_pos = index.to_vector();
-                        List<Mesh::Vertex> tile_vertices;
+                        List<StaticMesh::Vertex> tile_vertices;
                         List<uint> tile_indices;
                         const float sa = world_pos.sum_all();
                         WorldGenerator::generate_tile_mesh(TileSide::Up, tile, tile_vertices, tile_indices, sa);
@@ -1143,14 +1143,14 @@ void WorldChunk::regenerate_cap_mesh()
 
         if (cap_vertices.length() > 0)
         {
-            auto mesh = MakeShared<Mesh>(String::format("Chunk {%i %i %i} cap", index_.x, index_.y, cap_z - 1), cap_vertices);
+            //auto mesh = MakeShared<StaticMesh>(String::format("Chunk {%i %i %i} cap", index_.x, index_.y, cap_z - 1), cap_vertices);
             
             cap_entity_ = MakeShared<ChunkMeshEntity>();
-            cap_entity_->set_material(HexaGame::tile_cap_material);
-            cap_entity_->set_mesh(mesh);
+            //cap_entity_->set_material(HexaGame::tile_cap_material);
+            //cap_entity_->set_mesh(mesh);
             world->spawn_entity(cap_entity_, index_.to_vector());
 
-            cap_entity_->set_collision(MakeShared<ConcaveMeshCollision>(mesh));
+            //cap_entity_->set_collision(MakeShared<ConcaveMeshCollision>(mesh));
         }
     }
 }
@@ -1165,7 +1165,7 @@ void WorldChunk::cap(uint z)
     {
         for (auto& type_entity : mesh_entities_[i])
         {
-            type_entity->set_visibility(i < z);
+            //type_entity->set_visibility(i < z);
         }
     }
 
@@ -1175,7 +1175,7 @@ void WorldChunk::cap(uint z)
 
         for (auto& complex : complex_tiles_)
         {
-            complex->value.entity->set_visibility((uint)complex->key.z <= z);
+            //complex->value.entity->set_visibility((uint)complex->key.z <= z);
         }
     }
 }

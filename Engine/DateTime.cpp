@@ -91,7 +91,7 @@ DateTime DateTime::now()
 	tm* local_time_now = new tm();
 	localtime_s(local_time_now, &time_now);
 
-	return {
+	DateTime result = {
 		local_time_now->tm_year + 1900,
 		local_time_now->tm_mon + 1,
 		local_time_now->tm_mday,
@@ -100,6 +100,8 @@ DateTime DateTime::now()
 		local_time_now->tm_sec,
 		std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now().time_since_epoch()).count() % 1000
 	};
+	delete local_time_now;
+	return result;
 }
 
 TimeInterval DateTime::epoch_time()

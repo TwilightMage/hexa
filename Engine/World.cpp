@@ -1,44 +1,27 @@
 ﻿#include "World.h"
 
+#include <OGRE/Main/OgreRoot.h>
+#include <OGRE/Main/OgreSceneManager.h>
 #include <reactphysics3d/reactphysics3d.h>
 #include <soloud/soloud_wav.h>
 
 #include "Audio.h"
 #include "AudioChannel.h"
+#include "CollisionMaskBits.h"
 #include "Game.h"
 #include "Quaternion.h"
-#include "Material.h"
-#include "performance.h"
 #include "Settings.h"
-#include "HexaGame/TileIndex.h"
+#include "Engine/CollisionMaskBits.h"
 #include "HexaGame/Entities/ItemDrop.h"
 #include "Physics/ConcaveMeshCollision.h"
 #include "Physics/ConvexMeshCollision.h"
 #include "Physics/RaycastCallback.h"
 
-bool World::spawn_entity(const Shared<Entity>& entity, const Vector3& pos, const Quaternion& rot)
+bool World::spawn_entity(const Shared<Entity>& entity, const Transform& transform)
 {
     if (entities_.contains(entity)) return false;
     
-    entity->position_ = pos;
-    entity->rotation_ = rot;
-    spawn_entity_internal(entity);
-    return true;
-}
-
-bool World::spawn_entity(const Shared<Entity>& entity, const Vector3& pos)
-{
-    if (entities_.contains(entity)) return false;
-    entity->position_ = pos;
-    spawn_entity_internal(entity);
-    return true;
-}
-
-bool World::spawn_entity(const Shared<Entity>& entity, const Quaternion& rot)
-{
-    if (entities_.contains(entity)) return false;
-    
-    entity->rotation_ = rot;
+    entity->transform_ = transform;
     spawn_entity_internal(entity);
     return true;
 }
@@ -100,12 +83,28 @@ List<RaycastResult> World::raycast_all(const Vector3& from, const Vector3& to, b
     return callback.results;
 }
 
-void World::start()
+void World::init()
 {
     physics_world_ = Game::instance_->physics_->createPhysicsWorld();
     reactphysics3d::Vector3 gravity(0.0f, 0.0f, -9.81f);
     physics_world_->setGravity(gravity);
-    
+
+    manager_ = Game::instance_->ogre_->createSceneManager();
+
+    //manager_->setSkyBox(true, "packs/skybox", 300, false);
+
+    set_ambient_light(Color::white(), 0.5f);
+
+    directional_light_node_ = manager_->getRootSceneNode()->createChildSceneNode();
+    directional_light_ = manager_->createLight();
+    directional_light_->setType(Ogre::Light::LT_DIRECTIONAL);
+    directional_light_->setDiffuseColour(0, 0, 0);
+    directional_light_->setSpecularColour(0, 0, 0);
+    directional_light_node_->attachObject(directional_light_);
+}
+
+void World::start()
+{   
     on_start();
 }
 
@@ -154,8 +153,6 @@ void World::tick(float delta_time)
     // tick entities
     Set<Shared<Entity>> to_delete;
 
-    auto camera_info = Game::get_camera_info();
-
     if (time_scale_ != 0.0f)
     {
         for (auto& entity : entities_)
@@ -178,12 +175,6 @@ void World::tick(float delta_time)
                         component->on_tick(delta_time);
                     }
                 }
-                if (entity->is_physically_dynamic_ || entity->is_matrix_dirty_)
-                {
-                    entity->cache_matrix();
-                }
-
-                entity->distance_to_camera_ = Vector3::distance(camera_info.position, entity->position_);
             }
         }
     }
@@ -230,6 +221,22 @@ TimerHandle World::delay(float time, std::function<void()> func)
     return handle;
 }
 
+void World::set_ambient_light(const Color& color, float intensity)
+{
+    ambient_color_ = color;
+    ambient_intensity_ = intensity;
+    const auto light_vec = color.to_vector3() * intensity;
+    manager_->setAmbientLight(Ogre::ColourValue(light_vec.x, light_vec.y, light_vec.z, 1.0f));
+}
+
+void World::set_directional_light(const Color& color, float intensity, const Quaternion& rotation)
+{
+    const Vector3 light = color.to_vector3() * intensity;
+    directional_light_node_->setOrientation(rotation.w, rotation.x, rotation.y, rotation.z);
+    directional_light_->setDiffuseColour(light.x, light.y, light.z);
+    directional_light_->setSpecularColour(light.x, light.y, light.z);
+}
+
 void World::on_start()
 {
 }
@@ -250,28 +257,30 @@ void World::close()
     {
         do_destroy(entity);
     }
-
-    ConcaveMeshCollision::data_blocks_.clear();
-    ConvexMeshCollision::data_blocks_.clear();
     
     Game::instance_->physics_->destroyPhysicsWorld(physics_world_);
     physics_world_ = nullptr;
+    
+    Game::instance_->ogre_->destroySceneManager(manager_);
+    manager_ = nullptr;
 }
 
 void World::spawn_entity_internal(const Shared<Entity>& entity)
 {
-    entity->generate_components();
+    const auto& rot = entity->transform_.rotation;
+    entity->scene_node_ = manager_->getRootSceneNode()->createChildSceneNode(cast_object<Ogre::Vector3>(entity->transform_.location), Ogre::Quaternion(rot.w, rot.x, rot.y, rot.z));
+    entity->scene_node_->setScale(cast_object<Ogre::Vector3>(entity->transform_.scale));
     entity->world_ = weak_from_this();
-    if (entity->is_rigid_body())
+    /*if (entity->is_rigid_body())
     {
         entity->rigid_body_ = physics_world_->createRigidBody(
             reactphysics3d::Transform(
-                reactphysics3d::Vector3(entity->position_.x, entity->position_.y, entity->position_.z),
-                reactphysics3d::Quaternion(entity->rotation_.x, entity->rotation_.y, entity->rotation_.z, entity->rotation_.w)
+                cast_object<reactphysics3d::Vector3>(entity->transform_.location),
+                cast_object<reactphysics3d::Quaternion>(entity->transform_.rotation)
             )
         );
         entity->rigid_body_->setUserData(entity.get());
-    }
+    }*/
     entities_.add(entity);
     entity->start();
 }
@@ -280,9 +289,9 @@ void World::do_destroy(const Shared<Entity>& entity)
 {
     entity->on_destroy();
 
-    entity->material_instance_->destroy();
+    manager_->getRootSceneNode()->removeChild(entity->scene_node_);
 
-    if (entity->rigid_body_)
+    /*if (entity->rigid_body_)
     {
         if (entity->collider_)
         {
@@ -292,7 +301,7 @@ void World::do_destroy(const Shared<Entity>& entity)
 
         physics_world_->destroyRigidBody(entity->rigid_body_);
         entity->rigid_body_ = nullptr;
-    }
+    }*/
 
     entity->on_destroyed(entity);
 }

@@ -1,5 +1,6 @@
 ﻿#pragma once
 
+#include "Module.h"
 #include "Path.h"
 #include "Pointers.h"
 #include "Version.h"
@@ -7,11 +8,13 @@
 class Game;
 class EventBus;
 
-class EXPORT Mod
+class EXPORT Mod : public Module
 {
     friend Game;
     
 public:
+    Mod(const Path& root, const String& module_name);
+    
     struct Info
     {
         void ReadFrom(const String& path);
@@ -40,4 +43,4 @@ private:
     HINSTANCE dll_;
 };
 
-#define IMPLEMENT_MOD_ENTRY(ModTypeName, ...) extern "C" Mod EXPORT *get_mod() { return new ModTypeName(__VA_ARGS__); }
+#define IMPLEMENT_MOD_ENTRY(ModTypeName) extern "C" Mod EXPORT *get_mod(const Path& root) { return new ModTypeName(root); }

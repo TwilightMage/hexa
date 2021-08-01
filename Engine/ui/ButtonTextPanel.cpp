@@ -13,7 +13,7 @@ ButtonTextPanel::ButtonTextPanel()
 }
 
 ButtonTextPanel::ButtonTextPanel(const String& text)
-    : texture_(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI + "button_panel.png"))
+    : texture_(Texture::load_png(RESOURCES_TEXTURES_UI + "button_panel.png"))
     , text_(text)
 {
 }

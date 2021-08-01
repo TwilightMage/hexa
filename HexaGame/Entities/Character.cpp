@@ -13,6 +13,8 @@ Character::Character()
     , inventory_(MakeShared<CharacterInventory>(initial_inventory_size))
 {
     tick_enabled = true;
+
+    animator_ = create_component<AnimatorComponent>();
 }
 
 void Character::on_start()
@@ -30,7 +32,7 @@ void Character::on_tick(float delta_time)
     if (is_in_path_segment_)
     {
         auto& path_segment = current_path_->segments[path_segment_index_];
-        set_position(Math::lerp(path_segment.from.to_vector(), path_segment.to.to_vector(), move_x) + Vector3(0, 0, HexaMath::tile_height * move_y));
+        set_location(Math::lerp(path_segment.from.to_vector(), path_segment.to.to_vector(), move_x) + Vector3(0, 0, HexaMath::tile_height * move_y));
     }
 }
 
@@ -118,18 +120,6 @@ PathConfig Character::get_path_config(const TileIndex& to) const
     return config;
 }
 
-void Character::generate_components()
-{
-    animator_ = MakeShared<AnimatorComponent>();
-    add_component(animator_);
-}
-
-void Character::modify_matrix_params(Vector3& position, Quaternion& rotation, Vector3& scale)
-{
-    position += anim_offset_;
-    scale *= anim_scale_;
-}
-
 void Character::modify_path_config(PathConfig& config) const
 {
     
@@ -149,7 +139,7 @@ void Character::set_tile_position(const TileIndex& tile_position)
     }
     
     tile_position_ = tile_position;
-    set_position(tile_position_.to_vector());
+    set_location(tile_position_.to_vector());
     on_tile_position_changed(cast<Character>(shared_from_this()));
 }
 

@@ -5,7 +5,12 @@
 #include "Logger.h"
 #include "Path.h"
 
-typedef Mod* (__stdcall *f_get_mod)();
+typedef Mod* (__stdcall *f_get_mod)(const Path& root);
+
+Mod::Mod(const Path& root, const String& module_name)
+    : Module(root, module_name)
+{
+}
 
 const Mod::Info& Mod::get_mod_info() const
 {
@@ -42,7 +47,7 @@ Shared<Mod> Mod::load(const Path& path)
         {
             if (f_get_mod get_mod = (f_get_mod)GetProcAddress(dll, "get_mod"))
             {
-                Shared<Mod> mod = Shared<Mod>(get_mod());
+                Shared<Mod> mod = Shared<Mod>(get_mod(path.up()));
                 mod->dll_ = dll;
                 return mod;
             }

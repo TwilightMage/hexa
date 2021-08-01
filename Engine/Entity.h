@@ -1,15 +1,21 @@
 ﻿#pragma once
 
 #include "BasicTypes.h"
-#include "CollisionMaskBits.h"
 #include "Delegate.h"
 #include "EntityComponent.h"
 #include "framework.h"
-#include "IRenderable.h"
 #include "Object.h"
 #include "Quaternion.h"
-#include "Material3DInstance.h"
+#include "Transform.h"
 #include "Vector3.h"
+
+class CameraComponent;
+class MeshComponent;
+
+namespace Ogre
+{
+    class SceneNode;
+}
 
 class Collision;
 class Material3DInstance;
@@ -20,9 +26,11 @@ namespace reactphysics3d
     class Collider;
 }
 
-class EXPORT Entity : public Object, public IRenderable<Material3D, Material3DInstance>, public EnableSharedFromThis<Entity>
+class EXPORT Entity : public Object, public EnableSharedFromThis<Entity>
 {
-    friend class World;
+    friend World;
+    friend MeshComponent;
+    friend CameraComponent;
 
 public:
     Entity();
@@ -36,21 +44,19 @@ public:
     void destroy();
 
     bool is_started() const;
-    
-    void set_mesh(const Shared<class Mesh>& new_mesh);
-    FORCEINLINE const Shared<Mesh>& get_mesh() const { return mesh_; }
-    void clear_mesh();
 
-    void mark_matrix_dirty();
-    
-    FORCEINLINE Vector3 get_position() const;
-    void set_position(const Vector3& pos);
+    FORCEINLINE const Transform& get_transform() const { return transform_; }
+    void set_transform(const Transform& transform);
+
+    FORCEINLINE Vector3 get_location() const { return get_transform().location; }
+    void set_location(const Vector3& location);
     FORCEINLINE void translate(const Vector3& translation);
     
-    FORCEINLINE Quaternion get_rotation() const;
+    FORCEINLINE Quaternion get_rotation() const { return get_transform().rotation; }
     void set_rotation(const Quaternion& rot);
+    void rotate(const Vector3& axis, float angle);
     
-    FORCEINLINE Vector3 get_scale() const;
+    FORCEINLINE Vector3 get_scale() const { return get_transform().scale; }
     void set_scale(const Vector3& scale);
 
     void set_collision(const Shared<Collision>& collision, const Vector3& offset = Vector3::zero());
@@ -65,12 +71,39 @@ public:
     void make_body_dynamic();
     void make_body_kinematic();
 
-    void set_material(const Shared<Material3D>& material) override;
-    FORCEINLINE Shared<Material3D> get_material() const override { return material_; }
-    FORCEINLINE Shared<Material3DInstance> get_material_instance() const override;
+    template<typename T, typename... Args>
+    Shared<T> create_component(Args... args)
+    {
+        for (auto& existing_component : components_)
+        {
+            if (cast<T>(existing_component)) return nullptr;
+        }
 
-    void add_component(const Shared<EntityComponent>& component);
-    void remove_component(const Shared<EntityComponent>& component);
+        Shared<T> new_component = MakeShared<T>(std::forward<Args>(args)...);
+        new_component->owner_ = this;
+        components_.add(new_component);
+        if (started_)
+        {
+            new_component->start();
+        }
+        return new_component;
+    }
+
+    template<typename T>
+    void remove_component()
+    {
+        for (uint i = 0; i < components_.length(); i++)
+        {
+            if (cast<T>(components_[i]))
+            {
+                components_[i]->on_destroy();
+                components_[i]->owner_ = nullptr;
+                components_.remove_at(i);
+                break;
+            }
+        }
+    }
+    
     void remove_all_components();
     template<class Class>
     Shared<Class> find_component()
@@ -86,46 +119,20 @@ public:
         return nullptr;
     }
 
-    FORCEINLINE bool is_visible() const { return material_instance_->is_visible(); }
-    FORCEINLINE void set_visibility(bool visibility) const { material_instance_->set_visible(visibility); }
-
     Delegate<const Shared<Entity>&> on_destroyed;
 
     bool tick_enabled = false;
     
-protected:
-    FORCEINLINE virtual bool is_rigid_body() const { return false; }
-
-    virtual void generate_components();
-
-    virtual void modify_matrix_params(Vector3& position, Quaternion& rotation, Vector3& scale);
-    
 private:
-    void cache_matrix();
-    void material_changed();
-    
     void start();
     void tick(float delta_time);
 
-    FORCEINLINE void update_physically_dynamic();
 
-    Vector3 position_;
-    Quaternion rotation_;
-    Vector3 scale_ = Vector3::one();
-    bool is_matrix_dirty_;
+    Transform transform_;
     
     Weak<World> world_;
-    Shared<Material3DInstance> material_instance_;
-    Shared<Material3D> material_;
-    Shared<MaterialParameter<Matrix4x4>> model_parameter_;
-    Shared<Mesh> mesh_;
+    Ogre::SceneNode* scene_node_;
     bool pending_kill_;
     bool started_;
-    reactphysics3d::RigidBody* rigid_body_;
-    reactphysics3d::Collider* collider_;
-    Shared<Collision> collision_;
-    byte16 collision_mask_ = CollisionMaskBits::NONE;
     List<Shared<EntityComponent>> components_;
-    float distance_to_camera_ = 0;
-    bool is_physically_dynamic_ = false;
 };

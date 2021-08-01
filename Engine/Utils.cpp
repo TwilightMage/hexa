@@ -2,8 +2,6 @@
 
 #define GLFW_INCLUDE_NONE
 #include <algorithm>
-#include <GLFW/glfw3.h>
-#include <glad/glad.h>
 
 #include "Logger.h"
 
@@ -11,41 +9,6 @@
 #include <dbghelp.h>
 #include <psapi.h>
 #endif
-
-String Utils::get_gl_error_message(uint code)
-{
-    if (code == GL_INVALID_ENUM) return "Invalid enum";
-    if (code == GL_INVALID_VALUE) return "Invalid value";
-    if (code == GL_INVALID_OPERATION) return "Invalid operation";
-    if (code == GL_INVALID_FRAMEBUFFER_OPERATION) return "Invalid framebuffer operation";
-    if (code == GL_OUT_OF_MEMORY) return "Out of memory";
-    if (code == GL_STACK_UNDERFLOW) return "Stack underflow";
-    if (code == GL_STACK_OVERFLOW) return "Stack overflow";
-    return "";
-}
-
-bool Utils::check_gl_error()
-{
-    List<String> errors;
-    while (uint err = glGetError())
-    {
-        errors.add(get_gl_error_message(err));
-    }
-    if (errors.length() > 0)
-    {
-        print_error("OpenGL", String::join(errors, ", ") + "\n" + get_callstack_string(1));
-        return false;
-    }
-
-    return true;
-}
-
-void Utils::discard_gl_error()
-{
-    while (glGetError())
-    { 
-    }
-}
 
 List<String> Utils::get_callstack(uint offset)
 {

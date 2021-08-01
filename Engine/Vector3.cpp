@@ -88,6 +88,30 @@ Vector3 Vector3::reflect(const Vector3& in_vec, const Vector3& normal)
     return in_vec - normal * in_vec.dot_product(normal) * 2.f;
 }
 
+float Vector3::get_min_axis() const
+{
+    if (x < y)
+    {
+        return Math::min(x, z);
+    }
+    else
+    {
+        return Math::min(y, z);
+    }
+}
+
+float Vector3::get_max_axis() const
+{
+    if (x > y)
+    {
+        return Math::max(x, z);
+    }
+    else
+    {
+        return Math::max(y, z);
+    }
+}
+
 Vector3 Vector3::operator+(const Vector3& rhs) const
 {
     return Vector3(x + rhs.x, y + rhs.y, z + rhs.z);

@@ -34,9 +34,9 @@ public:
     static Quaternion lerp(const Quaternion& from, const Quaternion& to, float alpha);
     
     Quaternion rotate_around(const Vector3& axis, float angle) const;
-    Quaternion rotate_around_x(float angle) const;
-    Quaternion rotate_around_y(float angle) const;
-    Quaternion rotate_around_z(float angle) const;
+    Quaternion rotate_around_forward(float angle) const;
+    Quaternion rotate_around_right(float angle) const;
+    Quaternion rotate_around_up(float angle) const;
 
     Quaternion operator*(const Quaternion& rhs) const;
     Quaternion& operator*=(const Quaternion& rhs);

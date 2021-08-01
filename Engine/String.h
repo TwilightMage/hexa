@@ -43,6 +43,8 @@ public:
 	uint allocated_length() const;
 	int index_of(const String& substr) const;
 	int last_index_of(const String& substr) const;
+	int index_of_char(const String& chars) const;
+	int last_index_of_char(const String& chars) const;
 	String substring(uint start, uint num) const;
 	String substring(uint start) const;
 	String replace(const String& from, const String& to) const;
@@ -95,7 +97,9 @@ public:
 		char* buffer = new char[size + 1];
 		sprintf_s(buffer, size + 1, format.c(), std::forward<Args>(args)...);
 
-		return String(buffer, size);
+		const auto result = String(buffer, size);
+		delete buffer;
+		return result;
 	}
 
 	template<typename T>

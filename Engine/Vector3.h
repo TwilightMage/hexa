@@ -27,6 +27,9 @@ public:
     FORCEINLINE static float angle_rad(const Vector3& a, const Vector3& b) { return Math::acos_rad(a.normalized().dot_product(b.normalized())); }
     FORCEINLINE static float distance(const Vector3& a, const Vector3& b) { return (a - b).magnitude(); }
     FORCEINLINE static Vector3 reflect(const Vector3& in_vec, const Vector3& normal);
+
+    float get_min_axis() const;
+    float get_max_axis() const;
     
     Vector3 operator+(const Vector3& rhs) const;
     Vector3 operator-(const Vector3& rhs) const;
@@ -57,7 +60,7 @@ public:
 
     FORCEINLINE static Vector3 zero()    { return {0, 0, 0}; }
     FORCEINLINE static Vector3 one()     { return {1, 1, 1}; }
-    FORCEINLINE static Vector3 forward() { return {1, 0, 0}; }
-    FORCEINLINE static Vector3 right()   { return {0, 1, 0}; }
-    FORCEINLINE static Vector3 up()      { return {0, 0, 1}; }
+    FORCEINLINE static Vector3 front() { return {0, 0, -1}; }
+    FORCEINLINE static Vector3 right()   { return {1, 0, 0}; }
+    FORCEINLINE static Vector3 up()      { return {0, 1, 0}; }
 };

@@ -2,15 +2,15 @@
 
 #include "Engine/BasicTypes.h"
 #include "Engine/Entity.h"
-#include "Engine/Mesh.h"
+#include "Engine/StaticMesh.h"
 
 class EXPORT MeshEntity : public Entity
 {
 public:
-    MeshEntity(const Shared<Mesh>& mesh);
+    MeshEntity(const Shared<StaticMesh>& mesh);
 
     void on_start() override;
 
 private:
-    Shared<Mesh> mesh_;
+    Shared<StaticMesh> mesh_;
 };

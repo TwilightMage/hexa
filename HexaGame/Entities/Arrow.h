@@ -10,7 +10,4 @@ public:
     void on_start() override;
 
     void on_tick(float delta_time) override;
-
-protected:
-    bool is_rigid_body() const override { return false; }
 };

@@ -1,6 +1,6 @@
 ﻿#include "MeshEntity.h"
 
-MeshEntity::MeshEntity(const Shared<Mesh>& mesh)
+MeshEntity::MeshEntity(const Shared<StaticMesh>& mesh)
     : Entity()
     , mesh_(mesh)
 {
@@ -8,5 +8,5 @@ MeshEntity::MeshEntity(const Shared<Mesh>& mesh)
 
 void MeshEntity::on_start()
 {
-    set_mesh(mesh_);
+    //set_mesh(mesh_);
 }

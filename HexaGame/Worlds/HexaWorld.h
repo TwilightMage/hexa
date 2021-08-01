@@ -4,6 +4,7 @@
 #include "HexaGame/TileIndex.h"
 #include "Engine/Array2D.h"
 #include "Engine/Rect.h"
+#include "Engine/SimpleMap.h"
 #include "Engine/World.h"
 #include "HexaGame/ItemContainer.h"
 #include "HexaGame/PathConfig.h"
@@ -25,6 +26,8 @@ class EXPORT HexaWorld : public World
 
 public:    
     explicit HexaWorld(const Shared<WorldGenerator>& generator);
+
+    void on_start() override;
 
     const Shared<WorldGenerator>& get_generator() const;
 
@@ -56,9 +59,7 @@ public:
     void dump_observable_area();
 
     Delegate<const Shared<Character>&> on_character_spawned;
-
-protected:
-
+    
 private:
     void character_destroyed_callback(const Shared<Entity>& character);
     

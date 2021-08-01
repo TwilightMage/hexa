@@ -68,6 +68,7 @@ public:
         if (this == &rhs) return *this;
 
         reallocate(rhs.length_);
+        length_ = rhs.length_;
 
         for (uint i = 0; i < length_; i++)
         {
@@ -213,6 +214,8 @@ public:
 
     Set operator+(const Set& rhs) const
     {
+        if (this == &rhs) return *this;
+        
         Set result = *this;
         for (auto& item : rhs)
         {
@@ -222,8 +225,22 @@ public:
         return result;
     }
 
+    Set& operator+=(const Set& rhs)
+    {
+        if (this == &rhs) return *this;
+            
+        for (const auto& item : rhs)
+        {
+            add(item);
+        }
+
+        return *this;
+    }
+
     Set operator-(const Set& rhs) const
     {
+        if (this == &rhs) return Set();
+        
         Set result = *this;
         for (auto& item : rhs)
         {
@@ -231,6 +248,18 @@ public:
         }
 
         return result;
+    }
+
+    Set& operator-=(const Set& rhs)
+    {
+        if (this == &rhs) return Set();
+            
+        for (const auto& item : rhs)
+        {
+            add(item);
+        }
+
+        return *this;
     }
 
 private:

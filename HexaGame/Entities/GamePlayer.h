@@ -29,9 +29,6 @@ public:
     Shared<WorldChunkObserver> observer_;
     uint load_distance_ = 1;
 
-protected:
-    CameraInfo get_camera_info() const override;
-
 private:
     void spawn_chunk_loaded(const Shared<WorldChunk>& sender);
     void character_position_changed(const Shared<Character>& sender);

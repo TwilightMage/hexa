@@ -25,6 +25,11 @@ HexaWorld::HexaWorld(const Shared<WorldGenerator>& generator)
 
 }
 
+void HexaWorld::on_start()
+{
+    set_ambient_light(Color::white(), 0.5f);
+}
+
 const Shared<WorldGenerator>& HexaWorld::get_generator() const
 {
     return generator_;
@@ -247,7 +252,7 @@ Shared<ItemDrop> HexaWorld::spawn_drop(const TileIndex& tile, const ItemContaine
     
     Shared<ItemDrop> entity = MakeShared<ItemDrop>(item);
     entity->offset = item.item->mesh->get_bounds_center().z - item.item->mesh->get_bounds_half_size().z;
-    spawn_entity(entity, tile.to_vector() - Vector3(Random::static_number(-0.2f, 0.2f), Random::static_number(-0.2f, 0.2f), entity->offset), Quaternion(Vector3(0, 0, Random::static_number(360.0f))));
+    //spawn_entity(entity, tile.to_vector() - Vector3(Random::static_number(-0.2f, 0.2f), Random::static_number(-0.2f, 0.2f), entity->offset), Quaternion(Vector3(0, 0, Random::static_number(360.0f))));
     entity->set_force(throw_force);
     return entity;
 }

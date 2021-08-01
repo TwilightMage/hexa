@@ -132,5 +132,5 @@ String Path::to_string() const
 
 String Path::get_absolute_string() const
 {
-	return !is_global_ && Game::is_app_path_set() ? (Game::get_app_path().parent + "/" + to_string()).std() : to_string().std();
+	return !is_global_ ? (Game::get_app_path().parent + "/" + to_string()).std() : to_string().std();
 }

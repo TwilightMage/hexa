@@ -5,13 +5,14 @@
 #include "TileIndex.h"
 #include "TileType.h"
 #include "Engine/DatabaseEntry.h"
+#include "Engine/Game.h"
 #include "Engine/Set.h"
 
 class ComplexTileCustomData;
 class ComplexTile;
 class HexaWorld;
 class Material3D;
-class Mesh;
+class StaticMesh;
 class Texture;
 
 class TileInfo : public DatabaseEntry
@@ -23,18 +24,13 @@ public:
         const Set<Name> tags,
         float hardness,
         bool block_nav
-        )
-        : DatabaseEntry(key)
-        , type(type)
-        , tags(tags)
-        , hardness(hardness)
-        , block_nav(block_nav)
-    {}
+        );
     
     TileType type;
     const Set<Name> tags;
     float hardness;
     bool block_nav;
+    Shared<Material> material;
 
     virtual void neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, const Shared<const TileInfo>& new_neighbor) const;
     virtual void on_tile_break(const TileIndex& index, const Shared<HexaWorld>& world) const;
@@ -83,7 +79,7 @@ public:
         const Set<Name>& tags,
         float hardness,
         bool block_nav,
-        const Shared<Mesh>& mesh,
+        const Shared<StaticMesh>& mesh,
         const Shared<Texture>& texture,
         const Shared<Material3D>& material
         )
@@ -98,7 +94,7 @@ public:
     virtual bool can_place_at(const Shared<ComplexTile>& new_tile, const ItemContainer& item) const;
     virtual Shared<ComplexTileCustomData> create_custom_data() const;
 
-    Shared<Mesh> mesh;
+    Shared<StaticMesh> mesh;
     Shared<Texture> texture;
     Shared<Material3D> material;
 };

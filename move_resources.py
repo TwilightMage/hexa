@@ -7,11 +7,8 @@ if len(sys.argv) != 4:
 
 project_dir = sys.argv[1]
 category = sys.argv[2]
-out_dir = sys.argv[3]
+full_out_dir = sys.argv[3]
 
-full_in_dir = project_dir + "/" + category + "/resources/" + category.lower()
-full_out_dir = out_dir + "/resources/" + category.lower()
+full_in_dir = project_dir + "/" + category + "/resources"
 
-if os.path.exists(full_out_dir):
-    shutil.rmtree(full_out_dir)
-shutil.copytree(full_in_dir, full_out_dir, False, None)
+shutil.copytree(full_in_dir, full_out_dir, False, None, dirs_exist_ok=True)

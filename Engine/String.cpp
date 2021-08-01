@@ -230,6 +230,32 @@ int String::last_index_of(const String& substr) const
 	return -1;
 }
 
+int String::index_of_char(const String& chars) const
+{
+	for (uint i = 0; i < length_; i++)
+	{
+		for (auto ch : chars)
+		{
+			if (inner_[i] == ch) return i;
+		}
+	}
+
+	return -1;
+}
+
+int String::last_index_of_char(const String& chars) const
+{
+	for (uint i = 0; i < length_; i++)
+	{
+		for (auto ch : chars)
+		{
+			if (inner_[length_ - i - 1] == ch) return length_ - i - 1;
+		}
+	}
+
+	return -1;
+}
+
 String String::substring(uint start, uint num) const
 {
 	if (start >= length_) return "";

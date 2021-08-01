@@ -13,40 +13,23 @@ namespace reactphysics3d
     class PolyhedronMesh;
 }
 
-class Mesh;
+class StaticMesh;
 
 class EXPORT ConvexMeshCollision : public Collision
 {
     friend World;
-    
-    struct EXPORT DataBlock
-    {
-        ~DataBlock();
-        
-        List<Vector3> vertices;
-        List<uint> indices;
-        List<GeometryEditor::Face> faces;
-        reactphysics3d::PolygonVertexArray* polygon_vertex_array;
-        reactphysics3d::PolyhedronMesh* polyhedron_mesh;
-        reactphysics3d::ConvexMeshShape* convex_mesh_shape;
-        uint usage_count = 0;
-    };
-    
 public:
+    ConvexMeshCollision(const List<StaticMesh::Vertex>& vertices, const List<uint>& indices);
     ~ConvexMeshCollision();
-    explicit ConvexMeshCollision(const Shared<Mesh>& source_mesh);
-
-    ConvexMeshCollision(const ConvexMeshCollision& rhs);
-
-    ConvexMeshCollision& operator=(const ConvexMeshCollision& rhs);
-
+    
 protected:
     reactphysics3d::CollisionShape* get_collider_shape() const override;
 
 private:
-    static void fill_data_block(const Shared<DataBlock>& data_block, List<Mesh::Vertex> source_vertices, List<uint> source_indices);
-
-    inline static Map<Shared<Mesh>, Shared<DataBlock>> data_blocks_ = Map<Shared<Mesh>, Shared<DataBlock>>();
-
-    Shared<Mesh> source_mesh_;
+    List<Vector3> vertices_copy_;
+    List<uint> indices_copy_;
+    List<GeometryEditor::Face> faces;
+    reactphysics3d::PolygonVertexArray* polygon_vertex_array;
+    reactphysics3d::PolyhedronMesh* polyhedron_mesh;
+    reactphysics3d::ConvexMeshShape* convex_mesh_shape;
 };

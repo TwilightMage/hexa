@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "Engine/DatabaseHelpers.h"
-#include "Engine/Mesh.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/Texture.h"
 #include "HexaGame/HexaGame.h"
 #include "HexaGame/Paths.h"
@@ -40,18 +40,18 @@ public:
     {
         INIT_DATABASE_ENTRY(air, AirTileInfo);
         
-        INIT_SOLID_TILE_DATABASE_ENTRY(dirt, SolidTileInfo, { MetaTags::DIRT }, 1.0f, RESOURCES_HEXA, true, true);
-        INIT_SOLID_TILE_DATABASE_ENTRY(grass, GrassInfo, { MetaTags::DIRT }, 1.0f, RESOURCES_HEXA, true, true);
-        INIT_SOLID_TILE_DATABASE_ENTRY(stone, SolidTileInfo, { MetaTags::STONE }, 2.0f, RESOURCES_HEXA, true, true);
-        INIT_SOLID_TILE_DATABASE_ENTRY(sand, SolidTileInfo, { MetaTags::DIRT }, 0.5f, RESOURCES_HEXA, true, true);
-        INIT_SOLID_TILE_DATABASE_ENTRY(iron_ore, SolidTileInfo, { MetaTags::STONE }, 2.5f, RESOURCES_HEXA, true, true);
-        INIT_SOLID_TILE_DATABASE_ENTRY(stone_bricks, SolidTileInfo, { MetaTags::STONE }, 2.0f, RESOURCES_HEXA, true, true);
+        INIT_SOLID_TILE_DATABASE_ENTRY(dirt, SolidTileInfo, { MetaTags::DIRT }, 1.0f, RESOURCES, true, true);
+        INIT_SOLID_TILE_DATABASE_ENTRY(grass, GrassInfo, { MetaTags::DIRT }, 1.0f, RESOURCES, true, true);
+        INIT_SOLID_TILE_DATABASE_ENTRY(stone, SolidTileInfo, { MetaTags::STONE }, 2.0f, RESOURCES, true, true);
+        INIT_SOLID_TILE_DATABASE_ENTRY(sand, SolidTileInfo, { MetaTags::DIRT }, 0.5f, RESOURCES, true, true);
+        INIT_SOLID_TILE_DATABASE_ENTRY(iron_ore, SolidTileInfo, { MetaTags::STONE }, 2.5f, RESOURCES, true, true);
+        INIT_SOLID_TILE_DATABASE_ENTRY(stone_bricks, SolidTileInfo, { MetaTags::STONE }, 2.0f, RESOURCES, true, true);
 
-        INIT_COMPLEX_TILE_DATABASE_ENTRY(tall_grass, TallGrassInfo, {}, 0.1f, RESOURCES_HEXA, "tall_grass", HexaGame::foliage_material);
-        INIT_COMPLEX_TILE_DATABASE_ENTRY(blue_roses, TallGrassInfo, { MetaTags::FLOWER }, 0.1f, RESOURCES_HEXA, "tall_grass", HexaGame::foliage_material);
-        INIT_COMPLEX_TILE_DATABASE_ENTRY(red_roses, TallGrassInfo, { MetaTags::FLOWER }, 0.1f, RESOURCES_HEXA, "tall_grass", HexaGame::foliage_material);
-        INIT_COMPLEX_TILE_DATABASE_ENTRY(chamomile, TallGrassInfo, { MetaTags::FLOWER }, 0.1f, RESOURCES_HEXA, "tall_grass", HexaGame::foliage_material);
+        //INIT_COMPLEX_TILE_DATABASE_ENTRY(tall_grass, TallGrassInfo, {}, 0.1f, RESOURCES, "tall_grass", HexaGame::foliage_material);
+        //INIT_COMPLEX_TILE_DATABASE_ENTRY(blue_roses, TallGrassInfo, { MetaTags::FLOWER }, 0.1f, RESOURCES, "tall_grass", HexaGame::foliage_material);
+        //INIT_COMPLEX_TILE_DATABASE_ENTRY(red_roses, TallGrassInfo, { MetaTags::FLOWER }, 0.1f, RESOURCES, "tall_grass", HexaGame::foliage_material);
+        //INIT_COMPLEX_TILE_DATABASE_ENTRY(chamomile, TallGrassInfo, { MetaTags::FLOWER }, 0.1f, RESOURCES, "tall_grass", HexaGame::foliage_material);
 
-        INIT_TREE_STEM_DATABASE_ENTRY(ash_stem, TreeStemInfo, {}, 1.0f, RESOURCES_HEXA, "tree", "ash_log");
+        //INIT_TREE_STEM_DATABASE_ENTRY(ash_stem, TreeStemInfo, {}, 1.0f, RESOURCES, "tree", "ash_log");
     }
 };

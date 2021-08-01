@@ -95,6 +95,16 @@ public:
         return result;
     }
 
+    static List generate(uint size, const T& item)
+    {
+        auto result = List(size);
+        for (uint i = 0; i < size; i++)
+        {
+            result[i] = item;
+        }
+        return result;
+    }
+
     List& operator=(const List& rhs)
     {
         if (this == &rhs) return *this;
@@ -218,6 +228,52 @@ public:
         inner_[length_ - 1] = T();
         
         --length_;
+    }
+
+    void remove_range(uint start, uint size)
+    {
+        if (start + size >= length_)
+        {
+            throw new std::out_of_range("last remove index is greater than last item index");
+        }
+
+        uint new_allocated_length = get_allocate_size(length_ - size);
+        if (new_allocated_length != allocated_length_)
+        {
+            allocated_length_ = new_allocated_length;
+            length_ -= size;
+            T* new_inner;
+
+            if (allocated_length_ > 0)
+            {
+                new_inner = new T[allocated_length_];
+
+                for (uint i = 0; i < start; i++)
+                {
+                    new_inner[i] = std::move(inner_[i]);
+                }
+
+                for (uint i = start; i < length_; i++)
+                {
+                    new_inner[i] = std::move(inner_[i + size]);
+                }
+            }
+            else
+            {
+                new_inner = nullptr;
+            }
+
+            delete inner_;
+            inner_ = new_inner;
+        }
+        else
+        {
+            for (uint i = start + size; i < length_ - size; i++)
+            {
+                inner_[i - size] = std::move(inner_[i]);
+                inner_[i] = T();
+            }
+        }
     }
 
     void remove(const T& item)

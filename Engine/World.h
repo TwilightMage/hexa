@@ -1,12 +1,16 @@
 ﻿#pragma once
 
-#include "SoundHandle.h"
-#include "List.h"
+#include "Color.h"
 #include "Entity.h"
-#include "Quaternion.h"
+#include "List.h"
+#include "Set.h"
+#include "SoundHandle.h"
 #include "TimerHandle.h"
+#include "Transform.h"
 #include "Vector3.h"
 
+class Audio;
+class CameraComponent;
 class ItemDrop;
 class AudioChannel;
 struct RaycastResult;
@@ -18,9 +22,18 @@ namespace reactphysics3d
     class PhysicsWorld;
 }
 
+namespace Ogre
+{
+    class Light;
+    class SceneNode;
+    class SceneManager;
+}
+
 class EXPORT World : public EnableSharedFromThis<World>
 {
     friend Game;
+    friend MeshComponent;
+    friend CameraComponent;
 
     struct TimerEntry
     {
@@ -29,10 +42,16 @@ class EXPORT World : public EnableSharedFromThis<World>
     };
     
 public:
-    bool spawn_entity(const Shared<Entity>& entity, const Vector3& pos, const Quaternion& rot);
-    bool spawn_entity(const Shared<Entity>& entity, const Vector3& pos);
-    bool spawn_entity(const Shared<Entity>& entity, const Quaternion& rot);
+    bool spawn_entity(const Shared<Entity>& entity, const Transform& transform);
     bool spawn_entity(const Shared<Entity>& entity);
+    template<typename T, typename... Args>
+    Shared<T> spawn_entity(const Transform& transform, Args... args)
+    {
+        auto entity = MakeShared<T>(std::forward<Args>(args)...);
+        entity->transform_ = transform;
+        spawn_entity_internal(entity);
+        return entity;
+    }
 
     SoundHandle play_sound(const Shared<Audio>& audio, const Shared<AudioChannel>& channel = nullptr);
     SoundHandle play_sound_3d(const Shared<Audio>& audio, const Vector3& location, const Shared<AudioChannel>& channel = nullptr);
@@ -42,6 +61,7 @@ public:
     List<RaycastResult> raycast_all(const Vector3& from, const Vector3& to, bool sort_by_distance = false) const;
     List<RaycastResult> raycast_all(const Vector3& from, const Vector3& to, byte16 collision_mask, bool sort_by_distance = false) const;
 
+    void init();
     void start();
     void tick(float delta_time);
 
@@ -57,11 +77,9 @@ public:
 
     TimerHandle delay(float time, std::function<void()> func);
 
-    Quaternion sun_angle = Quaternion(Vector3(0, 45, 45));
-    Color ambient_color = Color::white();
-    float ambient_intensity = 0.6f;
-    Color sun_color = Color::white();
-    float sun_intensity = 0.8f;
+    void set_ambient_light(const Color& color, float intensity);
+
+    void set_directional_light(const Color& color, float intensity, const Quaternion& rotation);
     
 protected:
     virtual void on_start();
@@ -78,6 +96,16 @@ private:
     reactphysics3d::PhysicsWorld* physics_world_;
     float physics_tick_accum_;
     float time_scale_ = 1.0f;
+    Ogre::SceneManager* manager_;
+
+    Color ambient_color_;
+    float ambient_intensity_;
+
+    Color directional_color_;
+    float directional_intensity_;
+    Quaternion directional_rotation_;
+    Ogre::SceneNode* directional_light_node_;
+    Ogre::Light* directional_light_;
 
     Map<TimerHandle, TimerEntry> timer_entries_;
 

@@ -1,26 +1,25 @@
 ﻿#include "Game.h"
 
-#define GLFW_INCLUDE_NONE
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
+#include <OGRE/Bites/OgreTrays.h>
+#include <OGRE/Main/OgreEntity.h>
+#include <OGRE/Main/OgreRenderWindow.h>
+#include <OGRE/Main/OgreTextureManager.h>
+#include <OGRE/RTShaderSystem/OgreShaderGenerator.h>
 #include <reactphysics3d/reactphysics3d.h>
+#include <soloud/soloud.h>
 
 #include "Audio.h"
 #include "AudioChannel.h"
+#include "CameraComponent.h"
 #include "File.h"
-#include "ICamera.h"
 #include "IControllable.h"
 #include "Logger.h"
-#include "Material3D.h"
-#include "Material.h"
-#include "MaterialUI.h"
 #include "Mod.h"
 #include "Path.h"
 #include "Paths.h"
 #include "SaveGame.h"
 #include "Set.h"
 #include "Settings.h"
-#include "Shader.h"
 #include "SpriteFont.h"
 #include "TextureAtlas.h"
 #include "World.h"
@@ -30,8 +29,11 @@
 
 Game* Game::instance_ = nullptr;
 
-Game::Game(int argc, char* argv[])
-    : event_bus_(new EventBus())
+Game::Game(const String& name, int argc, char* argv[])
+	: app_path_(argv[0])
+	, OgreBites::ApplicationContext(name.c())
+	, Module(String(argv[0]).substring(0, String(argv[0]).last_index_of_char("\\/")), name)
+	, event_bus_(new EventBus())
 	, physics_(new reactphysics3d::PhysicsCommon)
 	, soloud_(new SoLoud::Soloud)
 	, ui_root_(new UIElement)
@@ -50,8 +52,6 @@ Game::Game(int argc, char* argv[])
 		args_.add(argv[i]);
 	}
 
-	set_app_path(String(argv[0]));
-
 	Logger::init(argv[0]);
 }
 
@@ -64,15 +64,13 @@ void Game::launch()
 {
 	verbose("Game", "Launching...");
 
-	if (!glfwInit())
-	{
-		print_error("Initialization", "Failed to initialize glfw");
-	}
+	initApp();
 	
 	init_game();
-    setup_window();
-    prepare();
+    //setup_window();
+    //prepare();
     render_loop();
+	closeApp();
 	cleanup();
 }
 
@@ -101,9 +99,10 @@ void Game::focus_ui(const Shared<UIInputElement>& ui_input_reciever)
 	}
 }
 
-void Game::use_camera(const Shared<ICamera>& camera)
+void Game::use_camera(const Shared<CameraComponent>& camera)
 {
 	instance_->current_camera_ = camera;
+	instance_->getRenderWindow()->addViewport(camera->ogre_camera_);
 }
 
 void Game::open_world(const Shared<World>& world)
@@ -111,8 +110,10 @@ void Game::open_world(const Shared<World>& world)
 	close_world();
 
 	instance_->world_ = world;
-	if (world)
+	if (instance_->world_)
 	{
+		instance_->world_->init();
+		instance_->shader_generator_->addSceneManager(instance_->world_->manager_);
 		instance_->world_->start();
 		instance_->event_bus_->world_opened(world);
 	}
@@ -126,6 +127,7 @@ void Game::close_world()
 {
 	if (instance_->world_)
 	{
+		instance_->shader_generator_->removeSceneManager(instance_->world_->manager_);
 		instance_->world_->close();
 		instance_->event_bus_->world_closed(instance_->world_);
 		instance_->world_ = nullptr;
@@ -174,34 +176,9 @@ void Game::call_on_main_thread(std::function<void()> func)
 	instance_->main_thread_calls_mutex_.unlock();
 }
 
-bool Game::is_app_path_set()
-{
-	return instance_->app_path_set_;
-}
-
 const Path& Game::get_app_path()
 {
 	return instance_->app_path_;
-}
-
-const Shared<Shader>& Game::get_basic_shader()
-{
-	return instance_->basic_3d_shader_;
-}
-
-const Shared<Shader>& Game::get_basic_ui_shader()
-{
-	return instance_->basic_ui_shader_;
-}
-
-const Shared<Material3D>& Game::get_basic_material_3d()
-{
-	return instance_->basic_material_3d_;
-}
-
-const Shared<MaterialUI>& Game::get_basic_material_ui()
-{
-	return instance_->basic_material_ui_;
 }
 
 const Shared<Texture>& Game::get_white_pixel()
@@ -241,27 +218,27 @@ const Vector2& Game::get_mouse_delta()
 
 void Game::lock_mouse()
 {
-	instance_->lock_mouse_ = true;
+	//instance_->lock_mouse_ = true;
 }
 
 void Game::unlock_mouse()
 {
-	instance_->lock_mouse_ = false;
+	//instance_->lock_mouse_ = false;
 }
 
 void Game::hide_mouse()
 {
-	glfwSetInputMode(instance_->window_, GLFW_CURSOR, GLFW_CURSOR_HIDDEN);
+	//instance_->ogre_ui_->hideCursor();
 }
 
 void Game::show_mouse()
 {
-	glfwSetInputMode(instance_->window_, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+	//instance_->ogre_ui_->showCursor();
 }
 
 void Game::set_cursor_texture(const Shared<Texture>& tex, uint hotspot_x, uint hotspot_y)
 {
-	if (instance_->cursor_)
+	/*if (instance_->cursor_)
 	{
 		glfwDestroyCursor(instance_->cursor_);
 		instance_->cursor_ = nullptr;
@@ -297,7 +274,7 @@ void Game::set_cursor_texture(const Shared<Texture>& tex, uint hotspot_x, uint h
 	instance_->cursor_ = glfwCreateCursor(&image, hotspot_x * scale, hotspot_y * scale);
 	glfwSetCursor(instance_->window_, instance_->cursor_);
 
-	delete pixels;
+	delete pixels;*/
 }
 
 void Game::add_ui(const Shared<UIElement>& ui)
@@ -315,11 +292,6 @@ Vector3 Game::get_un_projected_mouse()
 	return instance_->un_projected_mouse_;
 }
 
-CameraInfo& Game::get_camera_info()
-{
-	return instance_->latest_camera_info_;
-}
-
 float Game::get_time()
 {
 	return instance_->time_;
@@ -333,6 +305,26 @@ bool Game::is_loading_stage()
 bool Game::is_render_stage()
 {
 	return instance_->is_render_stage_;
+}
+
+void Game::on_add_resource_directories(Set<String>& local, Set<String>& global)
+{
+	local = {
+		"textures/actions"
+	};	
+	
+	global = {
+		"textures/ui",
+		"textures/tiles",
+		"textures/complex_tiles",
+		"textures/characters",
+		"meshes/characters",
+		"meshes/items",
+		"meshes/tiles",
+		"audio/ambient",
+		"audio/effects",
+		"audio/music"
+	};
 }
 
 Shared<Settings> Game::generate_settings_object()
@@ -366,77 +358,32 @@ void Game::unloading_stage()
 {
 }
 
-void Game::setup_window()
+bool Game::windowClosing(Ogre::RenderWindow* rw)
 {
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
-
-	ui_root_->set_size(Vector2(800 / get_ui_scale(), 600 / get_ui_scale()));
-	ui_root_->mouse_detection_ = false;
-	ui_root_->constructed_ = true;
-	ui_root_->is_in_hierarchy_ = true;
-	
-	window_ = glfwCreateWindow(800, 600, get_info().title.c(), nullptr, nullptr);
-	if (!window_)
-	{
-		print_error("Initialization", "Failed to create window");
-		glfwTerminate();
-		exit(EXIT_FAILURE);
-	}
-
-	if (auto icon = Texture::load_png(get_info().icon))
-	{
-		const uint len = icon->get_width() * icon->get_height() * 4;
-		byte* pixels = new byte[len];
-		memcpy(pixels, icon->get_pixels().to_list().get_data(), len);
-		
-		GLFWimage icons[1];
-		icons[0].width = icon->get_width();
-		icons[0].height = icon->get_height();
-		icons[0].pixels = pixels;
-		
-		glfwSetWindowIcon(window_, 1, icons);
-
-		delete pixels;
-	}
+	close = true;
+	return true;
 }
 
-void Game::prepare()
+void Game::setup()
 {
-	glfwMakeContextCurrent(window_);
-	gladLoadGL();
-	glfwSwapInterval(0);
-	
-	glfwSetErrorCallback(error_callback);
-	glfwSetWindowSizeLimits(window_, 800, 600, GLFW_DONT_CARE, GLFW_DONT_CARE);
-	glfwSetKeyCallback(window_, key_callback);
-	glfwSetCharCallback(window_, character_callback);
-	glfwSetMouseButtonCallback(window_, mouse_button_callback);
-	glfwSetScrollCallback(window_, scroll_callback);
-	glfwSetCursorPosCallback(window_, cursor_position_callback);
-	glfwSetWindowSizeCallback(window_, window_size_callback);
-}
+	OgreBites::ApplicationContext::setup();
 
-const uint SHADOW_WIDTH = 1024;
-const uint SHADOW_HEIGHT = 1024;
+	addInputListener(this);
+
+	OgreBites::WindowEventUtilities::_addRenderWindow(getRenderWindow());
+	OgreBites::WindowEventUtilities::addWindowEventListener(getRenderWindow(), this);
+
+	ogre_ = getRoot();
+
+	//ogre_ui_ = MakeShared<OgreBites::TrayManager>("UI", getRenderWindow(), this);
+
+	shader_generator_ = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
+	reset_global_resources_directories();
+	add_resource_directories();
+}
 
 void Game::render_loop()
-{	
-	const String GPU_name(reinterpret_cast<const char*>(glGetString(GL_RENDERER)));
-	verbose("OpenGL", "Active GPU: %s", GPU_name.c());
-	glfwSetWindowTitle(window_, (get_info().title + " - " + GPU_name).c());
-	
-	const String opengl_version_string(reinterpret_cast<const char*>(glGetString(GL_VERSION)));
-	verbose("OpenGL", "Detected version: %s", opengl_version_string.c());
-	const Version opengl_version = opengl_version_string.substring(0, opengl_version_string.index_of(' '));
-	if (opengl_version < Version(3, 0, 0))
-	{
-		print_error("OpenGL", "Unsupported version");
-		return;
-	}
-	
-	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &TextureAtlas::max_size_);
-
+{
 	verbose("Mod Loader", "Searching for mods in %s/...", Path("mods").get_absolute_string().c());
 	for (auto& path : Path("mods").list())
 	{
@@ -450,6 +397,7 @@ void Game::render_loop()
 					print_error("Mod Loader", "Mod %s target game version is %s, but current game version is %s. This mod will be skipped", mod->info_.display_name.c(), mod->info_.target_game_version.to_string().c(), game_version_.to_string().c());
 					continue;
 				}
+				mod->add_resource_directories();
 				mods_.add(mod);
 				verbose("Mod Loader", "Pre-loaded mod %s", mod->info_.display_name.c());
 			}
@@ -464,30 +412,25 @@ void Game::render_loop()
 	verbose("Game", "Loading stage...");
 	is_loading_stage_ = true;
 
-	// Shaders
-	basic_3d_shader_ = Shader::compile("basic 3d", {
-		RESOURCES_ENGINE_SHADERS + "basic_3d.vert",
-		RESOURCES_ENGINE_SHADERS + "basic_3d.frag"
-	});
+	register_resource_directories();
+	{
+		Ogre::Image pixels(Ogre::PF_R5G6B5, 1, 1);
+		pixels.setColourAt(Ogre::ColourValue::White, 0, 0, 0);
 
-	basic_ui_shader_ = Shader::compile("basic ui", {
-		RESOURCES_ENGINE_SHADERS + "basic_ui.vert",
-		RESOURCES_ENGINE_SHADERS + "basic_ui.frag"
-	});
+		Ogre::TextureManager::getSingleton().loadImage("White", get_module_name().c(), pixels);
+	}
+	for (const auto& mod : mods_)
+	{
+		mod->register_resource_directories();
+	}
 
-	// Materials
-	basic_material_3d_ = MakeShared<Material3D>();
-	basic_material_3d_->init(basic_3d_shader_, 0);
-	basic_material_3d_->cast_shadows = true;
+	Ogre::ResourceGroupManager::getSingletonPtr()->initialiseAllResourceGroups();
 	
-	basic_material_ui_ = MakeShared<MaterialUI>();
-	basic_material_ui_->init(basic_ui_shader_, 1);
-
 	// Textures
 	white_pixel_ = MakeShared<Texture>("White Pixel", 1, 1, List<Color>::of(Color::white()));
 
 	// Fonts
-	default_font_ = SpriteFont::load_fnt(RESOURCES_ENGINE_FONTS + "arial.fnt");
+	default_font_ = SpriteFont::load_fnt(RESOURCES_FONTS + "arial.fnt");
 
 	// Audio channels
 	general_channel_ = AudioChannel::create();
@@ -541,20 +484,17 @@ void Game::render_loop()
 	fps_display->set_z(10);
 	add_ui(fps_display);
 
-	auto dcc_display = MakeShared<TextBlock>();
-	dcc_display->set_z(10);
-	dcc_display->set_position(Vector2(0, 50));
-	add_ui(dcc_display);
-
 	soloud_->set3dListenerUp(0, 0, 1);
 
-	float tick_start = glfwGetTime();
+	const auto start_time = std::chrono::system_clock::now();
 
-	while (!glfwWindowShouldClose(window_))
-	{
-		while (glfwGetTime() - tick_start < 1.0f / settings_->fps_limit);
-		const float tick_time = glfwGetTime() - tick_start;
-		tick_start = glfwGetTime();
+	auto tick_start = start_time;
+	
+	while (!close)
+	{		
+		while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tick_start).count() / 1000.0f < 1.0f / settings_->fps_limit);
+		const float tick_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tick_start).count() / 1000.0f;
+		tick_start = std::chrono::system_clock::now();
 
 		time_ += tick_time;
 		
@@ -565,19 +505,12 @@ void Game::render_loop()
 		}
 		main_thread_calls_.clear();
 		main_thread_calls_mutex_.unlock();
-		
-		int width, height;
- 
-		glfwGetFramebufferSize(window_, &width, &height);
-		
-		glViewport(0, 0, width, height);
-		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		mouse_delta_ = mouse_pos_ - last_mouse_pos_;
 		if (lock_mouse_)
 		{
-			last_mouse_pos_ = mouse_pos_ = Vector2(static_cast<float>(width / 2), static_cast<float>(height / 2));
-			glfwSetCursorPos(window_, width / 2, height / 2);
+			//last_mouse_pos_ = mouse_pos_ = Vector2(static_cast<float>(width / 2), static_cast<float>(height / 2));
+			//glfwSetCursorPos(window_, width / 2, height / 2);
 		}
 		else
 		{
@@ -595,38 +528,8 @@ void Game::render_loop()
 		
 		fps_display->set_text(String::format("FPS: %i", fps_last_count));
 
-		String dcc_string = "--draw calls--";
-		for (auto& dcc : draw_call_counter_)
-		{
-			dcc_string += "\n" + dcc->key + ": " + String::make(dcc->value);
-		}
-		dcc_display->set_text(dcc_string);
-
-		uint sun_shadow_tex;
-		glGenTextures(1, &sun_shadow_tex);
-		
-		glBindTexture(GL_TEXTURE_2D, sun_shadow_tex);
-		glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, SHADOW_WIDTH, SHADOW_HEIGHT, 0, GL_DEPTH_COMPONENT, GL_FLOAT, nullptr);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-		glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-		uint sun_shadow_fbo;
-		glGenFramebuffers(1, &sun_shadow_fbo);
-		
-		glBindFramebuffer(GL_FRAMEBUFFER, sun_shadow_fbo);
-		glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, sun_shadow_tex, 0);
-		glDrawBuffer(GL_NONE);
-		glReadBuffer(GL_NONE);
-		glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
 		if (world_)
 		{
-			basic_material_3d_->set_param_value("ambient_light", world_->ambient_color.to_vector3() * world_->ambient_intensity);
-			basic_material_3d_->set_param_value("sun_light", world_->sun_color.to_vector3() * world_->sun_intensity);
-			basic_material_3d_->set_param_value("sun_dir", -world_->sun_angle.forward());
-			
 			// ticking
 			if (tick_time > 0.0f)
 			{
@@ -634,17 +537,18 @@ void Game::render_loop()
 				world_->tick(tick_time);
 			}
 
-			if (current_camera_ && width > 0 && height > 0)
+			if (current_camera_)
 			{
-				latest_camera_info_ = current_camera_->get_camera_info();
-				auto cam_from = latest_camera_info_.position;
-				auto cam_to = latest_camera_info_.position + latest_camera_info_.rotation.forward();
+				auto cam_from = current_camera_->get_owner()->get_location();
+				auto cam_to = current_camera_->get_owner()->get_location() + current_camera_->get_owner()->get_rotation().forward();
 				
 				// audio
 				soloud_->set3dListenerPosition(cam_from.x, cam_from.y, cam_from.z);
 				soloud_->set3dListenerAt(cam_to.x, cam_to.y, cam_to.z);
+
+				getRoot()->renderOneFrame();
 				
-				// 3d matrix
+				/*// 3d matrix
 				cam_from.y *= -1;
 				cam_to.y *= -1;
 
@@ -696,25 +600,6 @@ void Game::render_loop()
 						}
 					}
 				}
-				if (test)
-				{
-					auto depth = Array2D<float>(SHADOW_WIDTH, SHADOW_HEIGHT);
-					
-					glBindTexture(GL_TEXTURE_2D, sun_shadow_tex);
-					glGetTexImage(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT, GL_FLOAT, depth.begin());
-
-					auto pixels = Array2D<Color>(SHADOW_WIDTH, SHADOW_HEIGHT);
-					for (uint i = 0; i < pixels.size(); i++)
-					{
-						byte b = (int)(depth.begin()[i] * 255000) % 255;
-						pixels.begin()[i] = Color(b, b, b);
-					}
-
-					auto tex = MakeShared<Texture>("shadow", pixels);
-					tex->save_to_file("test.bmp");
-
-					test = false;
-				}
 
 				glViewport(0, 0, width, height);
 				glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -726,12 +611,9 @@ void Game::render_loop()
 						material->render(render_data);
 					}
 				}
-				is_render_stage_ = false;
+				is_render_stage_ = false;*/
 			}
 		}
- 
-		glfwSwapBuffers(window_);
-		glfwPollEvents();
 	}
 
 	Texture::print_usage_dump();
@@ -744,21 +626,6 @@ void Game::cleanup()
 	verbose("Game", "Cleaning up...");
 
 	unloading_stage();
-	
-	for (auto& material_list : materials_)
-	{
-		for (auto& material : material_list->value)
-		{
-			material->cleanup();
-		}
-	}
-
-	for (auto& shader : shaders_)
-	{
-		shader.value->cleanup();
-	}
-	
-	shaders_.clear();
 
 	Texture::unload_all_static();
 
@@ -801,124 +668,135 @@ void Game::init_game()
 	soloud_->init();
 }
 
-void Game::set_app_path(const Path& new_app_path)
+bool Game::keyPressed(const OgreBites::KeyboardEvent& evt)
 {
-	app_path_ = new_app_path;
-	app_path_set_ = true;
+	if (instance_)
+	{
+		if (evt.repeat)
+		{
+			if (instance_->ui_input_element_)
+			{
+				instance_->ui_input_element_->key_hold(evt.keysym.sym);
+			}
+		}
+		else
+		{
+			if (evt.keysym.sym == OgreBites::SDLK_ESCAPE)
+			{
+				close = true;
+			}
+			else if (instance_->ui_input_element_)
+			{
+				instance_->ui_input_element_->key_down(evt.keysym.sym);
+			}
+			else if (instance_->current_controllable_)
+			{
+				instance_->current_controllable_->key_down(evt.keysym.sym);
+			}
+		}
+	}
+
+	return true;
 }
 
-void Game::error_callback(int error, const char* description)
+bool Game::keyReleased(const OgreBites::KeyboardEvent& evt)
 {
-	print_error("OpenGL", "%i - %s", error, description);
-}
-
-void Game::key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
-{
-	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-		glfwSetWindowShouldClose(window, GLFW_TRUE);
-	else if (instance_)
+	if (instance_)
 	{
 		if (instance_->ui_input_element_)
 		{
-			if (action == GLFW_PRESS)
-			{
-				instance_->ui_input_element_->key_down(key);
-			}
-			else if (action == GLFW_RELEASE)
-			{
-				instance_->ui_input_element_->key_up(key);
-			}
-			else if (action == GLFW_REPEAT)
-			{
-				instance_->ui_input_element_->key_hold(key);
-			}
+			instance_->ui_input_element_->key_up(evt.keysym.sym);
 		}
 		else if (instance_->current_controllable_)
 		{
-			if (action == GLFW_PRESS)
-			{
-				instance_->current_controllable_->key_down(key);
-			}
-			else if (action == GLFW_RELEASE)
-			{
-				instance_->current_controllable_->key_up(key);
-			}
+			instance_->current_controllable_->key_up(evt.keysym.sym);
 		}
 	}
+
+	return true;
 }
 
-void Game::character_callback(class GLFWwindow* window, uint codepoint)
+bool Game::textInput(const OgreBites::TextInputEvent& evt)
 {
-	if (instance_->ui_input_element_)
+	if (instance_ && instance_->ui_input_element_)
 	{
-		instance_->ui_input_element_->text_input(codepoint);
+		instance_->ui_input_element_->text_input(evt.chars[0]);
 	}
+
+	return true;
 }
 
-void Game::mouse_button_callback(class GLFWwindow* window, int button, int action, int mods)
+bool Game::mousePressed(const OgreBites::MouseButtonEvent& evt)
+{
+	if (instance_ && instance_->current_controllable_)
+	{
+		if (auto ui_under_mouse = instance_->ui_under_mouse_.lock())
+		{
+			if (instance_->ui_input_element_ && instance_->ui_input_element_ != ui_under_mouse)
+			{
+				instance_->ui_input_element_->on_unfocus();
+				instance_->ui_input_element_ = nullptr;
+			}
+
+			auto inv_mat = ui_under_mouse->get_ui_matrix().inverse();
+			auto q1 = inv_mat * ui_under_mouse->get_position();
+			auto q2 = inv_mat * (ui_under_mouse->get_position() + ui_under_mouse->get_size());
+			auto q = inv_mat * instance_->mouse_pos_ / instance_->ui_scale_;
+
+			const auto rel_pos_aspect = (q - q1) / (q2 - q1);
+			const auto rel_pos = rel_pos_aspect * ui_under_mouse->get_size();
+				
+			ui_under_mouse->on_press(rel_pos);
+			ui_under_mouse->is_pressed_ = true;
+			instance_->pressed_ui_ = ui_under_mouse;
+		}
+		else
+		{
+			if (instance_->ui_input_element_)
+			{
+				instance_->ui_input_element_->on_unfocus();
+				instance_->ui_input_element_ = nullptr;
+			}
+				
+			instance_->current_controllable_->mouse_button_down(evt.type);
+		}
+	}
+	
+	return true;
+}
+
+bool Game::mouseReleased(const OgreBites::MouseButtonEvent& evt)
 {
 	if (instance_->current_controllable_)
 	{
-		if (action == GLFW_PRESS)
+		if (auto released_ui = instance_->pressed_ui_.lock())
 		{
-			if (auto ui_under_mouse = instance_->ui_under_mouse_.lock())
-			{
-				if (instance_->ui_input_element_ && instance_->ui_input_element_ != ui_under_mouse)
-				{
-					instance_->ui_input_element_->on_unfocus();
-					instance_->ui_input_element_ = nullptr;
-				}
-
-				auto inv_mat = ui_under_mouse->get_ui_matrix().inverse();
-				auto q1 = inv_mat * ui_under_mouse->get_position();
-				auto q2 = inv_mat * (ui_under_mouse->get_position() + ui_under_mouse->get_size());
-				auto q = inv_mat * instance_->mouse_pos_ / instance_->ui_scale_;
-
-				const auto rel_pos_aspect = (q - q1) / (q2 - q1);
-				const auto rel_pos = rel_pos_aspect * ui_under_mouse->get_size();
-				
-				ui_under_mouse->on_press(rel_pos);
-				ui_under_mouse->is_pressed_ = true;
-				instance_->pressed_ui_ = ui_under_mouse;
-			}
-			else
-			{
-				if (instance_->ui_input_element_)
-				{
-					instance_->ui_input_element_->on_unfocus();
-					instance_->ui_input_element_ = nullptr;
-				}
-				
-				instance_->current_controllable_->mouse_button_down(button);
-			}
+			released_ui->on_release();
+			released_ui->is_pressed_ = false;
+			instance_->pressed_ui_.reset();
 		}
-		else if (action == GLFW_RELEASE)
+		else
 		{
-			if (auto released_ui = instance_->pressed_ui_.lock())
-			{
-				released_ui->on_release();
-				released_ui->is_pressed_ = false;
-				instance_->pressed_ui_.reset();
-			}
-			else
-			{
-				instance_->current_controllable_->mouse_button_up(button);
-			}
+			instance_->current_controllable_->mouse_button_up(evt.type);
 		}
 	}
+	
+	return true;
 }
 
-void Game::scroll_callback(class GLFWwindow* window, double xoffset, double yoffset)
+bool Game::axisMoved(const OgreBites::AxisEvent& evt)
 {
 	if (instance_->ui_input_element_ == nullptr && instance_->current_controllable_)
 	{
-		instance_->current_controllable_->scroll(Vector2(xoffset, yoffset));
+		instance_->current_controllable_->scroll(Vector2(0, evt.value));
 	}
+
+	return true;
 }
 
-void Game::cursor_position_callback(class GLFWwindow* window, double x_pos, double y_pos)
+bool Game::mouseMoved(const OgreBites::MouseMotionEvent& evt)
 {
-	instance_->mouse_pos_ = { static_cast<float>(x_pos), static_cast<float>(y_pos) };
+	instance_->mouse_pos_ = { static_cast<float>(evt.x), static_cast<float>(evt.y) };
 	if (!instance_->has_mouse_pos_)
 	{
 		instance_->last_mouse_pos_ = instance_->mouse_pos_;
@@ -946,9 +824,11 @@ void Game::cursor_position_callback(class GLFWwindow* window, double x_pos, doub
 			
 		instance_->ui_under_mouse_ = ui_under_mouse;
 	}
+
+	return true;
 }
 
-void Game::window_size_callback(class GLFWwindow* window, int width, int height)
+void Game::windowResized(Ogre::RenderWindow* rw)
 {
-	instance_->ui_root_->set_size(Vector2(static_cast<float>(width) / get_ui_scale(), static_cast<float>(height) / get_ui_scale()));
+	instance_->ui_root_->set_size(Vector2(static_cast<float>(rw->getWidth()) / get_ui_scale(), static_cast<float>(rw->getHeight()) / get_ui_scale()));
 }

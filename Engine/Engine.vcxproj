@@ -149,7 +149,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;HAVE_LIBC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -172,7 +172,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;ENGINE_EXPORTS;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;HAVE_LIBC;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
@@ -184,7 +184,7 @@
       <SubSystem>Windows</SubSystem>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
-      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <GenerateDebugInformation>false</GenerateDebugInformation>
       <EnableUAC>false</EnableUAC>
     </Link>
     <PostBuildEvent>
@@ -206,7 +206,11 @@
     <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="Audio.h" />
     <ClInclude Include="AudioChannel.h" />
+    <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="FastOperator.h" />
+    <ClInclude Include="Material.h" />
+    <ClInclude Include="MeshComponent.h" />
+    <ClInclude Include="Module.h" />
     <ClInclude Include="Name.h" />
     <ClInclude Include="performance.h" />
     <ClInclude Include="Pointers.h" />
@@ -221,7 +225,6 @@
     <ClInclude Include="Array2D.h" />
     <ClInclude Include="Assert.h" />
     <ClInclude Include="BasicTypes.h" />
-    <ClInclude Include="Camera.h" />
     <ClInclude Include="Color.h" />
     <ClInclude Include="Curve.h" />
     <ClInclude Include="Database.h" />
@@ -235,11 +238,9 @@
     <ClInclude Include="Game.h" />
     <ClInclude Include="GameInfo.h" />
     <ClInclude Include="GeometryEditor.h" />
-    <ClInclude Include="ICamera.h" />
     <ClInclude Include="IControllable.h" />
     <ClInclude Include="ImageEditor.h" />
     <ClInclude Include="Interpolators.h" />
-    <ClInclude Include="IRenderable.h" />
     <ClInclude Include="ITexture.h" />
     <ClInclude Include="IUsageCountable.h" />
     <ClInclude Include="IUsageCountableBase.h" />
@@ -251,7 +252,7 @@
     <ClInclude Include="Margins.h" />
     <ClInclude Include="Math.h" />
     <ClInclude Include="Matrix4x4.h" />
-    <ClInclude Include="Mesh.h" />
+    <ClInclude Include="StaticMesh.h" />
     <ClInclude Include="Mod.h" />
     <ClInclude Include="Object.h" />
     <ClInclude Include="Pair.h" />
@@ -271,16 +272,9 @@
     <ClInclude Include="Random.h" />
     <ClInclude Include="Rect.h" />
     <ClInclude Include="Regex.h" />
-    <ClInclude Include="Material.h" />
-    <ClInclude Include="Material3D.h" />
-    <ClInclude Include="Material3DInstance.h" />
-    <ClInclude Include="MaterialInstance.h" />
-    <ClInclude Include="MaterialUI.h" />
-    <ClInclude Include="MaterialUIInstance.h" />
     <ClInclude Include="SaveGame.h" />
     <ClInclude Include="Set.h" />
     <ClInclude Include="Settings.h" />
-    <ClInclude Include="Shader.h" />
     <ClInclude Include="SimpleMap.h" />
     <ClInclude Include="SlotBase.h" />
     <ClInclude Include="SpriteFont.h" />
@@ -295,6 +289,7 @@
     <ClInclude Include="TextureBinding.h" />
     <ClInclude Include="Slot.h" />
     <ClInclude Include="TimerHandle.h" />
+    <ClInclude Include="Transform.h" />
     <ClInclude Include="Tree2D.h" />
     <ClInclude Include="ui\ButtonImage.h" />
     <ClInclude Include="ui\ButtonImagePanel.h" />
@@ -335,10 +330,13 @@
     <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="AudioChannel.cpp" />
+    <ClCompile Include="CameraComponent.cpp" />
+    <ClCompile Include="Material.cpp" />
+    <ClCompile Include="MeshComponent.cpp" />
+    <ClCompile Include="Module.cpp" />
     <ClCompile Include="Name.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SoundHandle.cpp" />
-    <ClCompile Include="Camera.cpp" />
     <ClCompile Include="Color.cpp" />
     <ClInclude Include="Database.cpp" />
     <ClCompile Include="Cubemap.cpp" />
@@ -351,14 +349,13 @@
     <ClCompile Include="File.cpp" />
     <ClCompile Include="Game.cpp" />
     <ClCompile Include="GeometryEditor.cpp" />
-    <ClCompile Include="glad.c" />
     <ClCompile Include="ImageEditor.cpp" />
     <ClCompile Include="JSON.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="LogStream.cpp" />
     <ClCompile Include="Margins.cpp" />
     <ClCompile Include="Matrix4x4.cpp" />
-    <ClCompile Include="Mesh.cpp" />
+    <ClCompile Include="StaticMesh.cpp" />
     <ClCompile Include="Mod.cpp" />
     <ClCompile Include="Object.cpp" />
     <ClCompile Include="Path.cpp" />
@@ -378,14 +375,7 @@
     <ClCompile Include="Quaternion.cpp" />
     <ClCompile Include="Rect.cpp" />
     <ClCompile Include="Regex.cpp" />
-    <ClCompile Include="Material.cpp" />
-    <ClCompile Include="Material3D.cpp" />
-    <ClCompile Include="Material3DInstance.cpp" />
-    <ClCompile Include="MaterialInstance.cpp" />
-    <ClCompile Include="MaterialUI.cpp" />
-    <ClCompile Include="MaterialUIInstance.cpp" />
     <ClCompile Include="SaveGame.cpp" />
-    <ClCompile Include="Shader.cpp" />
     <ClCompile Include="SimpleMap.cpp" />
     <ClCompile Include="SlotBase.cpp" />
     <ClCompile Include="SpriteFont.cpp" />
@@ -423,16 +413,34 @@
     <Natvis Include="Engine.natvis" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="MaterialParameters.h" />
-    <Content Include="resources\engine\meshes\axis_arrows.obj" />
-    <Content Include="resources\engine\meshes\icosphere.obj" />
-    <Content Include="resources\engine\meshes\monkey.obj" />
-    <Content Include="resources\engine\meshes\sphere.obj" />
-    <Content Include="resources\engine\meshes\square.obj" />
-    <Content Include="resources\engine\shaders\basic_ui.frag" />
-    <Content Include="resources\engine\shaders\basic_ui.vert" />
-    <Content Include="resources\engine\shaders\basic_3D.frag" />
-    <Content Include="resources\engine\shaders\basic_3D.vert" />
+    <Content Include="resources\fonts\arial.fnt" />
+    <Content Include="resources\fonts\arial_0.png" />
+    <Content Include="resources\meshes\axis_arrows.obj" />
+    <Content Include="resources\meshes\icosphere.obj" />
+    <Content Include="resources\meshes\monkey.obj" />
+    <Content Include="resources\meshes\sphere.obj" />
+    <Content Include="resources\meshes\square.obj" />
+    <Content Include="resources\shaders\basic_3D.frag" />
+    <Content Include="resources\shaders\basic_3D.vert" />
+    <Content Include="resources\shaders\basic_ui.frag" />
+    <Content Include="resources\shaders\basic_ui.vert" />
+    <Content Include="resources\textures\axis_arrows.png" />
+    <Content Include="resources\textures\pixels.png" />
+    <Content Include="resources\textures\ui\animation_editor\add_linear.png" />
+    <Content Include="resources\textures\ui\animation_editor\add_sinusoid.png" />
+    <Content Include="resources\textures\ui\animation_editor\linear.png" />
+    <Content Include="resources\textures\ui\animation_editor\pause.png" />
+    <Content Include="resources\textures\ui\animation_editor\play.png" />
+    <Content Include="resources\textures\ui\animation_editor\play_reversed.png" />
+    <Content Include="resources\textures\ui\animation_editor\point.png" />
+    <Content Include="resources\textures\ui\animation_editor\point_active.png" />
+    <Content Include="resources\textures\ui\animation_editor\remove.png" />
+    <Content Include="resources\textures\ui\animation_editor\remove_small.png" />
+    <Content Include="resources\textures\ui\animation_editor\sinusoid.png" />
+    <Content Include="resources\textures\ui\animation_editor\stop.png" />
+    <Content Include="resources\textures\ui\button_panel.png" />
+    <Content Include="resources\textures\ui\input_panel.png" />
+    <Content Include="resources\textures\ui\panel.png" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

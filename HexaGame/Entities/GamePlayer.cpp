@@ -1,7 +1,5 @@
 ﻿#include "GamePlayer.h"
 
-#include <GLFW/glfw3.h>
-
 #include "AxisArrows.h"
 #include "ComplexTile.h"
 #include "DebugPlayer.h"
@@ -10,9 +8,7 @@
 #include "Characters/Slime.h"
 #include "Engine/Animation.h"
 #include "Engine/AnimatorComponent.h"
-#include "Engine/Camera.h"
 #include "Engine/GeometryEditor.h"
-#include "Engine/Material3D.h"
 #include "Engine/SystemIO.h"
 #include "Engine/Physics/RaycastResult.h"
 #include "HexaGame/CharacterInventory.h"
@@ -25,7 +21,6 @@
 #include "HexaGame/WorldChunkObserver.h"
 #include "HexaGame/WorldPath.h"
 #include "HexaGame/Database/Items.h"
-#include "HexaGame/Database/Tiles.h"
 #include "HexaGame/Entities/Character.h"
 #include "HexaGame/ui/Toolbar.h"
 #include "HexaGame/Worlds/HexaWorld.h"
@@ -38,12 +33,12 @@ void GamePlayer::on_start()
     
     if (auto world = cast<HexaWorld>(get_world()))
     {
-        const auto current_chunk = ChunkIndex::from_vector(get_position());
+        const auto current_chunk = ChunkIndex::from_vector(get_location());
             
         observer_ = world->register_chunk_observer(current_chunk, load_distance_);
         observer_->set_render_chunks(true);
 
-        const auto spawn_chunk = world->get_chunk(ChunkIndex::from_vector(get_position()));
+        const auto spawn_chunk = world->get_chunk(ChunkIndex::from_vector(get_location()));
         if (spawn_chunk->get_state() == WorldChunkDataState::Loaded)
         {
             spawn_chunk_loaded(spawn_chunk);
@@ -56,7 +51,7 @@ void GamePlayer::on_start()
 }
 
 Map<int, uint> hotbar = {
-    {GLFW_KEY_1, 0},
+    /*{GLFW_KEY_1, 0},
     {GLFW_KEY_2, 1},
     {GLFW_KEY_3, 2},
     {GLFW_KEY_4, 3},
@@ -65,14 +60,14 @@ Map<int, uint> hotbar = {
     {GLFW_KEY_7, 6},
     {GLFW_KEY_8, 7},
     {GLFW_KEY_9, 8},
-    {GLFW_KEY_0, 9}
+    {GLFW_KEY_0, 9}*/
 };
 
 void GamePlayer::key_down(int key)
 {
     Player::key_down(key);
 
-    switch (key)
+    /*switch (key)
     {
     case GLFW_KEY_W:
         move_.x += 1;
@@ -98,14 +93,14 @@ void GamePlayer::key_down(int key)
             }
         }
         break;
-    }
+    }*/
 }
 
 void GamePlayer::key_up(int key)
 {
     Player::key_up(key);
 
-    switch (key)
+    /*switch (key)
     {
     case GLFW_KEY_W:
         move_.x -= 1;
@@ -122,7 +117,7 @@ void GamePlayer::key_up(int key)
     case GLFW_KEY_LEFT_SHIFT:
         use_item_mode_ = false;
         break;
-    }
+    }*/
 }
 
 List<Shared<Entity>> markers;
@@ -230,7 +225,7 @@ void GamePlayer::mouse_button_down(int button)
                     }
                     else if (auto item_drop = cast<ItemDrop>(hit.entity))
                     {
-                        const auto item_tile = TileIndex::from_vector(item_drop->get_position());
+                        const auto item_tile = TileIndex::from_vector(item_drop->get_location());
                         const auto character = get_character();
                         if (TileIndex::distance_xy(item_tile, character->get_tile_position()) <= 1 && Math::abs(item_tile.z - character->get_tile_position().z) <= 1)
                         {
@@ -249,10 +244,6 @@ void GamePlayer::mouse_button_down(int button)
     else if (button == 2)
     {
         rotate_camera_ = true;
-    }
-    else if (button == 1)
-    {
-        Game::get_instance()->test = true;
     }
 }
 
@@ -273,7 +264,7 @@ void GamePlayer::on_tick(float delta_time)
 {    
     if (auto world = cast<HexaWorld>(get_world()))
     {
-        auto pos = get_position();
+        auto pos = get_location();
         if (auto character = get_character())
         {
             static float speed = 3;
@@ -303,7 +294,7 @@ void GamePlayer::on_tick(float delta_time)
                 pos.z = tile_check_to.z;
             }
             
-            set_position(pos);
+            set_location(pos);
             desired_camera_pivot_z = pos.z;
         }
         
@@ -351,14 +342,6 @@ Shared<CharacterController> GamePlayer::get_as_character_controller()
     return cast<CharacterController>(shared_from_this());
 }
 
-CameraInfo GamePlayer::get_camera_info() const
-{
-    return {
-        camera_position_,
-        camera_rotation_
-    };
-}
-
 void GamePlayer::spawn_chunk_loaded(const Shared<WorldChunk>& sender)
 {
     sender->on_loaded.unbind(this, &GamePlayer::spawn_chunk_loaded);
@@ -383,7 +366,7 @@ void GamePlayer::spawn_chunk_loaded(const Shared<WorldChunk>& sender)
                     world->get_chunk(character->get_tile_position().get_chunk())->on_tile_change.bind(this, &GamePlayer::current_chunk_tile_changed);
                     
                     posses_character(character);
-                    set_position(character->get_tile_position().to_vector());
+                    set_location(character->get_tile_position().to_vector());
                     //camera_rotation_ = Quaternion(Vector3(0, 30, 180.0f));
                     camera_pivot_z_ = desired_camera_pivot_z = character->get_tile_position().z * HexaMath::tile_height;
 

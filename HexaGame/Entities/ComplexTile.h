@@ -19,8 +19,6 @@ public:
     FORCEINLINE const TileIndex& get_index() const { return index_; }
 
 protected:
-    bool is_rigid_body() const override { return true; }
-
     bool initial_is_blocking = true;
 
 private:

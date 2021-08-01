@@ -11,6 +11,8 @@ GameWorld::GameWorld(const Shared<WorldGenerator>& generator)
 
 void GameWorld::on_start()
 {
+    HexaWorld::on_start();
+    
     player_ = MakeShared<GamePlayer>();
     spawn_entity(player_);
 
@@ -20,5 +22,5 @@ void GameWorld::on_start()
 
 void GameWorld::on_tick(float delta_time)
 {
-    skybox_->set_position(Game::get_camera_info().position);
+    //skybox_->set_location(Game::get_camera_info().position);
 }

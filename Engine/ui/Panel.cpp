@@ -5,7 +5,7 @@
 #include "Engine/Texture.h"
 
 Panel::Panel()
-    : Panel(Texture::load_png(RESOURCES_ENGINE_TEXTURES_UI + "panel.png"), Margins(4, 4, 4, 4))
+    : Panel(Texture::load_png(RESOURCES_TEXTURES_UI + "panel.png"), Margins(4, 4, 4, 4))
 {
 }
 

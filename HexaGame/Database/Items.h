@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "Engine/DatabaseHelpers.h"
-#include "Engine/Mesh.h"
+#include "Engine/StaticMesh.h"
 #include "Engine/Texture.h"
 #include "HexaGame/MetaTags.h"
 #include "HexaGame/Paths.h"
@@ -24,11 +24,11 @@ public:
 
     DATABASE_INIT_FUNC(ItemInfo)
     {
-        INIT_ITEM_DATABASE_ENTRY(iron_shovel,  ItemToolInfo, { MetaTags::IRON  }, RESOURCES_HEXA, "shovel",  ItemType::Shovel,                        "Iron Shovel",  1, 1.0f, TARGET_INSIDE);
-        //INIT_ITEM_DATABASE_ENTRY(iron_pickaxe, ItemToolInfo, { MetaTags::IRON  }, RESOURCES_HEXA, "pickaxe", ItemType::Pickaxe,                        "Iron Pickaxe", 1, 1.0f, TARGET_INSIDE);
-        INIT_ITEM_DATABASE_ENTRY(iron_axe,     ItemToolInfo, { MetaTags::IRON  }, RESOURCES_HEXA, "axe",     ItemType::Axe,                           "Iron Axe",     1, 1.0f, TARGET_INSIDE);
-        INIT_ITEM_DATABASE_ENTRY(stone_bricks, ItemTileInfo, { MetaTags::STONE }, RESOURCES_HEXA, "bricks",  ItemType::Tile | ItemType::Resource,     "Stone Bricks", 1.0f);
-        INIT_ITEM_DATABASE_ENTRY(dirt,         ItemTileInfo, { MetaTags::DIRT  }, RESOURCES_HEXA, "pile",    ItemType::Tile | ItemType::Resource,     "Dirt Pile",    1.0f);
-        INIT_ITEM_DATABASE_ENTRY(ash_log,      ItemInfo,     { MetaTags::WOOD  }, RESOURCES_HEXA, "log",     ItemType::Resource,                      "Ash Log",      99, 1.0f, TARGET_DEFAULT);
+        //INIT_ITEM_DATABASE_ENTRY(iron_shovel,  ItemToolInfo, { MetaTags::IRON  }, RESOURCES_HEXA, "shovel",  ItemType::Shovel,                        "Iron Shovel",  1, 1.0f, TARGET_INSIDE);
+        ////INIT_ITEM_DATABASE_ENTRY(iron_pickaxe, ItemToolInfo, { MetaTags::IRON  }, RESOURCES_HEXA, "pickaxe", ItemType::Pickaxe,                        "Iron Pickaxe", 1, 1.0f, TARGET_INSIDE);
+        //INIT_ITEM_DATABASE_ENTRY(iron_axe,     ItemToolInfo, { MetaTags::IRON  }, RESOURCES_HEXA, "axe",     ItemType::Axe,                           "Iron Axe",     1, 1.0f, TARGET_INSIDE);
+        //INIT_ITEM_DATABASE_ENTRY(stone_bricks, ItemTileInfo, { MetaTags::STONE }, RESOURCES_HEXA, "bricks",  ItemType::Tile | ItemType::Resource,     "Stone Bricks", 1.0f);
+        //INIT_ITEM_DATABASE_ENTRY(dirt,         ItemTileInfo, { MetaTags::DIRT  }, RESOURCES_HEXA, "pile",    ItemType::Tile | ItemType::Resource,     "Dirt Pile",    1.0f);
+        //INIT_ITEM_DATABASE_ENTRY(ash_log,      ItemInfo,     { MetaTags::WOOD  }, RESOURCES_HEXA, "log",     ItemType::Resource,                      "Ash Log",      99, 1.0f, TARGET_DEFAULT);
     }
 };

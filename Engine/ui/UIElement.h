@@ -74,7 +74,7 @@ private:
     
     Vector3 position_;
     Quaternion rotation_;
-    Vector3 size_;
+    Vector2 size_;
     Color color_ = Color::white();
     List<Shared<UIElement>> children_;
     Weak<UIElement> parent_;

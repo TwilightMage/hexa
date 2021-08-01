@@ -1,14 +1,13 @@
 ﻿#include "Skybox.h"
 
 #include "Engine/GeometryEditor.h"
-#include "Engine/Material3D.h"
 #include "HexaGame/HexaGame.h"
 
-Shared<Mesh> skybox_mesh;
+Shared<StaticMesh> skybox_mesh;
 
 void Skybox::on_start()
 {
-    if (skybox_mesh == nullptr)
+    /*if (skybox_mesh == nullptr)
     {
         auto vertices = GeometryEditor::get_unit_cube()->get_vertices();
         auto indices = GeometryEditor::get_unit_cube()->get_indices();
@@ -16,9 +15,9 @@ void Skybox::on_start()
         GeometryEditor::invert_vertices(vertices);
         GeometryEditor::scale(vertices, Vector3(100));
 
-        skybox_mesh = MakeShared<Mesh>("Skybox", vertices, indices);
+        skybox_mesh = MakeShared<StaticMesh>("Skybox", vertices, indices);
     }
     
     set_mesh(skybox_mesh);
-    set_material(HexaGame::skybox_material);
+    set_material(HexaGame::skybox_material);*/
 }

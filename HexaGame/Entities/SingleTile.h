@@ -5,8 +5,12 @@
 class SingleTile : public Entity
 {
 public:
+    SingleTile();
+    
     void on_start() override;
 
-protected:
-    bool is_rigid_body() const override { return false; }
+    FORCEINLINE const Shared<MeshComponent>& mesh() const { return mesh_; }
+
+private:
+    Shared<MeshComponent> mesh_;
 };

@@ -13,13 +13,17 @@ class EXPORT EntityComponent : public EnableSharedFromThis<EntityComponent>
     friend World;
 
 public:
-    FORCEINLINE Shared<Entity> get_owner() const { return owner.lock(); }
-
+    FORCEINLINE Shared<Entity> get_owner() const;
+    FORCEINLINE bool is_started() const { return started_; }
+    
 protected:
     virtual void on_start();
     virtual void on_tick(float delta_time);
     virtual void on_destroy();
 
 private:
-    Weak<Entity> owner;
+    void start();
+    
+    Entity* owner_;
+    bool started_ = false;
 };

@@ -8,9 +8,6 @@
 #include <commdlg.h>
 #endif
 
-#include <GLFW/glfw3.h>
-#include <GLFW/glfw3native.h>
-
 Shared<Path> SystemIO::show_save_file_dialog(const FileDialogInfo& dialog_info)
 {
     return show_save_file_dialog_inner("", dialog_info);
@@ -37,7 +34,7 @@ Shared<Path> SystemIO::show_save_file_dialog_inner(const String& default_path, c
     OPENFILENAMEA info;
     memset(&info, 0, sizeof(info));
     info.lStructSize = sizeof(info);
-    info.hwndOwner = glfwGetWin32Window(Game::instance_->window_);
+    //info.hwndOwner = glfwGetWin32Window(Game::instance_->window_);
     info.Flags = OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_OVERWRITEPROMPT;
     info.lpstrDefExt = "*";
 
@@ -87,7 +84,7 @@ Shared<Path> SystemIO::show_open_file_dialog_inner(const String& default_path, c
     OPENFILENAMEA info;
     ZeroMemory(&info, sizeof(info));
     info.lStructSize = sizeof(info);
-    info.hwndOwner = glfwGetWin32Window(Game::instance_->window_);
+    //info.hwndOwner = glfwGetWin32Window(Game::instance_->window_);
     info.Flags = OFN_ENABLESIZING | OFN_HIDEREADONLY | OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
     info.lpstrDefExt = "*";
 

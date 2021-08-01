@@ -69,7 +69,7 @@ WorldGenerator::~WorldGenerator()
 	}
 }
 
-void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const SolidTileInfo>& tileInfo, List<Mesh::Vertex>& vertices, List<uint>& indices, float seed)
+void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const SolidTileInfo>& tileInfo, List<StaticMesh::Vertex>& vertices, List<uint>& indices, float seed)
 {
     int vertexCount = 0;
 	int int_seed = static_cast<int>(seed * 127.2355f);
@@ -78,7 +78,7 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const Solid
 	if (!!(sides & TileSide::Down)) vertexCount += 6;
 	if (!!(sides & TileSide::Wall)) vertexCount += 14;
 
-	vertices = List<Mesh::Vertex>(vertexCount);
+	vertices = List<StaticMesh::Vertex>(vertexCount);
 	indices.clear();
 
 	int offset = 0;
@@ -91,7 +91,7 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const Solid
 		for (uint i = 0; i < 6; i++)
 		{
 			vertices[i + offset] = {
-				Vector3(pos_coses[i] * 0.5f, pos_sines[i % 6] * 0.5f, 0.0f),
+				Vector3(pos_sines[i % 6] * 0.5f * 100, 0.0f, pos_coses[i] * 0.5f * 100),
                 floor_uv_pos + Vector2(uv_coses[(i + angleOffset) % 6] * cap_mult.x, uv_sines[(i + angleOffset) % 6] * cap_mult.y),
                 Vector3::one()
             };
@@ -110,7 +110,7 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const Solid
 		for (uint i = 0; i < 6; i++)
 		{
 			vertices[i + offset] = {
-				Vector3(pos_coses[i] * 0.5f, pos_sines[i % 6] * 0.5f, HexaMath::tile_height),
+				Vector3(pos_sines[i % 6] * 0.5f * 100, HexaMath::tile_height * 100, pos_coses[i] * 0.5f * 100),
                 ceil_uv_pos + Vector2(uv_coses[(i + angleOffset) % 6] * cap_mult.x, uv_sines[(i + angleOffset) % 6] * cap_mult.y),
                 Vector3::one()
             };
@@ -129,12 +129,12 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const Solid
 			const auto pos = Vector2(pos_coses[i % 6], pos_sines[i % 6]);
 			const auto uv_offset = Vector2(static_cast<float>(int_seed % 6), static_cast<float>(int_seed % 3)) * wall_mult;
 			vertices[i + offset] = {
-				Vector3(pos.x * 0.5f, pos.y * 0.5f, 0.0f),
+				Vector3(pos.y * 0.5f * 100, 0.0f, pos.x * 0.5f * 100),
 				Vector2(i * wall_mult.x + uv_offset.x, wall_mult.y + uv_offset.y),
 				Vector3::one()
 			};
 			vertices[i + offset + 7] = {
-				Vector3(pos.x * 0.5f, pos.y * 0.5f, HexaMath::tile_height),
+				Vector3(pos.y * 0.5f * 100, HexaMath::tile_height * 100, pos.x * 0.5f * 100),
                 Vector2(i * wall_mult.x + uv_offset.x, uv_offset.y),
                 Vector3::one()
             };

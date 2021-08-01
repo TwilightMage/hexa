@@ -1,7 +1,5 @@
 ﻿#include "Cubemap.h"
 
-#include <glad/glad.h>
-
 #include "Array2D.h"
 #include "stb.h"
 #include "Utils.h"
@@ -44,7 +42,7 @@ Shared<Cubemap> Cubemap::load_png(const Path& p_x, const Path& n_x, const Path& 
 
     Shared<Cubemap> result = MakeShared<Cubemap>();
     
-    glGenTextures(1, &result->gl_id);
+    /*glGenTextures(1, &result->gl_id);
     glBindTexture(GL_TEXTURE_CUBE_MAP, result->gl_id);
     
     for (uint i = 0; i < 6; i++)
@@ -58,7 +56,7 @@ Shared<Cubemap> Cubemap::load_png(const Path& p_x, const Path& n_x, const Path& 
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
 
-    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);*/
 
     return result;
 }

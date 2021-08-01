@@ -20,15 +20,15 @@ ItemDrop::ItemDrop(const ItemContainer& item)
 
 void ItemDrop::on_start()
 {
-    fall_pos_ = get_position() + Vector3(0, 0, offset);
+    fall_pos_ = get_location() + Vector3(0, 0, offset);
     make_body_kinematic();
     set_collision_mask(HexaCollisionMaskBits::ITEM);
     
     if (!item_.is_empty())
     {
-        set_mesh(item_.item->mesh);
-        get_material_instance()->set_param_value("texture", item_.item->mesh_texture);
-        set_collision(MakeShared<ConcaveMeshCollision>(item_.item->mesh));
+        //set_mesh(item_.item->mesh);
+        //get_material_instance()->set_param_value("texture", item_.item->mesh_texture);
+        //set_collision(MakeShared<ConcaveMeshCollision>(item_.item->mesh));
     }
     else
     {
@@ -48,7 +48,7 @@ void ItemDrop::on_tick(float delta_time)
                 fixed_tick(world);
                 fixed_tick_accum_ -= fixed_tick_interval_;
             }
-            set_position(fall_pos_ + fall_force_ * fixed_tick_accum_ - Vector3(0, 0, offset));
+            set_location(fall_pos_ + fall_force_ * fixed_tick_accum_ - Vector3(0, 0, offset));
         }
     }
 }

@@ -1,12 +1,9 @@
 ﻿#include "Texture.h"
 
-#include "File.h"
-#include "stb.h"
-
-#include <glad/glad.h>
-
 #include "Assert.h"
+#include "File.h"
 #include "Game.h"
+#include "stb.h"
 
 Texture::Editor::Editor(const Editor& rhs)
     : target_(rhs.target_)
@@ -179,15 +176,15 @@ void Texture::load()
 
 void Texture::unload()
 {
-    glMakeTextureHandleNonResidentARB(handle_arb_);
+    /*glMakeTextureHandleNonResidentARB(handle_arb_);
     handle_arb_ = 0;
     glDeleteTextures(1, &gl_texture_binding_);
-    gl_texture_binding_ = 0;
+    gl_texture_binding_ = 0;*/
 }
 
 void Texture::load_internal()
 {
-    glGenTextures(1, &gl_texture_binding_);
+    /*glGenTextures(1, &gl_texture_binding_);
     glBindTexture(GL_TEXTURE_2D, gl_texture_binding_);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
@@ -198,7 +195,7 @@ void Texture::load_internal()
     glBindTexture(GL_TEXTURE_2D, 0);
 
     handle_arb_ = glGetTextureHandleARB(gl_texture_binding_);
-    glMakeTextureHandleResidentARB(handle_arb_);
+    glMakeTextureHandleResidentARB(handle_arb_);*/
 
     delayed_activation_ = false;
 }

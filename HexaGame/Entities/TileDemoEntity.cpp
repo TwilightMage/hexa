@@ -32,10 +32,30 @@ void TileDemoEntity::on_start()
             }
         }
 
+        Vector3 offset;
+        uint c = 0;
+        for (auto& sub_mesh : sub_meshes)
+        {
+            for (auto& vertex : sub_mesh->value.vertices)
+            {
+                offset.x += vertex.pos.x;
+                offset.z += vertex.pos.z;
+                c++;
+            }
+        }
+
+        offset /= (float)c;
+
+        for (auto& sub_mesh : sub_meshes)
+        {
+            GeometryEditor::translate(sub_mesh->value.vertices, -offset);
+        }
+
         mesh_component_->set_mesh(StaticMesh::construct("tile demo", sub_meshes.get_values(), AutoCollisionMode::Complex));
         for (uint i = 0; i < sub_meshes.size(); i++)
         {
             mesh_component_->set_material(sub_meshes.entries[i]->key->material, i);
         }
+        mesh_component_->set_body_type(PhysicalBodyType::Kinematic);
     }
 }

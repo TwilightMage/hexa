@@ -15,13 +15,17 @@ void GeometryEditor::optimize(List<StaticMesh::Vertex>& vertices, List<uint>& in
     {
         for (uint j = i + 1; j < vertices.length(); j++)
         {
-            if (memcmp(&vertices[i], &vertices[j], sizeof(StaticMesh::Vertex)) == 0)
+            if (vertices[i].pos == vertices[j].pos && vertices[i].uv == vertices[j].uv && vertices[i].norm == vertices[j].norm)
             {
                 for (uint k = 0; k < indices.length(); k++)
                 {
                     if (indices[k] == j)
                     {
                         indices[k] = i;
+                    }
+                    else if (indices[k] > j)
+                    {
+                        indices[k]--;
                     }
                 }
 

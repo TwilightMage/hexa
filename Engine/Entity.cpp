@@ -58,7 +58,10 @@ void Entity::set_transform(const Transform& transform)
 void Entity::set_location(const Vector3& location)
 {
     transform_.location = location;
-    scene_node_->setPosition(cast_object<Ogre::Vector3>(location));
+    if (scene_node_)
+    {
+        scene_node_->setPosition(cast_object<Ogre::Vector3>(location));
+    }
 }
 
 void Entity::translate(const Vector3& translation)
@@ -69,7 +72,10 @@ void Entity::translate(const Vector3& translation)
 void Entity::set_rotation(const Quaternion& rot)
 {
     transform_.rotation = rot;
-    scene_node_->setOrientation(Ogre::Quaternion(rot.w, rot.x, rot.y, rot.z));
+    if (scene_node_)
+    {
+        scene_node_->setOrientation(Ogre::Quaternion(rot.w, rot.x, rot.y, rot.z));
+    }
 }
 
 void Entity::rotate(const Vector3& axis, float angle)
@@ -80,7 +86,10 @@ void Entity::rotate(const Vector3& axis, float angle)
 void Entity::set_scale(const Vector3& scale)
 {
     transform_.scale = scale;
-    scene_node_->setScale(cast_object<Ogre::Vector3>(scale));
+    if (scene_node_)
+    {
+        scene_node_->setScale(cast_object<Ogre::Vector3>(scale));
+    }
 }
 
 void Entity::set_collision(const Shared<Collision>& collision, const Vector3& offset)

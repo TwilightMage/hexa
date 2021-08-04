@@ -60,6 +60,9 @@ namespace OgreBites
         explicit ApplicationContextSDL(const Ogre::String& appName = "Ogre3D");
 
         void setWindowGrab(NativeWindowType* win, bool grab);
+        void setMouseVisible(bool visible);
+        void setMousePosition(NativeWindowType* win, Ogre::uint x, Ogre::uint y);
+        void setMouseTexture(Ogre::uint8* data, Ogre::uint width, Ogre::uint height, Ogre::uint hot_x, Ogre::uint hot_y);
         void shutdown();
         void pollEvents();
         void addInputListener(NativeWindowType* win, InputListener* lis);
@@ -71,6 +74,10 @@ namespace OgreBites
         using ApplicationContextBase::setWindowGrab;
         using ApplicationContextBase::addInputListener;
         using ApplicationContextBase::removeInputListener;
+
+    private:
+        std::shared_ptr<struct SDL_Surface> currentCursorSurface;
+        std::shared_ptr<struct SDL_Cursor> currentCursor;
     };
 
     typedef ApplicationContextSDL ApplicationContext;

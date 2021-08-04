@@ -94,7 +94,7 @@ public:
     static Shared<StaticMesh> empty;
 
 private:
-    static Shared<StaticMesh> create(const String& name, const List<SubMesh>& sub_meshes, AutoCollisionMode collision_mode);
+    static Shared<StaticMesh> create(const String& name, const List<SubMesh>& sub_meshes, AutoCollisionMode collision_mode, bool compute_normals);
 
     List<CollisionShapeInfo> collisions_;
     

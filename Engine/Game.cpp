@@ -3,6 +3,7 @@
 #include <OGRE/Bites/OgreTrays.h>
 #include <OGRE/Main/OgreEntity.h>
 #include <OGRE/Main/OgreRenderWindow.h>
+#include <OGRE/Main/OgreTechnique.h>
 #include <OGRE/Main/OgreTextureManager.h>
 #include <OGRE/RTShaderSystem/OgreShaderGenerator.h>
 #include <reactphysics3d/reactphysics3d.h>
@@ -114,6 +115,7 @@ void Game::open_world(const Shared<World>& world)
 	{
 		instance_->world_->init();
 		instance_->shader_generator_->addSceneManager(instance_->world_->manager_);
+		instance_->world_->manager_->addRenderQueueListener(&Ogre::OverlaySystem::getSingleton());
 		instance_->world_->start();
 		instance_->event_bus_->world_opened(world);
 	}
@@ -127,6 +129,7 @@ void Game::close_world()
 {
 	if (instance_->world_)
 	{
+		instance_->world_->manager_->removeRenderQueueListener(&Ogre::OverlaySystem::getSingleton());
 		instance_->shader_generator_->removeSceneManager(instance_->world_->manager_);
 		instance_->world_->close();
 		instance_->event_bus_->world_closed(instance_->world_);
@@ -181,11 +184,6 @@ const Path& Game::get_app_path()
 	return instance_->app_path_;
 }
 
-const Shared<Texture>& Game::get_white_pixel()
-{
-	return *instance_->white_pixel_;
-}
-
 const Shared<SpriteFont>& Game::get_default_font()
 {
 	return instance_->default_font_;
@@ -216,40 +214,13 @@ const Vector2& Game::get_mouse_delta()
 	return instance_->mouse_delta_;
 }
 
-void Game::lock_mouse()
+void Game::set_mouse_grab(bool state)
 {
-	//instance_->lock_mouse_ = true;
-}
-
-void Game::unlock_mouse()
-{
-	//instance_->lock_mouse_ = false;
-}
-
-void Game::hide_mouse()
-{
-	//instance_->ogre_ui_->hideCursor();
-}
-
-void Game::show_mouse()
-{
-	//instance_->ogre_ui_->showCursor();
+	instance_->setWindowGrab(state);
 }
 
 void Game::set_cursor_texture(const Shared<Texture>& tex, uint hotspot_x, uint hotspot_y)
 {
-	/*if (instance_->cursor_)
-	{
-		glfwDestroyCursor(instance_->cursor_);
-		instance_->cursor_ = nullptr;
-	}
-
-	if (tex == nullptr)
-	{
-		glfwSetCursor(instance_->window_, nullptr);
-		return;
-	}
-	
 	uint scale = Math::round(instance_->ui_scale_);
 
 	Array2D<Color> cursor_pixels = Array2D<Color>(tex->get_width() * scale, tex->get_height() * scale);
@@ -263,18 +234,8 @@ void Game::set_cursor_texture(const Shared<Texture>& tex, uint hotspot_x, uint h
 	}
 
 	uint len = cursor_pixels.get_size_x() * cursor_pixels.get_size_y() * 4;
-	byte* pixels = new byte[len];
-	memcpy(pixels, cursor_pixels.to_list().get_data(), len);
  
-	GLFWimage image;
-	image.width = cursor_pixels.get_size_x();
-	image.height = cursor_pixels.get_size_y();
-	image.pixels = pixels;
- 
-	instance_->cursor_ = glfwCreateCursor(&image, hotspot_x * scale, hotspot_y * scale);
-	glfwSetCursor(instance_->window_, instance_->cursor_);
-
-	delete pixels;*/
+	instance_->setMouseTexture((byte*)cursor_pixels.to_list().get_data(), cursor_pixels.get_size_x(), cursor_pixels.get_size_y(), hotspot_x, hotspot_y);
 }
 
 void Game::add_ui(const Shared<UIElement>& ui)
@@ -375,11 +336,11 @@ void Game::setup()
 
 	ogre_ = getRoot();
 
-	//ogre_ui_ = MakeShared<OgreBites::TrayManager>("UI", getRenderWindow(), this);
-
 	shader_generator_ = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
 	reset_global_resources_directories();
 	add_resource_directories();
+
+	Ogre::ResourceGroupManager::getSingletonPtr()->addResourceLocation(Path("resources/SdkTrays.zip").get_absolute_string().c(), "Zip", module_name.c());
 }
 
 void Game::render_loop()
@@ -424,11 +385,19 @@ void Game::render_loop()
 		mod->register_resource_directories();
 	}
 
-	Ogre::ResourceGroupManager::getSingletonPtr()->initialiseAllResourceGroups();
-	
-	// Textures
-	white_pixel_ = MakeShared<Texture>("White Pixel", 1, 1, List<Color>::of(Color::white()));
+	Ogre::ResourceGroupManager::getSingletonPtr()->initialiseResourceGroup(get_module_name().c());
+	for (const auto& mod : mods_)
+	{
+		if (Ogre::ResourceGroupManager::getSingletonPtr()->resourceGroupExists(mod->get_module_name().c()))
+		{
+			Ogre::ResourceGroupManager::getSingletonPtr()->initialiseResourceGroup(mod->get_module_name().c());
+		}
+	}
 
+	ogre_ui_ = MakeShared<OgreBites::TrayManager>("UI", getRenderWindow(), this);
+	addInputListener(ogre_ui_.get());
+	ogre_ui_->hideCursor();
+	
 	// Fonts
 	default_font_ = SpriteFont::load_fnt(RESOURCES_FONTS + "arial.fnt");
 
@@ -487,10 +456,10 @@ void Game::render_loop()
 	soloud_->set3dListenerUp(0, 0, 1);
 
 	const auto start_time = std::chrono::system_clock::now();
-
+	
 	auto tick_start = start_time;
 	
-	while (!close)
+	while (!close && !ogre_->endRenderingQueued())
 	{		
 		while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tick_start).count() / 1000.0f < 1.0f / settings_->fps_limit);
 		const float tick_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tick_start).count() / 1000.0f;
@@ -505,18 +474,7 @@ void Game::render_loop()
 		}
 		main_thread_calls_.clear();
 		main_thread_calls_mutex_.unlock();
-
-		mouse_delta_ = mouse_pos_ - last_mouse_pos_;
-		if (lock_mouse_)
-		{
-			//last_mouse_pos_ = mouse_pos_ = Vector2(static_cast<float>(width / 2), static_cast<float>(height / 2));
-			//glfwSetCursorPos(window_, width / 2, height / 2);
-		}
-		else
-		{
-			last_mouse_pos_ = mouse_pos_;
-		}
-
+		
 		fps_delta_time_stack += tick_time;
 		fps_count++;
 		if (fps_delta_time_stack >= 1)
@@ -546,6 +504,7 @@ void Game::render_loop()
 				soloud_->set3dListenerPosition(cam_from.x, cam_from.y, cam_from.z);
 				soloud_->set3dListenerAt(cam_to.x, cam_to.y, cam_to.z);
 
+				mouse_delta_ = Vector2::zero();
 				getRoot()->renderOneFrame();
 				
 				/*// 3d matrix
@@ -797,11 +756,8 @@ bool Game::axisMoved(const OgreBites::AxisEvent& evt)
 bool Game::mouseMoved(const OgreBites::MouseMotionEvent& evt)
 {
 	instance_->mouse_pos_ = { static_cast<float>(evt.x), static_cast<float>(evt.y) };
-	if (!instance_->has_mouse_pos_)
-	{
-		instance_->last_mouse_pos_ = instance_->mouse_pos_;
-		instance_->has_mouse_pos_ = true;
-	}
+	
+	mouse_delta_ += Vector2(evt.xrel, evt.yrel);
 
 	Shared<UIElement> ui_under_mouse;
 	float pressed_z = 0.0f;

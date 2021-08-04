@@ -45,7 +45,7 @@ StaticMesh::StaticMesh(const String& name)
 
 Shared<StaticMesh> StaticMesh::construct(const String& name, const List<SubMesh>& sub_meshes, AutoCollisionMode collision_mode)
 {
-    const auto result = create(name, sub_meshes, collision_mode);
+    const auto result = create(name, sub_meshes, collision_mode, true);
 
     verbose("Mesh", "Constructed mesh %s", name.c());
 
@@ -83,9 +83,13 @@ Shared<StaticMesh> StaticMesh::load_file_obj(const Path& path, AutoCollisionMode
         }
 
         sub_mesh.indices = src_sub_mesh.Indices;
+
+        GeometryEditor::optimize(sub_mesh.vertices, sub_mesh.indices);
+
+        sub_meshes[i] = sub_mesh;
     }
     
-    Shared<StaticMesh> result = create(path.filename + path.extension, sub_meshes, collision_mode);
+    Shared<StaticMesh> result = create(path.filename + path.extension, sub_meshes, collision_mode, false);
 
     Game::instance_->meshes_[path.get_absolute_string()] = result;
     verbose("Mesh", "Loaded mesh %s", path.get_absolute_string().c());
@@ -108,7 +112,7 @@ bool StaticMesh::is_empty() const
     return ogre_mesh_->sharedVertexData->vertexCount == 0;
 }
 
-Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& sub_meshes, AutoCollisionMode collision_mode)
+Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& sub_meshes, AutoCollisionMode collision_mode, bool compute_normals)
 {
     Shared<StaticMesh> result = MakeShared<StaticMesh>(name);
 
@@ -136,7 +140,10 @@ Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& s
     {
         auto vertices = sub_mesh.vertices;
 
-        GeometryEditor::compute_normals(vertices, sub_mesh.indices, true);
+        if (compute_normals)
+        {
+            GeometryEditor::compute_normals(vertices, sub_mesh.indices, true);
+        }
         
         if (sub_mesh.name.starts_with("SPHERE_")) // Sphere collision
         {

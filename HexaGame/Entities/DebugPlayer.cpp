@@ -15,14 +15,12 @@ void DebugPlayer::on_start()
     
     if (auto world = get_world())
     {
-        /*const auto arrows_mesh = StaticMesh::load_file_obj(RESOURCES_ENGINE_MESHES + "axis_arrows.obj");
-        auto arrows_vertices = arrows_mesh->get_vertices();
-        auto arrows_indices = arrows_mesh->get_indices();
+        const auto arrows_mesh = StaticMesh::load_file_obj(RESOURCES_MESHES + "axis_arrows.obj");
         
-        arrows_ = MakeShared<MeshEntity>(MakeShared<StaticMesh>("Axis Arrows", arrows_vertices, arrows_indices));
-        arrows_->get_material_instance()->set_param_value("texture", Texture::load_png(RESOURCES_ENGINE_TEXTURES + "axis_arrows.png"));
+        arrows_ = MakeShared<MeshEntity>(arrows_mesh);
+        //arrows_->get_material_instance()->set_param_value("texture", Texture::load_png(RESOURCES_ENGINE_TEXTURES + "axis_arrows.png"));
         arrows_->set_scale(Vector3(0.1f));
-        world->spawn_entity(arrows_);*/
+        world->spawn_entity(arrows_);
 
         if (auto hexa_world = cast<HexaWorld>(world))
         {
@@ -76,8 +74,7 @@ void DebugPlayer::on_possess()
 {
     Player::on_possess();
     
-    Game::lock_mouse();
-    Game::hide_mouse();
+    Game::set_mouse_grab(true);
 }
 
 void DebugPlayer::on_tick(float delta_time)
@@ -108,13 +105,15 @@ void DebugPlayer::on_tick(float delta_time)
 
     if (auto world = get_world())
     {
-        if (auto hit = world->raycast(get_location(), get_location() + get_rotation().forward() * 10))
+        if (auto hit = world->raycast(get_location(), get_location() + get_rotation().forward() * 10000))
         {
-            //arrows_->set_location(hit->location);
+            arrows_->set_location(hit->location);
+            arrows_->set_rotation(Quaternion::look_at(Vector3::zero(), hit->normal));
         }
         else
         {
-            //arrows_->set_location(get_location() + get_rotation().forward());
+            arrows_->set_location(get_location() + get_rotation().forward() * 200);
+            arrows_->set_rotation(Quaternion());
         }
     }
 }

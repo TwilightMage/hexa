@@ -5,7 +5,7 @@
 
 Image::Image()
     : UIElement()
-    , texture_(Game::get_white_pixel())
+    , texture_(nullptr)
     , have_rect_(false)
     , uv_rect_(Quaternion(0.0f, 0.0f, 1.0f, 1.0f))
 {

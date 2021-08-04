@@ -43,7 +43,7 @@ Shared<Mod> Mod::load(const Path& path)
 {
     try
     {
-        if (const auto dll = LoadLibrary(path.get_absolute().to_string().wc()))
+        if (const auto dll = LoadLibrary(path.get_absolute().to_string().c()))
         {
             if (f_get_mod get_mod = (f_get_mod)GetProcAddress(dll, "get_mod"))
             {

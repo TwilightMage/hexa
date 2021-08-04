@@ -87,7 +87,7 @@ namespace OgreBites
     /**
     Listener class for responding to tray events.
     */
-    class _OgreBitesExport TrayListener
+    class /*_OgreBitesExport*/ TrayListener
     {
     public:
 

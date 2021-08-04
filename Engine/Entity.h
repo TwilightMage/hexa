@@ -131,7 +131,7 @@ private:
     Transform transform_;
     
     Weak<World> world_;
-    Ogre::SceneNode* scene_node_;
+    Ogre::SceneNode* scene_node_ = nullptr;
     bool pending_kill_;
     bool started_;
     List<Shared<EntityComponent>> components_;

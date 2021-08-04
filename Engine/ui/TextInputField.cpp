@@ -177,7 +177,7 @@ void TextInputField::on_construct()
     text_ui_->set_position(Vector2(4, 2));
     panel_->add_child(text_ui_);
 
-    caret_ = MakeShared<Image>(Game::get_white_pixel());
+    caret_ = MakeShared<Image>(nullptr);
     caret_->set_size(Vector2(1, text_ui_->get_font_size() - 2));
     caret_->set_z(0.002f);
     caret_->set_color(Color(63, 63, 63));

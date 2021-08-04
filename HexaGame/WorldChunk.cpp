@@ -1059,7 +1059,6 @@ void WorldChunk::regenerate_mesh(uint z, bool fill_complex)
                                 List<uint> tile_indices;
                                 WorldGenerator::generate_tile_mesh(side_flags, solid_tile, tile_vertices, tile_indices, world_pos.sum_all());
 
-                                GeometryEditor::remove_indices(tile_vertices, tile_indices);
                                 GeometryEditor::translate(tile_vertices, world_pos);
 
                                 type_vertices[solid_tile] += tile_vertices;
@@ -1132,7 +1131,6 @@ void WorldChunk::regenerate_cap_mesh()
                             v.uv += offset;
                         }
 
-                        GeometryEditor::remove_indices(tile_vertices, tile_indices);
                         GeometryEditor::translate(tile_vertices, world_pos);
 
                         cap_vertices += tile_vertices;

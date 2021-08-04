@@ -22,6 +22,13 @@ namespace reactphysics3d
 
 class StaticMesh;
 
+enum class PhysicalBodyType
+{
+    Static,
+    Kinematic,
+    Dynamic
+};
+
 class EXPORT MeshComponent : public EntityComponent
 {
 public:
@@ -35,12 +42,18 @@ public:
 
     void set_material(const Shared<Material>& material, uint index);
 
+    FORCEINLINE PhysicalBodyType get_body_type() const { return body_type_; }
+    void set_body_type(PhysicalBodyType body_type);
+
 private:
+    void setup_new_mesh(const Shared<StaticMesh>& mesh);
+    
     Shared<StaticMesh> mesh_;
     reactphysics3d::RigidBody* rigid_body_ = nullptr;
     reactphysics3d::Collider* collider_ = nullptr;
     Shared<Collision> collision_;
     byte16 collision_mask_ = CollisionMaskBits::NONE;
+    PhysicalBodyType body_type_ = PhysicalBodyType::Dynamic;
 
     Ogre::Entity* ogre_entity_ = nullptr;
 };

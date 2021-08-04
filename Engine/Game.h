@@ -66,7 +66,7 @@ namespace Ogre
     }
 }
 
-class EXPORT Game : public OgreBites::ApplicationContext, public OgreBites::InputListener, OgreBites::WindowEventListener/*, public OgreBites::TrayListener*/, public Module
+class EXPORT Game : public OgreBites::ApplicationContext, public OgreBites::InputListener, OgreBites::WindowEventListener, public OgreBites::TrayListener, public Module
 {
     friend AudioChannel;
     friend Audio;
@@ -113,7 +113,6 @@ public:
 
     static const Path& get_app_path();
 
-    static const Shared<Texture>& get_white_pixel();
     static const Shared<SpriteFont>& get_default_font();
     static const Shared<AudioChannel>& get_general_channel();
 
@@ -122,10 +121,7 @@ public:
 
     static const Vector2& get_mouse_pos();
     static const Vector2& get_mouse_delta();
-    static void lock_mouse();
-    static void unlock_mouse();
-    static void hide_mouse();
-    static void show_mouse();
+    static void set_mouse_grab(bool state);
     static void set_cursor_texture(const Shared<Texture>& tex, uint hotspot_x, uint hotspot_y);
     static void add_ui(const Shared<UIElement>& ui);
     static float get_ui_scale();
@@ -178,18 +174,11 @@ private:
 
     // Common
     Path app_path_;
-    bool has_mouse_pos_;
     Vector2 mouse_pos_;
-    Vector2 last_mouse_pos_;
     Vector2 mouse_delta_;
-    bool lock_mouse_;
     Vector3 un_projected_mouse_;
     float time_;
     bool close = false;
-    
-    // GLFW
-    GLFWwindow* window_;
-    GLFWcursor* cursor_;
 
     // Assets
     Map<String, Shared<StaticMesh>> meshes_;
@@ -201,7 +190,6 @@ private:
     // Game
     Version game_version_ = {0, 1, 0};
     float ui_scale_ = 2;
-    Slot<Texture> white_pixel_;
     Shared<SpriteFont> default_font_;
     Shared<AudioChannel> general_channel_;
     List<Shared<Mod>> mods_;

@@ -255,7 +255,13 @@ void World::close()
 
     for (auto& entity : entities_)
     {
-        do_destroy(entity);
+        entity->on_destroy();
+        for (auto& component : entity->components_)
+        {
+            component->on_destroy();
+        }
+
+        entity->on_destroyed(entity);
     }
     
     Game::instance_->physics_->destroyPhysicsWorld(physics_world_);
@@ -288,20 +294,12 @@ void World::spawn_entity_internal(const Shared<Entity>& entity)
 void World::do_destroy(const Shared<Entity>& entity)
 {
     entity->on_destroy();
+    for (auto& component : entity->components_)
+    {
+        component->on_destroy();
+    }
 
     manager_->getRootSceneNode()->removeChild(entity->scene_node_);
-
-    /*if (entity->rigid_body_)
-    {
-        if (entity->collider_)
-        {
-            entity->rigid_body_->removeCollider(entity->collider_);
-            entity->collision_ = nullptr;
-        }
-
-        physics_world_->destroyRigidBody(entity->rigid_body_);
-        entity->rigid_body_ = nullptr;
-    }*/
 
     entity->on_destroyed(entity);
 }

@@ -76,7 +76,14 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const Solid
 
 	if (!!(sides & TileSide::Up)) vertexCount += 6;
 	if (!!(sides & TileSide::Down)) vertexCount += 6;
-	if (!!(sides & TileSide::Wall)) vertexCount += 14;
+	if (!!(sides & TileSide::Front)) vertexCount += 4;
+	if (!!(sides & TileSide::FrontRight)) vertexCount += 4;
+	if (!!(sides & TileSide::BackRight)) vertexCount += 4;
+	if (!!(sides & TileSide::Back)) vertexCount += 4;
+	if (!!(sides & TileSide::BackLeft)) vertexCount += 4;
+	if (!!(sides & TileSide::FrontLeft)) vertexCount += 4;
+
+	if (vertexCount == 0) return;
 
 	vertices = List<StaticMesh::Vertex>(vertexCount);
 	indices.clear();
@@ -91,7 +98,7 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const Solid
 		for (uint i = 0; i < 6; i++)
 		{
 			vertices[i + offset] = {
-				Vector3(pos_sines[i % 6] * 0.5f * 100, 0.0f, pos_coses[i] * 0.5f * 100),
+				Vector3(pos_sines[i % 6] * 0.5f * 100, 0.0f, pos_coses[i % 6] * 0.5f * 100),
                 floor_uv_pos + Vector2(uv_coses[(i + angleOffset) % 6] * cap_mult.x, uv_sines[(i + angleOffset) % 6] * cap_mult.y),
                 Vector3::one()
             };
@@ -110,7 +117,7 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const Solid
 		for (uint i = 0; i < 6; i++)
 		{
 			vertices[i + offset] = {
-				Vector3(pos_sines[i % 6] * 0.5f * 100, HexaMath::tile_height * 100, pos_coses[i] * 0.5f * 100),
+				Vector3(pos_sines[i % 6] * 0.5f * 100, HexaMath::tile_height * 100, pos_coses[i % 6] * 0.5f * 100),
                 ceil_uv_pos + Vector2(uv_coses[(i + angleOffset) % 6] * cap_mult.x, uv_sines[(i + angleOffset) % 6] * cap_mult.y),
                 Vector3::one()
             };
@@ -122,30 +129,32 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const Solid
 	}
 
 	// Walls
-	if (!!(sides & TileSide::Wall))
+	static TileSide sideOrder[6] = { TileSide::FrontLeft, TileSide::Front, TileSide::FrontRight, TileSide::BackRight, TileSide::Back, TileSide::BackLeft };
+	for (uint i = 0; i < 6; i++)
 	{
-		for (int i = 0; i < 7; i++)
+		if (!!(sides & sideOrder[i]))
 		{
-			const auto pos = Vector2(pos_coses[i % 6], pos_sines[i % 6]);
-			const auto uv_offset = Vector2(static_cast<float>(int_seed % 6), static_cast<float>(int_seed % 3)) * wall_mult;
-			vertices[i + offset] = {
-				Vector3(pos.y * 0.5f * 100, 0.0f, pos.x * 0.5f * 100),
-				Vector2(i * wall_mult.x + uv_offset.x, wall_mult.y + uv_offset.y),
-				Vector3::one()
-			};
-			vertices[i + offset + 7] = {
-				Vector3(pos.y * 0.5f * 100, HexaMath::tile_height * 100, pos.x * 0.5f * 100),
-                Vector2(i * wall_mult.x + uv_offset.x, uv_offset.y),
-                Vector3::one()
-            };
-		}
+			for (uint j = i; j < i + 2; j++)
+			{
+				uint jj = j - i;
+				Vector2 pos = Vector2(pos_coses[j % 6], pos_sines[j % 6]);
+				Vector2 uv_offset = Vector2((float)(int_seed % 6), (float)(int_seed % 3)) * wall_mult;
 
-		if (!!(sides & TileSide::FrontLeft))   add_poly(indices, { 0, 1, 8,  7  }, offset); // front-right
-		if (!!(sides & TileSide::Front))       add_poly(indices, { 1, 2, 9,  8  }, offset); // front
-		if (!!(sides & TileSide::FrontRight))  add_poly(indices, { 2, 3, 10, 9  }, offset); // front-left
-		if (!!(sides & TileSide::BackRight))   add_poly(indices, { 3, 4, 11, 10 }, offset); // back-left
-		if (!!(sides & TileSide::Back))        add_poly(indices, { 4, 5, 12, 11 }, offset); // back
-		if (!!(sides & TileSide::BackLeft))    add_poly(indices, { 5, 6, 13, 12 }, offset); // back-right
+				vertices[jj + offset] = {
+					Vector3(pos.y * 0.5f * 100, 0.0f, pos.x * 0.5f * 100),
+					Vector2(j * wall_mult.x + uv_offset.x, wall_mult.y + uv_offset.y)
+				};
+
+				vertices[jj + offset + 2] = {
+					Vector3(pos.y * 0.5f * 100, HexaMath::tile_height * 100, pos.x * 0.5f * 100),
+					Vector2(j * wall_mult.x + uv_offset.x, uv_offset.y)
+				};
+			}
+
+			add_poly(indices, { 0, 1, 3, 2 }, offset);
+
+			offset += 4;
+		}
 	}
 }
 

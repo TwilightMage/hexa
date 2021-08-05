@@ -9,6 +9,7 @@
 #include "AudioChannel.h"
 #include "CollisionMaskBits.h"
 #include "Game.h"
+#include "OgreApp.h"
 #include "Quaternion.h"
 #include "Settings.h"
 #include "Engine/CollisionMaskBits.h"
@@ -89,7 +90,7 @@ void World::init()
     reactphysics3d::Vector3 gravity(0.0f, 0.0f, -9.81f);
     physics_world_->setGravity(gravity);
 
-    manager_ = Game::instance_->ogre_->createSceneManager();
+    manager_ = Game::instance_->ogre_app_->getRoot()->createSceneManager();
 
     //manager_->setSkyBox(true, "packs/skybox", 300, false);
 

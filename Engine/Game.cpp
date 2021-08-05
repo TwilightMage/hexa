@@ -16,6 +16,7 @@
 #include "IControllable.h"
 #include "Logger.h"
 #include "Mod.h"
+#include "OgreApp.h"
 #include "Path.h"
 #include "Paths.h"
 #include "SaveGame.h"
@@ -32,11 +33,11 @@ Game* Game::instance_ = nullptr;
 
 Game::Game(const String& name, int argc, char* argv[])
 	: app_path_(argv[0])
-	, OgreBites::ApplicationContext(name.c())
 	, Module(String(argv[0]).substring(0, String(argv[0]).last_index_of_char("\\/")), name)
 	, event_bus_(new EventBus())
 	, physics_(new reactphysics3d::PhysicsCommon)
 	, soloud_(new SoLoud::Soloud)
+	, ogre_app_(new OgreApp(name))
 	, ui_root_(new UIElement)
 {
 	if (instance_)
@@ -54,6 +55,17 @@ Game::Game(const String& name, int argc, char* argv[])
 	}
 
 	Logger::init(argv[0]);
+
+	ogre_app_->on_setup = std::bind(&Game::setup, this);
+
+	ogre_app_->on_keyPressed = std::bind(&Game::keyPressed, this, std::placeholders::_1, std::placeholders::_2);
+	ogre_app_->on_keyReleased = std::bind(&Game::keyReleased, this, std::placeholders::_1);
+	ogre_app_->on_textInput = std::bind(&Game::textInput, this, std::placeholders::_1);
+	ogre_app_->on_mousePressed = std::bind(&Game::mousePressed, this, std::placeholders::_1);
+	ogre_app_->on_mouseReleased = std::bind(&Game::mouseReleased, this, std::placeholders::_1);
+	ogre_app_->on_axisMoved = std::bind(&Game::axisMoved, this, std::placeholders::_1, std::placeholders::_2);
+	ogre_app_->on_mouseMoved = std::bind(&Game::mouseMoved, this, std::placeholders::_1, std::placeholders::_2);
+	ogre_app_->on_windowResized = std::bind(&Game::windowResized, this, std::placeholders::_1);
 }
 
 Game::~Game()
@@ -65,13 +77,13 @@ void Game::launch()
 {
 	verbose("Game", "Launching...");
 
-	initApp();
+	ogre_app_->initApp();
 	
 	init_game();
     //setup_window();
     //prepare();
     render_loop();
-	closeApp();
+	ogre_app_->closeApp();
 	cleanup();
 }
 
@@ -103,7 +115,7 @@ void Game::focus_ui(const Shared<UIInputElement>& ui_input_reciever)
 void Game::use_camera(const Shared<CameraComponent>& camera)
 {
 	instance_->current_camera_ = camera;
-	instance_->getRenderWindow()->addViewport(camera->ogre_camera_);
+	instance_->ogre_app_->getRenderWindow()->addViewport(camera->ogre_camera_);
 }
 
 void Game::open_world(const Shared<World>& world)
@@ -129,6 +141,8 @@ void Game::close_world()
 {
 	if (instance_->world_)
 	{
+		instance_->current_camera_ = nullptr;
+		
 		instance_->world_->manager_->removeRenderQueueListener(&Ogre::OverlaySystem::getSingleton());
 		instance_->shader_generator_->removeSceneManager(instance_->world_->manager_);
 		instance_->world_->close();
@@ -216,7 +230,7 @@ const Vector2& Game::get_mouse_delta()
 
 void Game::set_mouse_grab(bool state)
 {
-	instance_->setWindowGrab(state);
+	instance_->ogre_app_->setWindowGrab(state);
 }
 
 void Game::set_cursor_texture(const Shared<Texture>& tex, uint hotspot_x, uint hotspot_y)
@@ -235,7 +249,7 @@ void Game::set_cursor_texture(const Shared<Texture>& tex, uint hotspot_x, uint h
 
 	uint len = cursor_pixels.get_size_x() * cursor_pixels.get_size_y() * 4;
  
-	instance_->setMouseTexture((byte*)cursor_pixels.to_list().get_data(), cursor_pixels.get_size_x(), cursor_pixels.get_size_y(), hotspot_x, hotspot_y);
+	instance_->ogre_app_->setMouseTexture((byte*)cursor_pixels.to_list().get_data(), cursor_pixels.get_size_x(), cursor_pixels.get_size_y(), hotspot_x, hotspot_y);
 }
 
 void Game::add_ui(const Shared<UIElement>& ui)
@@ -319,23 +333,8 @@ void Game::unloading_stage()
 {
 }
 
-bool Game::windowClosing(Ogre::RenderWindow* rw)
-{
-	close = true;
-	return true;
-}
-
 void Game::setup()
 {
-	OgreBites::ApplicationContext::setup();
-
-	addInputListener(this);
-
-	OgreBites::WindowEventUtilities::_addRenderWindow(getRenderWindow());
-	OgreBites::WindowEventUtilities::addWindowEventListener(getRenderWindow(), this);
-
-	ogre_ = getRoot();
-
 	shader_generator_ = Ogre::RTShader::ShaderGenerator::getSingletonPtr();
 	reset_global_resources_directories();
 	add_resource_directories();
@@ -394,9 +393,7 @@ void Game::render_loop()
 		}
 	}
 
-	ogre_ui_ = MakeShared<OgreBites::TrayManager>("UI", getRenderWindow(), this);
-	addInputListener(ogre_ui_.get());
-	ogre_ui_->hideCursor();
+	ogre_ui_ = ogre_app_->spawn_ui();
 	
 	// Fonts
 	default_font_ = SpriteFont::load_fnt(RESOURCES_FONTS + "arial.fnt");
@@ -459,7 +456,7 @@ void Game::render_loop()
 	
 	auto tick_start = start_time;
 	
-	while (!close && !ogre_->endRenderingQueued())
+	while (!close && !ogre_app_->getRoot()->endRenderingQueued())
 	{		
 		while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tick_start).count() / 1000.0f < 1.0f / settings_->fps_limit);
 		const float tick_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tick_start).count() / 1000.0f;
@@ -505,7 +502,7 @@ void Game::render_loop()
 				soloud_->set3dListenerAt(cam_to.x, cam_to.y, cam_to.z);
 
 				mouse_delta_ = Vector2::zero();
-				getRoot()->renderOneFrame();
+				ogre_app_->getRoot()->renderOneFrame();
 				
 				/*// 3d matrix
 				cam_from.y *= -1;
@@ -627,30 +624,30 @@ void Game::init_game()
 	soloud_->init();
 }
 
-bool Game::keyPressed(const OgreBites::KeyboardEvent& evt)
+bool Game::keyPressed(int key, bool repeat)
 {
 	if (instance_)
 	{
-		if (evt.repeat)
+		if (repeat)
 		{
 			if (instance_->ui_input_element_)
 			{
-				instance_->ui_input_element_->key_hold(evt.keysym.sym);
+				instance_->ui_input_element_->key_hold(key);
 			}
 		}
 		else
 		{
-			if (evt.keysym.sym == OgreBites::SDLK_ESCAPE)
+			if (key == OgreBites::SDLK_ESCAPE)
 			{
 				close = true;
 			}
 			else if (instance_->ui_input_element_)
 			{
-				instance_->ui_input_element_->key_down(evt.keysym.sym);
+				instance_->ui_input_element_->key_down(key);
 			}
 			else if (instance_->current_controllable_)
 			{
-				instance_->current_controllable_->key_down(evt.keysym.sym);
+				instance_->current_controllable_->key_down(key);
 			}
 		}
 	}
@@ -658,34 +655,34 @@ bool Game::keyPressed(const OgreBites::KeyboardEvent& evt)
 	return true;
 }
 
-bool Game::keyReleased(const OgreBites::KeyboardEvent& evt)
+bool Game::keyReleased(int key)
 {
 	if (instance_)
 	{
 		if (instance_->ui_input_element_)
 		{
-			instance_->ui_input_element_->key_up(evt.keysym.sym);
+			instance_->ui_input_element_->key_up(key);
 		}
 		else if (instance_->current_controllable_)
 		{
-			instance_->current_controllable_->key_up(evt.keysym.sym);
+			instance_->current_controllable_->key_up(key);
 		}
 	}
 
 	return true;
 }
 
-bool Game::textInput(const OgreBites::TextInputEvent& evt)
+bool Game::textInput(const char* chars)
 {
 	if (instance_ && instance_->ui_input_element_)
 	{
-		instance_->ui_input_element_->text_input(evt.chars[0]);
+		instance_->ui_input_element_->text_input(chars[0]);
 	}
 
 	return true;
 }
 
-bool Game::mousePressed(const OgreBites::MouseButtonEvent& evt)
+bool Game::mousePressed(int button)
 {
 	if (instance_ && instance_->current_controllable_)
 	{
@@ -717,14 +714,14 @@ bool Game::mousePressed(const OgreBites::MouseButtonEvent& evt)
 				instance_->ui_input_element_ = nullptr;
 			}
 				
-			instance_->current_controllable_->mouse_button_down(evt.type);
+			instance_->current_controllable_->mouse_button_down(button);
 		}
 	}
 	
 	return true;
 }
 
-bool Game::mouseReleased(const OgreBites::MouseButtonEvent& evt)
+bool Game::mouseReleased(int button)
 {
 	if (instance_->current_controllable_)
 	{
@@ -736,28 +733,28 @@ bool Game::mouseReleased(const OgreBites::MouseButtonEvent& evt)
 		}
 		else
 		{
-			instance_->current_controllable_->mouse_button_up(evt.type);
+			instance_->current_controllable_->mouse_button_up(button);
 		}
 	}
 	
 	return true;
 }
 
-bool Game::axisMoved(const OgreBites::AxisEvent& evt)
+bool Game::axisMoved(int axis, float value)
 {
 	if (instance_->ui_input_element_ == nullptr && instance_->current_controllable_)
 	{
-		instance_->current_controllable_->scroll(Vector2(0, evt.value));
+		instance_->current_controllable_->scroll(Vector2(0, value));
 	}
 
 	return true;
 }
 
-bool Game::mouseMoved(const OgreBites::MouseMotionEvent& evt)
+bool Game::mouseMoved(const Vector2& new_pos, const Vector2& delta)
 {
-	instance_->mouse_pos_ = { static_cast<float>(evt.x), static_cast<float>(evt.y) };
+	instance_->mouse_pos_ = new_pos;
 	
-	mouse_delta_ += Vector2(evt.xrel, evt.yrel);
+	mouse_delta_ += delta;
 
 	Shared<UIElement> ui_under_mouse;
 	float pressed_z = 0.0f;

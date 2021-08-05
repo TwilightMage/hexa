@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <OGRE/Main/OgreHeaderSuffix.h>
-
 #include "EntityComponent.h"
 
 class Game;

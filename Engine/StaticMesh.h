@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <OGRE/Main/OgreHeaderSuffix.h>
-
 #include "Object.h"
 #include "Path.h"
 #include "Pointers.h"

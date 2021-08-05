@@ -213,6 +213,7 @@
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="Module.h" />
     <ClInclude Include="Name.h" />
+    <ClInclude Include="OgreApp.h" />
     <ClInclude Include="performance.h" />
     <ClInclude Include="Pointers.h" />
     <ClInclude Include="SoundHandle.h" />
@@ -336,6 +337,7 @@
     <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="Module.cpp" />
     <ClCompile Include="Name.cpp" />
+    <ClCompile Include="OgreApp.cpp" />
     <ClCompile Include="Settings.cpp" />
     <ClCompile Include="SoundHandle.cpp" />
     <ClCompile Include="Color.cpp" />

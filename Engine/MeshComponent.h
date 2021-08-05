@@ -1,7 +1,5 @@
 ﻿#pragma once
 
-#include <OGRE/Main/OgrePrerequisites.h>
-
 #include "CollisionMaskBits.h"
 #include "EntityComponent.h"
 #include "Name.h"

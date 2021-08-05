@@ -1,9 +1,6 @@
 ﻿#pragma once
 
 #include <mutex>
-#include <OGRE/Bites/OgreApplicationContext.h>
-#include <OGRE/Bites/OgreTrays.h>
-#include <OGRE/Bites/OgreWindowEventUtilities.h>
 
 #include "EventBus.h"
 #include "GameInfo.h"
@@ -11,12 +8,13 @@
 #include "Map.h"
 #include "Module.h"
 #include "Path.h"
-#include "Slot.h"
 #include "SoundHandle.h"
 #include "String.h"
 #include "Vector2.h"
 #include "Vector3.h"
 #include "Version.h"
+
+class OgreApp;
 
 namespace OgreBites {
     class TrayManager;
@@ -66,7 +64,7 @@ namespace Ogre
     }
 }
 
-class EXPORT Game : public OgreBites::ApplicationContext, public OgreBites::InputListener, OgreBites::WindowEventListener, public OgreBites::TrayListener, public Module
+class EXPORT Game : public Module
 {
     friend AudioChannel;
     friend Audio;
@@ -143,9 +141,7 @@ protected:
     virtual void tick(float delta_time);
     virtual void unloading_stage();
 
-    bool windowClosing(Ogre::RenderWindow* rw) override;
-
-    void setup() override;
+    void setup();
     
 private:
     void render_loop();
@@ -154,14 +150,14 @@ private:
 
     void init_game();
 
-    bool keyPressed(const OgreBites::KeyboardEvent& evt) override;
-    bool keyReleased(const OgreBites::KeyboardEvent& evt) override;
-    bool textInput(const OgreBites::TextInputEvent& evt) override;
-    bool mousePressed(const OgreBites::MouseButtonEvent& evt) override;
-    bool mouseReleased(const OgreBites::MouseButtonEvent& evt) override;
-    bool axisMoved(const OgreBites::AxisEvent& evt) override;
-    bool mouseMoved(const OgreBites::MouseMotionEvent& evt) override;
-    void windowResized(Ogre::RenderWindow* rw) override;
+    bool keyPressed(int key, bool repeat);
+    bool keyReleased(int key);
+    bool textInput(const char* chars);
+    bool mousePressed(int button);
+    bool mouseReleased(int button);
+    bool axisMoved(int axis, float value);
+    bool mouseMoved(const Vector2& new_pos, const Vector2& delta);
+    void windowResized(Ogre::RenderWindow* rw);
 
     static Game* instance_;
 
@@ -203,7 +199,7 @@ private:
     // Core
     Shared<reactphysics3d::PhysicsCommon> physics_;
     Shared<SoLoud::Soloud> soloud_;
-    Ogre::Root* ogre_;
+    Shared<OgreApp> ogre_app_;
     Shared<OgreBites::TrayManager> ogre_ui_;
     Ogre::RTShader::ShaderGenerator* shader_generator_;
     Shared<UIElement> ui_root_;

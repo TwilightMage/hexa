@@ -467,6 +467,12 @@ FORCEINLINE To* cast(From* obj)
 }
 
 template<typename To, typename From>
+FORCEINLINE To const* cast(From const* obj)
+{
+    return dynamic_cast<To const*>(obj);
+}
+
+template<typename To, typename From>
 FORCEINLINE Shared<To> cast(const Shared<From>& obj)
 {
     return std::dynamic_pointer_cast<To>(obj);
@@ -485,3 +491,6 @@ FORCEINLINE Shared<To> cast(const Weak<From>& obj)
 }
 
 #endif
+
+template<typename T>
+using ConstPtr = T const*;

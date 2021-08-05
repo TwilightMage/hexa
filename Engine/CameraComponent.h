@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "EntityComponent.h"
+#include "Vector2.h"
 
 class Game;
 
@@ -16,6 +17,9 @@ class EXPORT CameraComponent : public EntityComponent
 public:
     void on_start() override;
     void on_destroy() override;
+
+    bool WorldToViewport(const Vector3& world, Vector2& out_screen) const;
+    Vector3 ViewportToWorld(const Vector2& screen) const;
 
 private:
     Ogre::Camera* ogre_camera_ = nullptr;

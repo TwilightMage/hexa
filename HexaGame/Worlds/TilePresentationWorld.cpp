@@ -42,7 +42,7 @@ void TilePresentationWorld::on_start()
         }
     }
 
-    spawn_entity<TileDemoEntity>(Vector3(0.0f, 0.0f, -300.0f), std::array<Shared<const SolidTileInfo>, 6>{Tiles::dirt, Tiles::dirt, Tiles::grass, Tiles::dirt, Tiles::grass, Tiles::grass});
+    spawn_entity<TileDemoEntity>(Vector3(0.0f, 0.0f, -300.0f), std::array<ConstPtr<SolidTileInfo>, 6>{Tiles::dirt, Tiles::dirt, Tiles::grass, Tiles::dirt, Tiles::grass, Tiles::grass});
 
     set_ambient_light(Color::white(), 0.45f);
     set_directional_light(Color::white(), 0.55f, Quaternion(Vector3(0, 45, 45)));

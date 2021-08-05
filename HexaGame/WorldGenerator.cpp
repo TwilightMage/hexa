@@ -69,7 +69,7 @@ WorldGenerator::~WorldGenerator()
 	}
 }
 
-void WorldGenerator::generate_tile_mesh(TileSide sides, const Shared<const SolidTileInfo>& tileInfo, List<StaticMesh::Vertex>& vertices, List<uint>& indices, float seed)
+void WorldGenerator::generate_tile_mesh(TileSide sides, ConstPtr<SolidTileInfo> tileInfo, List<StaticMesh::Vertex>& vertices, List<uint>& indices, float seed)
 {
     int vertexCount = 0;
 	int int_seed = static_cast<int>(seed * 127.2355f);

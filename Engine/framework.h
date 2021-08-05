@@ -108,38 +108,37 @@ FORCEINLINE void memcpy_b(void* dst, void* src, size_t size)
     }
 }
 
+/** Reinterpret object, use when you know what you're doing */
 template<typename To, typename From>
-// use when you know what you're doing
 FORCEINLINE To& cast_object(From& rhs)
 {
 	static_assert(sizeof(To) == sizeof(From));
 	return *reinterpret_cast<To*>(&rhs);
 }
 
+/** Reinterpret object, use when you know what you're doing */
 template<typename To, typename From>
-// use when you know what you're doing
 FORCEINLINE const To& cast_object(const From& rhs)
 {
 	static_assert(sizeof(To) == sizeof(From));
 	return *reinterpret_cast<const To*>(&rhs);
 }
 
+/** Reinterpret object without size check, use when you really know what you're doing */
 template<typename To, typename From>
-// use when you really know what you're doing
 FORCEINLINE To& cast_object_unsafe(From& rhs)
 {
 	return *reinterpret_cast<To*>(&rhs);
 }
 
+/** Reinterpret object without size check, use when you really know what you're doing */
 template<typename To, typename From>
-// use when you really know what you're doing
 FORCEINLINE const To& cast_object_unsafe(const From& rhs)
 {
 	return *reinterpret_cast<const To*>(&rhs);
 }
 
-// just for fun :)
-// access class members on object, even private
+/** Access any member only by it's byte offset */
 template<typename MemberType, typename ObjectType>
 FORCEINLINE MemberType* hack_member(ObjectType* obj, uint byte_offset)
 {

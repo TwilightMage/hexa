@@ -58,7 +58,7 @@ void DefaultWorldGenerator::generate_chunk(const EditableChunk& editable)
 
 void DefaultWorldGenerator::generate_plains(const EditableChunk& editable)
 {
-    const static Shared<const TallGrassInfo> flowers[3] = {
+    const static TallGrassInfo* flowers[3] = {
         Tiles::blue_roses,
         Tiles::red_roses,
         Tiles::chamomile
@@ -77,7 +77,7 @@ void DefaultWorldGenerator::generate_plains(const EditableChunk& editable)
             {
                 auto tile_index = TileIndex(c_x, c_y, c_z);
                 const Vector3 world_position = chunk_pos + tile_index.to_vector();
-                
+
                 auto& tile = editable.tile(tile_index);
                 if (tile == Tiles::dirt)
                 {

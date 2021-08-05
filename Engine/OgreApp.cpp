@@ -5,17 +5,6 @@ OgreApp::OgreApp(const String& name)
 {
 }
 
-Shared<OgreBites::TrayManager> OgreApp::spawn_ui()
-{
-    if (ui_) return ui_;
-    
-    ui_ = MakeShared<OgreBites::TrayManager>("UI", getRenderWindow(), this);
-    addInputListener(ui_.get());
-    ui_->hideCursor();
-
-    return ui_;
-}
-
 void OgreApp::setup()
 {
     OgreBites::ApplicationContext::setup();
@@ -26,6 +15,24 @@ void OgreApp::setup()
     OgreBites::WindowEventUtilities::addWindowEventListener(getRenderWindow(), this);
 
     on_setup();
+}
+
+void OgreApp::load()
+{
+    ui_ = MakeShared<OgreBites::TrayManager>("UI", getRenderWindow(), this);
+    addInputListener(ui_.get());
+    ui_->hideCursor();
+}
+
+void OgreApp::close()
+{
+    if (ui_)
+    {
+        removeInputListener(ui_.get());
+        ui_ = nullptr;
+    }
+    
+    closeApp();
 }
 
 bool OgreApp::keyPressed(const OgreBites::KeyboardEvent& evt)

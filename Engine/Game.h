@@ -127,6 +127,7 @@ public:
     static float get_time();
 
     static bool is_loading_stage();
+    static bool is_unloading_stage();
     static bool is_render_stage();
 
     void on_add_resource_directories(Set<String>& local, Set<String>& global) override;
@@ -200,7 +201,6 @@ private:
     Shared<reactphysics3d::PhysicsCommon> physics_;
     Shared<SoLoud::Soloud> soloud_;
     Shared<OgreApp> ogre_app_;
-    Shared<OgreBites::TrayManager> ogre_ui_;
     Ogre::RTShader::ShaderGenerator* shader_generator_;
     Shared<UIElement> ui_root_;
     Weak<UIElement> ui_under_mouse_;
@@ -209,5 +209,6 @@ private:
     std::mutex main_thread_calls_mutex_;
 
     bool is_loading_stage_;
+    bool is_unloading_stage_;
     bool is_render_stage_;
 };

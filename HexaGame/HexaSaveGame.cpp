@@ -26,7 +26,7 @@ FORCEINLINE void write(std::ofstream& stream, T value)
     stream.write((char*)&value, sizeof(T));
 }
 
-Shared<Map<TileIndex, Shared<const TileInfo>>> HexaSaveGame::get_chunk_modifications(const ChunkIndex& index) const
+Shared<Map<TileIndex, ConstPtr<TileInfo>>> HexaSaveGame::get_chunk_modifications(const ChunkIndex& index) const
 {
     const auto path_to_file = get_path().get_child("world").get_child(String::format("%i_%i", index.x, index.y));
     if (path_to_file.exists())
@@ -34,7 +34,7 @@ Shared<Map<TileIndex, Shared<const TileInfo>>> HexaSaveGame::get_chunk_modificat
         std::ifstream stream(path_to_file.get_absolute_string().c(), std::ios::in | std::ios::binary);
         if (stream.is_open())
         {
-            Shared<Map<TileIndex, Shared<const TileInfo>>> result = MakeShared<Map<TileIndex, Shared<const TileInfo>>>();
+            Shared<Map<TileIndex, ConstPtr<TileInfo>>> result = MakeShared<Map<TileIndex, ConstPtr<TileInfo>>>();
             
             const int count = read<int>(stream);
             for (int i = 0; i < count; i++)
@@ -64,7 +64,7 @@ Shared<Map<TileIndex, Shared<const TileInfo>>> HexaSaveGame::get_chunk_modificat
     return nullptr;
 }
 
-void HexaSaveGame::save_chunk_modifications(const ChunkIndex& index, const Map<TileIndex, Shared<const TileInfo>>& modifications)
+void HexaSaveGame::save_chunk_modifications(const ChunkIndex& index, const Map<TileIndex, ConstPtr<TileInfo>>& modifications)
 {
     const auto path_to_file = get_path().get_child("world").get_child(String::format("%i_%i", index.x, index.y));
     File::write_file(path_to_file);

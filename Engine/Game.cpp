@@ -83,8 +83,8 @@ void Game::launch()
     //setup_window();
     //prepare();
     render_loop();
-	ogre_app_->closeApp();
 	cleanup();
+	ogre_app_->close();
 }
 
 void Game::possess(const Shared<IControllable>& controllable)
@@ -277,6 +277,11 @@ bool Game::is_loading_stage()
 	return instance_->is_loading_stage_;
 }
 
+bool Game::is_unloading_stage()
+{
+	return instance_->is_unloading_stage_;
+}
+
 bool Game::is_render_stage()
 {
 	return instance_->is_render_stage_;
@@ -393,7 +398,7 @@ void Game::render_loop()
 		}
 	}
 
-	ogre_ui_ = ogre_app_->spawn_ui();
+	ogre_app_->load();
 	
 	// Fonts
 	default_font_ = SpriteFont::load_fnt(RESOURCES_FONTS + "arial.fnt");
@@ -581,6 +586,8 @@ void Game::cleanup()
 {
 	verbose("Game", "Cleaning up...");
 
+	is_unloading_stage_ = true;
+	
 	unloading_stage();
 
 	Texture::unload_all_static();
@@ -600,6 +607,8 @@ void Game::cleanup()
 	}
 	
 	soloud_->deinit();
+
+	is_unloading_stage_ = false;
 }
 
 void Game::init_game()

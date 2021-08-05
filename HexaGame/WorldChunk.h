@@ -31,7 +31,7 @@ class EXPORT WorldChunk : public EnableSharedFromThis<WorldChunk>
 public:
     struct ComplexTileSlot
     {
-        Shared<const ComplexTileInfo> info;
+        ConstPtr<ComplexTileInfo> info;
         Shared<ComplexTile> entity;
     };
     
@@ -49,9 +49,9 @@ public:
 
     FORCEINLINE const ChunkIndex& get_index() const;
     FORCEINLINE WorldChunkDataState get_state() const;
-    FORCEINLINE const Shared<const TileInfo>& get_tile(const TileIndex& index) const;
+    FORCEINLINE ConstPtr<TileInfo> get_tile(const TileIndex& index) const;
 
-    void set_tile(const TileIndex& index, const Shared<const TileInfo>& new_tile);
+    void set_tile(const TileIndex& index, ConstPtr<TileInfo> new_tile);
 
     void break_tile(const TileIndex& index);
     bool damage_tile(const TileIndex& index, float damage);
@@ -132,14 +132,14 @@ private:
     void cap(uint z);
     private:
     
-    FORCEINLINE Shared<const TileInfo> front_tile(const TileIndex& index) const;
-    FORCEINLINE Shared<const TileInfo> front_right_tile(const TileIndex& index) const;
-    FORCEINLINE Shared<const TileInfo> back_right_tile(const TileIndex& index) const;
-    FORCEINLINE Shared<const TileInfo> back_tile(const TileIndex& index) const;
-    FORCEINLINE Shared<const TileInfo> back_left_tile(const TileIndex& index) const;
-    FORCEINLINE Shared<const TileInfo> front_left_tile(const TileIndex& index) const;
-    FORCEINLINE Shared<const TileInfo> up_tile(const TileIndex& index) const;
-    FORCEINLINE Shared<const TileInfo> down_tile(const TileIndex& index) const;
+    FORCEINLINE ConstPtr<TileInfo> front_tile(const TileIndex& index) const;
+    FORCEINLINE ConstPtr<TileInfo> front_right_tile(const TileIndex& index) const;
+    FORCEINLINE ConstPtr<TileInfo> back_right_tile(const TileIndex& index) const;
+    FORCEINLINE ConstPtr<TileInfo> back_tile(const TileIndex& index) const;
+    FORCEINLINE ConstPtr<TileInfo> back_left_tile(const TileIndex& index) const;
+    FORCEINLINE ConstPtr<TileInfo> front_left_tile(const TileIndex& index) const;
+    FORCEINLINE ConstPtr<TileInfo> up_tile(const TileIndex& index) const;
+    FORCEINLINE ConstPtr<TileInfo> down_tile(const TileIndex& index) const;
 
     int observe_counter_ = 0;
     int visibility_counter_ = 0;
@@ -153,14 +153,14 @@ private:
     SimpleMap<TileIndex, ComplexTileSlot> complex_tiles_;
     Map<TileIndex, Shared<ComplexTileCustomData>> custom_data_;
     Shared<Entity> cap_entity_;
-    Map<TileIndex, Shared<const TileInfo>> modifications_;
+    Map<TileIndex, ConstPtr<TileInfo>> modifications_;
     bool dirty_;
     uint cap_z;
     SimpleMap<TileIndex, float> tile_damage_;
 
     WorldChunkDataState state_;
 
-    Shared<const TileInfo> data[chunk_size][chunk_size][chunk_height];
+    ConstPtr<TileInfo> data[chunk_size][chunk_size][chunk_height];
     TileType plane_metadata[chunk_height];
 
     Map<TileIndex, Shared<NavNode>> nav_nodes_;

@@ -142,6 +142,10 @@ void HexaGame::unloading_stage()
 {
     music_channel_.reset();
     ambient_channel_.reset();
+
+    tile_database->clear();
+    item_database->clear();
+    character_database->clear();
 }
 
 bool HexaGame::open_animation_editor(const String& entity_type, const String& entity_name) const

@@ -15,7 +15,7 @@ class EXPORT HexaSaveGame : public SaveGame
 public:
     HexaSaveGame(const String& profile_name);
 
-    Shared<Map<TileIndex, Shared<const TileInfo>>> get_chunk_modifications(const ChunkIndex& index) const;
-    void save_chunk_modifications(const ChunkIndex& index, const Map<TileIndex, Shared<const TileInfo>>& modifications);
+    Shared<Map<TileIndex, ConstPtr<TileInfo>>> get_chunk_modifications(const ChunkIndex& index) const;
+    void save_chunk_modifications(const ChunkIndex& index, const Map<TileIndex, ConstPtr<TileInfo>>& modifications);
     Shared<JSON> get_world_settings() const;
 };

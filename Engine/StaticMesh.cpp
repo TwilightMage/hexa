@@ -116,7 +116,7 @@ Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& s
 {
     Shared<StaticMesh> result = MakeShared<StaticMesh>(name);
 
-    result->ogre_mesh_ = Shared<Ogre::Mesh>(Ogre::MeshManager::getSingleton().createManual(name.c(), Ogre::RGN_DEFAULT));
+    result->ogre_mesh_ = Ogre::MeshManager::getSingleton().createManual(name.c(), Ogre::RGN_DEFAULT).get();
 
     result->ogre_mesh_->sharedVertexData = new Ogre::VertexData();
 

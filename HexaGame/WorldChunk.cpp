@@ -95,12 +95,12 @@ WorldChunkDataState WorldChunk::get_state() const
 	return state_;
 }
 
-const Shared<const TileInfo>& WorldChunk::get_tile(const TileIndex& index) const
+ConstPtr<TileInfo> WorldChunk::get_tile(const TileIndex& index) const
 {
 	return data[index.x][index.y][index.z];
 }
 
-void WorldChunk::set_tile(const TileIndex& index, const Shared<const TileInfo>& new_tile)
+void WorldChunk::set_tile(const TileIndex& index, ConstPtr<TileInfo> new_tile)
 {
     if (const auto world = world_.lock())
     {
@@ -1024,7 +1024,7 @@ void WorldChunk::regenerate_mesh(uint z, bool fill_complex)
     
     if (auto world = world_.lock())
     {
-        std::map<Shared<const SolidTileInfo>, List<StaticMesh::Vertex>> type_vertices;
+        std::map<ConstPtr<SolidTileInfo>, List<StaticMesh::Vertex>> type_vertices;
 
         const TileType plane_metadata_front_right = front_right_->plane_metadata[z];
         const TileType plane_metadata_back_left = back_left_->plane_metadata[z];
@@ -1179,9 +1179,9 @@ void WorldChunk::cap(uint z)
 }
 
 #define get_tile()			(data[pos.x][pos.y][pos.z])
-#define try_get_tile(name)	(name ? name->data[pos.x][pos.y][pos.z] : (Shared<const TileInfo>)Tiles::air)
+#define try_get_tile(name)	(name ? name->data[pos.x][pos.y][pos.z] : Tiles::air)
 
-Shared<const TileInfo> WorldChunk::front_tile(const TileIndex& index) const
+ConstPtr<TileInfo> WorldChunk::front_tile(const TileIndex& index) const
 {
 	const auto pos = index.offset(1, 0, 0).cycle_chunk();
 
@@ -1190,7 +1190,7 @@ Shared<const TileInfo> WorldChunk::front_tile(const TileIndex& index) const
         : try_get_tile(front_);
 }
 
-Shared<const TileInfo> WorldChunk::front_right_tile(const TileIndex& index) const
+ConstPtr<TileInfo> WorldChunk::front_right_tile(const TileIndex& index) const
 {
 	const auto pos = index.offset(1, 1, 0).cycle_chunk();
 
@@ -1203,7 +1203,7 @@ Shared<const TileInfo> WorldChunk::front_right_tile(const TileIndex& index) cons
             : try_get_tile(front_right_);
 }
 
-Shared<const TileInfo> WorldChunk::back_right_tile(const TileIndex& index) const
+ConstPtr<TileInfo> WorldChunk::back_right_tile(const TileIndex& index) const
 {
 	const auto pos = index.offset(0, 1, 0).cycle_chunk();
 
@@ -1212,7 +1212,7 @@ Shared<const TileInfo> WorldChunk::back_right_tile(const TileIndex& index) const
         : try_get_tile(right_);
 }
 
-Shared<const TileInfo> WorldChunk::back_tile(const TileIndex& index) const
+ConstPtr<TileInfo> WorldChunk::back_tile(const TileIndex& index) const
 {
 	const auto pos = index.offset(-1, 0, 0).cycle_chunk();
 
@@ -1221,7 +1221,7 @@ Shared<const TileInfo> WorldChunk::back_tile(const TileIndex& index) const
         : try_get_tile(back_);
 }
 
-Shared<const TileInfo> WorldChunk::back_left_tile(const TileIndex& index) const
+ConstPtr<TileInfo> WorldChunk::back_left_tile(const TileIndex& index) const
 {
 	const auto pos = index.offset(-1, -1, 0).cycle_chunk();
 
@@ -1234,7 +1234,7 @@ Shared<const TileInfo> WorldChunk::back_left_tile(const TileIndex& index) const
             : try_get_tile(back_left_);
 }
 
-Shared<const TileInfo> WorldChunk::front_left_tile(const TileIndex& index) const
+ConstPtr<TileInfo> WorldChunk::front_left_tile(const TileIndex& index) const
 {
 	const auto pos = index.offset(0, -1, 0).cycle_chunk();
 
@@ -1243,7 +1243,7 @@ Shared<const TileInfo> WorldChunk::front_left_tile(const TileIndex& index) const
         : try_get_tile(left_);
 }
 
-Shared<const TileInfo> WorldChunk::up_tile(const TileIndex& index) const
+ConstPtr<TileInfo> WorldChunk::up_tile(const TileIndex& index) const
 {
 	if (index.z == chunk_height - 1) return Tiles::air;
 	
@@ -1252,7 +1252,7 @@ Shared<const TileInfo> WorldChunk::up_tile(const TileIndex& index) const
 	return get_tile();
 }
 
-Shared<const TileInfo> WorldChunk::down_tile(const TileIndex& index) const
+ConstPtr<TileInfo> WorldChunk::down_tile(const TileIndex& index) const
 {
 	if (index.z == 0) return Tiles::air;
 	

@@ -19,13 +19,13 @@ struct ItemContainer
     {
     }
     
-    ItemContainer(const Shared<const ItemInfo>& item)
+    ItemContainer(const ItemInfo* item)
         : item(item)
         , count(1)
     {
     }
     
-    ItemContainer(const Shared<const ItemInfo>& item, uint count)
+    ItemContainer(const ItemInfo* item, uint count)
         : item(item)
         , count(count)
     {
@@ -46,7 +46,7 @@ struct ItemContainer
         return !is_empty() && !rhs.is_empty() && item == rhs.item;
     }
     
-    Shared<const ItemInfo> item = nullptr;
+    const ItemInfo* item = nullptr;
     uint count = 0;
 
     bool is_empty() const { return item == nullptr || count == 0; }

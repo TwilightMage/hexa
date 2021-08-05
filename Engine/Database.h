@@ -13,12 +13,14 @@ public:
     explicit Database(const String& name);
 
     template<class SubT>
-    Shared<const SubT> add(SubT* record);
-    Shared<const T> get(const Name& key) const;
-    const Map<Name, Shared<T>>& records() const;
+    ConstPtr<SubT> add(ConstPtr<SubT> record);
+    ConstPtr<T> get(const Name& key) const;
+    const Map<Name, ConstPtr<T>>& records() const;
+
+    void clear();
 
 private:
-    Map<Name, Shared<T>> data_;
+    Map<Name, ConstPtr<T>> data_;
 };
 
 #include "Database.cpp"

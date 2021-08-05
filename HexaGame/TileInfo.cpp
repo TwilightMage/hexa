@@ -23,7 +23,7 @@ TileInfo::TileInfo(
     material->ogre_material_->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName((key.to_string() + ".png").c());
 }
 
-void TileInfo::neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, const Shared<const TileInfo>& new_neighbor) const
+void TileInfo::neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, ConstPtr<TileInfo> new_neighbor) const
 {
 }
 

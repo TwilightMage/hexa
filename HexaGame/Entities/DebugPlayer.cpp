@@ -1,6 +1,7 @@
 ﻿#include "DebugPlayer.h"
 
-#include "Arrow.h"
+#include <OGRE/Bites/OgreInput.h>
+
 #include "Engine/Game.h"
 #include "Engine/World.h"
 #include "Engine/Physics/RaycastResult.h"

@@ -96,5 +96,5 @@ private:
 
     List<CollisionShapeInfo> collisions_;
     
-    Shared<Ogre::Mesh> ogre_mesh_;
+    Ogre::Mesh* ogre_mesh_;
 };

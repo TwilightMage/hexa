@@ -7,12 +7,12 @@ const Shared<WorldChunk>& EditableChunk::get_chunk() const
     return chunk_;
 }
 
-Shared<const TileInfo>& EditableChunk::tile(const TileIndex& index) const
+ConstPtr<TileInfo>& EditableChunk::tile(const TileIndex& index) const
 {
     return chunk_->data[index.x][index.y][index.z];
 }
 
-Shared<const TileInfo>& EditableChunk::tile(int x, int y, int z) const
+ConstPtr<TileInfo>& EditableChunk::tile(int x, int y, int z) const
 {
     return chunk_->data[x][y][z];
 }

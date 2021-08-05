@@ -12,7 +12,7 @@ class ComplexTile : public Entity
     friend WorldChunk;
 
 public:
-    ComplexTile(const Shared<const ComplexTileInfo>& tile_info);
+    ComplexTile(ConstPtr<ComplexTileInfo> tile_info);
 
     void on_start() override;
 
@@ -22,6 +22,6 @@ protected:
     bool initial_is_blocking = true;
 
 private:
-    Shared<const ComplexTileInfo> tile_info_;
+    ConstPtr<ComplexTileInfo> tile_info_;
     TileIndex index_;
 };

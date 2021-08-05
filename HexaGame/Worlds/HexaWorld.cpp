@@ -257,7 +257,7 @@ Shared<ItemDrop> HexaWorld::spawn_drop(const TileIndex& tile, const ItemContaine
     return entity;
 }
 
-void HexaWorld::set_tile(const TileIndex& world_index, const Shared<const TileInfo>& id) const
+void HexaWorld::set_tile(const TileIndex& world_index, ConstPtr<TileInfo> id) const
 {
     const auto chunk_index = world_index.get_chunk();
     if (auto chunk = get_chunk_internal(chunk_index))
@@ -275,7 +275,7 @@ void HexaWorld::set_tile(const TileIndex& world_index, const Shared<const TileIn
             }
             else
             {
-                Map<TileIndex, Shared<const TileInfo>> new_modifications;
+                Map<TileIndex, ConstPtr<TileInfo>> new_modifications;
                 new_modifications.insert(world_index.cycle_chunk(), id);
                 save_game->save_chunk_modifications(chunk_index, new_modifications);
             }
@@ -283,7 +283,7 @@ void HexaWorld::set_tile(const TileIndex& world_index, const Shared<const TileIn
     }
 }
 
-Shared<const TileInfo> HexaWorld::get_tile_id(const TileIndex& world_index) const
+ConstPtr<TileInfo> HexaWorld::get_tile_id(const TileIndex& world_index) const
 {
     const auto chunk_index = world_index.get_chunk();
     if (const auto chunk = get_chunk_internal(chunk_index))

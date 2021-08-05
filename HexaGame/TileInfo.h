@@ -32,7 +32,7 @@ public:
     bool block_nav;
     Shared<Material> material;
 
-    virtual void neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, const Shared<const TileInfo>& new_neighbor) const;
+    virtual void neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, ConstPtr<TileInfo> new_neighbor) const;
     virtual void on_tile_break(const TileIndex& index, const Shared<HexaWorld>& world) const;
     virtual List<ItemContainer> get_drops(const TileIndex& index, const Shared<HexaWorld>& world) const;
     FORCEINLINE virtual TileSide get_collision_sides(const TileIndex& world_index, const HexaWorld* world) const { return TileSide::All; }

@@ -123,7 +123,7 @@ void TreeStemInfo::on_tile_destroyed(const TileIndex& index, const Shared<Comple
     }
 }
 
-void TreeStemInfo::neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, const Shared<const TileInfo>& new_neighbor) const
+void TreeStemInfo::neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, ConstPtr<TileInfo> new_neighbor) const
 {
     if (new_neighbor == Tiles::air && side == TileSide::Down)
     {

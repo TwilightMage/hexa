@@ -30,9 +30,9 @@ THE SOFTWARE.
 
 #include "OgreOverlayPrerequisites.h"
 #include "../Main/OgreSingleton.h"
-#include "../Common/OgreStringVector.h"
+#include "../Main/OgreStringVector.h"
 #include "../Main/OgreScriptLoader.h"
-#include "../Common/OgreFrustum.h"
+#include "../Main/OgreFrustum.h"
 #include "../Main/OgreScriptTranslator.h"
 
 namespace Ogre {

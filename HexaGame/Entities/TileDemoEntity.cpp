@@ -7,7 +7,7 @@
 #include "HexaGame/TileIndex.h"
 #include "HexaGame/WorldGenerator.h"
 
-TileDemoEntity::TileDemoEntity(const std::array<Shared<const SolidTileInfo>, 6>& tiles)
+TileDemoEntity::TileDemoEntity(const std::array<ConstPtr<SolidTileInfo>, 6>& tiles)
     : tiles_(tiles)
 {
     mesh_component_ = create_component<MeshComponent>();
@@ -17,7 +17,7 @@ void TileDemoEntity::on_start()
 {
     if (auto world = get_world())
     {
-        SimpleMap<Shared<const TileInfo>, StaticMesh::SubMesh> sub_meshes;
+        SimpleMap<ConstPtr<SolidTileInfo>, StaticMesh::SubMesh> sub_meshes;
         for (uint i = 0; i < 6; i++)
         {
             if (tiles_[i])

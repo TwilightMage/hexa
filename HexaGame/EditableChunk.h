@@ -14,8 +14,8 @@ class EXPORT EditableChunk
     
 public:
     FORCEINLINE const Shared<WorldChunk>& get_chunk() const;
-    FORCEINLINE Shared<const TileInfo>& tile(const TileIndex& index) const;
-    FORCEINLINE Shared<const TileInfo>& tile(int x, int y, int z) const;
+    FORCEINLINE ConstPtr<TileInfo>& tile(const TileIndex& index) const;
+    FORCEINLINE ConstPtr<TileInfo>& tile(int x, int y, int z) const;
 
     void set_complex_custom_data(const TileIndex& index, const Shared<ComplexTileCustomData>& custom_data) const;
 

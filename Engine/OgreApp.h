@@ -12,10 +12,10 @@ class OgreApp : public OgreBites::ApplicationContext, public OgreBites::InputLis
 {
 public:
     explicit OgreApp(const String& name);
-
-    Shared<OgreBites::TrayManager> spawn_ui();
     
     void setup() override;
+    void load();
+    void close();
 
     bool keyPressed(const OgreBites::KeyboardEvent& evt) override;
     bool keyReleased(const OgreBites::KeyboardEvent& evt) override;

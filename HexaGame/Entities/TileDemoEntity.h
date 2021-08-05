@@ -11,12 +11,12 @@ class SolidTileInfo;
 class TileDemoEntity : public Entity
 {
 public:
-    TileDemoEntity(const std::array<Shared<const SolidTileInfo>, 6>& tiles);
+    TileDemoEntity(const std::array<ConstPtr<SolidTileInfo>, 6>& tiles);
 
     void on_start() override;
 
 private:
-    std::array<Shared<const SolidTileInfo>, 6> tiles_;
+    std::array<ConstPtr<SolidTileInfo>, 6> tiles_;
     inline static const TileIndex tile_positions[6] = {
         TileIndex(0, 0, 0),
         TileIndex(0, 0, 1),

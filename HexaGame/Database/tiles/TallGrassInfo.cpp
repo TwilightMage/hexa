@@ -7,7 +7,7 @@
 #include "HexaGame/Entities/ComplexTile.h"
 #include "HexaGame/Worlds/HexaWorld.h"
 
-void TallGrassInfo::neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, const Shared<const TileInfo>& new_neighbor) const
+void TallGrassInfo::neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, ConstPtr<TileInfo> new_neighbor) const
 {
     if (side == TileSide::Down && new_neighbor == Tiles::air)
     {

@@ -42,8 +42,8 @@ public:
     Shared<Character> get_character_at(const TileIndex& world_index) const;
     Shared<ItemDrop> spawn_drop(const TileIndex& tile, const ItemContainer& item, const Vector3& throw_force = Vector3(0, 0, 0.2f));
 
-    void set_tile(const TileIndex& world_index, const Shared<const TileInfo>& id) const;
-    Shared<const TileInfo> get_tile_id(const TileIndex& world_index) const;
+    void set_tile(const TileIndex& world_index, ConstPtr<TileInfo> id) const;
+    ConstPtr<TileInfo> get_tile_id(const TileIndex& world_index) const;
 
     void break_tile(const TileIndex& world_index) const;
     bool damage_tile(const TileIndex& world_index, float damage) const;

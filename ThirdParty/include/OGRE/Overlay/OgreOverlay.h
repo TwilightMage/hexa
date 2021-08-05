@@ -30,8 +30,8 @@ THE SOFTWARE.
 #define __Overlay_H__
 
 #include "OgreOverlayPrerequisites.h"
-#include "../Common/OgreMatrix4.h"
-#include "../Common/OgreViewport.h"
+#include "../Main/OgreMatrix4.h"
+#include "../Main/OgreViewport.h"
 
 namespace Ogre {
     class OverlayContainer;

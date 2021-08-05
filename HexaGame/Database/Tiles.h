@@ -37,7 +37,7 @@ public:
     DECLARE_DATABASE_ENTRY(TreeStemInfo, ash_stem);
 
     DATABASE_INIT_FUNC(TileInfo)
-    {
+    {        
         INIT_DATABASE_ENTRY(air, AirTileInfo);
         
         INIT_SOLID_TILE_DATABASE_ENTRY(dirt, SolidTileInfo, { MetaTags::DIRT }, 1.0f, RESOURCES, true, true);

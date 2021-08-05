@@ -4,7 +4,7 @@
 #include "HexaGame/HexaCollisionMaskBits.h"
 #include "HexaGame/TileInfo.h"
 
-ComplexTile::ComplexTile(const Shared<const ComplexTileInfo>& tile_info)
+ComplexTile::ComplexTile(ConstPtr<ComplexTileInfo> tile_info)
     : tile_info_(tile_info)
 {
 }

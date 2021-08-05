@@ -268,7 +268,7 @@ void World::close()
     Game::instance_->physics_->destroyPhysicsWorld(physics_world_);
     physics_world_ = nullptr;
     
-    Game::instance_->ogre_->destroySceneManager(manager_);
+    Game::instance_->ogre_app_->getRoot()->destroySceneManager(manager_);
     manager_ = nullptr;
 }
 

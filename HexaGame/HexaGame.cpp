@@ -30,7 +30,6 @@ void HexaGame::register_world_generator(const Shared<WorldGeneratorInfo>& genera
 void HexaGame::init_game_info(GameInfo& outInfo)
 {
     outInfo.title = "Hexa";
-    outInfo.icon = RESOURCES_TEXTURES + "icon.png";
 }
 
 Shared<Settings> HexaGame::generate_settings_object()

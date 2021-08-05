@@ -185,6 +185,8 @@ namespace OgreBites
 
         virtual void setMouseTexture(Ogre::uint8* data, Ogre::uint width, Ogre::uint height, Ogre::uint hot_x, Ogre::uint hot_y) {}
 
+        virtual void setWindowIcon(Ogre::uint8* data, Ogre::uint width, Ogre::uint height, NativeWindowType* win) {}
+
         /// @overload
         void setWindowGrab(bool grab = true) {
             OgreAssert(!mWindows.empty(), "create a window first");

@@ -8,6 +8,8 @@
 #include "String.h"
 #include "Vector2.h"
 
+class Texture;
+
 class OgreApp : public OgreBites::ApplicationContext, public OgreBites::InputListener, OgreBites::WindowEventListener, public OgreBites::TrayListener
 {
 public:
@@ -25,6 +27,8 @@ public:
     bool axisMoved(const OgreBites::AxisEvent& evt) override;
     bool mouseMoved(const OgreBites::MouseMotionEvent& evt) override;
     void windowResized(Ogre::RenderWindow* rw) override;
+
+    void set_window_icon(const Shared<Texture>& icon_texture);
 
     std::function<void()> on_setup;
 

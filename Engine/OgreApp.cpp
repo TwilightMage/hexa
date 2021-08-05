@@ -1,5 +1,7 @@
 ﻿#include "OgreApp.h"
 
+#include "Texture.h"
+
 OgreApp::OgreApp(const String& name)
     : OgreBites::ApplicationContext(name.c())
 {
@@ -73,4 +75,9 @@ bool OgreApp::mouseMoved(const OgreBites::MouseMotionEvent& evt)
 void OgreApp::windowResized(Ogre::RenderWindow* rw)
 {
     on_windowResized(rw);
+}
+
+void OgreApp::set_window_icon(const Shared<Texture>& icon_texture)
+{
+    setWindowIcon((byte*)icon_texture->get_pixels().begin(), icon_texture->get_width(), icon_texture->get_height(), mWindows[0].native);
 }

@@ -7,5 +7,4 @@
 struct EXPORT GameInfo
 {
     String title;
-    String icon;
 };

@@ -99,9 +99,6 @@
     <ClInclude Include="Entities\Skybox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="Entities\TileDemoDomainEntity.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="HexaEventBus.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -288,9 +285,6 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="Entities\Skybox.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="Entities\TileDemoDomainEntity.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="HexaSaveGame.cpp">

@@ -51,9 +51,15 @@ void TilePresentationWorld::on_start()
     spawn_entity(player, Vector3(0.0f, 50.0f, 300.0f));
     Game::possess(player);
 
-    const auto monkey_head = spawn_entity<Entity>(Vector3(300.0f, 0.0f, -300.0f));
-    auto monkey_mesh = monkey_head->create_component<MeshComponent>();
+    const auto monkey = spawn_entity<Entity>(Vector3(300.0f, 0.0f, -300.0f));
+    auto monkey_mesh = monkey->create_component<MeshComponent>();
     monkey_mesh->set_mesh(StaticMesh::load_file_obj("resources/meshes/monkey.obj", AutoCollisionMode::Complex));
     monkey_mesh->set_material(Tiles::dirt->material, 0);
     monkey_mesh->set_body_type(PhysicalBodyType::Kinematic);
+
+    const auto multi_coll = spawn_entity<Entity>(Vector3(600.0f, 0.0f, -300.0f));
+    auto multi_coll_mesh = multi_coll->create_component<MeshComponent>();
+    multi_coll_mesh->set_mesh(StaticMesh::load_file_obj("resources/meshes/multi_coll.obj"));
+    multi_coll_mesh->set_material(Tiles::dirt->material, 0);
+    multi_coll_mesh->set_body_type(PhysicalBodyType::Kinematic);
 }

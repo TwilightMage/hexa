@@ -32,7 +32,7 @@ struct Bounds
         max.z = Math::max(max.z, point.z);
     }
 
-    FORCEINLINE Vector3 get_center() const { return (max * min) * 0.5f; };
+    FORCEINLINE Vector3 get_center() const { return (max + min) * 0.5f; };
     FORCEINLINE Vector3 get_extents() const { return (max - min) * 0.5f; };
 };
 
@@ -69,8 +69,9 @@ Shared<StaticMesh> StaticMesh::load_file_obj(const Path& path, AutoCollisionMode
     List<SubMesh> sub_meshes(loader->LoadedMeshes.size());
     for (uint i = 0; i < sub_meshes.length(); i++)
     {
-        auto sub_mesh = sub_meshes[i];
+        auto& sub_mesh = sub_meshes[i];
         const auto src_sub_mesh = loader->LoadedMeshes[i];
+        sub_mesh.name = src_sub_mesh.MeshName;
         sub_mesh.vertices = List<Vertex>(src_sub_mesh.Vertices.size());
         for (uint j = 0; j < src_sub_mesh.Vertices.size(); j++)
         {
@@ -85,8 +86,6 @@ Shared<StaticMesh> StaticMesh::load_file_obj(const Path& path, AutoCollisionMode
         sub_mesh.indices = src_sub_mesh.Indices;
 
         GeometryEditor::optimize(sub_mesh.vertices, sub_mesh.indices);
-
-        sub_meshes[i] = sub_mesh;
     }
     
     Shared<StaticMesh> result = create(path.filename + path.extension, sub_meshes, collision_mode, false);

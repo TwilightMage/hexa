@@ -63,6 +63,7 @@ namespace OgreBites
         void setMouseVisible(bool visible);
         void setMousePosition(NativeWindowType* win, Ogre::uint x, Ogre::uint y);
         void setMouseTexture(Ogre::uint8* data, Ogre::uint width, Ogre::uint height, Ogre::uint hot_x, Ogre::uint hot_y);
+        void setWindowIcon(Ogre::uint8* data, Ogre::uint width, Ogre::uint height, NativeWindowType* win);
         void shutdown();
         void pollEvents();
         void addInputListener(NativeWindowType* win, InputListener* lis);

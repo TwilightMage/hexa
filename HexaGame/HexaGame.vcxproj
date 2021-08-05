@@ -328,6 +328,7 @@
     <Content Include="resources\fonts\courgette_0.png" />
     <Content Include="resources\fonts\harrington.fnt" />
     <Content Include="resources\fonts\harrington_0.png" />
+    <Content Include="resources\icon.ico" />
     <Content Include="resources\materials\tile.material" />
     <Content Include="resources\materials\tile.program" />
     <Content Include="resources\meshes\arrow.obj" />

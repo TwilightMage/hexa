@@ -70,25 +70,20 @@ float rand3(vec3 co)
     return fract(sin(dot(co, vec3(12.9898, 78.233, 36.668))) * 43758.5453);
 }
 
-const int indexMatrix4x4[16] = int[](0,  8,  2,  10,
+const int ditherIndexMatrix[16] = int[](0,  8,  2,  10,
                                      12, 4,  14, 6,
                                      3,  11, 1,  9,
                                      15, 7,  13, 5);
 
-float indexValue(vec2 pos)
+float dither(float alpha, vec2 pos)
 {
+    float closestAlpha = (alpha < 0.5) ? 0 : 1;
+    float secondClosestAlpha = 1 - closestAlpha;
     int x = int(mod(pos.x, 4));
     int y = int(mod(pos.y, 4));
-    return indexMatrix4x4[(x + y * 4)] / 16.0;
-}
-
-float dither(float color)
-{
-    float closestColor = (color < 0.5) ? 0 : 1;
-    float secondClosestColor = 1 - closestColor;
-    float d = indexValue(gl_FragCoord.xy);
-    float distance = abs(closestColor - color);
-    return (distance < d) ? closestColor : secondClosestColor;
+    float d = ditherIndexMatrix[(x + y * 4)] / 16.0;
+    float distance = abs(closestAlpha - alpha);
+    return (distance < d) ? closestAlpha : secondClosestAlpha;
 }
 
 bool distanceDisolve(vec3 frag_pos, vec3 source_pos, float distance_max, float transition_distance)
@@ -99,7 +94,7 @@ bool distanceDisolve(vec3 frag_pos, vec3 source_pos, float distance_max, float t
         if (dist < distance_max)
         {
             float trans = (dist - (distance_max - transition_distance)) / transition_distance;
-            if (trans < dither(trans)) return true;
+            if (trans < dither(trans, gl_FragCoord.xy)) return true;
         }
         else
         {

@@ -2,6 +2,7 @@
 
 #include <OGRE/Main/OgreMaterialManager.h>
 #include <OGRE/Main/OgreResourceGroupManager.h>
+#include <OGRE/Main/OgreTextureManager.h>
 
 #include "Logger.h"
 #include "Material.h"
@@ -18,9 +19,29 @@ void Module::on_add_resource_directories(Set<String>& local, Set<String>& global
 
 Shared<Material> Module::get_material(const String& name) const
 {
-    auto result = MakeShared<Material>();
-    result->ogre_material_ = Ogre::MaterialManager::getSingleton().getByName(name.c(), module_name.c());
-    return result;
+    if (auto ogre_material = Ogre::MaterialManager::getSingleton().getByName(name.c(), module_name.c()))
+    {
+        auto result = MakeShared<Material>();
+        result->ogre_material_ = ogre_material;
+        return result;
+    }
+
+    return nullptr;
+}
+
+void Module::create_texture(const Array2D<Color>& pixels, const String& name)
+{
+    Ogre::Image ogre_image(Ogre::PF_R5G6B5, pixels.get_size_x(), pixels.get_size_y());
+
+    for (uint x = 0; x < pixels.get_size_x(); x++)
+    {
+        for (uint y = 0; y < pixels.get_size_y(); y++)
+        {
+            ogre_image.setColourAt(Ogre::ColourValue((byte*)&pixels.at(x, y)), x, y, 0);
+        }
+    }
+
+    Ogre::TextureManager::getSingleton().loadImage(name.c(), get_module_name().c(), ogre_image);
 }
 
 void Module::add_resource_directories()

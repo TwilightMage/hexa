@@ -1,0 +1,5 @@
+fragment_program Hexa/SkyboxFS glsl
+{
+    source skybox.frag
+    profiles glsl330
+}

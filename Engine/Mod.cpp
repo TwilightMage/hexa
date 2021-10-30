@@ -31,11 +31,11 @@ Path Mod::mod_path(const String& sub_path) const
     return "./mods/" + info_.name + "/" + sub_path;
 }
 
-void Mod::loading_stage()
+void Mod::on_loading_stage()
 {
 }
 
-void Mod::on_loaded(const Shared<EventBus>& event_bus)
+void Mod::on_start(const Shared<EventBus>& event_bus)
 {
 }
 

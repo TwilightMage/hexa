@@ -117,6 +117,7 @@ void MeshComponent::setup_new_mesh(const Shared<StaticMesh>& mesh)
             if (mesh)
             {
                 ogre_entity_ = world->manager_->createEntity(mesh_->name.c());
+                ogre_entity_->setCastShadows(true);
                 owner->scene_node_->attachObject(ogre_entity_);
 
                 for (auto& collision : mesh->collisions_)

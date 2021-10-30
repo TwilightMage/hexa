@@ -1,10 +1,10 @@
-﻿#version 450
+#version 450
 
 #define PI 3.1415926538
 
-uniform vec4 sky_top;
-uniform vec4 sky_horizon;
-uniform vec4 sky_down;
+const vec4 sky_top = vec4(0.5, 0.75, 1, 1);
+const vec4 sky_horizon = vec4(1, 1, 1, 1);
+const vec4 sky_down = vec4(0.2, 0.2, 0.2, 1);
 
 in vec3 obj_pos;
 
@@ -13,7 +13,7 @@ out vec4 frag_color;
 void main()
 {
     vec3 norm = normalize(obj_pos);
-    vec2 sp_pos = vec2((atan(dot(vec3(1, 0, 0), norm), dot(vec3(0, 1, 0), norm)) / PI + 1) * 0.5, (dot(vec3(0, 0, 1), norm) + 1) * 0.5);
+    vec2 sp_pos = vec2((atan(dot(vec3(0, 0, -1), norm), dot(vec3(1, 0, 0), norm)) / PI + 1) * 0.5, (dot(vec3(0, 1, 0), norm) + 1) * 0.5);
     
     if (sp_pos.y > 0.5)
     {

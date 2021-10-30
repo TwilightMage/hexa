@@ -4,6 +4,7 @@
 
 #include "EventBus.h"
 #include "GameInfo.h"
+#include "KeyCode.h"
 #include "List.h"
 #include "Map.h"
 #include "Module.h"
@@ -63,6 +64,16 @@ namespace Ogre
         class ShaderGenerator;
     }
 }
+
+enum class GameStage
+{
+    Unloaded,
+    Initialization,
+    Loading,
+    Starting,
+    RenderLoop,
+    Unloading
+};
 
 class EXPORT Game : public Module
 {
@@ -126,9 +137,7 @@ public:
     static Vector3 get_un_projected_mouse();
     static float get_time();
 
-    static bool is_loading_stage();
-    static bool is_unloading_stage();
-    static bool is_render_stage();
+    static GameStage get_stage();
 
     void on_add_resource_directories(Set<String>& local, Set<String>& global) override;
     
@@ -137,22 +146,22 @@ protected:
     virtual Shared<Settings> generate_settings_object();
     virtual Shared<SaveGame> generate_save_game_object(const String& profile_name);
     virtual Shared<EventBus> generate_event_bus_object();
-    virtual void loading_stage();
-    virtual void start();
-    virtual void tick(float delta_time);
-    virtual void unloading_stage();
+    virtual void on_loading_stage();
+    virtual void on_start();
+    virtual void on_tick(float delta_time);
+    virtual void on_unloading_stage();
 
     void setup();
     
 private:
+    void init();
+    void loading_stage();
+    void start();
     void render_loop();
-    
-    void cleanup();
+    void unloading_stage();
 
-    void init_game();
-
-    bool keyPressed(int key, bool repeat);
-    bool keyReleased(int key);
+    bool keyPressed(KeyCode key, bool repeat);
+    bool keyReleased(KeyCode key);
     bool textInput(const char* chars);
     bool mousePressed(int button);
     bool mouseReleased(int button);
@@ -175,7 +184,6 @@ private:
     Vector2 mouse_delta_;
     Vector3 un_projected_mouse_;
     float time_;
-    bool close = false;
 
     // Assets
     Map<String, Shared<StaticMesh>> meshes_;
@@ -190,6 +198,7 @@ private:
     Shared<SpriteFont> default_font_;
     Shared<AudioChannel> general_channel_;
     List<Shared<Mod>> mods_;
+    GameStage stage_ = GameStage::Unloaded;
     
     // Game Play
     Shared<CameraComponent> current_camera_;
@@ -207,8 +216,4 @@ private:
     Weak<UIElement> pressed_ui_;
     List<std::function<void()>> main_thread_calls_;
     std::mutex main_thread_calls_mutex_;
-
-    bool is_loading_stage_;
-    bool is_unloading_stage_;
-    bool is_render_stage_;
 };

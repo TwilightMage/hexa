@@ -2,6 +2,7 @@
 
 #include "MeshEntity.h"
 #include "Engine/Entity.h"
+#include "Engine/KeyCode.h"
 #include "Engine/Player.h"
 #include "HexaGame/ChunkIndex.h"
 
@@ -14,8 +15,8 @@ class EXPORT DebugPlayer : public Player
 public:
     void on_start() override;
     
-    void key_down(int key) override;
-    void key_up(int key) override;
+    void key_down(KeyCode key) override;
+    void key_up(KeyCode key) override;
     void mouse_button_down(int button) override;
 
     void on_possess() override;

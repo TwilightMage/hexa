@@ -22,11 +22,13 @@ void TileDemoEntity::on_start()
         {
             if (tiles_[i])
             {
+                const auto tile_vector = tile_positions[i].to_vector();
+                
                 List<StaticMesh::Vertex> tile_vertices;
                 List<uint> tile_indices;
         
-                WorldGenerator::generate_tile_mesh(masks[i], tiles_[i], tile_vertices, tile_indices, 0.0f);
-                GeometryEditor::translate(tile_vertices, tile_positions[i].to_vector());
+                WorldGenerator::generate_tile_mesh(masks[i], tiles_[i], tile_vertices, tile_indices, (tile_vector + get_location()).sum_all());
+                GeometryEditor::translate(tile_vertices, tile_vector);
 
                 sub_meshes[tiles_[i]].add(tile_vertices, tile_indices);
             }

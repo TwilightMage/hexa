@@ -40,10 +40,10 @@ protected:
     void init_game_info(GameInfo& outInfo) override;
     Shared<Settings> generate_settings_object() override;
     Shared<SaveGame> generate_save_game_object(const String& profile_name) override;
-    void start() override;
-    void tick(float delta_time) override;
-    void loading_stage() override;
-    void unloading_stage() override;
+    void on_start() override;
+    void on_tick(float delta_time) override;
+    void on_loading_stage() override;
+    void on_unloading_stage() override;
 
 private:
     bool open_animation_editor(const String& entity_type, const String& entity_name) const;

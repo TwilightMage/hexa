@@ -42,7 +42,7 @@ Shared<SaveGame> HexaGame::generate_save_game_object(const String& profile_name)
     return MakeShared<HexaSaveGame>(profile_name);
 }
 
-void HexaGame::start()
+void HexaGame::on_start()
 {
     if (get_args().length() >= 2 && get_args()[1] == "animations")
     {
@@ -66,7 +66,7 @@ void HexaGame::start()
     }
 }
 
-void HexaGame::tick(float delta_time)
+void HexaGame::on_tick(float delta_time)
 {
     if (auto world = get_world())
     {
@@ -77,7 +77,7 @@ void HexaGame::tick(float delta_time)
     }
 }
 
-void HexaGame::loading_stage()
+void HexaGame::on_loading_stage()
 {
     set_cursor_texture(Texture::load_png(RESOURCES_TEXTURES_UI + "cursor.png"), 0, 0);
     
@@ -137,7 +137,7 @@ void HexaGame::loading_stage()
     Characters::init(character_database);
 }
 
-void HexaGame::unloading_stage()
+void HexaGame::on_unloading_stage()
 {
     music_channel_.reset();
     ambient_channel_.reset();

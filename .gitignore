@@ -36,3 +36,5 @@ Desktop.ini
 Build/*
 x64/*
 */x64/*
+
+*.log

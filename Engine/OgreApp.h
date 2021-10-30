@@ -4,6 +4,7 @@
 #include <OGRE/Bites/OgreTrays.h>
 #include <OGRE/Bites/OgreWindowEventUtilities.h>
 
+#include "KeyCode.h"
 #include "Pointers.h"
 #include "String.h"
 #include "Vector2.h"
@@ -32,8 +33,8 @@ public:
 
     std::function<void()> on_setup;
 
-    std::function<bool(int key, bool repeat)> on_keyPressed;
-    std::function<bool(int key)> on_keyReleased;
+    std::function<bool(KeyCode key, bool repeat)> on_keyPressed;
+    std::function<bool(KeyCode key)> on_keyReleased;
     std::function<bool(const char* chars)> on_textInput;
     std::function<bool(int button)> on_mousePressed;
     std::function<bool(int button)> on_mouseReleased;

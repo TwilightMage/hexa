@@ -32,8 +32,8 @@ public:
     Path mod_path(const String& sub_path) const;
     
 protected:
-    virtual void loading_stage();
-    virtual void on_loaded(const Shared<EventBus>& event_bus);
+    virtual void on_loading_stage();
+    virtual void on_start(const Shared<EventBus>& event_bus);
 
 private:
     static Shared<Mod> load(const Path& path);

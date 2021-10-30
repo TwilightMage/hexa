@@ -1,8 +1,8 @@
 ﻿#include "DebugPlayer.h"
 
-#include <OGRE/Bites/OgreInput.h>
-
 #include "Engine/Game.h"
+#include "Engine/Material.h"
+#include "Engine/MeshComponent.h"
 #include "Engine/World.h"
 #include "Engine/Physics/RaycastResult.h"
 #include "Engine/ui/TextBlock.h"
@@ -16,12 +16,17 @@ void DebugPlayer::on_start()
     
     if (auto world = get_world())
     {
+        auto arrows_mat = Game::get_instance()->get_material("Hexa/Axis_Arrows");
+        if (!arrows_mat)
+        {
+            arrows_mat = Game::get_instance()->get_material("Hexa/Basic")->clone("Hexa/Axis_Arrows");
+            arrows_mat->set_texture("axis_arrows.png", 0);
+        }
+        
         const auto arrows_mesh = StaticMesh::load_file_obj(RESOURCES_MESHES + "axis_arrows.obj");
         
-        arrows_ = MakeShared<MeshEntity>(arrows_mesh);
-        //arrows_->get_material_instance()->set_param_value("texture", Texture::load_png(RESOURCES_ENGINE_TEXTURES + "axis_arrows.png"));
-        arrows_->set_scale(Vector3(0.1f));
-        world->spawn_entity(arrows_);
+        arrows_ = world->spawn_entity<MeshEntity>(Transform(Vector3(), Quaternion(), Vector3(0.1f)), arrows_mesh);
+        arrows_->mesh()->set_material(arrows_mat, 0);
 
         if (auto hexa_world = cast<HexaWorld>(world))
         {
@@ -33,28 +38,58 @@ void DebugPlayer::on_start()
     }
 }
 
-void DebugPlayer::key_down(int key)
+void DebugPlayer::key_down(KeyCode key)
 {
     Player::key_down(key);
-    
-    if (key == int('w')) move_forward_ += 1;
-    else if (key == int('s')) move_forward_ -= 1;
-    if (key == int('d')) move_right_ += 1;
-    else if (key == int('a')) move_right_ -= 1;
-    if (key == OgreBites::SDLK_SPACE) move_up_ += 1;
-    else if (key == OgreBites::SDLK_LSHIFT) move_up_ -= 1;
+
+    switch (key)
+    {
+    case KeyCode::W:
+        move_forward_ += 1;
+        break;
+    case KeyCode::S:
+        move_forward_ -= 1;
+        break;
+    case KeyCode::D:
+        move_right_ += 1;
+        break;
+    case KeyCode::A:
+        move_right_ -= 1;
+        break;
+    case KeyCode::Space:
+        move_up_ += 1;
+        break;
+    case KeyCode::LeftShift:
+        move_up_ -= 1;
+        break;
+    }
 }
 
-void DebugPlayer::key_up(int key)
+void DebugPlayer::key_up(KeyCode key)
 {
     Player::key_up(key);
     
-    if (key == int('w')) move_forward_ -= 1;
-    else if (key == int('s')) move_forward_ += 1;
-    if (key == int('d')) move_right_ -= 1;
-    else if (key == int('a')) move_right_ += 1;
-    if (key == OgreBites::SDLK_SPACE) move_up_ -= 1;
-    else if (key == OgreBites::SDLK_LSHIFT) move_up_ += 1;
+    switch (key)
+    {
+    case KeyCode::W:
+        move_forward_ -= 1;
+        break;
+    case KeyCode::S:
+        move_forward_ += 1;
+        break;
+    case KeyCode::D:
+        move_right_ -= 1;
+        break;
+    case KeyCode::A:
+        move_right_ += 1;
+        break;
+    case KeyCode::Space:
+        move_up_ -= 1;
+        break;
+    case KeyCode::LeftShift:
+        move_up_ += 1;
+        break;
+    }
 }
 
 void DebugPlayer::mouse_button_down(int button)

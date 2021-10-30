@@ -1,7 +1,5 @@
 #include "TileInfo.h"
 
-#include <OGRE/Main/OgreTechnique.h>
-
 #include "HexaGame.h"
 #include "Engine/Material.h"
 
@@ -18,9 +16,8 @@ TileInfo::TileInfo(
     , hardness(hardness)
     , block_nav(block_nav)
 {
-    material = MakeShared<Material>();
-    material->ogre_material_ = Game::get_instance()->get_material("Hexa/Tile")->ogre_material_->clone((String("Hexa/Tile/") + key.to_string()).c());
-    material->ogre_material_->getTechnique(0)->getPass(0)->getTextureUnitState(0)->setTextureName((key.to_string() + ".png").c());
+    material = Game::get_instance()->get_material("Hexa/Basic")->clone((String("Hexa/Tile/") + key.to_string()).c());
+    material->set_texture(key.to_string() + ".png", 0);
 }
 
 void TileInfo::neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, ConstPtr<TileInfo> new_neighbor) const

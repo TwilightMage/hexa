@@ -39,34 +39,13 @@ public:
         Vector3 norm;
     };
 
-    struct SubMesh
+    struct EXPORT SubMesh
     {
-        SubMesh(const String& name, const List<Vertex>& vertices, const List<uint>& indices)
-            : name(name)
-            , vertices(vertices)
-            , indices(indices)
-        {
-        }
+        SubMesh(const String& name, const List<Vertex>& vertices, const List<uint>& indices);
+        SubMesh(const List<Vertex>& vertices, const List<uint>& indices);
+        SubMesh();
 
-        SubMesh(const List<Vertex>& vertices, const List<uint>& indices)
-            : SubMesh("", vertices, indices)
-        {
-        }
-
-        SubMesh()
-            : SubMesh("", {}, {})
-        {
-        }
-
-        void add(const List<Vertex>& new_vertices, const List<uint>& new_indices)
-        {
-            uint offset = vertices.length();
-            vertices.add_many(new_vertices);
-            for (auto& ind : new_indices)
-            {
-                indices.add(ind + offset);
-            }
-        }
+        void add(const List<Vertex>& new_vertices, const List<uint>& new_indices);
         
         String name;
         List<Vertex> vertices;

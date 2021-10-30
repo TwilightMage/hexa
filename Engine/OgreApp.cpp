@@ -39,12 +39,12 @@ void OgreApp::close()
 
 bool OgreApp::keyPressed(const OgreBites::KeyboardEvent& evt)
 {
-    return on_keyPressed(evt.keysym.sym, evt.repeat);
+    return on_keyPressed((KeyCode)evt.keysym.sym, evt.repeat);
 }
 
 bool OgreApp::keyReleased(const OgreBites::KeyboardEvent& evt)
 {
-    return on_keyReleased(evt.keysym.sym);
+    return on_keyReleased((KeyCode)evt.keysym.sym);
 }
 
 bool OgreApp::textInput(const OgreBites::TextInputEvent& evt)

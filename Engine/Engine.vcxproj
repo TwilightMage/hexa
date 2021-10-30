@@ -209,6 +209,7 @@
     <ClInclude Include="AudioChannel.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="FastOperator.h" />
+    <ClInclude Include="KeyCode.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MeshComponent.h" />
     <ClInclude Include="Module.h" />
@@ -423,10 +424,6 @@
     <Content Include="resources\meshes\monkey.obj" />
     <Content Include="resources\meshes\sphere.obj" />
     <Content Include="resources\meshes\square.obj" />
-    <Content Include="resources\shaders\basic_3D.frag" />
-    <Content Include="resources\shaders\basic_3D.vert" />
-    <Content Include="resources\shaders\basic_ui.frag" />
-    <Content Include="resources\shaders\basic_ui.vert" />
     <Content Include="resources\textures\axis_arrows.png" />
     <Content Include="resources\textures\pixels.png" />
     <Content Include="resources\textures\ui\animation_editor\add_linear.png" />
@@ -444,6 +441,9 @@
     <Content Include="resources\textures\ui\button_panel.png" />
     <Content Include="resources\textures\ui\input_panel.png" />
     <Content Include="resources\textures\ui\panel.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="resources\shaders" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

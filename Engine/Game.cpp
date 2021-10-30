@@ -3,8 +3,6 @@
 #include <OGRE/Bites/OgreTrays.h>
 #include <OGRE/Main/OgreEntity.h>
 #include <OGRE/Main/OgreRenderWindow.h>
-#include <OGRE/Main/OgreTechnique.h>
-#include <OGRE/Main/OgreTextureManager.h>
 #include <OGRE/RTShaderSystem/OgreShaderGenerator.h>
 #include <reactphysics3d/reactphysics3d.h>
 #include <soloud/soloud.h>
@@ -15,6 +13,7 @@
 #include "File.h"
 #include "IControllable.h"
 #include "Logger.h"
+#include "Material.h"
 #include "Mod.h"
 #include "OgreApp.h"
 #include "Path.h"
@@ -23,7 +22,6 @@
 #include "Set.h"
 #include "Settings.h"
 #include "SpriteFont.h"
-#include "TextureAtlas.h"
 #include "World.h"
 #include "ui/Image.h"
 #include "ui/TextBlock.h"
@@ -79,11 +77,14 @@ void Game::launch()
 
 	ogre_app_->initApp();
 	
-	init_game();
-    //setup_window();
-    //prepare();
+	init();
+	loading_stage();
+	start();
     render_loop();
-	cleanup();
+	unloading_stage();
+
+	stage_ = GameStage::Unloaded;
+	
 	ogre_app_->close();
 }
 
@@ -272,26 +273,16 @@ float Game::get_time()
 	return instance_->time_;
 }
 
-bool Game::is_loading_stage()
+GameStage Game::get_stage()
 {
-	return instance_->is_loading_stage_;
-}
-
-bool Game::is_unloading_stage()
-{
-	return instance_->is_unloading_stage_;
-}
-
-bool Game::is_render_stage()
-{
-	return instance_->is_render_stage_;
+	return instance_->stage_;
 }
 
 void Game::on_add_resource_directories(Set<String>& local, Set<String>& global)
 {
 	local = {
 		"textures/actions"
-	};	
+	};
 	
 	global = {
 		"textures/ui",
@@ -322,19 +313,19 @@ Shared<EventBus> Game::generate_event_bus_object()
 	return MakeShared<EventBus>();
 }
 
-void Game::loading_stage()
+void Game::on_loading_stage()
 {
 }
 
-void Game::start()
+void Game::on_start()
 {
 }
 
-void Game::tick(float delta_time)
+void Game::on_tick(float delta_time)
 {
 }
 
-void Game::unloading_stage()
+void Game::on_unloading_stage()
 {
 }
 
@@ -347,8 +338,30 @@ void Game::setup()
 	Ogre::ResourceGroupManager::getSingletonPtr()->addResourceLocation(Path("resources/SdkTrays.zip").get_absolute_string().c(), "Zip", module_name.c());
 }
 
-void Game::render_loop()
+void Game::init()
 {
+	verbose("Game", "Initialization...");
+	stage_ = GameStage::Initialization;
+	
+	info_ = GameInfo();
+
+	info_.title = "Untitled Game";
+
+	init_game_info(info_);
+	
+	settings_ = generate_settings_object();
+	const Path settings_path = "settings.json";
+	JSON settings_json;
+	if (settings_path.exists())
+	{
+		settings_json = JSON::parse(File::read_file(settings_path));
+	}
+	settings_->read_settings(settings_json);
+	//settings_->write_settings(settings_json);
+	//File::write_file(settings_path, settings_json.to_string());
+
+	soloud_->init();
+
 	verbose("Mod Loader", "Searching for mods in %s/...", Path("mods").get_absolute_string().c());
 	for (auto& path : Path("mods").list())
 	{
@@ -364,26 +377,70 @@ void Game::render_loop()
 				}
 				mod->add_resource_directories();
 				mods_.add(mod);
-				verbose("Mod Loader", "Pre-loaded mod %s", mod->info_.display_name.c());
+				verbose("Mod Loader", "Initialized mod %s", mod->info_.display_name.c());
 			}
 			else
 			{
-				print_warning("Mod Loader", "Failed to pre-load mod %s", path.get_absolute_string().c());
+				print_warning("Mod Loader", "Failed to initialize mod %s", path.get_absolute_string().c());
 			}
 		}
 	}
+}
 
-	// LOADING STAGE
+void Game::loading_stage()
+{
 	verbose("Game", "Loading stage...");
-	is_loading_stage_ = true;
+	stage_ = GameStage::Loading;
 
 	register_resource_directories();
-	{
-		Ogre::Image pixels(Ogre::PF_R5G6B5, 1, 1);
-		pixels.setColourAt(Ogre::ColourValue::White, 0, 0, 0);
 
-		Ogre::TextureManager::getSingleton().loadImage("White", get_module_name().c(), pixels);
+	// White texture
+	{
+		Array2D<Color> white(1, 1);
+		white.at(0, 0) = Color::white();
+		
+		create_texture(white, "White");
 	}
+
+	// UV_Test texture
+	{
+		const uint cc = 32;
+		const uint s = 512;
+		const uint cs = s / cc;
+		Array2D<Color> uv_test(s, s);
+		for (uint x = 0; x < s; x++)
+		{
+			for (uint y = 0; y < s; y++)
+			{
+				uv_test.at(x, y) = ((x / cs) % 2 == 0) != ((y / cs) % 2 == 0) ? Color(178, 178, 178) : Color(76, 76, 76);
+			}
+		}
+
+		for (uint x = 0; x < cc; x++)
+		{
+			for (uint y = 0; y < cc; y++)
+			{
+				Color c = Color((byte)(1.0f / cc * (x + 0.5f) * 255), (byte)(1.0f / cc * (y + 0.5f) * 255), 0);
+				uint xx = x * cs;
+				uint yy = y * cs;
+				
+				uv_test.at(xx + cs / 2, yy + cs / 2) = c;
+				
+				uv_test.at(xx + cs / 2 - 1, yy + cs / 2) = c;
+				uv_test.at(xx + cs / 2, yy + cs / 2 - 1) = c;
+				uv_test.at(xx + cs / 2 + 1, yy + cs / 2) = c;
+				uv_test.at(xx + cs / 2, yy + cs / 2 + 1) = c;
+
+				uv_test.at(xx + cs / 2 - 2, yy + cs / 2) = c;
+				uv_test.at(xx + cs / 2, yy + cs / 2 - 2) = c;
+				uv_test.at(xx + cs / 2 + 2, yy + cs / 2) = c;
+				uv_test.at(xx + cs / 2, yy + cs / 2 + 2) = c;
+			}
+		}
+
+		create_texture(uv_test, "UV_Test");
+	}
+	
 	for (const auto& mod : mods_)
 	{
 		mod->register_resource_directories();
@@ -398,6 +455,9 @@ void Game::render_loop()
 		}
 	}
 
+	auto test_mat = get_material("Hexa/Basic")->clone("Hexa/UV_Test");
+	test_mat->set_texture("UV_Test", 0);
+
 	ogre_app_->load();
 	
 	// Fonts
@@ -407,14 +467,14 @@ void Game::render_loop()
 	general_channel_ = AudioChannel::create();
 	general_channel_->set_volume(settings_->audio_general);
 	
-	loading_stage();
+	on_loading_stage();
 	
-	// Call load stage in mods
+	// Call loading stage in mods
 	for (auto& mod : mods_)
 	{
 		try
 		{
-			mod->loading_stage();
+			mod->on_loading_stage();
 			verbose("Mod Loader", "Loaded mod %s", mod->info_.name.c());
 		}
 		catch (std::runtime_error err)
@@ -423,30 +483,39 @@ void Game::render_loop()
 			return;
 		}
 	}
-	
-	is_loading_stage_ = false;
+}
 
-	// Call load stage in mods
-	verbose("Game", "Post-loading stage...");
+void Game::start()
+{
+	verbose("Game", "Starting...");
+	stage_ = GameStage::Starting;
+	
+	save_game_ = generate_save_game_object("soft fur dragon");
+
+	soloud_->set3dListenerUp(0, 0, 1);
+
 	for (auto& mod : mods_)
 	{
 		try
 		{
-			mod->on_loaded(event_bus_);
-			verbose("Mod Loader", "Post-loaded mod %s", mod->info_.name.c());
+			mod->on_start(event_bus_);
+			verbose("Mod Loader", "started mod %s", mod->info_.name.c());
 		}
 		catch (std::runtime_error err)
 		{
-			print_error("Mod Loader", "Failed to post-load mod %s: %s", mod->info_.name.c(), err.what());
+			print_error("Mod Loader", "Failed to start mod %s: %s", mod->info_.name.c(), err.what());
 			return;
 		}
 	}
+	
+	on_start();
+}
 
-	save_game_ = generate_save_game_object("soft fur dragon");
-
-	verbose("Game", "Starting...");
-	start();
-
+void Game::render_loop()
+{
+	verbose("Game", "Entering render loop...");
+	stage_ = GameStage::RenderLoop;
+	
 	float fps_delta_time_stack = 0;
 	uint fps_count = 0;
 	uint fps_last_count = 0;
@@ -455,13 +524,11 @@ void Game::render_loop()
 	fps_display->set_z(10);
 	add_ui(fps_display);
 
-	soloud_->set3dListenerUp(0, 0, 1);
-
 	const auto start_time = std::chrono::system_clock::now();
 	
 	auto tick_start = start_time;
 	
-	while (!close && !ogre_app_->getRoot()->endRenderingQueued())
+	while (!ogre_app_->getRoot()->endRenderingQueued())
 	{		
 		while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tick_start).count() / 1000.0f < 1.0f / settings_->fps_limit);
 		const float tick_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tick_start).count() / 1000.0f;
@@ -493,102 +560,33 @@ void Game::render_loop()
 			// ticking
 			if (tick_time > 0.0f)
 			{
-				tick(tick_time);
+				on_tick(tick_time);
 				world_->tick(tick_time);
 			}
 
 			if (current_camera_)
 			{
-				auto cam_from = current_camera_->get_owner()->get_location();
-				auto cam_to = current_camera_->get_owner()->get_location() + current_camera_->get_owner()->get_rotation().forward();
+				const auto cam_from = current_camera_->get_owner()->get_location();
+				const auto cam_to = current_camera_->get_owner()->get_location() + current_camera_->get_owner()->get_rotation().forward();
 				
-				// audio
 				soloud_->set3dListenerPosition(cam_from.x, cam_from.y, cam_from.z);
 				soloud_->set3dListenerAt(cam_to.x, cam_to.y, cam_to.z);
 
 				mouse_delta_ = Vector2::zero();
 				ogre_app_->getRoot()->renderOneFrame();
-				
-				/*// 3d matrix
-				cam_from.y *= -1;
-				cam_to.y *= -1;
-
-				auto view = Matrix4x4::look_at(cam_from, cam_to) * Matrix4x4(
-						1.0, 0.0, 0.0, 0.0,
-						0.0, -1.0, 0.0, 0.0,
-						0.0, 0.0, 1.0, 0.0,
-						0.0, 0.0, 0.0, 1.0
-					);
-
-				auto proj_3d = Matrix4x4::perspective(latest_camera_info_.fov, static_cast<float>(width) / static_cast<float>(height), 0.01f, 1000.0f);
-
-				un_projected_mouse_ = Matrix4x4::un_project(Vector2(mouse_pos_.x, mouse_pos_.y), Vector2(static_cast<float>(width), static_cast<float>(height)), Matrix4x4().translate(latest_camera_info_.position), view, proj_3d);
-				
-				// UI matrix
-				auto proj_ui = Matrix4x4::ortho(0.0f, static_cast<float>(width), static_cast<float>(-height), 0.0f, -1000.0f, 0.0001f);
-
-				// rendering
-				Material::RenderData render_data = {world_, view, proj_3d, proj_ui };
-
-				auto view_shadow_sun = Matrix4x4::look_at(cam_from + -world_->sun_angle.forward() * 500.0f, cam_from) * Matrix4x4(
-						1.0, 0.0, 0.0, 0.0,
-						0.0, 1.0, 0.0, 0.0,
-						0.0, 0.0, 1.0, 0.0,
-						0.0, 0.0, 0.0, 1.0
-					);
-				auto proj_shadow_sun = Matrix4x4::ortho(-10, 10, 10, -10, 0.01f, 1000.0f);
-				Material::RenderData render_data_shadow = {world_, view_shadow_sun, proj_shadow_sun, Matrix4x4() };
-
-				draw_call_counter_.clear();
-			
-				is_render_stage_ = true;
-				glEnable(GL_DEPTH_TEST);
-				glDepthFunc(GL_LESS);
-
-				glViewport(0, 0, SHADOW_WIDTH, SHADOW_HEIGHT);
-				glBindFramebuffer(GL_FRAMEBUFFER, sun_shadow_fbo);
-				glClear(GL_DEPTH_BUFFER_BIT);
-				for (auto& material_list : materials_)
-				{
-					for (auto& material : material_list->value)
-					{
-						if (auto material3d = cast<Material3D>(material))
-						{
-							if (material3d->cast_shadows)
-							{
-								material->render(render_data_shadow);
-							}
-						}
-					}
-				}
-
-				glViewport(0, 0, width, height);
-				glBindFramebuffer(GL_FRAMEBUFFER, 0);
-				for (auto& material_list : materials_)
-				{
-					glClear(GL_DEPTH_BUFFER_BIT);
-					for (auto& material : material_list->value)
-					{
-						material->render(render_data);
-					}
-				}
-				is_render_stage_ = false;*/
 			}
 		}
 	}
 
-	Texture::print_usage_dump();
-
 	close_world();
 }
 
-void Game::cleanup()
+void Game::unloading_stage()
 {
-	verbose("Game", "Cleaning up...");
-
-	is_unloading_stage_ = true;
+	verbose("Game", "Unloading stage...");
+	stage_ = GameStage::Unloading;
 	
-	unloading_stage();
+	on_unloading_stage();
 
 	Texture::unload_all_static();
 
@@ -607,33 +605,9 @@ void Game::cleanup()
 	}
 	
 	soloud_->deinit();
-
-	is_unloading_stage_ = false;
 }
 
-void Game::init_game()
-{
-	info_ = GameInfo();
-
-	info_.title = "Untitled Game";
-
-	init_game_info(info_);
-	
-	settings_ = generate_settings_object();
-	const Path settings_path = "settings.json";
-	JSON settings_json;
-	if (settings_path.exists())
-	{
-		settings_json = JSON::parse(File::read_file(settings_path));
-	}
-	settings_->read_settings(settings_json);
-	//settings_->write_settings(settings_json);
-	//File::write_file(settings_path, settings_json.to_string());
-
-	soloud_->init();
-}
-
-bool Game::keyPressed(int key, bool repeat)
+bool Game::keyPressed(KeyCode key, bool repeat)
 {
 	if (instance_)
 	{
@@ -646,9 +620,9 @@ bool Game::keyPressed(int key, bool repeat)
 		}
 		else
 		{
-			if (key == OgreBites::SDLK_ESCAPE)
+			if (key == KeyCode::Escape)
 			{
-				close = true;
+				ogre_app_->getRoot()->queueEndRendering();
 			}
 			else if (instance_->ui_input_element_)
 			{
@@ -664,7 +638,7 @@ bool Game::keyPressed(int key, bool repeat)
 	return true;
 }
 
-bool Game::keyReleased(int key)
+bool Game::keyReleased(KeyCode key)
 {
 	if (instance_)
 	{

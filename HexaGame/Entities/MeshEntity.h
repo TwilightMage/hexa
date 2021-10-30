@@ -11,6 +11,9 @@ public:
 
     void on_start() override;
 
+    FORCEINLINE const Shared<MeshComponent>& mesh() const { return mesh_component_; }
+    
 private:
     Shared<StaticMesh> mesh_;
+    Shared<MeshComponent> mesh_component_;
 };

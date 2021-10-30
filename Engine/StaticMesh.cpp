@@ -38,6 +38,33 @@ struct Bounds
 
 Shared<StaticMesh> StaticMesh::empty = MakeShared<StaticMesh>("Empty Mesh");
 
+StaticMesh::SubMesh::SubMesh(const String& name, const List<Vertex>& vertices, const List<uint>& indices)
+    : name(name)
+    , vertices(vertices)
+    , indices(indices)
+{
+}
+
+StaticMesh::SubMesh::SubMesh(const List<Vertex>& vertices, const List<uint>& indices)
+    : SubMesh("", vertices, indices)
+{
+}
+
+StaticMesh::SubMesh::SubMesh()
+    : SubMesh("", {}, {})
+{
+}
+
+void StaticMesh::SubMesh::add(const List<Vertex>& new_vertices, const List<uint>& new_indices)
+{
+    uint offset = vertices.length();
+    vertices.add_many(new_vertices);
+    for (auto& ind : new_indices)
+    {
+        indices.add(ind + offset);
+    }
+}
+
 StaticMesh::StaticMesh(const String& name)
     : Object(name)
 {
@@ -78,7 +105,7 @@ Shared<StaticMesh> StaticMesh::load_file_obj(const Path& path, AutoCollisionMode
             const auto& vert = src_sub_mesh.Vertices[j];
             sub_mesh.vertices[j] = Vertex{
                 cast_object<Vector3>(vert.Position) * 100,
-                cast_object<Vector2>(vert.TextureCoordinate),
+                Vector2(vert.TextureCoordinate.X, 1 - vert.TextureCoordinate.Y),
                 cast_object<Vector3>(vert.Normal)
             };
         }
@@ -136,20 +163,13 @@ Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& s
     uint vertex_offset = 0;
     Bounds visual_bounds;
     for (auto& sub_mesh : sub_meshes)
-    {
-        auto vertices = sub_mesh.vertices;
-
-        if (compute_normals)
-        {
-            GeometryEditor::compute_normals(vertices, sub_mesh.indices, true);
-        }
-        
+    {   
         if (sub_mesh.name.starts_with("SPHERE_")) // Sphere collision
         {
             if (collision_mode == AutoCollisionMode::Default)
             {
                 Bounds sub_bounds;
-                for (const auto& vert : vertices)
+                for (const auto& vert : sub_mesh.vertices)
                 {
                     sub_bounds.add(cast_object<Vector3>(vert.pos));
                 }
@@ -162,7 +182,7 @@ Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& s
             if (collision_mode == AutoCollisionMode::Default)
             {
                 Bounds sub_bounds;
-                for (const auto& vert : vertices)
+                for (const auto& vert : sub_mesh.vertices)
                 {
                     sub_bounds.add(cast_object<Vector3>(vert.pos));
                 }
@@ -174,25 +194,39 @@ Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& s
         {
             if (collision_mode == AutoCollisionMode::Default)
             {
+                auto vertices = sub_mesh.vertices;
+                
                 Bounds sub_bounds;
                 for (const auto& vert : vertices)
                 {
                     sub_bounds.add(cast_object<Vector3>(vert.pos));
                 }
 
-                result->collisions_.add(CollisionShapeInfo(sub_bounds.get_center(), Quaternion(), MakeShared<ConvexMeshCollision>(sub_mesh.vertices, sub_mesh.indices)));
+                const Vector3 sub_mesh_center = sub_bounds.get_center();
+                if (sub_mesh_center != Vector3::zero())
+                {
+                    for (auto& vert : vertices)
+                    {
+                        vert.pos -= sub_mesh_center;
+                    }
+                }
+
+                result->collisions_.add(CollisionShapeInfo(sub_mesh_center, Quaternion(), MakeShared<ConvexMeshCollision>(vertices, sub_mesh.indices)));
             }
         }
         else
         {
+            auto vertices = sub_mesh.vertices;
+
+            if (compute_normals)
+            {
+                GeometryEditor::compute_normals(vertices, sub_mesh.indices, true);
+            }
+            
             for (uint i = 0; i < vertices.length(); i++)
             {
                 const auto& vert = vertices[i];
-                vertices_copy.add(Vertex{
-                    cast_object<Vector3>(vert.pos),
-                    cast_object<Vector2>(vert.uv),
-                    cast_object<Vector3>(vert.norm)
-                });
+                vertices_copy.add(Vertex{ vert.pos, vert.uv, vert.norm });
 
                 visual_bounds.add(cast_object<Vector3>(vert.pos));
             }
@@ -238,6 +272,7 @@ Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& s
     }
 
     result->ogre_mesh_->_setBounds(Ogre::AxisAlignedBox(cast_object<Ogre::Vector3>(visual_bounds.min), cast_object<Ogre::Vector3>(visual_bounds.max)));
+    result->ogre_mesh_->buildEdgeList();
 
     return result;
 }

@@ -38,7 +38,7 @@ void TextInputField::on_unfocus()
     on_finish_edit(text_);
 }
 
-void TextInputField::key_down(int key)
+void TextInputField::key_down(KeyCode key)
 {
     /*if (key == GLFW_KEY_BACKSPACE)
     {
@@ -98,7 +98,7 @@ void TextInputField::key_down(int key)
     }*/
 }
 
-void TextInputField::key_hold(int key)
+void TextInputField::key_hold(KeyCode key)
 {
     key_down(key);
 }

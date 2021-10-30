@@ -23,8 +23,8 @@ public:
     
     void on_focus() override;
     void on_unfocus() override;
-    void key_down(int key) override;
-    void key_hold(int key) override;
+    void key_down(KeyCode key) override;
+    void key_hold(KeyCode key) override;
     void text_input(uint code) override;
 
     FORCEINLINE const String& get_text() const { return text_; }

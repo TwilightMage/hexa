@@ -12,11 +12,10 @@
 #include "OgreApp.h"
 #include "Quaternion.h"
 #include "Settings.h"
-#include "Engine/CollisionMaskBits.h"
+#include "Texture.h"
 #include "HexaGame/Entities/ItemDrop.h"
-#include "Physics/ConcaveMeshCollision.h"
-#include "Physics/ConvexMeshCollision.h"
 #include "Physics/RaycastCallback.h"
+#include "OGRE/Main/OgreHardwarePixelBuffer.h"
 
 bool World::spawn_entity(const Shared<Entity>& entity, const Transform& transform)
 {
@@ -92,7 +91,14 @@ void World::init()
 
     manager_ = Game::instance_->ogre_app_->getRoot()->createSceneManager();
 
-    //manager_->setSkyBox(true, "packs/skybox", 300, false);
+    manager_->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE_INTEGRATED);
+    manager_->setShadowTextureSelfShadow(true);
+    manager_->setShadowTexturePixelFormat(Ogre::PF_FLOAT32_R);
+    manager_->setShadowTextureCount(1);
+    manager_->setShadowTextureSize(8192);
+    manager_->setShadowFarDistance(5000);
+
+    manager_->setSkyBox(true, "Hexa/Skybox", 300, true);
 
     set_ambient_light(Color::white(), 0.5f);
 
@@ -101,6 +107,7 @@ void World::init()
     directional_light_->setType(Ogre::Light::LT_DIRECTIONAL);
     directional_light_->setDiffuseColour(0, 0, 0);
     directional_light_->setSpecularColour(0, 0, 0);
+    directional_light_->setCastShadows(true);
     directional_light_node_->attachObject(directional_light_);
 }
 

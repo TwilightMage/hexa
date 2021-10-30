@@ -12,7 +12,7 @@ template <class T>
 template<class SubT>
 ConstPtr<SubT> Database<T>::add(ConstPtr<SubT> record)
 {
-    if (Game::is_loading_stage())
+    if (Game::get_stage() == GameStage::Loading)
     {
         auto& data_record = data_[record->key];
         if (!data_record)
@@ -49,7 +49,7 @@ const Map<Name, const T*>& Database<T>::records() const
 template <class T>
 void Database<T>::clear()
 {
-    if (Game::get_instance()->is_unloading_stage())
+    if (Game::get_stage() == GameStage::Unloading)
     {
         for (auto& record : data_)
         {

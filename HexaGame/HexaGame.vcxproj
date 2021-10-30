@@ -328,9 +328,10 @@
     <Content Include="resources\fonts\courgette_0.png" />
     <Content Include="resources\fonts\harrington.fnt" />
     <Content Include="resources\fonts\harrington_0.png" />
-    <Content Include="resources\icon.ico" />
-    <Content Include="resources\materials\tile.material" />
-    <Content Include="resources\materials\tile.program" />
+    <Content Include="resources\materials\basic.material" />
+    <Content Include="resources\materials\basic.program" />
+    <Content Include="resources\materials\skybox.material" />
+    <Content Include="resources\materials\skybox.program" />
     <Content Include="resources\meshes\arrow.obj" />
     <Content Include="resources\meshes\characters\slime.obj" />
     <Content Include="resources\meshes\hexagon_tile.obj" />
@@ -350,9 +351,10 @@
     <Content Include="resources\meshes\tiles\tree_stem.obj" />
     <Content Include="resources\shaders\foliage.frag" />
     <Content Include="resources\shaders\foliage.vert" />
+    <Content Include="resources\shaders\utils.glsl" />
     <Content Include="resources\shaders\skybox.frag" />
-    <Content Include="resources\shaders\tile.frag" />
-    <Content Include="resources\shaders\tile.vert" />
+    <Content Include="resources\shaders\basic.frag" />
+    <Content Include="resources\shaders\basic.vert" />
     <Content Include="resources\shaders\tile_cap.frag" />
     <Content Include="resources\textures\actions\sickle.png" />
     <Content Include="resources\textures\arrow.png" />

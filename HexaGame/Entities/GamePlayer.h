@@ -14,8 +14,8 @@ class EXPORT GamePlayer : public Player, public CharacterController
 {
 public:
     void on_start() override;
-    void key_down(int key) override;
-    void key_up(int key) override;
+    void key_down(KeyCode key) override;
+    void key_up(KeyCode key) override;
     void mouse_button_down(int button) override;
     void mouse_button_up(int button) override;
     void scroll(const Vector2& delta) override;

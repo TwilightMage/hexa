@@ -34,7 +34,7 @@ Vector2 TextureAtlas::Entry::get_offset() const
 
 uint TextureAtlas::put(const Path& path)
 {
-    if (!Game::is_loading_stage())
+    if (Game::get_stage() != GameStage::Loading)
     {
         print_warning("texture atlas", "attempt to register texture %s in atlas %s outside of loading stage", path.get_absolute_string().c(), get_name().c());
         return -1;
@@ -175,11 +175,11 @@ Shared<Texture> TextureAtlas::to_texture() const
 
 void TextureAtlas::bind(uint storage_slot) const
 {
-    if (Game::is_render_stage())
+    /*if (Game::is_render_stage())
     {
         //glBindTexture(GL_TEXTURE_2D, gl_texture_binding_);
         //glBindBufferBase(GL_SHADER_STORAGE_BUFFER, storage_slot, gl_mods_storage_binding_);
-    }
+    }*/
 }
 
 uint TextureAtlas::get_gl_texture_id()

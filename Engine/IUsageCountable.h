@@ -35,15 +35,3 @@ protected:
     }\
     UsageCounterBase* get_usage_counter_generic() const override { return &usage_counter_; }\
     UsageCounter<Type>* get_usage_counter() const override { return &usage_counter_; }\
-    public:\
-    static void print_usage_dump()\
-    {\
-        auto dump = usage_counter_.dump();\
-        List<String> result;\
-        for (const auto& kvp : dump)\
-        {\
-            result.add(String::format("  [%s]: %i", kvp.first.c(), kvp.second));\
-        }\
-        print_debug(#Type, "Usage dump:\n%s", String::join(result, '\n').c());\
-    }\
-    private:\

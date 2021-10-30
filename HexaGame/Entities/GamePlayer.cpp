@@ -63,7 +63,7 @@ Map<int, uint> hotbar = {
     {GLFW_KEY_0, 9}*/
 };
 
-void GamePlayer::key_down(int key)
+void GamePlayer::key_down(KeyCode key)
 {
     Player::key_down(key);
 
@@ -96,7 +96,7 @@ void GamePlayer::key_down(int key)
     }*/
 }
 
-void GamePlayer::key_up(int key)
+void GamePlayer::key_up(KeyCode key)
 {
     Player::key_up(key);
 

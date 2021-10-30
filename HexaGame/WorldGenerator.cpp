@@ -72,7 +72,7 @@ WorldGenerator::~WorldGenerator()
 void WorldGenerator::generate_tile_mesh(TileSide sides, ConstPtr<SolidTileInfo> tileInfo, List<StaticMesh::Vertex>& vertices, List<uint>& indices, float seed)
 {
     int vertexCount = 0;
-	int int_seed = static_cast<int>(seed * 127.2355f);
+	uint int_seed = (uint)(seed * 127.2355f);
 
 	if (!!(sides & TileSide::Up)) vertexCount += 6;
 	if (!!(sides & TileSide::Down)) vertexCount += 6;
@@ -98,7 +98,7 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, ConstPtr<SolidTileInfo> 
 		for (uint i = 0; i < 6; i++)
 		{
 			vertices[i + offset] = {
-				Vector3(pos_sines[i % 6] * 0.5f * 100, 0.0f, pos_coses[i % 6] * 0.5f * 100),
+				Vector3(pos_sines[i] * 0.5f * 100, 0.0f, pos_coses[i] * 0.5f * 100),
                 floor_uv_pos + Vector2(uv_coses[(i + angleOffset) % 6] * cap_mult.x, uv_sines[(i + angleOffset) % 6] * cap_mult.y),
                 Vector3::one()
             };
@@ -112,12 +112,12 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, ConstPtr<SolidTileInfo> 
 	// Ceil
 	if (!!(sides & TileSide::Up))
 	{
-		const int angleOffset = tileInfo->randomize_floor_uv_angle ? int_seed % 6 : 0;
+		const uint angleOffset = tileInfo->randomize_floor_uv_angle ? int_seed % 6 : 0;
 
 		for (uint i = 0; i < 6; i++)
 		{
 			vertices[i + offset] = {
-				Vector3(pos_sines[i % 6] * 0.5f * 100, HexaMath::tile_height * 100, pos_coses[i % 6] * 0.5f * 100),
+				Vector3(pos_sines[i] * 0.5f * 100, HexaMath::tile_height * 100, pos_coses[i] * 0.5f * 100),
                 ceil_uv_pos + Vector2(uv_coses[(i + angleOffset) % 6] * cap_mult.x, uv_sines[(i + angleOffset) % 6] * cap_mult.y),
                 Vector3::one()
             };

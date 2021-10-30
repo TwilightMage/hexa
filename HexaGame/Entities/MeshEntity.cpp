@@ -6,11 +6,11 @@ MeshEntity::MeshEntity(const Shared<StaticMesh>& mesh)
     : Entity()
     , mesh_(mesh)
 {
+    mesh_component_ = create_component<MeshComponent>();
 }
 
 void MeshEntity::on_start()
 {
-    auto comp = create_component<MeshComponent>();
-    comp->set_body_type(PhysicalBodyType::Kinematic);
-    comp->set_mesh(mesh_);
+    mesh_component_->set_body_type(PhysicalBodyType::Kinematic);
+    mesh_component_->set_mesh(mesh_);
 }

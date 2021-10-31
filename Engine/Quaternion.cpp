@@ -56,7 +56,7 @@ Vector3 Quaternion::rotate_vector3(const Vector3& rhs) const
 
 Vector3 Quaternion::forward() const
 {
-    return rotate_vector3(Vector3::front());
+    return rotate_vector3(Vector3::forward());
 }
 
 Vector3 Quaternion::right() const
@@ -143,7 +143,7 @@ Quaternion Quaternion::from_axis_angle(const Vector3& axis, float angle)
 
 Quaternion Quaternion::look_at(const Vector3& normal)
 {
-    float dot = Vector3::front().dot_product(normal);
+    float dot = Vector3::forward().dot_product(normal);
 
     if (Math::abs(dot + 1.0f) < 0.000001f)
     {
@@ -156,7 +156,7 @@ Quaternion Quaternion::look_at(const Vector3& normal)
     }
 
     const float rotAngle = Math::acos_deg(dot);
-    Vector3 rotAxis = Vector3::front().cross_product(normal);
+    Vector3 rotAxis = Vector3::forward().cross_product(normal);
     rotAxis = rotAxis.normalized();
     return from_axis_angle(rotAxis, rotAngle);
 }
@@ -179,7 +179,7 @@ Quaternion Quaternion::rotate_around(const Vector3& axis, float angle) const
 
 Quaternion Quaternion::rotate_around_forward(float angle) const
 {
-    return from_axis_angle(Vector3::front(), angle) * *this;
+    return from_axis_angle(Vector3::forward(), angle) * *this;
 }
 
 Quaternion Quaternion::rotate_around_right(float angle) const

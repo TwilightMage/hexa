@@ -97,6 +97,7 @@ private:
     float physics_tick_accum_;
     float time_scale_ = 1.0f;
     Ogre::SceneManager* manager_;
+    Ogre::SceneNode* world_root_;
 
     Color ambient_color_;
     float ambient_intensity_;

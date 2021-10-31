@@ -58,9 +58,9 @@ public:
     float y;
     float z;
 
-    FORCEINLINE static Vector3 zero()  { return {0, 0, 0}; }
-    FORCEINLINE static Vector3 one()   { return {1, 1, 1}; }
-    FORCEINLINE static Vector3 front() { return {0, 0, -1}; }
-    FORCEINLINE static Vector3 right() { return {1, 0, 0}; }
-    FORCEINLINE static Vector3 up()    { return {0, 1, 0}; }
+    FORCEINLINE static Vector3 zero()    { return {0, 0, 0}; }
+    FORCEINLINE static Vector3 one()     { return {1, 1, 1}; }
+    FORCEINLINE static Vector3 forward() { return {1, 0, 0}; }
+    FORCEINLINE static Vector3 right()   { return {0, 1, 0}; }
+    FORCEINLINE static Vector3 up()      { return {0, 0, 1}; }
 };

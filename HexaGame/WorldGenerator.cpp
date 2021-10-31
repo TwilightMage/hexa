@@ -98,7 +98,7 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, ConstPtr<SolidTileInfo> 
 		for (uint i = 0; i < 6; i++)
 		{
 			vertices[i + offset] = {
-				Vector3(pos_sines[i] * 0.5f * 100, 0.0f, pos_coses[i] * 0.5f * 100),
+				Vector3(pos_coses[i] * 0.5f * 100, pos_sines[i] * 0.5f * 100, 0.0f),
                 floor_uv_pos + Vector2(uv_coses[(i + angleOffset) % 6] * cap_mult.x, uv_sines[(i + angleOffset) % 6] * cap_mult.y),
                 Vector3::one()
             };
@@ -117,7 +117,7 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, ConstPtr<SolidTileInfo> 
 		for (uint i = 0; i < 6; i++)
 		{
 			vertices[i + offset] = {
-				Vector3(pos_sines[i] * 0.5f * 100, HexaMath::tile_height * 100, pos_coses[i] * 0.5f * 100),
+				Vector3(pos_coses[i] * 0.5f * 100, pos_sines[i] * 0.5f * 100, HexaMath::tile_height * 100),
                 ceil_uv_pos + Vector2(uv_coses[(i + angleOffset) % 6] * cap_mult.x, uv_sines[(i + angleOffset) % 6] * cap_mult.y),
                 Vector3::one()
             };
@@ -141,12 +141,12 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, ConstPtr<SolidTileInfo> 
 				Vector2 uv_offset = Vector2((float)(int_seed % 6), (float)(int_seed % 3)) * wall_mult;
 
 				vertices[jj + offset] = {
-					Vector3(pos.y * 0.5f * 100, 0.0f, pos.x * 0.5f * 100),
+					Vector3(pos.x * 0.5f * 100, pos.y * 0.5f * 100, 0.0f),
 					Vector2(j * wall_mult.x + uv_offset.x, wall_mult.y + uv_offset.y)
 				};
 
 				vertices[jj + offset + 2] = {
-					Vector3(pos.y * 0.5f * 100, HexaMath::tile_height * 100, pos.x * 0.5f * 100),
+					Vector3(pos.x * 0.5f * 100, pos.y * 0.5f * 100, HexaMath::tile_height * 100),
 					Vector2(j * wall_mult.x + uv_offset.x, uv_offset.y)
 				};
 			}

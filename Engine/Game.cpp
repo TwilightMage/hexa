@@ -3,6 +3,7 @@
 #include <OGRE/Bites/OgreTrays.h>
 #include <OGRE/Main/OgreEntity.h>
 #include <OGRE/Main/OgreRenderWindow.h>
+#include <OGRE/Main/OgreCompositorManager.h>
 #include <OGRE/RTShaderSystem/OgreShaderGenerator.h>
 #include <reactphysics3d/reactphysics3d.h>
 #include <soloud/soloud.h>
@@ -116,7 +117,16 @@ void Game::focus_ui(const Shared<UIInputElement>& ui_input_reciever)
 void Game::use_camera(const Shared<CameraComponent>& camera)
 {
 	instance_->current_camera_ = camera;
-	instance_->ogre_app_->getRenderWindow()->addViewport(camera->ogre_camera_);
+	if (instance_->viewport_)
+	{
+		instance_->viewport_->setCamera(camera->ogre_camera_);
+	}
+	else
+	{
+		instance_->viewport_ = instance_->ogre_app_->getRenderWindow()->addViewport(camera->ogre_camera_);
+		Ogre::CompositorManager::getSingleton().addCompositor(instance_->viewport_, "Hexa/Flip_X_comp");
+		Ogre::CompositorManager::getSingleton().setCompositorEnabled(instance_->viewport_, "Hexa/Flip_X_comp", true);
+	}
 }
 
 void Game::open_world(const Shared<World>& world)

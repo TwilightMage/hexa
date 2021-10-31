@@ -91,6 +91,11 @@ void World::init()
 
     manager_ = Game::instance_->ogre_app_->getRoot()->createSceneManager();
 
+    world_root_ = manager_->getRootSceneNode()->createChildSceneNode();
+    //world_root_->scale(Ogre::Vector3(-1, -1, -1));
+    //world_root_->rotate(Ogre::Vector3(1, 0, 0), Ogre::Degree(90), Ogre::Node::TS_WORLD);
+    //world_root_->rotate(Ogre::Vector3(0, 0, 1), Ogre::Degree(-90), Ogre::Node::TS_WORLD);
+
     manager_->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE_INTEGRATED);
     manager_->setShadowTextureSelfShadow(true);
     manager_->setShadowTexturePixelFormat(Ogre::PF_FLOAT32_R);
@@ -102,12 +107,15 @@ void World::init()
 
     set_ambient_light(Color::white(), 0.5f);
 
-    directional_light_node_ = manager_->getRootSceneNode()->createChildSceneNode();
     directional_light_ = manager_->createLight();
     directional_light_->setType(Ogre::Light::LT_DIRECTIONAL);
     directional_light_->setDiffuseColour(0, 0, 0);
     directional_light_->setSpecularColour(0, 0, 0);
     directional_light_->setCastShadows(true);
+
+    directional_light_node_ = world_root_->createChildSceneNode();
+    directional_light_node_->setInheritOrientation(false);
+    directional_light_node_->setInheritScale(false);
     directional_light_node_->attachObject(directional_light_);
 }
 
@@ -282,7 +290,9 @@ void World::close()
 void World::spawn_entity_internal(const Shared<Entity>& entity)
 {
     const auto& rot = entity->transform_.rotation;
-    entity->scene_node_ = manager_->getRootSceneNode()->createChildSceneNode(cast_object<Ogre::Vector3>(entity->transform_.location), Ogre::Quaternion(rot.w, rot.x, rot.y, rot.z));
+    entity->scene_node_ = world_root_->createChildSceneNode(cast_object<Ogre::Vector3>(entity->transform_.location), Ogre::Quaternion(rot.w, rot.x, rot.y, rot.z));
+    entity->scene_node_->setInheritOrientation(false);
+    entity->scene_node_->setInheritScale(false);
     entity->scene_node_->setScale(cast_object<Ogre::Vector3>(entity->transform_.scale));
     entity->world_ = weak_from_this();
     /*if (entity->is_rigid_body())
@@ -307,7 +317,7 @@ void World::do_destroy(const Shared<Entity>& entity)
         component->on_destroy();
     }
 
-    manager_->getRootSceneNode()->removeChild(entity->scene_node_);
+    world_root_->removeChild(entity->scene_node_);
 
     entity->on_destroyed(entity);
 }

@@ -56,6 +56,7 @@ namespace SoLoud
 
 namespace Ogre
 {
+    class Viewport;
     class RenderWindow;
     class Root;
 
@@ -211,6 +212,7 @@ private:
     Shared<SoLoud::Soloud> soloud_;
     Shared<OgreApp> ogre_app_;
     Ogre::RTShader::ShaderGenerator* shader_generator_;
+    Ogre::Viewport* viewport_;
     Shared<UIElement> ui_root_;
     Weak<UIElement> ui_under_mouse_;
     Weak<UIElement> pressed_ui_;

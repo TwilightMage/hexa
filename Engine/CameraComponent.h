@@ -7,6 +7,7 @@ class Game;
 
 namespace Ogre
 {
+    class SceneNode;
     class Camera;
 }
 

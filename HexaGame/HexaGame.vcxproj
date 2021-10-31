@@ -330,8 +330,12 @@
     <Content Include="resources\fonts\harrington_0.png" />
     <Content Include="resources\materials\basic.material" />
     <Content Include="resources\materials\basic.program" />
+    <Content Include="resources\materials\flip_x.compositor" />
+    <Content Include="resources\materials\flip_x.material" />
+    <Content Include="resources\materials\flip_x.program" />
     <Content Include="resources\materials\skybox.material" />
     <Content Include="resources\materials\skybox.program" />
+    <Content Include="resources\materials\QuadVS.program" />
     <Content Include="resources\meshes\arrow.obj" />
     <Content Include="resources\meshes\characters\slime.obj" />
     <Content Include="resources\meshes\hexagon_tile.obj" />
@@ -349,8 +353,10 @@
     <Content Include="resources\meshes\tiles\tree_krone.obj" />
     <Content Include="resources\meshes\tiles\tree_root.obj" />
     <Content Include="resources\meshes\tiles\tree_stem.obj" />
+    <Content Include="resources\shaders\flip_x.frag" />
     <Content Include="resources\shaders\foliage.frag" />
     <Content Include="resources\shaders\foliage.vert" />
+    <Content Include="resources\shaders\quad.glsl" />
     <Content Include="resources\shaders\utils.glsl" />
     <Content Include="resources\shaders\skybox.frag" />
     <Content Include="resources\shaders\basic.frag" />
@@ -398,6 +404,9 @@
     <Content Include="resources\textures\ui\rarity_marker.png" />
     <Content Include="resources\textures\ui\toolbar.png" />
     <Content Include="resources\textures\ui\toolbar_selection.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="resources\compositors" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

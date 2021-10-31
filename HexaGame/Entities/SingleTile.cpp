@@ -1,5 +1,7 @@
 ﻿#include "SingleTile.h"
 
+#include <OGRE/Main/OgreSceneNode.h>
+
 #include "Engine/MeshComponent.h"
 
 SingleTile::SingleTile()

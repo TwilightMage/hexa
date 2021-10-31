@@ -1,0 +1,22 @@
+material Hexa/Flip_X
+{
+    technique
+    {
+        pass
+        {
+            vertex_program_ref QuadVS
+            {
+            }
+        
+            fragment_program_ref Hexa/Flip_X
+            {
+            }
+            
+            texture_unit 
+            {
+                tex_coord_set 0
+                filtering none
+            }
+        }
+    }
+}

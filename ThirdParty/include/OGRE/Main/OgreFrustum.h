@@ -194,6 +194,10 @@ namespace Ogre
         /// Is this frustum using an oblique depth projection?
         bool mObliqueDepthProjection;
 
+        Affine3(*viewMatrixCalcDelegate)(const Vector3&, const Quaternion&, const Affine3*);
+        Matrix4 (*perspectiveMatrixCalcDelegate)(Real left, Real right, Real bottom, Real top, Real zNear, Real zFar);
+        Matrix4 (*orthographicMatrixCalcDelegate)();
+
     public:
 
         /// Named constructor
@@ -672,6 +676,11 @@ namespace Ogre
         */
         OrientationMode getOrientationMode() const;
 
+        void setViewCalcDelegate(Affine3 (*newDelegate)(const Vector3&, const Quaternion&, const Affine3*));
+        void resetViewCalcDelegate();
+
+        void setPerspectiveCalcDelegate(Matrix4 (*newDelegate)(Real left, Real right, Real bottom, Real top, Real zNear, Real zFar));
+        void resetPerspectiveCalcDelegate();
     };
 
     /** @} */

@@ -119,12 +119,12 @@ void DebugPlayer::on_tick(float delta_time)
     auto pos = get_location();
     pos += get_rotation().forward() * delta_time * move_forward_ * speed;
     pos += get_rotation().right() * delta_time * move_right_ * speed;
-    pos.y += delta_time * move_up_ * speed;
+    pos += Vector3::up() * delta_time * move_up_ * speed;
     set_location(pos);
 
     auto rot = get_rotation();
-    rot = rot.rotate_around_up(-Game::get_mouse_delta().x / 10.0f).normalized();
-    rot = rot.rotate_around(rot.right(), -Game::get_mouse_delta().y / 10.0f).normalized();
+    rot = rot.rotate_around_up(Game::get_mouse_delta().x / 10.0f).normalized();
+    rot = rot.rotate_around(rot.right(), Game::get_mouse_delta().y / 10.0f).normalized();
     set_rotation(rot);
 
     const ChunkIndex current_chunk = ChunkIndex::from_vector(get_location());

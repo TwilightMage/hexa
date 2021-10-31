@@ -1,10 +1,30 @@
 ﻿#include "CameraComponent.h"
 
+#include <glm/ext/matrix_transform.hpp>
 #include <OGRE/Main/OgreSceneManager.h>
 
 #include "Entity.h"
 #include "Game.h"
 #include "World.h"
+
+Ogre::Affine3 makeViewMatrix(const Ogre::Vector3& position, const Ogre::Quaternion& orientation, const Ogre::Affine3* reflectMatrix = 0)
+{
+    auto mat4x4_0 = glm::lookAtLH(cast_object<glm::vec3>(position), cast_object<glm::vec3>(position - orientation.xAxis()), glm::vec3(0, 0, 1));
+    auto mat4x4_1 = glm::transpose(mat4x4_0);
+    auto result = Ogre::Affine3(cast_object<Ogre::Matrix4>(mat4x4_1));
+
+    if (reflectMatrix)
+    {
+        result = result * *reflectMatrix;
+    }
+
+    return result;
+}
+
+Ogre::Matrix4 makePerspectiveMatrix(Ogre::Real left, Ogre::Real right, Ogre::Real bottom, Ogre::Real top, Ogre::Real zNear, Ogre::Real zFar)
+{
+    return Ogre::Math::makePerspectiveMatrix(right, left, bottom, top, zNear, zFar);
+}
 
 void CameraComponent::on_start()
 {
@@ -16,7 +36,8 @@ void CameraComponent::on_start()
             ogre_camera_->setNearClipDistance(1);
             ogre_camera_->setFarClipDistance(100000);
             ogre_camera_->setAutoAspectRatio(true);
-            ogre_camera_->setFOVy(Ogre::Radian(Ogre::Degree(45.0f)));
+            ogre_camera_->setViewCalcDelegate(&makeViewMatrix);
+
             owner->scene_node_->attachObject(ogre_camera_);
         }
     }
@@ -28,7 +49,6 @@ void CameraComponent::on_destroy()
     {
         if (auto world = owner->get_world())
         {
-            owner->scene_node_->detachObject(ogre_camera_);
             world->manager_->destroyCamera(ogre_camera_);
         }
     }

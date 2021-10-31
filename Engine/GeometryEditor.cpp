@@ -331,10 +331,10 @@ Shared<StaticMesh> GeometryEditor::get_unit_cube()
             {{0, 1, 0}, {0, 0}, -Vector3::right()},
 
             // back
-            {{0, 0, 1}, {0, 1}, -Vector3::front()},
-            {{1, 0, 1}, {1, 1}, -Vector3::front()},
-            {{1, 1, 1}, {1, 0}, -Vector3::front()},
-            {{0, 1, 1}, {0, 0}, -Vector3::front()},
+            {{0, 0, 1}, {0, 1}, -Vector3::forward()},
+            {{1, 0, 1}, {1, 1}, -Vector3::forward()},
+            {{1, 1, 1}, {1, 0}, -Vector3::forward()},
+            {{0, 1, 1}, {0, 0}, -Vector3::forward()},
 
             // up
             {{0, 1, 1}, {0, 1}, Vector3::up()},
@@ -349,10 +349,10 @@ Shared<StaticMesh> GeometryEditor::get_unit_cube()
             {{1, 1, 1}, {0, 0}, Vector3::right()},
 
             // front
-            {{1, 0, 0}, {0, 1}, Vector3::front()},
-            {{0, 0, 0}, {1, 1}, Vector3::front()},
-            {{0, 1, 0}, {1, 0}, Vector3::front()},
-            {{1, 1, 0}, {0, 0}, Vector3::front()},
+            {{1, 0, 0}, {0, 1}, Vector3::forward()},
+            {{0, 0, 0}, {1, 1}, Vector3::forward()},
+            {{0, 1, 0}, {1, 0}, Vector3::forward()},
+            {{1, 1, 0}, {0, 0}, Vector3::forward()},
         };
 
         List<uint> indices = {

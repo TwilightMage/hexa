@@ -9,6 +9,7 @@
 #include "Engine/Entity.h"
 #include "Engine/SimpleMap.h"
 
+class ChunkMeshEntity;
 class NavConnection;
 class NavNode;
 class ComplexTileCustomData;
@@ -149,7 +150,7 @@ private:
     ChunkIndex index_;
     Weak<HexaWorld> world_;
 
-    List<List<Shared<Entity>>> mesh_entities_;
+    List<Shared<ChunkMeshEntity>> mesh_entities_;
     SimpleMap<TileIndex, ComplexTileSlot> complex_tiles_;
     Map<TileIndex, Shared<ComplexTileCustomData>> custom_data_;
     Shared<Entity> cap_entity_;

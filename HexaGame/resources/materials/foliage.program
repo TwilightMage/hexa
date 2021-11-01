@@ -1,7 +1,8 @@
-vertex_program Hexa/BasicVS glsl
+vertex_program Hexa/FoliageVS glsl
 {
     source basic.vert
     profiles glsl330
+    preprocessor_defines WIND
     
     default_params
     {
@@ -9,14 +10,16 @@ vertex_program Hexa/BasicVS glsl
         param_named_auto view view_matrix
         param_named_auto proj projection_matrix
         param_named_auto shadow_vp_0 texture_viewproj_matrix
+        param_named_auto time time
+        param_named_auto wind_data custom 0
     }
 }
 
-fragment_program Hexa/BasicFS glsl
+fragment_program Hexa/FoliageFS glsl
 {
     source basic.frag
     profiles glsl330
-    preprocessor_defines SHADOW_SAMPLES=2
+    preprocessor_defines SHADOW_SAMPLES=2,CUTOUT=0.9
     
     default_params
     {
@@ -28,24 +31,31 @@ fragment_program Hexa/BasicFS glsl
     }
 }
 
-vertex_program Hexa/BasicVS_s glsl
+vertex_program Hexa/FoliageVS_s glsl
 {
     source basic.vert
     profiles glsl330
-    preprocessor_defines SHADOW_PASS
-    
+    preprocessor_defines SHADOW_PASS,WIND
+        
     default_params
     {
         param_named_auto model world_matrix
         param_named_auto view view_matrix
         param_named_auto proj projection_matrix
         param_named_auto texel_offsets texel_offsets
+        param_named_auto time time
+        param_named_auto wind_data custom 0
     }
 }
 
-fragment_program Hexa/BasicFS_s glsl
+fragment_program Hexa/FoliageFS_s glsl
 {
-	source basic.frag
+    source basic.frag
     profiles glsl330
-    preprocessor_defines SHADOW_PASS
+    preprocessor_defines SHADOW_PASS,CUTOUT=0.9
+    
+    default_params
+    {
+        param_named tex int 0
+    }
 }

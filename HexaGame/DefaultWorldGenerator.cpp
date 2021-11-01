@@ -43,17 +43,18 @@ void DefaultWorldGenerator::generate_chunk(const EditableChunk& editable)
     
     const auto chunk_world_position = editable.get_chunk()->get_index().to_vector();
 
-    const float forest_h = (float)generator_.accumulatedOctaveNoise3D_0_1(chunk_world_position.x * 0.001f, chunk_world_position.y * 0.001f, 10, 4);
-    const float plains_h = (float)generator_.accumulatedOctaveNoise3D_0_1(chunk_world_position.x * 0.001f, chunk_world_position.y * 0.001f, 11, 4);
+    const float forest_h = (float)generator_.accumulatedOctaveNoise3D_0_1(chunk_world_position.x * 0.001f / 100.0f, chunk_world_position.y * 0.001f / 100.0f, 10, 4);
+    const float plains_h = (float)generator_.accumulatedOctaveNoise3D_0_1(chunk_world_position.x * 0.001f / 100.0f, chunk_world_position.y * 0.001f / 100.0f, 11, 4);
     
-    if (forest_h > plains_h)
+    /*if (forest_h > plains_h)
     {
         generate_forest(editable);
     }
     else
     {
         generate_plains(editable);
-    }
+    }*/
+    generate_plains(editable);
 }
 
 void DefaultWorldGenerator::generate_plains(const EditableChunk& editable)
@@ -86,9 +87,9 @@ void DefaultWorldGenerator::generate_plains(const EditableChunk& editable)
                     if (c_z < WorldChunk::chunk_height - 1 && (generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.04f, world_position.y * 0.04f, 1, 1) * 0.8f + 0.2f) * generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 2, world_position.y * 2, 2, 1) > 0.3f)
                     {
                         const double probs[3] = {
-                            generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.08f, world_position.y * 0.08f, 2, 1) * generator_.accumulatedOctaveNoise3D_0_1(world_position.x, world_position.y, 3, 1),
-                            generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.08f, world_position.y * 0.08f, 4, 1) * generator_.accumulatedOctaveNoise3D_0_1(world_position.x, world_position.y, 5, 1),
-                            generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.08f, world_position.y * 0.08f, 6, 1) * generator_.accumulatedOctaveNoise3D_0_1(world_position.x, world_position.y, 7, 1)
+                            generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.08f / 100.0f, world_position.y * 0.08f / 100.0f, 2, 1) * generator_.accumulatedOctaveNoise3D_0_1(world_position.x / 100.0f, world_position.y / 100.0f, 3, 1),
+                            generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.08f / 100.0f, world_position.y * 0.08f / 100.0f, 4, 1) * generator_.accumulatedOctaveNoise3D_0_1(world_position.x / 100.0f, world_position.y / 100.0f, 5, 1),
+                            generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.08f / 100.0f, world_position.y * 0.08f / 100.0f, 6, 1) * generator_.accumulatedOctaveNoise3D_0_1(world_position.x / 100.0f, world_position.y / 100.0f, 7, 1)
                         };
 
                         uint max_prob = 0;
@@ -140,7 +141,7 @@ void DefaultWorldGenerator::generate_forest(const EditableChunk& editable)
                     {
                         tile = Tiles::grass;
 
-                        if (free_tiles >= 15 && generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 4, world_position.y * 4, 2, 1) > 0.62f)
+                        if (free_tiles >= 15 && generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 4 / 100.0f, world_position.y * 4 / 100.0f, 2, 1) > 0.62f)
                         {
                             uint tree_height = Random(tile_index.x + tile_index.y + tile_index.z).number(15, 20);
                             for (uint t = 1; t <= tree_height; t++)
@@ -158,7 +159,7 @@ void DefaultWorldGenerator::generate_forest(const EditableChunk& editable)
                                 }
                             }
                         }
-                        else if (free_tiles >= 1 && (generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.04f, world_position.y * 0.04f, 1, 1) * 0.8f + 0.2f) * generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 2, world_position.y * 2, 2, 1) > 0.3f)
+                        else if (free_tiles >= 1 && (generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.04f / 100.0f, world_position.y * 0.04f / 100.0f, 1, 1) * 0.8f + 0.2f) * generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 2 / 100.0f, world_position.y * 2 / 100.0f, 2, 1) > 0.3f)
                         {
                             editable.tile(tile_index.offset(0, 0, 1)) = Tiles::tall_grass;
                         }
@@ -207,8 +208,8 @@ void DefaultWorldGenerator::generate_land(const EditableChunk& editable) const
         {
             const Vector3 world_position = chunk_pos + TileIndex(x, y, 0).to_vector();
 
-            heightmaps[x][y][0] = (float)generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.01f, world_position.y * 0.01f, 0, 4) * ground_amplitude + ground_level;
-            heightmaps[x][y][1] = heightmaps[x][y][0] - ((float)generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.01f, world_position.y * 0.01f, 0, 4) * 2 + 2);
+            heightmaps[x][y][0] = (float)generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.01f / 100.0f, world_position.y * 0.01f / 100.0f, 0, 4) * ground_amplitude + ground_level;
+            heightmaps[x][y][1] = heightmaps[x][y][0] - ((float)generator_.accumulatedOctaveNoise3D_0_1(world_position.x * 0.01f / 100.0f, world_position.y * 0.01f / 100.0f, 0, 4) * 2 + 2);
         }
     }
     

@@ -1,11 +1,20 @@
 ﻿#include "TallGrassInfo.h"
 
 #include <HexaGame/HexaCollisionMaskBits.h>
+#include <OGRE/Main/OgreEntity.h>
 
+#include "Engine/Material.h"
+#include "Engine/MeshComponent.h"
 #include "Engine/Random.h"
 #include "HexaGame/Database/Tiles.h"
 #include "HexaGame/Entities/ComplexTile.h"
 #include "HexaGame/Worlds/HexaWorld.h"
+
+void TallGrassInfo::post_loading()
+{
+    material = Game::get_instance()->get_material("Hexa/Foliage")->clone(key.to_string());
+    material->set_texture(texture, 0);
+}
 
 void TallGrassInfo::neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, ConstPtr<TileInfo> new_neighbor) const
 {
@@ -18,7 +27,7 @@ void TallGrassInfo::neighbor_changed(const TileIndex& index, TileSide side, cons
 void TallGrassInfo::setup_spawned_entity(const Shared<ComplexTile>& new_entity, const Shared<ComplexTileCustomData>& custom_data) const
 {
     new_entity->set_collision_mask(HexaCollisionMaskBits::COMPLEX_NOBLOCK);
-    //new_entity->get_material_instance()->set_param_value("height", mesh->get_bounds_half_size().z * 2);
+    new_entity->find_component<MeshComponent>()->set_material_parameter(Quaternion(mesh->get_bounds_half_size().z * 2, 1, 0, 0), 0, 0);
     
     Random random(new_entity->get_index().x + new_entity->get_index().y + new_entity->get_index().z);
     

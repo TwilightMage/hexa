@@ -9,6 +9,8 @@ public:
     DatabaseEntry(const Name& key)
         : key(key)
     {}
+
+    virtual void post_loading() {}
     
     Name key;
 };

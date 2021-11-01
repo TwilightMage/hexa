@@ -6,6 +6,7 @@
 
 #include "Logger.h"
 #include "Material.h"
+#include "Texture.h"
 
 Module::Module(const Path& root, const String& module_name)
     : root(root)
@@ -29,7 +30,7 @@ Shared<Material> Module::get_material(const String& name) const
     return nullptr;
 }
 
-void Module::create_texture(const Array2D<Color>& pixels, const String& name)
+Shared<Texture> Module::create_texture(const Array2D<Color>& pixels, const String& name)
 {
     Ogre::Image ogre_image(Ogre::PF_R5G6B5, pixels.get_size_x(), pixels.get_size_y());
 
@@ -41,7 +42,27 @@ void Module::create_texture(const Array2D<Color>& pixels, const String& name)
         }
     }
 
-    Ogre::TextureManager::getSingleton().loadImage(name.c(), get_module_name().c(), ogre_image);
+    Shared<Texture> result = MakeShared<Texture>(name);
+    result->ogre_texture_ = Ogre::TextureManager::getSingleton().loadImage(name.c(), get_module_name().c(), ogre_image);
+    return result;
+}
+
+Shared<Texture> Module::get_texture(const String& name) const
+{
+    if (const auto texture = Ogre::TextureManager::getSingleton().getByName(name.c(), get_module_name().c()))
+    {
+        Shared<Texture> result = MakeShared<Texture>(name);
+        result->ogre_texture_ = texture;
+        return result;
+    }
+    else if (const auto texture = Ogre::TextureManager::getSingleton().load(name.c(), get_module_name().c()))
+    {
+        Shared<Texture> result = MakeShared<Texture>(name);
+        result->ogre_texture_ = texture;
+        return result;
+    }
+    
+    return nullptr;
 }
 
 void Module::add_resource_directories()

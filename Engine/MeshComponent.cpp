@@ -85,13 +85,49 @@ void MeshComponent::set_mesh(const Shared<StaticMesh>& mesh)
     }
 }
 
-void MeshComponent::set_material(const Shared<Material>& material, uint index)
+uint MeshComponent::get_material_count() const
 {
     if (ogre_entity_)
     {
-        if (index < ogre_entity_->getNumSubEntities())
+        return ogre_entity_->getNumSubEntities();
+    }
+
+    return 0;
+}
+
+void MeshComponent::set_material(const Shared<Material>& material, uint material_slot)
+{
+    if (ogre_entity_)
+    {
+        if (material_slot < ogre_entity_->getNumSubEntities())
         {
-            ogre_entity_->getSubEntity(index)->setMaterial(material->ogre_material_ ? material->ogre_material_ : Ogre::MaterialManager::getSingleton().getByName("BaseWhite"));
+            ogre_entity_->getSubEntity(material_slot)->setMaterial(material->ogre_material_ ? material->ogre_material_ : Ogre::MaterialManager::getSingleton().getByName("BaseWhite"));
+        }
+    }
+}
+
+Shared<Material> MeshComponent::get_material(uint material_slot) const
+{
+    if (ogre_entity_)
+    {
+        if (material_slot < ogre_entity_->getNumSubEntities())
+        {
+            Shared<Material> result = MakeShared<Material>();
+            result->ogre_material_ = ogre_entity_->getSubEntity(material_slot)->getMaterial();
+            return result;
+        }
+    }
+
+    return nullptr;
+}
+
+void MeshComponent::set_material_parameter(Quaternion value, uint material_slot, uint parameter_index)
+{
+    if (ogre_entity_)
+    {
+        if (material_slot < ogre_entity_->getNumSubEntities())
+        {
+            ogre_entity_->getSubEntity(material_slot)->setCustomParameter(parameter_index, cast_object<Ogre::Vector4>(value));
         }
     }
 }
@@ -108,15 +144,39 @@ void MeshComponent::set_body_type(PhysicalBodyType body_type)
     }
 }
 
+void MeshComponent::set_visibility(bool state)
+{
+    if (is_visible_ == state) return;
+
+    is_visible_ = state;
+
+    if (ogre_entity_)
+    {
+        for (uint i = 0; i < ogre_entity_->getNumSubEntities(); i++)
+        {
+            ogre_entity_->getSubEntity(i)->setVisible(state);
+        }
+    }
+}
+
 void MeshComponent::setup_new_mesh(const Shared<StaticMesh>& mesh)
 {
-    if (auto owner = get_owner())
+    if (mesh)
     {
-        if (auto world = owner->get_world())
+        if (auto owner = get_owner())
         {
-            if (mesh)
+            if (auto world = owner->get_world())
             {
                 ogre_entity_ = world->manager_->createEntity(mesh_->name.c());
+
+                if (!is_visible_)
+                {
+                    for (uint i = 0; i < ogre_entity_->getNumSubEntities(); i++)
+                    {
+                        ogre_entity_->getSubEntity(i)->setVisible(is_visible_);
+                    }
+                }
+                
                 ogre_entity_->setCastShadows(true);
                 owner->scene_node_->attachObject(ogre_entity_);
 

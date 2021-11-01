@@ -2,7 +2,7 @@
 
 #include "HexaGame/HexaGame.h"
 #include "HexaGame/Entities/GamePlayer.h"
-#include "HexaGame/Entities/Skybox.h"
+#include "HexaGame/Entities/DebugPlayer.h"
 
 GameWorld::GameWorld(const Shared<WorldGenerator>& generator)
     : HexaWorld(generator)
@@ -15,12 +15,5 @@ void GameWorld::on_start()
     
     player_ = MakeShared<GamePlayer>();
     spawn_entity(player_);
-
-    skybox_ = MakeShared<Skybox>();
-    spawn_entity(skybox_);
-}
-
-void GameWorld::on_tick(float delta_time)
-{
-    //skybox_->set_location(Game::get_camera_info().position);
+    Game::possess(player_);
 }

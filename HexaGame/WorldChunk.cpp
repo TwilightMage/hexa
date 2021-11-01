@@ -10,9 +10,11 @@
 #include "WorldGenerator.h"
 #include "Database/Tiles.h"
 #include "Engine/GeometryEditor.h"
+#include "Engine/MeshComponent.h"
 #include "Engine/World.h"
 #include "Engine/Physics/ConcaveMeshCollision.h"
 #include "Entities/ComplexTile.h"
+#include "HexaGame/ChunkMeshEntity.h"
 #include "Worlds/HexaWorld.h"
 
 FORCEINLINE bool coll_at(TileSide coll, TileSide side) { return !!(coll & side); }
@@ -40,6 +42,16 @@ WorldChunk::WorldChunk(const ChunkIndex& index, const Weak<HexaWorld>& world)
     , state_(WorldChunkDataState::Pending)
     , plane_metadata{}
 {
+    for (uint x = 0; x < chunk_size; x++)
+    {
+        for (uint y = 0; y < chunk_size; y++)
+        {
+            for (uint z = 0; z < chunk_height; z++)
+            {
+                data[x][y][z] = nullptr;
+            }
+        }
+    }
 }
 
 int WorldChunk::get_observe_counter() const
@@ -529,12 +541,7 @@ void WorldChunk::dec_visibility()
     {
         for (auto& layer_mesh : mesh_entities_)
         {
-            for (auto& type_mesh_destroy : layer_mesh)
-            {
-                type_mesh_destroy->destroy();
-            }
-
-           layer_mesh.clear();
+            layer_mesh->destroy();
         }
 
         if (cap_entity_)
@@ -666,7 +673,7 @@ void WorldChunk::spawn_complex(const TileIndex& local_index, ComplexTileSlot& sl
         auto entity = MakeShared<ComplexTile>(slot.info);
         entity->index_ = world_index;
         world->spawn_entity(entity, world_index.to_vector());
-        entity->tile_info_->setup_spawned_entity(entity, custom_data_.find_or_default(local_index, nullptr));
+        entity->tile_info_->setup_spawned_entity(entity, custom_data_.find_or_default(local_index));
         slot.entity = entity;
     }
 }
@@ -998,13 +1005,6 @@ void WorldChunk::regenerate_whole_mesh(bool fill_complex)
 
 void WorldChunk::regenerate_mesh(uint z, bool fill_complex)
 {
-    for (auto& type_mesh : mesh_entities_[z])
-    {
-        type_mesh->destroy();
-    }
-    
-    mesh_entities_[z].clear();
-
     if (fill_complex)
     {
         bool z_met = false;
@@ -1024,7 +1024,7 @@ void WorldChunk::regenerate_mesh(uint z, bool fill_complex)
     
     if (auto world = world_.lock())
     {
-        std::map<ConstPtr<SolidTileInfo>, List<StaticMesh::Vertex>> type_vertices;
+        Map<ConstPtr<SolidTileInfo>, StaticMesh::SubMesh> sub_mesh_map;
 
         const TileType plane_metadata_front_right = front_right_->plane_metadata[z];
         const TileType plane_metadata_back_left = back_left_->plane_metadata[z];
@@ -1061,7 +1061,7 @@ void WorldChunk::regenerate_mesh(uint z, bool fill_complex)
 
                                 GeometryEditor::translate(tile_vertices, world_pos);
 
-                                type_vertices[solid_tile] += tile_vertices;
+                                sub_mesh_map[solid_tile].add(tile_vertices, tile_indices);
                             }
                         }
                     }
@@ -1077,20 +1077,38 @@ void WorldChunk::regenerate_mesh(uint z, bool fill_complex)
             }
         }
 
-        for (auto& kvp : type_vertices)
+        if (mesh_entities_[z] == nullptr)
         {
-            //auto mesh = MakeShared<StaticMesh>(String::format("Chunk {%i %i %i} %s", index_.x, index_.y, z, kvp.first->key.to_string().c()), kvp.second);
-            
-            auto mesh_entity = MakeShared<ChunkMeshEntity>();
-            //mesh_entity->set_mesh(mesh);
-            //mesh_entity->get_material_instance()->set_param_value("texture", kvp.first->texture);
-            //world->spawn_entity(mesh_entity, index_.to_vector());
+            mesh_entities_[z] = MakeShared<ChunkMeshEntity>();
+            mesh_entities_[z]->mesh_component_->set_visibility(z < cap_z);
+            world->spawn_entity(mesh_entities_[z], index_.to_vector());
+        }
 
-            //mesh_entity->set_collision(MakeShared<ConcaveMeshCollision>(mesh));
+        if (sub_mesh_map.size() > 0)
+        {
+            List<Shared<Material>> materials(sub_mesh_map.size());
+            List<StaticMesh::SubMesh> sub_meshes(sub_mesh_map.size());
 
-            //mesh_entity->set_visibility(z < cap_z);
-        
-            mesh_entities_[z].add(mesh_entity);
+            {
+                uint i = 0;
+                for (auto pair : sub_mesh_map)
+                {
+                    materials[i] = pair.key->material;
+                    sub_meshes[i] = pair.value;
+                    i++;
+                }
+            }
+
+            mesh_entities_[z]->mesh_component_->set_mesh(StaticMesh::construct(String::format("Chunk {%i %i %i}", index_.x, index_.y, z), sub_meshes, AutoCollisionMode::Complex));
+
+            for (uint i = 0; i < materials.length(); i++)
+            {
+                mesh_entities_[z]->mesh_component_->set_material(materials[i], i);
+            }
+        }
+        else
+        {
+            mesh_entities_[z]->mesh_component_->set_mesh(nullptr);
         }
     }
 }
@@ -1161,10 +1179,7 @@ void WorldChunk::cap(uint z)
     
     for (uint i = 0; i < mesh_entities_.length(); i++)
     {
-        for (auto& type_entity : mesh_entities_[i])
-        {
-            //type_entity->set_visibility(i < z);
-        }
+        mesh_entities_[i]->mesh_component_->set_visibility(i < z);
     }
 
     if (visibility_counter_ > 0)
@@ -1173,7 +1188,7 @@ void WorldChunk::cap(uint z)
 
         for (auto& complex : complex_tiles_)
         {
-            //complex->value.entity->set_visibility((uint)complex->key.z <= z);
+            complex->value.entity->mesh_component_->set_visibility((uint)complex->key.z <= z);
         }
     }
 }

@@ -1,32 +1,34 @@
-material Hexa/Basic
+material Hexa/Foliage
 {
     technique
     {
         pass
         {
-            vertex_program_ref Hexa/BasicVS
+            vertex_program_ref Hexa/FoliageVS
             {
             }
         
-            fragment_program_ref Hexa/BasicFS
+            fragment_program_ref Hexa/FoliageFS
             {
             }
             
-            shadow_caster_vertex_program_ref Hexa/BasicVS_s
+            shadow_caster_vertex_program_ref Hexa/FoliageVS_s
             {
             }
             
-            shadow_caster_fragment_program_ref Hexa/BasicFS_s
+            shadow_caster_fragment_program_ref Hexa/FoliageFS_s
             {
             }
             
-            texture_unit 0
+            alpha_rejection greater_equal 192
+            
+            texture_unit
             {
                 texture White 2d
                 filtering none
             }
             
-            texture_unit 1
+            texture_unit
             {
                 content_type shadow
                 filtering none

@@ -12,7 +12,7 @@ public:
         float hardness,
         const Shared<StaticMesh>& mesh,
         const Shared<Texture>& texture,
-        const Shared<Material3D>& material,
+        const Shared<Material>& material,
         const Shared<StaticMesh>& roots_mesh,
         const Shared<Texture>& roots_texture,
         const Shared<StaticMesh>& krone_mesh,
@@ -24,8 +24,8 @@ public:
         const Name& log_item_name
         )
         : ComplexTileInfo(key, tags + Set{ MetaTags::PLANT, MetaTags::WOOD, MetaTags::STEM }, hardness, true, mesh, texture, material)
-        , roots_mesh(roots_mesh)
-        , roots_texture(roots_texture)
+        , root_mesh(roots_mesh)
+        , root_texture(roots_texture)
         , krone_mesh(krone_mesh)
         , krone_texture(krone_texture)
         , branch_mesh(branch_mesh)
@@ -35,14 +35,15 @@ public:
         , log_item_name(log_item_name)
     {}
 
+    void post_loading() override;
     Shared<ComplexTileCustomData> create_custom_data() const override;
     void setup_spawned_entity(const Shared<ComplexTile>& new_tile, const Shared<ComplexTileCustomData>& custom_data) const override;
     void on_tile_break(const TileIndex& index, const Shared<HexaWorld>& world) const override;
     void on_tile_destroyed(const TileIndex& index, const Shared<ComplexTile>& destroyed_tile, const Shared<HexaWorld>& world) const override;
     void neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, ConstPtr<TileInfo> new_neighbor) const override;
 
-    Shared<StaticMesh> roots_mesh;
-    Shared<Texture> roots_texture;
+    Shared<StaticMesh> root_mesh;
+    Shared<Texture> root_texture;
     Shared<StaticMesh> krone_mesh;
     Shared<Texture> krone_texture;
     Shared<StaticMesh> branch_mesh;
@@ -50,4 +51,10 @@ public:
     Shared<StaticMesh> branch_krone_mesh;
     Shared<Texture> branch_krone_texture;
     Name log_item_name;
+
+private:
+    Shared<Material> root_material_;
+    Shared<Material> krone_material_;
+    Shared<Material> branch_material_;
+    Shared<Material> branch_krone_material_;
 };

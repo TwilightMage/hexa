@@ -27,7 +27,8 @@ HexaWorld::HexaWorld(const Shared<WorldGenerator>& generator)
 
 void HexaWorld::on_start()
 {
-    set_ambient_light(Color::white(), 0.5f);
+    set_ambient_light(Color::white(), 0.45f);
+    set_directional_light(Color::white(), 0.55f, Quaternion(Vector3(0, 45, 35)));
 }
 
 const Shared<WorldGenerator>& HexaWorld::get_generator() const

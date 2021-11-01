@@ -22,6 +22,7 @@ protected:
     bool initial_is_blocking = true;
 
 private:
+    Shared<MeshComponent> mesh_component_;
     ConstPtr<ComplexTileInfo> tile_info_;
     TileIndex index_;
 };

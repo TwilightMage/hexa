@@ -13,7 +13,7 @@ public:
     explicit Database(const String& name);
 
     template<class SubT>
-    ConstPtr<SubT> add(ConstPtr<SubT> record);
+    ConstPtr<SubT> add(SubT* record);
     ConstPtr<T> get(const Name& key) const;
     const Map<Name, ConstPtr<T>>& records() const;
 

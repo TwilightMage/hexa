@@ -6,6 +6,7 @@
 #include "Pointers.h"
 #include "Set.h"
 
+class Texture;
 class Material;
 class Game;
 
@@ -22,7 +23,8 @@ public:
 
     Shared<Material> get_material(const String& name) const;
 
-    void create_texture(const Array2D<Color>& pixels, const String& name);
+    Shared<Texture> create_texture(const Array2D<Color>& pixels, const String& name);
+    Shared<Texture> get_texture(const String& name) const;
 
 private:
     void add_resource_directories();

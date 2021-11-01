@@ -10,7 +10,7 @@ Database<T>::Database(const String& name)
 
 template <class T>
 template<class SubT>
-ConstPtr<SubT> Database<T>::add(ConstPtr<SubT> record)
+ConstPtr<SubT> Database<T>::add(SubT* record)
 {
     if (Game::get_stage() == GameStage::Loading)
     {
@@ -18,6 +18,8 @@ ConstPtr<SubT> Database<T>::add(ConstPtr<SubT> record)
         if (!data_record)
         {
             data_record = record;
+
+            record->post_loading();
 
             return record;
         }

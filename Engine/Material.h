@@ -17,7 +17,6 @@ class EXPORT Material
 {
     friend Module;
     friend MeshComponent;
-    friend TileInfo;
 public:
     class Technique
     {
@@ -40,7 +39,7 @@ public:
     
     Shared<Material> clone(const String& new_name = "") const;
 
-    //void set_texture(const Shared<Texture>& texture, uint index);
+    void set_texture(const Shared<Texture>& texture, uint index);
     void set_texture(const String& texture, uint index);
     
 private:

@@ -13,6 +13,20 @@
         </Expand>
     </Type>
 
+    <Type Name="Name">
+        <DisplayString Condition="size_ > 0">{data_,na}#{hash_}</DisplayString>
+        <DisplayString Condition="size_ == 0">empty</DisplayString>
+        <StringView Condition="length_ > 0">inner</StringView>
+        <Expand>
+            <Item Name="[size]" ExcludeView="simple">size_</Item>
+            <Item Name="[hash]" ExcludeView="simple">hash_</Item>
+            <ArrayItems>
+                <Size>size_</Size>
+                <ValuePointer>data_</ValuePointer>
+            </ArrayItems>
+        </Expand>
+    </Type>
+
     <Type Name="Array&lt;*&gt;">
         <DisplayString Condition="length_ > 0">{{ length={length_} }}</DisplayString>
         <DisplayString Condition="length_ == 0">{{ empty }}</DisplayString>

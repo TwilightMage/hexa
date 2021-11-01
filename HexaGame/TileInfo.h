@@ -81,7 +81,7 @@ public:
         bool block_nav,
         const Shared<StaticMesh>& mesh,
         const Shared<Texture>& texture,
-        const Shared<Material3D>& material
+        const Shared<Material>& material
         )
         : TileInfo(key, TileType::Complex, tags + Set{ MetaTags::COMPLEX }, hardness, block_nav)
         , mesh(mesh)
@@ -89,6 +89,8 @@ public:
         , material(material)
     {}
 
+    void post_loading() override;
+    
     virtual void setup_spawned_entity(const Shared<ComplexTile>& new_tile, const Shared<ComplexTileCustomData>& custom_data) const;
     virtual void on_tile_destroyed(const TileIndex& index, const Shared<ComplexTile>& destroyed_tile, const Shared<HexaWorld>& world) const;
     virtual bool can_place_at(const Shared<ComplexTile>& new_tile, const ItemContainer& item) const;
@@ -96,5 +98,5 @@ public:
 
     Shared<StaticMesh> mesh;
     Shared<Texture> texture;
-    Shared<Material3D> material;
+    Shared<Material> material;
 };

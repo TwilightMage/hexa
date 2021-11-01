@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include <map>
+#include <OGRE/Main/OgreHeaderSuffix.h>
 
 #include "Array2D.h"
 #include "Color.h"
@@ -13,9 +14,16 @@
 #include "Slot.h"
 #include "UsageCounter.h"
 
+class Material;
+class Module;
 class Game;
 class UIElement;
 class Image;
+
+namespace Ogre
+{
+    class Texture;
+}
 
 class EXPORT Texture : public Object, public ITexture, public IUsageCountable<Texture>, public EnableSharedFromThis<Texture>
 {
@@ -27,6 +35,8 @@ public:
 private:
     friend Game;
     friend Editor;
+    friend Module;
+    friend Material;
     
 public:
     class Editor
@@ -84,6 +94,8 @@ private:
     //static std::map<Texture*, uint> usage_counter_;
     uint edit_count_;
     bool delayed_activation_;
+
+    Shared<Ogre::Texture> ogre_texture_;
 };
 
 typedef Slot<Texture> TextureSlot;

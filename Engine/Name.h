@@ -23,12 +23,12 @@ public:
 
     Name& operator=(const Name& rhs);
 
-    FORCEINLINE String to_string() const { return String(data_, data_size_); }
+    FORCEINLINE String to_string() const { return String(data_); }
 
     FORCEINLINE bool is_valid() const { return hash_ == 0; }
 
 private:
     char* data_;
-    uint data_size_;
+    uint size_;
     uint64 hash_;
 };

@@ -1,6 +1,6 @@
 #version 330
 
-#include "utils.glsl"
+#include "utils_fs.glsl"
 
 uniform sampler2D tex;
 uniform sampler2D shadow_map_0;
@@ -30,12 +30,16 @@ void main()
     return;
     #endif
     
-    if (distanceDisolve(world_pos, cam_pos, 2000, 250)) discard;
+    if (distanceDisolve(world_pos, cam_pos, render_distance, render_disolve)) discard;
     
     float diff = max(dot(norm, -sun_dir.xyz), 0.0);
     vec4 diffuse = diff * sun_diff;
 
-    float shadow = computeShadow(shadow_map_0, shadow_pos_0);
+    float shadow = 0;
+    if (!distanceDisolve(world_pos, cam_pos, shadow_distance, shadow_disolve))
+    {
+        shadow = computeShadow(shadow_map_0, shadow_pos_0);
+    }
 
     frag_color = (ambient_light + (1 - shadow) * diffuse) * tex_color;
 }

@@ -3,6 +3,8 @@
 #include <OGRE/Main/OgreMaterial.h>
 #include <OGRE/Main/OgreTechnique.h>
 
+#include "Texture.h"
+
 Shared<Material> Material::clone(const String& new_name) const
 {
     auto result = MakeShared<Material>();
@@ -10,10 +12,10 @@ Shared<Material> Material::clone(const String& new_name) const
     return result;
 }
 
-/*void Material::set_texture(const Shared<Texture>& texture, uint index)
+void Material::set_texture(const Shared<Texture>& texture, uint index)
 {
-    ogre_material_->getTechnique(0)->getPass(0)->getTextureUnitState(index)->setTexture(texture->tex);
-}*/
+    ogre_material_->getTechnique(0)->getPass(0)->getTextureUnitState(index)->setTexture(texture->ogre_texture_);
+}
 
 void Material::set_texture(const String& texture, uint index)
 {

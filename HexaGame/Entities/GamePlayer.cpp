@@ -8,6 +8,7 @@
 #include "Characters/Slime.h"
 #include "Engine/Animation.h"
 #include "Engine/AnimatorComponent.h"
+#include "Engine/CameraComponent.h"
 #include "Engine/GeometryEditor.h"
 #include "Engine/SystemIO.h"
 #include "Engine/Physics/RaycastResult.h"
@@ -267,15 +268,15 @@ void GamePlayer::on_tick(float delta_time)
         auto pos = get_location();
         if (auto character = get_character())
         {
-            static float speed = 3;
+            static float speed = 3 * 100;
             const auto cam_rot_xy = Quaternion(Vector3(0, 0, camera_rotation_.yaw()));
             pos += cam_rot_xy.right().cross_product(Vector3::up()) * delta_time * move_.x * speed;
             pos += cam_rot_xy.right() * delta_time * move_.y * speed;
     
             Vector3 tile_check_from = pos;
-            tile_check_from.z = WorldChunk::chunk_height * HexaMath::tile_height;
+            tile_check_from.z = WorldChunk::chunk_height * HexaMath::tile_height * 100;
             Vector3 tile_check_to = pos;
-            tile_check_to.z = character->get_tile_position().z * HexaMath::tile_height - KINDA_SMALL_NUMBER;
+            tile_check_to.z = character->get_tile_position().z * HexaMath::tile_height * 100 - KINDA_SMALL_NUMBER;
             auto hits = world->raycast_all(tile_check_from, tile_check_to, HexaCollisionMaskBits::GROUND, true);
             bool found_hit = false;
             if (hits.length() > 0)
@@ -328,7 +329,7 @@ void GamePlayer::on_tick(float delta_time)
         camera_pivot_z_ = Math::lerp(camera_pivot_z_, desired_camera_pivot_z, delta_time * 10);
         camera_distance_ = Math::lerp(camera_distance_, desired_camera_distance_, delta_time * 10);
         Vector3 camera_pivot = Vector3(pos.x, pos.y, camera_pivot_z_);
-        camera_position_ = camera_pivot - camera_rotation_.forward() * camera_distance_;
+        camera_position_ = camera_pivot - camera_rotation_.forward() * camera_distance_ * 100;
     }
 }
 

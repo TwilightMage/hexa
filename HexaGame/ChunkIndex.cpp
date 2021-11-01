@@ -29,16 +29,16 @@ bool ChunkIndex::operator!=(const ChunkIndex& rhs) const
 Vector3 ChunkIndex::to_vector() const
 {
     return Vector3(
+            (Math::sqrt(3.0f) / 2.0f * y * WorldChunk::chunk_size + Math::sqrt(3.0f) * -x * WorldChunk::chunk_size) * -0.5f,
             (3.0f / 2.0f * y * WorldChunk::chunk_size) * 0.5f,
-            0.0f,
-            (Math::sqrt(3.0f) / 2.0f * y * WorldChunk::chunk_size + Math::sqrt(3.0f) * -x * WorldChunk::chunk_size) * -0.5f
+            0.0f
         ) * 100;
 }
 
 ChunkIndex ChunkIndex::from_vector(const Vector3& vector)
 {
-    float x = vector.z / (0.5f * Math::sqrt(3.0f)) / 100.0f;
-    float y = vector.x / (0.5f * Math::sqrt(3.0f)) / 100.0f;
+    float x = vector.x / (0.5f * Math::sqrt(3.0f)) / 100.0f;
+    float y = vector.y / (0.5f * Math::sqrt(3.0f)) / 100.0f;
 
     const auto temp = Math::floor(x + Math::sqrt(3.0f) * y + 1.0f);
     int q = Math::floor((Math::floor(2.0f * x + 1.0f) + temp) / 3.0f);

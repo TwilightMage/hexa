@@ -2,6 +2,8 @@
 
 #include <HexaGame/HexaCollisionMaskBits.h>
 
+#include "Engine/Material.h"
+#include "Engine/MeshComponent.h"
 #include "Engine/Random.h"
 #include "Engine/World.h"
 #include "HexaGame/HexaGame.h"
@@ -11,6 +13,26 @@
 #include "HexaGame/Database/Tiles.h"
 #include "HexaGame/Entities/ComplexTile.h"
 #include "HexaGame/Worlds/HexaWorld.h"
+
+void TreeStemInfo::post_loading()
+{
+    ComplexTileInfo::post_loading();
+
+    const auto basic_mat = Game::get_instance()->get_material("Hexa/Basic");
+    const auto foliage_mat = Game::get_instance()->get_material("Hexa/Foliage");
+    
+    root_material_ = basic_mat->clone(key.to_string() + "_root");
+    root_material_->set_texture(root_texture, 0);
+
+    krone_material_ = foliage_mat->clone(key.to_string() + "_krone");
+    krone_material_->set_texture(krone_texture, 0);
+
+    branch_material_ = basic_mat->clone(key.to_string() + "_branch");
+    branch_material_->set_texture(branch_texture, 0);
+
+    branch_krone_material_ = foliage_mat->clone(key.to_string() + "_branch_krone");
+    branch_krone_material_->set_texture(branch_krone_texture, 0);
+}
 
 Shared<ComplexTileCustomData> TreeStemInfo::create_custom_data() const
 {
@@ -40,10 +62,10 @@ void TreeStemInfo::setup_spawned_entity(const Shared<ComplexTile>& new_tile, con
                     for (uint i = 0; i < root_count; i++)
                     {
                         auto root = MakeShared<Entity>();
-                        //root->set_mesh(roots_mesh);
-                        //new_tile->get_world()->spawn_entity(root, new_tile->get_location(), Quaternion(Vector3(0, 0, (360.0f / root_count * i) + random.number(-1.0f, 1.0f) * 360.0f / root_count / 2 / root_count)));
-                        //root->set_material(Game::get_basic_material_3d());
-                        //root->get_material_instance()->set_param_value("texture", roots_texture);
+                        auto root_mesh_comp = root->create_component<MeshComponent>();
+                        root_mesh_comp->set_mesh(root_mesh);
+                        root_mesh_comp->set_material(root_material_, 0);
+                        new_tile->get_world()->spawn_entity(root, Transform(new_tile->get_location(), Quaternion(Vector3(0, 0, (360.0f / root_count * i) + random.number(-1.0f, 1.0f) * 360.0f / root_count / 2 / root_count))));
 
                         tree_custom_data->tree_sub_parts.add(root);
                     }
@@ -57,13 +79,14 @@ void TreeStemInfo::setup_spawned_entity(const Shared<ComplexTile>& new_tile, con
                         const Vector3 point = new_tile->get_location() + Quaternion(Vector3(0, 0, random.number(360.0f))).forward() * Vector3(1, 1, 2.0f) * 0.8f;
 
                         auto krone = MakeShared<Entity>();
-                        //krone->set_mesh(krone_mesh);
-                        //new_tile->get_world()->spawn_entity(krone, point, Quaternion(Vector3(0, 0, random.number(360.0f))));
+                        auto krone_mesh_comp = krone->create_component<MeshComponent>();
+                        krone_mesh_comp->set_mesh(krone_mesh);
+                        krone_mesh_comp->set_material(krone_material_, 0);
+                        krone_mesh_comp->set_material_parameter(Quaternion(krone_mesh->get_bounds_half_size().z * 2, 1, 0, 0), 0, 0);
+                        
+                        new_tile->get_world()->spawn_entity(krone, Transform(point, Quaternion(Vector3(0, 0, random.number(360.0f)))));
                         const Vector2 scale = Vector2(random.number(0.8f, 1.2f), random.number(0.8f, 1.2f)) * 3.5f;
-                        //krone->set_scale(Vector3(scale.x, scale.x, scale.y));
-                        //krone->set_material(HexaGame::foliage_material);
-                        //krone->get_material_instance()->set_param_value("texture", krone_texture);
-                        //krone->get_material_instance()->set_param_value("height", krone_mesh->get_bounds_half_size().z * 2);
+                        krone->set_scale(Vector3(scale.x, scale.x, scale.y));
 
                         tree_custom_data->tree_sub_parts.add(krone);
                     }

@@ -1,11 +1,14 @@
 #version 330
 
+#include "utils_vs.glsl"
+
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 proj;
+uniform float time;
 uniform mat4 shadow_vp_0;
-uniform mat4 model_view_proj;
-uniform vec4 texel_offsets;
+uniform vec4 texel_offsets; // SHADOW_PASS
+uniform vec4 wind_data;     // WIND / (box_height, scale, -, -)
 
 in vec4 vertex;
 in vec2 uv0;
@@ -17,25 +20,32 @@ out vec3 world_pos;    // vertex world-space position
 out vec3 obj_pos;      // vertex object-space position
 out vec3 norm;         // vertex normal
 out vec4 shadow_pos_0;
-out vec2 depth;        // available only during SHADOW_PASS
+out vec2 depth;
 
 void main()
 {
-    #ifdef SHADOW_PASS
-    vec4 outPos = model_view_proj * vertex;
-    outPos.xy += texel_offsets.zw * outPos.w;
-
-    depth = outPos.zw;
-    gl_Position = outPos;
-    return;
-    #endif
-    
     obj_pos = vertex.xyz;
-    vec4 pos_model = model * vertex;
-    gl_Position = proj * view * pos_model;
     uv = uv0;
-    world_pos = pos_model.xyz;
+    
+    vec4 world_pos_raw = model * vertex;
     norm = mat3(transpose(inverse(model))) * normal;
     cam_pos = inverse(view)[3].xyz;
-    shadow_pos_0 = shadow_vp_0 * pos_model;
+    shadow_pos_0 = shadow_vp_0 * world_pos_raw;
+    
+    #ifdef WIND
+    float wind_alpha = vertex.z / wind_data.x;
+    float time_offset = length(world_pos_raw.xy);
+    vec2 shift = vec2(sin(time * 4 + time_offset) * pow(cos(time * 4 + time_offset), 2), cos(time * 4 + time_offset) * pow(sin(time * 4 + time_offset), 2)) * wind_data.y * 10;
+    world_pos_raw = world_pos_raw + vec4(shift, 0, 0) * rand3(world_pos_raw.xyz) * wind_alpha * sin((time + time_offset) / 4);
+    #endif
+
+    vec4 out_pos = proj * view * world_pos_raw;
+    
+    #ifdef SHADOW_PASS
+    out_pos.xy += texel_offsets.zw * out_pos.w;
+    #endif
+
+    world_pos = world_pos_raw.xyz;
+    gl_Position = out_pos;
+    depth = out_pos.zw;
 }

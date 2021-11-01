@@ -113,6 +113,7 @@ Shared<StaticMesh> StaticMesh::load_file_obj(const Path& path, AutoCollisionMode
         sub_mesh.indices = src_sub_mesh.Indices;
 
         GeometryEditor::optimize(sub_mesh.vertices, sub_mesh.indices);
+        GeometryEditor::rotate(sub_mesh.vertices, Quaternion::from_axis_angle(Vector3::forward(), 90));
     }
     
     Shared<StaticMesh> result = create(path.filename + path.extension, sub_meshes, collision_mode, false);

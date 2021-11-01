@@ -11,6 +11,7 @@
 #include "Engine/Audio.h"
 #include "Engine/GeometryEditor.h"
 #include "Engine/Logger.h"
+#include "Engine/Material.h"
 #include "Engine/AnimationEditor/AnimationEditorWorld.h"
 #include "Entities/Characters/Slime.h"
 #include "ui/TileDatabaseViewer.h"
@@ -61,8 +62,8 @@ void HexaGame::on_start()
     }
     else
     {
-        //open_game_world();
-        open_tile_test_world();
+        open_game_world();
+        //open_tile_test_world();
     }
 }
 

@@ -23,7 +23,11 @@ public:
 
     inline static Shared<Material3D> tile_cap_material = nullptr;
     inline static Shared<Material3D> skybox_material = nullptr;
-    inline static Shared<Material3D> foliage_material = nullptr;
+    
+    inline static Shared<Material> tall_grass_material = nullptr;
+    inline static Shared<Material> blue_roses_material = nullptr;
+    inline static Shared<Material> red_roses_material = nullptr;
+    inline static Shared<Material> chamomile_material = nullptr;
 
     inline static Shared<Audio> plains_music = nullptr;
 

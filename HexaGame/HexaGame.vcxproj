@@ -333,6 +333,8 @@
     <Content Include="resources\materials\flip_x.compositor" />
     <Content Include="resources\materials\flip_x.material" />
     <Content Include="resources\materials\flip_x.program" />
+    <Content Include="resources\materials\foliage.material" />
+    <Content Include="resources\materials\foliage.program" />
     <Content Include="resources\materials\skybox.material" />
     <Content Include="resources\materials\skybox.program" />
     <Content Include="resources\materials\QuadVS.program" />
@@ -354,14 +356,14 @@
     <Content Include="resources\meshes\tiles\tree_root.obj" />
     <Content Include="resources\meshes\tiles\tree_stem.obj" />
     <Content Include="resources\shaders\flip_x.frag" />
-    <Content Include="resources\shaders\foliage.frag" />
-    <Content Include="resources\shaders\foliage.vert" />
     <Content Include="resources\shaders\quad.glsl" />
     <Content Include="resources\shaders\utils.glsl" />
     <Content Include="resources\shaders\skybox.frag" />
     <Content Include="resources\shaders\basic.frag" />
     <Content Include="resources\shaders\basic.vert" />
     <Content Include="resources\shaders\tile_cap.frag" />
+    <Content Include="resources\shaders\utils_fs.glsl" />
+    <Content Include="resources\shaders\utils_vs.glsl" />
     <Content Include="resources\textures\actions\sickle.png" />
     <Content Include="resources\textures\arrow.png" />
     <Content Include="resources\textures\axis_arrows.png" />
@@ -404,9 +406,6 @@
     <Content Include="resources\textures\ui\rarity_marker.png" />
     <Content Include="resources\textures\ui\toolbar.png" />
     <Content Include="resources\textures\ui\toolbar_selection.png" />
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="resources\compositors" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

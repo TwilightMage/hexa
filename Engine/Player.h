@@ -10,6 +10,8 @@ public:
     
     void on_possess() override;
 
+    FORCEINLINE const Shared<CameraComponent>& camera() const { return camera_; }
+
 private:
     Shared<CameraComponent> camera_;
 };

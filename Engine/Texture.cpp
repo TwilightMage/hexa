@@ -1,5 +1,7 @@
 ﻿#include "Texture.h"
 
+#include <OGRE/Main/OgreTextureManager.h>
+
 #include "Assert.h"
 #include "File.h"
 #include "Game.h"

@@ -20,6 +20,7 @@ namespace Ogre
 
 enum class AutoCollisionMode
 {
+    None,
     Default,
     Convex,
     Complex

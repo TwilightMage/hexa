@@ -30,7 +30,7 @@ void GamePlayer::on_start()
 {
     Player::on_start();
     
-    set_rotation(Quaternion(Vector3(0, 30, 0)));
+    set_rotation(Quaternion(Vector3(0, camera_pitch_, camera_yaw_)));
     
     if (auto world = cast<HexaWorld>(get_world()))
     {
@@ -68,57 +68,57 @@ void GamePlayer::key_down(KeyCode key)
 {
     Player::key_down(key);
 
-    /*switch (key)
+    switch (key)
     {
-    case GLFW_KEY_W:
+    case KeyCode::W:
         move_.x += 1;
         break;
-    case GLFW_KEY_S:
+    case KeyCode::S:
         move_.x -= 1;
         break;
-    case GLFW_KEY_D:
+    case KeyCode::D:
         move_.y += 1;
         break;
-    case GLFW_KEY_A:
+    case KeyCode::A:
         move_.y -= 1;
         break;
-    case GLFW_KEY_LEFT_SHIFT:
+    case KeyCode::LeftShift:
         use_item_mode_ = true;
         break;
     default:
-        if (hotbar.contains(key))
+        /*if (hotbar.contains(key))
         {
             if (const auto& character = get_character())
             {
                 character->get_inventory()->set_selected_hotbar(hotbar[key]);
             }
-        }
+        }*/
         break;
-    }*/
+    }
 }
 
 void GamePlayer::key_up(KeyCode key)
 {
     Player::key_up(key);
 
-    /*switch (key)
+    switch (key)
     {
-    case GLFW_KEY_W:
+    case KeyCode::W:
         move_.x -= 1;
         break;
-    case GLFW_KEY_S:
+    case KeyCode::S:
         move_.x += 1;
         break;
-    case GLFW_KEY_D:
+    case KeyCode::D:
         move_.y -= 1;
         break;
-    case GLFW_KEY_A:
+    case KeyCode::A:
         move_.y += 1;
         break;
-    case GLFW_KEY_LEFT_SHIFT:
+    case KeyCode::LeftShift:
         use_item_mode_ = false;
         break;
-    }*/
+    }
 }
 
 List<Shared<Entity>> markers;
@@ -143,7 +143,7 @@ void GamePlayer::mouse_button_down(int button)
                 {
                     raycast_mask |= HexaCollisionMaskBits::COMPLEX_NOBLOCK;
                 }
-                auto hits = world->raycast_all(camera_position_, camera_position_ + Game::get_un_projected_mouse() * 10, raycast_mask, true);
+                auto hits = world->raycast_all(get_location(), get_location() + Game::get_un_projected_mouse() * 10, raycast_mask, true);
                 for (const auto& hit : hits)
                 {
                     if (hit.location.z > world->get_cap_chunk_z() * HexaMath::tile_height + KINDA_SMALL_NUMBER) continue;
@@ -258,24 +258,23 @@ void GamePlayer::mouse_button_up(int button)
 
 void GamePlayer::scroll(const Vector2& delta)
 {
-    desired_camera_distance_ = Math::clamp(desired_camera_distance_ - delta.y, 1.0f, 12.0f);
+    camera_distance_desired_ = Math::clamp(camera_distance_desired_ - delta.y, 1.0f, 12.0f);
 }
 
 void GamePlayer::on_tick(float delta_time)
 {    
     if (auto world = cast<HexaWorld>(get_world()))
     {
-        auto pos = get_location();
         if (auto character = get_character())
         {
             static float speed = 3 * 100;
-            const auto cam_rot_xy = Quaternion(Vector3(0, 0, camera_rotation_.yaw()));
-            pos += cam_rot_xy.right().cross_product(Vector3::up()) * delta_time * move_.x * speed;
-            pos += cam_rot_xy.right() * delta_time * move_.y * speed;
+            const auto cam_rot_xy = Quaternion(Vector3(0, 0, get_rotation().yaw()));
+            camera_pivot_desired_ += cam_rot_xy.right().cross_product(Vector3::up()) * delta_time * move_.x * speed;
+            camera_pivot_desired_ += cam_rot_xy.right() * delta_time * move_.y * speed;
     
-            Vector3 tile_check_from = pos;
+            Vector3 tile_check_from = camera_pivot_desired_;
             tile_check_from.z = WorldChunk::chunk_height * HexaMath::tile_height * 100;
-            Vector3 tile_check_to = pos;
+            Vector3 tile_check_to = camera_pivot_desired_;
             tile_check_to.z = character->get_tile_position().z * HexaMath::tile_height * 100 - KINDA_SMALL_NUMBER;
             auto hits = world->raycast_all(tile_check_from, tile_check_to, HexaCollisionMaskBits::GROUND, true);
             bool found_hit = false;
@@ -283,31 +282,31 @@ void GamePlayer::on_tick(float delta_time)
             {
                 for (const auto& hit : hits)
                 {
-                    if (hit.location.z > world->get_cap_chunk_z() * HexaMath::tile_height + KINDA_SMALL_NUMBER) continue;
+                    if (hit.location.z > world->get_cap_chunk_z() * HexaMath::tile_height * 100 + KINDA_SMALL_NUMBER) continue;
 
-                    pos.z = hit.location.z;
+                    camera_pivot_desired_.z = hit.location.z;
                     found_hit = true;
                 }
             }
             
             if (!found_hit)
             {
-                pos.z = tile_check_to.z;
+                camera_pivot_desired_.z = tile_check_to.z;
             }
-            
-            set_location(pos);
-            desired_camera_pivot_z = pos.z;
         }
         
         if (rotate_camera_)
         {
             Game::get_mouse_delta();
 
-            camera_rotation_ = Quaternion(Vector3(0, Math::clamp(camera_rotation_.pitch() + Game::get_mouse_delta().y * 0.25f, 10.0f, 89.0f), camera_rotation_.yaw() + Game::get_mouse_delta().x * 0.25f));
+            camera_pitch_ = Math::clamp(camera_pitch_ + Game::get_mouse_delta().y * 0.25f, 10.0f, 89.0f);
+            camera_yaw_ += Game::get_mouse_delta().x * 0.25f;
+            
+            set_rotation(Quaternion(Vector3(0, camera_pitch_, camera_yaw_)));
         }
         else
         {
-            auto hits = world->raycast_all(camera_position_, camera_position_ + Game::get_un_projected_mouse() * 10, HexaCollisionMaskBits::GROUND, true);
+            auto hits = world->raycast_all(get_location(), get_location() + Game::get_un_projected_mouse() * 10, HexaCollisionMaskBits::GROUND, true);
             for (const auto& hit : hits)
             {
                 if (hit.location.z > world->get_cap_chunk_z() * HexaMath::tile_height + KINDA_SMALL_NUMBER) continue;
@@ -326,10 +325,9 @@ void GamePlayer::on_tick(float delta_time)
             }
         }
 
-        camera_pivot_z_ = Math::lerp(camera_pivot_z_, desired_camera_pivot_z, delta_time * 10);
-        camera_distance_ = Math::lerp(camera_distance_, desired_camera_distance_, delta_time * 10);
-        Vector3 camera_pivot = Vector3(pos.x, pos.y, camera_pivot_z_);
-        camera_position_ = camera_pivot - camera_rotation_.forward() * camera_distance_ * 100;
+        camera_pivot_ = Math::lerp(camera_pivot_, camera_pivot_desired_, delta_time * 10);
+        camera_distance_ = Math::lerp(camera_distance_, camera_distance_desired_, delta_time * 10);
+        set_location(camera_pivot_ - get_rotation().forward() * camera_distance_ * 100);
     }
 }
 
@@ -368,8 +366,7 @@ void GamePlayer::spawn_chunk_loaded(const Shared<WorldChunk>& sender)
                     
                     posses_character(character);
                     set_location(character->get_tile_position().to_vector());
-                    //camera_rotation_ = Quaternion(Vector3(0, 30, 180.0f));
-                    camera_pivot_z_ = desired_camera_pivot_z = character->get_tile_position().z * HexaMath::tile_height;
+                    camera_pivot_ = camera_pivot_desired_ = character->get_tile_position().to_vector();
 
                     world->spawn_drop(TileIndex(0, 1, Z + 2), ItemContainer(Items::iron_shovel));
                     world->spawn_drop(TileIndex(0, 1, Z + 2), ItemContainer(Items::iron_axe));

@@ -1,5 +1,6 @@
 ﻿#include "World.h"
 
+#include <OGRE/Main/OgreMesh.h>
 #include <OGRE/Main/OgreRoot.h>
 #include <OGRE/Main/OgreSceneManager.h>
 #include <reactphysics3d/reactphysics3d.h>
@@ -12,6 +13,7 @@
 #include "OgreApp.h"
 #include "Quaternion.h"
 #include "Settings.h"
+#include "StaticMesh.h"
 #include "Texture.h"
 #include "HexaGame/Entities/ItemDrop.h"
 #include "Physics/RaycastCallback.h"
@@ -92,9 +94,6 @@ void World::init()
     manager_ = Game::instance_->ogre_app_->getRoot()->createSceneManager();
 
     world_root_ = manager_->getRootSceneNode()->createChildSceneNode();
-    //world_root_->scale(Ogre::Vector3(-1, -1, -1));
-    //world_root_->rotate(Ogre::Vector3(1, 0, 0), Ogre::Degree(90), Ogre::Node::TS_WORLD);
-    //world_root_->rotate(Ogre::Vector3(0, 0, 1), Ogre::Degree(-90), Ogre::Node::TS_WORLD);
 
     manager_->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE_INTEGRATED);
     manager_->setShadowTextureSelfShadow(true);
@@ -114,8 +113,6 @@ void World::init()
     directional_light_->setCastShadows(true);
 
     directional_light_node_ = world_root_->createChildSceneNode();
-    directional_light_node_->setInheritOrientation(false);
-    directional_light_node_->setInheritScale(false);
     directional_light_node_->attachObject(directional_light_);
 }
 
@@ -167,40 +164,29 @@ void World::tick(float delta_time)
     on_tick(delta_time);
 
     // tick entities
-    Set<Shared<Entity>> to_delete;
-
     if (time_scale_ != 0.0f)
     {
-        for (auto& entity : entities_)
+        for (auto& entity : destroy_list_)
         {
-            if (entity->pending_kill_)
+            if (entity->tick_enabled_)
             {
-                do_destroy(entity);
-
-                entity->pending_kill_ = false;
-            
-                to_delete.add(entity);
+                tick_list_.remove(entity);
             }
-            else
+            
+            do_destroy(entity);
+
+            entities_.remove(entity);
+        }
+        
+        for (auto& entity : tick_list_)
+        {
+            entity->on_tick(delta_time);
+            for (auto component : entity->components_)
             {
-                if (entity->tick_enabled)
-                {
-                    entity->on_tick(delta_time);
-                    for (auto component : entity->components_)
-                    {
-                        component->on_tick(delta_time);
-                    }
-                }
+                component->on_tick(delta_time);
             }
         }
     }
-
-    // cleanup entities
-    for (auto& entity : to_delete)
-    {
-        entities_.remove(entity);
-    }
-    to_delete.clear();
 }
 
 const Set<Shared<Entity>>& World::get_entities() const
@@ -291,8 +277,6 @@ void World::spawn_entity_internal(const Shared<Entity>& entity)
 {
     const auto& rot = entity->transform_.rotation;
     entity->scene_node_ = world_root_->createChildSceneNode(cast_object<Ogre::Vector3>(entity->transform_.location), Ogre::Quaternion(rot.w, rot.x, rot.y, rot.z));
-    entity->scene_node_->setInheritOrientation(false);
-    entity->scene_node_->setInheritScale(false);
     entity->scene_node_->setScale(cast_object<Ogre::Vector3>(entity->transform_.scale));
     entity->world_ = weak_from_this();
     /*if (entity->is_rigid_body())
@@ -306,6 +290,12 @@ void World::spawn_entity_internal(const Shared<Entity>& entity)
         entity->rigid_body_->setUserData(entity.get());
     }*/
     entities_.add(entity);
+
+    if (entity->is_tick_enabled())
+    {
+        tick_list_.add(entity);
+    }
+
     entity->start();
 }
 
@@ -320,4 +310,48 @@ void World::do_destroy(const Shared<Entity>& entity)
     world_root_->removeChild(entity->scene_node_);
 
     entity->on_destroyed(entity);
+}
+
+void World::set_entity_tick_enabled(const Shared<Entity>& entity, bool state)
+{
+    if (state)
+    {
+        tick_list_.add(entity);
+    }
+    else
+    {
+        tick_list_.remove(entity);
+    }
+}
+
+void World::mark_entity_for_destroy(const Shared<Entity>& entity, bool state)
+{
+    if (state)
+    {
+        destroy_list_.add(entity);
+    }
+    else
+    {
+        destroy_list_.remove(entity);
+    }
+}
+
+List<Ogre::InstanceManager*> World::get_or_create_instance_managers(const Shared<StaticMesh>& mesh, uint batch_instance_count, uint instanced_params_count)
+{
+    if (auto managers = instance_managers_.find(mesh))
+    {
+        return *managers;
+    }
+    else
+    {
+        auto& new_managers = instance_managers_[mesh];
+        for (uint i = 0; i < mesh->ogre_mesh_->getNumSubMeshes(); i++)
+        {
+            auto new_manager = manager_->createInstanceManager(String::format("%s_%i", mesh->name.c(), i).c(), mesh->ogre_mesh_, Ogre::InstanceManager::HWInstancingBasic, batch_instance_count, Ogre::IM_USEALL, i);
+
+            new_manager->setNumCustomParams(instanced_params_count);
+            new_managers.add(new_manager);
+        }
+        return new_managers;
+    }
 }

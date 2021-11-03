@@ -46,19 +46,19 @@ public:
         return inner_;
     }
 
-    bool operator==(const Array& rhs) const
+    FORCEINLINE bool operator==(const Array& rhs) const
     {
         if (length_ != rhs.length_) return false;
 
         for (uint i = 0; i < length_; i++)
         {
-            if (inner_[i] != rhs[i]) return false;
+            if (inner_[i] != rhs.inner_[i]) return false;
         }
 
         return true;
     }
 
-    bool operator!=(const Array& rhs) const
+    FORCEINLINE bool operator!=(const Array& rhs) const
     {
         return !operator==(rhs);
     }

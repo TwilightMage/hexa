@@ -115,7 +115,7 @@ void DebugPlayer::on_possess()
 
 void DebugPlayer::on_tick(float delta_time)
 {
-    static float speed = 300;
+    static float speed = 500;
     auto pos = get_location();
     pos += get_rotation().forward() * delta_time * move_forward_ * speed;
     pos += get_rotation().right() * delta_time * move_right_ * speed;
@@ -131,11 +131,11 @@ void DebugPlayer::on_tick(float delta_time)
 
     if (current_chunk != old_chunk_)
     {
-        if (observer_)
+        /*if (observer_)
         {
             observer_->move(current_chunk, load_distance_);
             debug_text_->set_text(String::format("Chunk: %i, %i", current_chunk.x, current_chunk.y));
-        }
+        }*/
         old_chunk_ = current_chunk;
     }
 

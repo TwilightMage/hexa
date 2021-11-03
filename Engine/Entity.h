@@ -119,20 +119,22 @@ public:
         return nullptr;
     }
 
-    Delegate<const Shared<Entity>&> on_destroyed;
+    void set_tick_enabled(bool state);
+    FORCEINLINE bool is_tick_enabled() const { return tick_enabled_; }
 
-    bool tick_enabled = false;
+    Delegate<const Shared<Entity>&> on_destroyed;
     
 private:
     void start();
     void tick(float delta_time);
+
+    bool tick_enabled_ = false;
 
 
     Transform transform_;
     
     Weak<World> world_;
     Ogre::SceneNode* scene_node_ = nullptr;
-    bool pending_kill_;
     bool started_;
     List<Shared<EntityComponent>> components_;
 };

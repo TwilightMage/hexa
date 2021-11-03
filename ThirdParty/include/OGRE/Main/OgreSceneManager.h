@@ -3160,6 +3160,11 @@ namespace Ogre {
                                                         size_t numInstancesPerBatch, uint16 flags=0,
                                                         unsigned short subMeshIdx=0 );
 
+        InstanceManager* createInstanceManager( const String &customName, const MeshPtr &mesh,
+                                                        InstanceManager::InstancingTechnique technique,
+                                                        size_t numInstancesPerBatch, uint16 flags=0,
+                                                        unsigned short subMeshIdx=0 );
+
         /** Retrieves an existing InstanceManager by it's name.
         @note Throws an exception if the named InstanceManager does not exist
         */
@@ -3192,7 +3197,7 @@ namespace Ogre {
             the given technique. Zero if technique is unsupported or errors were spotted
         */
         size_t getNumInstancesPerBatch( const String &meshName, const String &groupName,
-                                                const String &materialName,
+                                                const MaterialPtr &material,
                                                 InstanceManager::InstancingTechnique technique,
                                                 size_t numInstancesPerBatch, uint16 flags=0,
                                                 unsigned short subMeshIdx=0 );
@@ -3209,7 +3214,7 @@ namespace Ogre {
         @param managerName Name of the instance manager
         @return An InstancedEntity ready to be attached to a SceneNode
         */
-        InstancedEntity* createInstancedEntity( const String &materialName,
+        InstancedEntity* createInstancedEntity( const MaterialPtr &material,
                                                         const String &managerName );
 
         /** Removes an InstancedEntity, @see SceneManager::createInstancedEntity &

@@ -14,7 +14,6 @@ class Entity;
 namespace Ogre
 {
     class SubMesh;
-    template<typename T> class SharedPtr;
     class Mesh;
 }
 
@@ -65,9 +64,13 @@ public:
     static Shared<StaticMesh> construct(const String& name, const List<SubMesh>& sub_meshes, AutoCollisionMode collision_mode = AutoCollisionMode::Default);
     static Shared<StaticMesh> load_file_obj(const Path& path, AutoCollisionMode collision_mode = AutoCollisionMode::Default);
 
+    uint get_material_count() const;
+
     FORCEINLINE const Vector3& get_bounds_center() const;
     FORCEINLINE const Vector3& get_bounds_half_size() const;
     bool is_empty() const;
+
+    void make_instanced();
 
     static Shared<StaticMesh> empty;
 
@@ -76,5 +79,7 @@ private:
 
     List<CollisionShapeInfo> collisions_;
     
-    Ogre::Mesh* ogre_mesh_;
+    Shared<Ogre::Mesh> ogre_mesh_;
+
+    bool instanced_;
 };

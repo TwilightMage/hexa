@@ -207,6 +207,7 @@
     <ClInclude Include="AnimatorComponent.h" />
     <ClInclude Include="Audio.h" />
     <ClInclude Include="AudioChannel.h" />
+    <ClInclude Include="Base64.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="FastOperator.h" />
     <ClInclude Include="KeyCode.h" />
@@ -333,6 +334,7 @@
     <ClCompile Include="AnimatorComponent.cpp" />
     <ClCompile Include="Audio.cpp" />
     <ClCompile Include="AudioChannel.cpp" />
+    <ClCompile Include="Base64.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MeshComponent.cpp" />

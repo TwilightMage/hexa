@@ -19,6 +19,7 @@
 #include "OgreApp.h"
 #include "Path.h"
 #include "Paths.h"
+#include "performance.h"
 #include "SaveGame.h"
 #include "Set.h"
 #include "Settings.h"
@@ -207,6 +208,16 @@ void Game::call_on_main_thread(std::function<void()> func)
 const Path& Game::get_app_path()
 {
 	return instance_->app_path_;
+}
+
+const Shared<Material>& Game::get_uv_test_material()
+{
+	return instance_->uv_test_mat_;
+}
+
+const Shared<Material>& Game::get_white_material()
+{
+	return instance_->white_mat_;
 }
 
 const Shared<SpriteFont>& Game::get_default_font()
@@ -465,8 +476,11 @@ void Game::loading_stage()
 		}
 	}
 
-	auto test_mat = get_material("Hexa/Basic")->clone("Hexa/UV_Test");
-	test_mat->set_texture("UV_Test", 0);
+	white_mat_ = get_material("Hexa/Basic")->clone("White");
+	white_mat_->set_texture("White", 0);
+	
+	uv_test_mat_ = get_material("Hexa/Basic")->clone("UV_Test");
+	uv_test_mat_->set_texture("UV_Test", 0);
 
 	ogre_app_->load();
 	

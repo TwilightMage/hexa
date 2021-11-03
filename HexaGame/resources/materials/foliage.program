@@ -2,16 +2,30 @@ vertex_program Hexa/FoliageVS glsl
 {
     source basic.vert
     profiles glsl330
-    preprocessor_defines WIND
+    preprocessor_defines WIND,INSTANCING
     
     default_params
     {
-        param_named_auto model world_matrix
         param_named_auto view view_matrix
         param_named_auto proj projection_matrix
         param_named_auto shadow_vp_0 texture_viewproj_matrix
         param_named_auto time time
         param_named_auto wind_data custom 0
+    }
+}
+
+vertex_program Hexa/FoliageVS_lod1 glsl
+{
+    source basic.vert
+    profiles glsl330
+    preprocessor_defines INSTANCING
+    
+    default_params
+    {
+        param_named_auto view view_matrix
+        param_named_auto proj projection_matrix
+        param_named_auto shadow_vp_0 texture_viewproj_matrix
+        param_named_auto time time
     }
 }
 
@@ -35,11 +49,25 @@ vertex_program Hexa/FoliageVS_s glsl
 {
     source basic.vert
     profiles glsl330
-    preprocessor_defines SHADOW_PASS,WIND
+    preprocessor_defines SHADOW_PASS,WIND,INSTANCING
         
     default_params
     {
-        param_named_auto model world_matrix
+        param_named_auto view view_matrix
+        param_named_auto proj projection_matrix
+        param_named_auto texel_offsets texel_offsets
+        param_named_auto time time
+    }
+}
+
+vertex_program Hexa/FoliageVS_s_lod1 glsl
+{
+    source basic.vert
+    profiles glsl330
+    preprocessor_defines SHADOW_PASS,INSTANCING
+        
+    default_params
+    {
         param_named_auto view view_matrix
         param_named_auto proj projection_matrix
         param_named_auto texel_offsets texel_offsets

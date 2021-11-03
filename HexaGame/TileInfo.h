@@ -7,6 +7,7 @@
 #include "Engine/DatabaseEntry.h"
 #include "Engine/Game.h"
 #include "Engine/Set.h"
+#include "Engine/StaticMesh.h"
 
 class ComplexTileCustomData;
 class ComplexTile;
@@ -87,7 +88,9 @@ public:
         , mesh(mesh)
         , texture(texture)
         , material(material)
-    {}
+    {
+        this->mesh->make_instanced();
+    }
 
     void post_loading() override;
     

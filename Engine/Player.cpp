@@ -6,7 +6,7 @@
 Player::Player()
     : Entity()
 {
-    tick_enabled = true;
+    set_tick_enabled(true);
 
     camera_ = create_component<CameraComponent>();
 }

@@ -12,7 +12,7 @@ Character::Character()
     : Entity()
     , inventory_(MakeShared<CharacterInventory>(initial_inventory_size))
 {
-    tick_enabled = true;
+    set_tick_enabled(true);
 
     animator_ = create_component<AnimatorComponent>();
 }

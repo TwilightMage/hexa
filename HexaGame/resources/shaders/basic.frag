@@ -30,7 +30,7 @@ void main()
     return;
     #endif
     
-    if (distanceDisolve(world_pos, cam_pos, render_distance, render_disolve)) discard;
+    //if (distanceDisolve(world_pos, cam_pos, render_distance, render_disolve)) discard;
     
     float diff = max(dot(norm, -sun_dir.xyz), 0.0);
     vec4 diffuse = diff * sun_diff;

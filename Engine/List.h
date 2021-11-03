@@ -10,7 +10,7 @@
 template<typename T>
 class List : public Array<T>
 {
-public:
+public:    
     using Array<T>::begin;
     using Array<T>::end;
 
@@ -95,12 +95,12 @@ public:
         return result;
     }
 
-    static List generate(uint size, const T& item)
+    static List generate(uint size, const T& placeholder)
     {
         auto result = List(size);
         for (uint i = 0; i < size; i++)
         {
-            result[i] = item;
+            result[i] = placeholder;
         }
         return result;
     }
@@ -237,7 +237,7 @@ public:
             throw new std::out_of_range("last remove index is greater than last item index");
         }
 
-        uint new_allocated_length = get_allocate_size(length_ - size);
+        const uint new_allocated_length = get_allocate_size(length_ - size);
         if (new_allocated_length != allocated_length_)
         {
             allocated_length_ = new_allocated_length;
@@ -272,6 +272,35 @@ public:
             {
                 inner_[i - size] = std::move(inner_[i]);
                 inner_[i] = T();
+            }
+        }
+    }
+
+    void force_size_fit(uint new_size, const T& placeholder = T())
+    {
+        if (length_ < new_size)
+        {
+            if (new_size >= allocated_length_)
+            {
+                reallocate(get_allocate_size(new_size));
+            }
+
+            for (; length_ < new_size; ++length_)
+            {
+                inner_[length_] = placeholder;
+            }
+        }
+        else if (length_ > new_size)
+        {
+            const auto new_allocated_length = get_allocate_size(new_size);
+            if (new_allocated_length < allocated_length_)
+            {
+                reallocate(new_allocated_length);
+            }
+
+            for (length_ = allocated_length_; length_ > new_size; --length_)
+            {
+                inner_[length_] = T();
             }
         }
     }

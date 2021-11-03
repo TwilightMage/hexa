@@ -1,7 +1,9 @@
 ﻿#include "MeshComponent.h"
 
 #include <OGRE/Main/OgreEntity.h>
+#include <OGRE/Main/OgreInstancedEntity.h>
 #include <OGRE/Main/OgreMaterialManager.h>
+#include <OGRE/Main/OgreMesh.h>
 #include <OGRE/Main/OgreSceneManager.h>
 #include <OGRE/Main/OgreSceneNode.h>
 #include <OGRE/Main/OgreSubEntity.h>
@@ -16,8 +18,22 @@
 #include "World.h"
 #include "Physics/Collision.h"
 
+MeshComponent::MeshComponent(const Shared<StaticMesh>& mesh, const List<Shared<Material>>& materials)
+    : mesh_(mesh)
+    , materials_(materials)
+{
+    materials_.force_size_fit(mesh->ogre_mesh_->getNumSubMeshes(), Game::get_uv_test_material());
+}
+
+MeshComponent::MeshComponent(const Shared<StaticMesh>& mesh)
+    : mesh_(mesh)
+    , materials_(List<Shared<Material>>::generate(mesh->ogre_mesh_->getNumSubMeshes(), Game::get_uv_test_material()))
+{
+}
+
 MeshComponent::MeshComponent()
     : mesh_(nullptr)
+    , materials_(List<Shared<Material>>())
 {
 }
 
@@ -29,29 +45,27 @@ void MeshComponent::on_start()
         {
             rigid_body_ = world->physics_world_->createRigidBody(reactphysics3d::Transform(cast_object<reactphysics3d::Vector3>(owner->get_location()), cast_object<reactphysics3d::Quaternion>(owner->get_rotation())));
             rigid_body_->setUserData(owner.get());
-            
-            setup_new_mesh(mesh_);
             rigid_body_->setType((reactphysics3d::BodyType)body_type_);
+            
+            if (mesh_)
+            {
+                spawn_mesh(owner, world);
+            }
         }
     }
 }
 
 void MeshComponent::on_destroy()
 {
-    if (auto owner = get_owner())
+    if (const auto owner = get_owner())
     {
-        if (auto world = owner->get_world())
+        if (const auto world = owner->get_world())
         {
-            if (ogre_entity_)
+            if (mesh_)
             {
-                owner->scene_node_->detachObject(ogre_entity_);
-                world->manager_->destroyEntity(ogre_entity_);
+                destroy_mesh(owner, world);
             }
 
-            while (rigid_body_->getNbColliders())
-            {
-                rigid_body_->removeCollider(rigid_body_->getCollider(0));
-            }
             world->physics_world_->destroyRigidBody(rigid_body_);
         }
     }
@@ -59,47 +73,90 @@ void MeshComponent::on_destroy()
 
 void MeshComponent::set_mesh(const Shared<StaticMesh>& mesh)
 {
-    if (mesh_ == mesh) return;
+    set_mesh(mesh, Game::get_uv_test_material());
+}
 
-    mesh_ = mesh;
-    
-    if (auto owner = get_owner())
-    {        
-        if (auto world = owner->get_world())
+void MeshComponent::set_mesh(const Shared<StaticMesh>& mesh, const Shared<Material>& material)
+{
+    set_mesh(mesh, List<Shared<Material>>::generate(mesh ? mesh->ogre_mesh_->getNumSubMeshes() : 0, material));
+}
+
+void MeshComponent::set_mesh(const Shared<StaticMesh>& mesh, const List<Shared<Material>>& materials)
+{   
+    if (mesh_ == mesh)
+    {
+        if (mesh == nullptr) return;
+
+        auto temp_materials = materials;
+        temp_materials.force_size_fit(mesh->ogre_mesh_->getNumSubMeshes(), Game::get_uv_test_material());
+        
+        if (materials_ == temp_materials) return;
+
+        for (uint i = 0; i < temp_materials.length(); i++)
         {
-            if (ogre_entity_)
+            set_material(temp_materials[i], i);
+        }
+        return;
+    }
+    
+    if (const auto owner = get_owner())
+    {        
+        if (const auto world = owner->get_world())
+        {
+            if (mesh_)
             {
-                owner->scene_node_->detachObject(ogre_entity_);
-                world->manager_->destroyEntity(ogre_entity_);
+                destroy_mesh(owner, world);
             }
 
-            while (rigid_body_->getNbColliders())
+            mesh_ = mesh;
+            materials_ = materials;
+            materials_.force_size_fit(mesh->ogre_mesh_->getNumSubMeshes(), Game::get_uv_test_material());
+
+            if (mesh_)
             {
-                rigid_body_->removeCollider(rigid_body_->getCollider(0));
+                spawn_mesh(owner, world);
             }
-
-            ogre_entity_ = nullptr;
-
-            setup_new_mesh(mesh);
         }
     }
 }
 
 uint MeshComponent::get_material_count() const
 {
-    if (ogre_entity_)
-    {
-        return ogre_entity_->getNumSubEntities();
-    }
-
-    return 0;
+    return materials_.length();
 }
 
 void MeshComponent::set_material(const Shared<Material>& material, uint material_slot)
-{
-    if (ogre_entity_)
+{    
+    if (mesh_ && material_slot < mesh_->ogre_mesh_->getNumSubMeshes())
     {
-        if (material_slot < ogre_entity_->getNumSubEntities())
+        if (materials_[material_slot] == material) return;
+
+        materials_[material_slot] = material;
+        
+        if (mesh_->instanced_)
+        {
+            auto manager = ogre_instanced_entities_[material_slot]->_getManager();
+            auto owner = ogre_instanced_entities_[material_slot]->getParentSceneNode();
+                    
+            owner->detachObject(ogre_instanced_entities_[material_slot]);
+            manager->destroyInstancedEntity(ogre_instanced_entities_[material_slot]);
+
+            ogre_instanced_entities_[material_slot] = cached_instance_managers_[material_slot]->createInstancedEntity(material->ogre_material_);
+            owner->attachObject(ogre_instanced_entities_[material_slot]);
+
+            if (material_slot == 0)
+            {
+                for (uint i = 1; i < mesh_->ogre_mesh_->getNumSubMeshes(); i++)
+                {
+                    ogre_instanced_entities_[0]->shareTransformWith(ogre_instanced_entities_[i]);
+                }
+            }
+            else
+            {
+                ogre_instanced_entities_[0]->shareTransformWith(ogre_instanced_entities_[material_slot]);
+            }
+        }
+        else
         {
             ogre_entity_->getSubEntity(material_slot)->setMaterial(material->ogre_material_ ? material->ogre_material_ : Ogre::MaterialManager::getSingleton().getByName("BaseWhite"));
         }
@@ -108,14 +165,9 @@ void MeshComponent::set_material(const Shared<Material>& material, uint material
 
 Shared<Material> MeshComponent::get_material(uint material_slot) const
 {
-    if (ogre_entity_)
+    if (mesh_ && material_slot < mesh_->ogre_mesh_->getNumSubMeshes())
     {
-        if (material_slot < ogre_entity_->getNumSubEntities())
-        {
-            Shared<Material> result = MakeShared<Material>();
-            result->ogre_material_ = ogre_entity_->getSubEntity(material_slot)->getMaterial();
-            return result;
-        }
+        return materials_[material_slot];
     }
 
     return nullptr;
@@ -123,9 +175,14 @@ Shared<Material> MeshComponent::get_material(uint material_slot) const
 
 void MeshComponent::set_material_parameter(Quaternion value, uint material_slot, uint parameter_index)
 {
-    if (ogre_entity_)
+    return;
+    if (mesh_ && material_slot < mesh_->ogre_mesh_->getNumSubMeshes())
     {
-        if (material_slot < ogre_entity_->getNumSubEntities())
+        if (mesh_->instanced_)
+        {
+            ogre_instanced_entities_[material_slot]->setCustomParam(parameter_index, cast_object<Ogre::Vector4>(value));
+        }
+        else
         {
             ogre_entity_->getSubEntity(material_slot)->setCustomParameter(parameter_index, cast_object<Ogre::Vector4>(value));
         }
@@ -150,41 +207,88 @@ void MeshComponent::set_visibility(bool state)
 
     is_visible_ = state;
 
-    if (ogre_entity_)
+    if (mesh_)
+    {
+        update_visibility();
+    }
+}
+
+void MeshComponent::spawn_mesh(const Shared<Entity>& owner, const Shared<World>& world)
+{  
+    if (mesh_->instanced_)
+    {
+        cached_instance_managers_ = world->get_or_create_instance_managers(mesh_, 100, 0);
+                    
+        for (uint i = 0; i < mesh_->ogre_mesh_->getNumSubMeshes(); i++)
+        {
+            auto ent = cached_instance_managers_[i]->createInstancedEntity(materials_[i]->ogre_material_);
+            if (i > 0) ogre_instanced_entities_[0]->shareTransformWith(ent);
+            owner->scene_node_->attachObject(ent);
+            ogre_instanced_entities_.add(ent);
+        }
+    }
+    else
+    {
+        ogre_entity_ = world->manager_->createEntity(mesh_->name.c());
+
+        for (uint i = 0; i < materials_.length(); i++)
+        {
+            ogre_entity_->getSubEntity(i)->setMaterial(materials_[i]->ogre_material_);
+        }
+            
+        owner->scene_node_->attachObject(ogre_entity_);
+    }
+
+    if (!is_visible_)
+    {
+        update_visibility();
+    }
+
+    for (auto& collision : mesh_->collisions_)
+    {
+        rigid_body_->addCollider(collision.collision->get_collider_shape(), reactphysics3d::Transform(cast_object<reactphysics3d::Vector3>(collision.location), cast_object<reactphysics3d::Quaternion>(collision.rotation)));
+    }
+}
+
+void MeshComponent::update_visibility()
+{
+    if (mesh_->instanced_)
+    {
+        for(uint i = 0; i < mesh_->ogre_mesh_->getNumSubMeshes(); i++)
+        {
+            ogre_instanced_entities_[i]->setInUse(is_visible_);
+        }
+    }
+    else
     {
         for (uint i = 0; i < ogre_entity_->getNumSubEntities(); i++)
         {
-            ogre_entity_->getSubEntity(i)->setVisible(state);
+            ogre_entity_->getSubEntity(i)->setVisible(is_visible_);
         }
     }
 }
 
-void MeshComponent::setup_new_mesh(const Shared<StaticMesh>& mesh)
+void MeshComponent::destroy_mesh(const Shared<Entity>& owner, const Shared<World>& world)
 {
-    if (mesh)
+    if (mesh_->instanced_)
     {
-        if (auto owner = get_owner())
+        for (auto& instanced_entity : ogre_instanced_entities_)
         {
-            if (auto world = owner->get_world())
-            {
-                ogre_entity_ = world->manager_->createEntity(mesh_->name.c());
-
-                if (!is_visible_)
-                {
-                    for (uint i = 0; i < ogre_entity_->getNumSubEntities(); i++)
-                    {
-                        ogre_entity_->getSubEntity(i)->setVisible(is_visible_);
-                    }
-                }
-                
-                ogre_entity_->setCastShadows(true);
-                owner->scene_node_->attachObject(ogre_entity_);
-
-                for (auto& collision : mesh->collisions_)
-                {
-                    rigid_body_->addCollider(collision.collision->get_collider_shape(), reactphysics3d::Transform(cast_object<reactphysics3d::Vector3>(collision.location), cast_object<reactphysics3d::Quaternion>(collision.rotation)));
-                }
-            }
+            owner->scene_node_->detachObject(instanced_entity);
+            world->manager_->destroyInstancedEntity(instanced_entity);
         }
+
+        ogre_instanced_entities_.clear();
+        cached_instance_managers_.clear();
+    }
+    else
+    {
+        owner->scene_node_->detachObject(ogre_entity_);
+        world->manager_->destroyEntity(ogre_entity_);
+    }
+
+    while (rigid_body_->getNbColliders())
+    {
+        rigid_body_->removeCollider(rigid_body_->getCollider(0));
     }
 }

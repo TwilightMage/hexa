@@ -35,7 +35,7 @@ void TallGrassInfo::setup_spawned_entity(const Shared<ComplexTile>& new_entity, 
     const float s_v = random.number(0.9f, 1.1f);
     new_entity->set_scale(Vector3(s_h, s_h, s_v));
     new_entity->set_location(new_entity->get_location() + Vector3(
-        random.number(-0.1f, 0.1f),
-        random.number(-0.1f, 0.1f),
-        0));
+        random.number(-10.f, 10.f),
+        random.number(-10.f, 10.f),
+        random.number(-10.f, 0.0f)));
 }

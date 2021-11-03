@@ -10,6 +10,8 @@
 class Material;
 
 namespace Ogre {
+    class InstanceManager;
+    class InstancedEntity;
     class Entity;
 }
 
@@ -33,13 +35,17 @@ enum class PhysicalBodyType
 class EXPORT MeshComponent : public EntityComponent
 {
 public:
-    explicit MeshComponent();
+    explicit MeshComponent(const Shared<StaticMesh>& mesh, const List<Shared<Material>>& materials);
+    explicit MeshComponent(const Shared<StaticMesh>& mesh);
+    MeshComponent();
     
     void on_start() override;
     void on_destroy() override;
 
     FORCEINLINE Shared<StaticMesh> get_mesh() const { return mesh_; }
     void set_mesh(const Shared<StaticMesh>& mesh);
+    void set_mesh(const Shared<StaticMesh>& mesh, const Shared<Material>& material);
+    void set_mesh(const Shared<StaticMesh>& mesh, const List<Shared<Material>>& materials);
 
     uint get_material_count() const;
     void set_material(const Shared<Material>& material, uint material_slot);
@@ -54,9 +60,12 @@ public:
     void set_visibility(bool state);
 
 private:
-    void setup_new_mesh(const Shared<StaticMesh>& mesh);
+    FORCEINLINE void spawn_mesh(const Shared<Entity>& owner, const Shared<World>& world);
+    FORCEINLINE void update_visibility();
+    FORCEINLINE void destroy_mesh(const Shared<Entity>& owner, const Shared<World>& world);
     
     Shared<StaticMesh> mesh_;
+    List<Shared<Material>> materials_;
     reactphysics3d::RigidBody* rigid_body_ = nullptr;
     reactphysics3d::Collider* collider_ = nullptr;
     Shared<Collision> collision_;
@@ -65,4 +74,6 @@ private:
     bool is_visible_ = true;
 
     Ogre::Entity* ogre_entity_ = nullptr;
+    List<Ogre::InstancedEntity*> ogre_instanced_entities_;
+    List<Ogre::InstanceManager*> cached_instance_managers_;
 };

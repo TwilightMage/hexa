@@ -14,10 +14,16 @@ Shared<Material> Material::clone(const String& new_name) const
 
 void Material::set_texture(const Shared<Texture>& texture, uint index)
 {
-    ogre_material_->getTechnique(0)->getPass(0)->getTextureUnitState(index)->setTexture(texture->ogre_texture_);
+    for (uint i = 0; i < ogre_material_->getNumTechniques(); i++)
+    {
+        ogre_material_->getTechnique(i)->getPass(0)->getTextureUnitState(index)->setTexture(texture->ogre_texture_);
+    }
 }
 
 void Material::set_texture(const String& texture, uint index)
 {
-    ogre_material_->getTechnique(0)->getPass(0)->getTextureUnitState(index)->setTextureName(texture.c());
+    for (uint i = 0; i < ogre_material_->getNumTechniques(); i++)
+    {
+        ogre_material_->getTechnique(i)->getPass(0)->getTextureUnitState(index)->setTextureName(texture.c());
+    }
 }

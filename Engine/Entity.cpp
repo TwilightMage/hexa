@@ -16,7 +16,6 @@
 Entity::Entity()
     : Object(typeid(this).name() + String(" entity"))
     , EnableSharedFromThis<Entity>()
-    , pending_kill_(false)
     , started_(false)
 {
 }
@@ -40,7 +39,10 @@ void Entity::on_destroy()
 
 void Entity::destroy()
 {
-    pending_kill_ = true;
+    if (auto world = get_world())
+    {
+        world->mark_entity_for_destroy(shared_from_this(), true);
+    }
 }
 
 bool Entity::is_started() const
@@ -202,6 +204,18 @@ void Entity::remove_all_components()
         component->owner_ = nullptr;
     }
     components_.clear();
+}
+
+void Entity::set_tick_enabled(bool state)
+{
+    if (tick_enabled_ == state) return;
+
+    tick_enabled_ = state;
+    
+    if (auto world = get_world())
+    {
+        world->set_entity_tick_enabled(shared_from_this(), state);
+    }
 }
 
 void Entity::start()

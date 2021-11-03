@@ -195,8 +195,6 @@ namespace Ogre
         bool mObliqueDepthProjection;
 
         Affine3(*viewMatrixCalcDelegate)(const Vector3&, const Quaternion&, const Affine3*);
-        Matrix4 (*perspectiveMatrixCalcDelegate)(Real left, Real right, Real bottom, Real top, Real zNear, Real zFar);
-        Matrix4 (*orthographicMatrixCalcDelegate)();
 
     public:
 

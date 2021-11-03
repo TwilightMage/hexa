@@ -1,9 +1,9 @@
 const float pi = 3.14159265359;
 
-const float shadow_distance = 5000;
+const float shadow_distance = 1000;
 const float shadow_disolve = 500;
-const float render_distance = 10000;
-const float render_disolve = 1000;
+const float render_distance = 3000;
+const float render_disolve = 500;
 
 float rand(float co)
 {

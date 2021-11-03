@@ -279,7 +279,8 @@ namespace Ogre {
 
     using std::shared_ptr;
     using std::unique_ptr;
-    template<typename T> class SharedPtr;
+    //template<typename T> class SharedPtr;
+    template<class T> using SharedPtr = shared_ptr<T>;
 
     typedef SharedPtr<AnimableValue> AnimableValuePtr;
     typedef SharedPtr<Compositor> CompositorPtr;

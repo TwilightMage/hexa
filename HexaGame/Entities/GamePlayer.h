@@ -27,7 +27,7 @@ public:
     Vector2 move_;
 
     Shared<WorldChunkObserver> observer_;
-    uint load_distance_ = 1;
+    uint load_distance_ = 3;
 
 private:
     void spawn_chunk_loaded(const Shared<WorldChunk>& sender);
@@ -40,12 +40,10 @@ private:
 
     bool rotate_camera_ = false;
     float camera_distance_ = 4;
-    float desired_camera_distance_ = 4;
-    float camera_pivot_z_ = 0.0f;
-    float desired_camera_pivot_z = 0.0f;
-    Vector3 camera_position_;
-    float camera_pitch_ = -45.0f;
+    float camera_distance_desired_ = 4;
+    Vector3 camera_pivot_ = Vector3();
+    Vector3 camera_pivot_desired_ = Vector3();
+    float camera_pitch_ = 45.0f;
     float camera_yaw_ = 0.0f;
-    Quaternion camera_rotation_ = Quaternion(Vector3(0, 45, 0));
     SoundHandle background_music_handle_;
 };

@@ -3,10 +3,17 @@ compositor Hexa/Flip_X_comp
     technique
     {
         texture rt0 target_width target_height PF_BYTE_RGBA
+        texture depthTex target_width target_height PF_DEPTH16
  
         target rt0
         {
             input previous
+        }
+        
+        target depthTex
+        {
+            pass clear {}
+            pass render_scene {}
         }
  
         target_output

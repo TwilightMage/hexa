@@ -9,6 +9,7 @@
 #include "Transform.h"
 #include "Vector3.h"
 
+class StaticMesh;
 class Audio;
 class CameraComponent;
 class ItemDrop;
@@ -24,6 +25,7 @@ namespace reactphysics3d
 
 namespace Ogre
 {
+    class InstanceManager;
     class Light;
     class SceneNode;
     class SceneManager;
@@ -34,6 +36,7 @@ class EXPORT World : public EnableSharedFromThis<World>
     friend Game;
     friend MeshComponent;
     friend CameraComponent;
+    friend Entity;
 
     struct TimerEntry
     {
@@ -91,8 +94,15 @@ private:
     void spawn_entity_internal(const Shared<Entity>& entity);
 
     void do_destroy(const Shared<Entity>& entity);
+
+    void set_entity_tick_enabled(const Shared<Entity>& entity, bool state);
+    void mark_entity_for_destroy(const Shared<Entity>& entity, bool state);
+
+    List<Ogre::InstanceManager*> get_or_create_instance_managers(const Shared<StaticMesh>& mesh, uint batch_instance_count, uint instanced_params_count);
     
     Set<Shared<Entity>> entities_;
+    Set<Shared<Entity>> tick_list_;
+    Set<Shared<Entity>> destroy_list_;
     reactphysics3d::PhysicsWorld* physics_world_;
     float physics_tick_accum_;
     float time_scale_ = 1.0f;
@@ -107,6 +117,7 @@ private:
     Quaternion directional_rotation_;
     Ogre::SceneNode* directional_light_node_;
     Ogre::Light* directional_light_;
+    Map<Shared<StaticMesh>, List<Ogre::InstanceManager*>> instance_managers_;
 
     Map<TimerHandle, TimerEntry> timer_entries_;
 

@@ -55,9 +55,9 @@ float computeShadow(sampler2D shadow_map, vec4 shadow_pos)
     return shadow;
 }
 
-bool distanceDisolve(vec3 frag_pos, vec3 source_pos, float distance_max, float transition_distance)
+bool distanceDisolve(vec3 frag_pos, vec3 cam_pos, float distance_max, float transition_distance)
 {
-    float dist = distance(frag_pos, source_pos);
+    float dist = distance(frag_pos.xy, cam_pos.xy);
     if (dist > distance_max - transition_distance)
     {
         if (dist < distance_max)

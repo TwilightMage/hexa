@@ -67,6 +67,7 @@ void StaticMesh::SubMesh::add(const List<Vertex>& new_vertices, const List<uint>
 
 StaticMesh::StaticMesh(const String& name)
     : Object(name)
+    , instanced_(false)
 {
 }
 
@@ -124,6 +125,11 @@ Shared<StaticMesh> StaticMesh::load_file_obj(const Path& path, AutoCollisionMode
     return result;
 }
 
+uint StaticMesh::get_material_count() const
+{
+    return ogre_mesh_->getNumSubMeshes();
+}
+
 const Vector3& StaticMesh::get_bounds_center() const
 {
     return cast_object<Vector3>(ogre_mesh_->getBounds().getCenter());
@@ -139,11 +145,16 @@ bool StaticMesh::is_empty() const
     return ogre_mesh_->sharedVertexData->vertexCount == 0;
 }
 
+void StaticMesh::make_instanced()
+{
+    instanced_ = true;
+}
+
 Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& sub_meshes, AutoCollisionMode collision_mode, bool compute_normals)
 {
     Shared<StaticMesh> result = MakeShared<StaticMesh>(name);
 
-    result->ogre_mesh_ = Ogre::MeshManager::getSingleton().createManual(name.c(), Ogre::RGN_DEFAULT).get();
+    result->ogre_mesh_ = Ogre::MeshManager::getSingleton().createManual(name.c(), Ogre::RGN_DEFAULT);
 
     result->ogre_mesh_->sharedVertexData = new Ogre::VertexData();
 

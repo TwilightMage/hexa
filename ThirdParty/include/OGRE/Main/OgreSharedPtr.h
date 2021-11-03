@@ -54,7 +54,7 @@ namespace Ogre {
     using std::dynamic_pointer_cast;
 
     /// @deprecated for backwards compatibility only, rather use shared_ptr directly
-    template<class T> class SharedPtr : public shared_ptr<T>
+    /*template<class T> class SharedPtr : public shared_ptr<T>
     {
     public:
         SharedPtr(std::nullptr_t) {}
@@ -91,7 +91,7 @@ namespace Ogre {
         OGRE_DEPRECATED bool isNull(void) const { return !shared_ptr<T>::operator bool(); }
         /// @deprecated use reset() instead
         OGRE_DEPRECATED void setNull() { shared_ptr<T>::reset(); }
-    };
+    };*/
     /** @} */
     /** @} */
 }

@@ -34,7 +34,7 @@ void CameraComponent::on_start()
         {
             ogre_camera_ = world->manager_->createCamera("Camera");
             ogre_camera_->setNearClipDistance(1);
-            ogre_camera_->setFarClipDistance(100000);
+            ogre_camera_->setFarClipDistance(10000);
             ogre_camera_->setAutoAspectRatio(true);
             ogre_camera_->setViewCalcDelegate(&makeViewMatrix);
 

@@ -14,7 +14,8 @@ ItemDrop::ItemDrop(const ItemContainer& item)
     : Entity()
     , item_(item)
 {
-    tick_enabled = true;
+    set_tick_enabled(true);
+    
     name = item.item ? String::format("%i %s drop", item.count, item.item->name.c()) : "Empty drop";
 }
 

@@ -2,8 +2,7 @@
 
 #include "HexaWorld.h"
 
-class GamePlayer;
-class DebugPlayer;
+class Player;
 
 class EXPORT GameWorld : public HexaWorld
 {
@@ -13,5 +12,5 @@ public:
     void on_start() override;
 
 private:
-    Shared<GamePlayer> player_;
+    Shared<Player> player_;
 };

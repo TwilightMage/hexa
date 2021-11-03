@@ -1,5 +1,9 @@
 ﻿#include "TilePresentationWorld.h"
 
+#include <OGRE/Main/OgreInstancedEntity.h>
+#include <OGRE/Main/OgreMaterialManager.h>
+#include <OGRE/Main/OgreSceneManager.h>
+
 #include "Engine/GeometryEditor.h"
 #include "Engine/MeshComponent.h"
 #include "Engine/Physics/ConcaveMeshCollision.h"
@@ -41,7 +45,7 @@ void TilePresentationWorld::on_start()
             }
         }
     }
-
+    
     set_ambient_light(Color::white(), 0.3f);
     set_directional_light(Color::white(), 0.7f, Quaternion(Vector3(0, 45, 45)));
 
@@ -55,7 +59,7 @@ void TilePresentationWorld::on_start()
         const auto entity = spawn_entity<Entity>(Transform(Vector3(300.0f, 300.0f, 0.0f), Quaternion(Vector3(0, 0, 180))));
         auto mesh = entity->create_component<MeshComponent>();
         mesh->set_mesh(StaticMesh::load_file_obj("resources/meshes/monkey.obj", AutoCollisionMode::Complex));
-        mesh->set_material(HexaGame::get_instance()->get_material("Hexa/UV_Test"), 0);
+        mesh->set_material(HexaGame::get_instance()->get_material("UV_Test"), 0);
         mesh->set_body_type(PhysicalBodyType::Kinematic);
     }
 
@@ -63,7 +67,7 @@ void TilePresentationWorld::on_start()
         const auto entity = spawn_entity<Entity>(Transform(Vector3(300.0f, 600.0f, 0.0f), Quaternion(Vector3(0, 0, 180))));
         auto mesh = entity->create_component<MeshComponent>();
         mesh->set_mesh(StaticMesh::load_file_obj("resources/meshes/multi_coll_sphere.obj"));
-        mesh->set_material(HexaGame::get_instance()->get_material("Hexa/UV_Test"), 0);
+        mesh->set_material(HexaGame::get_instance()->get_material("UV_Test"), 0);
         mesh->set_body_type(PhysicalBodyType::Kinematic);
     }
 
@@ -71,7 +75,7 @@ void TilePresentationWorld::on_start()
         const auto entity = spawn_entity<Entity>(Transform(Vector3(300.0f, 900.0f, 0.0f), Quaternion(Vector3(0, 0, 180))));
         auto mesh = entity->create_component<MeshComponent>();
         mesh->set_mesh(StaticMesh::load_file_obj("resources/meshes/multi_coll_convex.obj"));
-        mesh->set_material(HexaGame::get_instance()->get_material("Hexa/UV_Test"), 0);
+        mesh->set_material(HexaGame::get_instance()->get_material("UV_Test"), 0);
         mesh->set_body_type(PhysicalBodyType::Kinematic);
     }
 
@@ -79,7 +83,7 @@ void TilePresentationWorld::on_start()
         const auto entity = spawn_entity<Entity>(Transform(Vector3(0.0f, 0.0f, -300.0f)));
         auto mesh = entity->create_component<MeshComponent>();
         mesh->set_mesh(StaticMesh::load_file_obj("resources/meshes/floor.obj", AutoCollisionMode::Convex));
-        mesh->set_material(HexaGame::get_instance()->get_material("Hexa/UV_Test"), 0);
+        mesh->set_material(HexaGame::get_instance()->get_material("UV_Test"), 0);
         mesh->set_body_type(PhysicalBodyType::Kinematic);
     }
 }

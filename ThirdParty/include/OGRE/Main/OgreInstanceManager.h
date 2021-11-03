@@ -96,9 +96,9 @@ namespace Ogre
         };
 
         typedef std::vector<InstanceBatch*>        InstanceBatchVec;   //vec[batchN] = Batch
-        typedef std::map<String, InstanceBatchVec> InstanceBatchMap;   //map[materialName] = Vec
+        typedef std::map<MaterialPtr, InstanceBatchVec> InstanceBatchMap;   //map[material] = Vec
 
-        typedef std::map<String, BatchSettings>    BatchSettingsMap;
+        typedef std::map<MaterialPtr, BatchSettings>    BatchSettingsMap;
 
         const String            mName;                  //Not the name of the mesh
         MeshPtr                 mMeshReference;
@@ -123,18 +123,18 @@ namespace Ogre
         /** Finds a batch with at least one free instanced entity we can use.
             If none found, creates one.
         */
-        inline InstanceBatch* getFreeBatch( const String &materialName );
+        inline InstanceBatch* getFreeBatch( const MaterialPtr &material );
 
         /** Called when batches are fully exhausted (can't return more instances) so a new batch
             is created.
             For the first time use, it can take big build time.
             It takes care of getting the render operation which will be shared by further batches,
             which decreases their build time, and prevents GPU RAM from skyrocketing.
-        @param materialName The material name, to know where to put this batch in the map
+        @param material The material, to know where to put this batch in the map
         @param firstTime True if this is the first time it is called
         @return The created InstancedManager for convenience
         */
-        InstanceBatch* buildNewBatch( const String &materialName, bool firstTime );
+        InstanceBatch* buildNewBatch( const MaterialPtr &material, bool firstTime );
 
         /** @see defragmentBatches overload, this takes care of an array of batches
             for a specific material */
@@ -155,6 +155,10 @@ namespace Ogre
     public:
         InstanceManager( const String &customName, SceneManager *sceneManager,
                          const String &meshName, const String &groupName,
+                         InstancingTechnique instancingTechnique, uint16 instancingFlags,
+                         size_t instancesPerBatch, unsigned short subMeshIdx, bool useBoneMatrixLookup = false);
+        InstanceManager( const String &customName, SceneManager *sceneManager,
+                         const MeshPtr &mesh,
                          InstancingTechnique instancingTechnique, uint16 instancingFlags,
                          size_t instancesPerBatch, unsigned short subMeshIdx, bool useBoneMatrixLookup = false);
         ~InstanceManager();
@@ -213,15 +217,15 @@ namespace Ogre
             This is done automatically when creating an instanced entity, but this function in conjunction
             with @see setInstancesPerBatch allows more flexible control over the amount of instances
             per batch
-        @param materialName Name of the material to base on
+        @param material Material to base on
         @param suggestedSize Suggested amount of instances per batch
         @param flags Flags to pass to the InstanceManager. @see InstanceManagerFlags
         @return The max/best amount of instances per batch given the suggested size and flags
         */
-        size_t getMaxOrBestNumInstancesPerBatch( const String &materialName, size_t suggestedSize, uint16 flags );
+        size_t getMaxOrBestNumInstancesPerBatch( const MaterialPtr &material, size_t suggestedSize, uint16 flags );
 
         /// Creates an InstancedEntity
-        InstancedEntity* createInstancedEntity( const String &materialName );
+        InstancedEntity* createInstancedEntity( const MaterialPtr &material );
 
         /** This function can be useful to improve CPU speed after having too many instances
             created, which where now removed, thus freeing many batches with zero used Instanced Entities
@@ -269,17 +273,17 @@ namespace Ogre
             This allows setting up batches before they get even created.
         @param id Setting Id to setup, @see BatchSettings::BatchSettingId
         @param enabled Boolean value. It's meaning depends on the id.
-        @param materialName When Blank, the setting is applied to all existing materials
+        @param material When null, the setting is applied to all existing materials
         */
-        void setSetting( BatchSettingId id, bool enabled, const String &materialName = BLANKSTRING );
+        void setSetting( BatchSettingId id, bool enabled, const MaterialPtr &material = nullptr );
 
         /// If settings for the given material didn't exist, default value is returned
-        bool getSetting( BatchSettingId id, const String &materialName ) const;
+        bool getSetting( BatchSettingId id, const MaterialPtr &material ) const;
 
         /** Returns true if settings were already created for the given material name.
             If false is returned, it means getSetting will return default settings.
         */
-        bool hasSettings( const String &materialName ) const;
+        bool hasSettings( const MaterialPtr &material ) const;
 
         /** @copydoc InstanceBatch::setStaticAndUpdate */
         void setBatchesAsStaticAndUpdate( bool bStatic );
@@ -305,7 +309,7 @@ namespace Ogre
             setCustomParameter), but there's no synchronization mechanism when
             multithreading or creating more instances, that's up to the user.
         */
-        InstanceBatchIterator getInstanceBatchIterator( const String &materialName ) const;
+        InstanceBatchIterator getInstanceBatchIterator( const MaterialPtr &material ) const;
     };
 } // namespace Ogre
 

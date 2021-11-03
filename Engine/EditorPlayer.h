@@ -12,7 +12,7 @@ public:
 
     void mouse_button_down(int button) override;
     void mouse_button_up(int button) override;
-    void scroll(const Vector2& delta) override;
+    void scroll(float y) override;
 
     Vector3 position_offset;
 

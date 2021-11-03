@@ -33,7 +33,7 @@ void EditorPlayer::mouse_button_up(int button)
     }
 }
 
-void EditorPlayer::scroll(const Vector2& delta)
+void EditorPlayer::scroll(float y)
 {
-    target_distance_ = Math::clamp(target_distance_ - delta.y, 2.0f, 10.0f);
+    target_distance_ = Math::clamp(target_distance_ - y, 2.0f, 10.0f);
 }

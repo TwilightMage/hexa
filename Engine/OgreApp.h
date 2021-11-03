@@ -27,6 +27,7 @@ public:
     bool mouseReleased(const OgreBites::MouseButtonEvent& evt) override;
     bool axisMoved(const OgreBites::AxisEvent& evt) override;
     bool mouseMoved(const OgreBites::MouseMotionEvent& evt) override;
+    bool mouseWheelRolled(const OgreBites::MouseWheelEvent& evt) override;
     void windowResized(Ogre::RenderWindow* rw) override;
 
     void set_window_icon(const Shared<Texture>& icon_texture);
@@ -40,6 +41,7 @@ public:
     std::function<bool(int button)> on_mouseReleased;
     std::function<bool(int axis, float value)> on_axisMoved;
     std::function<bool(const Vector2& new_pos, const Vector2& delta)> on_mouseMoved;
+    std::function<bool(float y)> on_wheelRolled;
     std::function<void(Ogre::RenderWindow*)> on_windowResized;
 
 private:

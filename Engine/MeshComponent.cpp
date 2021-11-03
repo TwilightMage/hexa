@@ -25,9 +25,13 @@ MeshComponent::MeshComponent(const Shared<StaticMesh>& mesh, const List<Shared<M
     materials_.force_size_fit(mesh->ogre_mesh_->getNumSubMeshes(), Game::get_uv_test_material());
 }
 
+MeshComponent::MeshComponent(const Shared<StaticMesh>& mesh, const Shared<Material>& material)
+    : MeshComponent(mesh, List<Shared<Material>>::generate(mesh->ogre_mesh_->getNumSubMeshes(), material))
+{
+}
+
 MeshComponent::MeshComponent(const Shared<StaticMesh>& mesh)
-    : mesh_(mesh)
-    , materials_(List<Shared<Material>>::generate(mesh->ogre_mesh_->getNumSubMeshes(), Game::get_uv_test_material()))
+    : MeshComponent(mesh, Game::get_uv_test_material())
 {
 }
 
@@ -214,7 +218,7 @@ void MeshComponent::set_visibility(bool state)
 }
 
 void MeshComponent::spawn_mesh(const Shared<Entity>& owner, const Shared<World>& world)
-{  
+{
     if (mesh_->instanced_)
     {
         cached_instance_managers_ = world->get_or_create_instance_managers(mesh_, 100, 0);

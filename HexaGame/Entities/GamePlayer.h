@@ -18,7 +18,7 @@ public:
     void key_up(KeyCode key) override;
     void mouse_button_down(int button) override;
     void mouse_button_up(int button) override;
-    void scroll(const Vector2& delta) override;
+    void scroll(float y) override;
     void on_tick(float delta_time) override;
     
     Shared<const CharacterController> get_as_character_controller() const override;

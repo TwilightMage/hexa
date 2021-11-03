@@ -33,7 +33,12 @@ public:
         , branch_krone_mesh(branch_krone_mesh)
         , branch_krone_texture(branch_krone_texture)
         , log_item_name(log_item_name)
-    {}
+    {
+        root_mesh->make_instanced();
+        krone_mesh->make_instanced();
+        branch_mesh->make_instanced();
+        branch_krone_mesh->make_instanced();
+    }
 
     void post_loading() override;
     Shared<ComplexTileCustomData> create_custom_data() const override;

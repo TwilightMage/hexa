@@ -36,6 +36,7 @@ class EXPORT MeshComponent : public EntityComponent
 {
 public:
     explicit MeshComponent(const Shared<StaticMesh>& mesh, const List<Shared<Material>>& materials);
+    explicit MeshComponent(const Shared<StaticMesh>& mesh, const Shared<Material>& material);
     explicit MeshComponent(const Shared<StaticMesh>& mesh);
     MeshComponent();
     

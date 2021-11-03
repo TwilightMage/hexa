@@ -1,0 +1,50 @@
+vertex_program Hexa/BasicComplexVS glsl
+{
+    source basic.vert
+    profiles glsl330
+    preprocessor_defines INSTANCING
+    
+    default_params
+    {
+        param_named_auto view view_matrix
+        param_named_auto proj projection_matrix
+        param_named_auto shadow_vp_0 texture_viewproj_matrix
+    }
+}
+
+fragment_program Hexa/BasicComplexFS glsl
+{
+    source basic.frag
+    profiles glsl330
+    preprocessor_defines SHADOW_SAMPLES=2
+    
+    default_params
+    {
+        param_named tex int 0
+        param_named shadow_map_0 int 1
+        param_named_auto ambient_light ambient_light_colour
+        param_named_auto sun_diff light_diffuse_colour 0
+        param_named_auto sun_dir light_direction 0
+    }
+}
+
+vertex_program Hexa/BasicComplexVS_s glsl
+{
+    source basic.vert
+    profiles glsl330
+    preprocessor_defines SHADOW_PASS,INSTANCING
+    
+    default_params
+    {
+        param_named_auto view view_matrix
+        param_named_auto proj projection_matrix
+        param_named_auto texel_offsets texel_offsets
+    }
+}
+
+fragment_program Hexa/BasicComplexFS_s glsl
+{
+	source basic.frag
+    profiles glsl330
+    preprocessor_defines SHADOW_PASS
+}

@@ -72,6 +72,11 @@ bool OgreApp::mouseMoved(const OgreBites::MouseMotionEvent& evt)
     return on_mouseMoved(Vector2((float)evt.x, (float)evt.y), Vector2((float)evt.xrel, (float)evt.yrel));
 }
 
+bool OgreApp::mouseWheelRolled(const OgreBites::MouseWheelEvent& evt)
+{
+    return on_wheelRolled(evt.y);
+}
+
 void OgreApp::windowResized(Ogre::RenderWindow* rw)
 {
     on_windowResized(rw);

@@ -65,6 +65,7 @@ Game::Game(const String& name, int argc, char* argv[])
 	ogre_app_->on_mouseReleased = std::bind(&Game::mouseReleased, this, std::placeholders::_1);
 	ogre_app_->on_axisMoved = std::bind(&Game::axisMoved, this, std::placeholders::_1, std::placeholders::_2);
 	ogre_app_->on_mouseMoved = std::bind(&Game::mouseMoved, this, std::placeholders::_1, std::placeholders::_2);
+	ogre_app_->on_wheelRolled = std::bind(&Game::wheelRolled, this, std::placeholders::_1);
 	ogre_app_->on_windowResized = std::bind(&Game::windowResized, this, std::placeholders::_1);
 }
 
@@ -551,10 +552,13 @@ void Game::render_loop()
 	const auto start_time = std::chrono::system_clock::now();
 	
 	auto tick_start = start_time;
+
+	Matrix4x4 m1;
+	Ogre::Matrix4 m2;
 	
 	while (!ogre_app_->getRoot()->endRenderingQueued())
 	{		
-		while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tick_start).count() / 1000.0f < 1.0f / settings_->fps_limit);
+		//while (std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tick_start).count() / 1000.0f < 1.0f / settings_->fps_limit);
 		const float tick_time = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tick_start).count() / 1000.0f;
 		tick_start = std::chrono::system_clock::now();
 
@@ -749,12 +753,9 @@ bool Game::mouseReleased(int button)
 
 bool Game::axisMoved(int axis, float value)
 {
-	if (instance_->ui_input_element_ == nullptr && instance_->current_controllable_)
-	{
-		instance_->current_controllable_->scroll(Vector2(0, value));
-	}
+	
 
-	return true;
+	return false;
 }
 
 bool Game::mouseMoved(const Vector2& new_pos, const Vector2& delta)
@@ -783,6 +784,16 @@ bool Game::mouseMoved(const Vector2& new_pos, const Vector2& delta)
 		}
 			
 		instance_->ui_under_mouse_ = ui_under_mouse;
+	}
+
+	return true;
+}
+
+bool Game::wheelRolled(float y)
+{
+	if (instance_->ui_input_element_ == nullptr && instance_->current_controllable_)
+	{
+		instance_->current_controllable_->scroll(y);
 	}
 
 	return true;

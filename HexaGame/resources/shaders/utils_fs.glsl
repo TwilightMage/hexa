@@ -12,7 +12,7 @@ float computeShadow(sampler2D shadow_map, vec4 shadow_pos)
     const int numberOfShadowSamples = 17;
     #endif
     
-    const float shadowPixelOffset = 1.0 / 8192;
+    const float shadowPixelOffset = 1.0 / 2046;
     vec2 shadowSampleArray[] = vec2[]
     (
         vec2(0, 0)

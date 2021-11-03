@@ -62,8 +62,14 @@ void HexaGame::on_start()
     }
     else
     {
-        open_game_world();
-        //open_tile_test_world();
+        if (Utils::ask_yes_no("Start debug scene?"))
+        {
+            open_tile_test_world();
+        }
+        else
+        {
+            open_game_world();   
+        }
     }
 }
 

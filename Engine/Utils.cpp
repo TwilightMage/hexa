@@ -122,3 +122,12 @@ void Utils::print_callstack(String category, uint offset)
 {
     print_debug(category, get_callstack_string(offset + 1));
 }
+
+bool Utils::ask_yes_no(const String& message)
+{
+#if PLATFORM_WINDOWS
+    return MessageBox(NULL, message.c(), "Decide", MB_YESNO) == IDYES;
+#else
+    return false;
+#endif
+}

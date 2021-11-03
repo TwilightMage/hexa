@@ -256,9 +256,9 @@ void GamePlayer::mouse_button_up(int button)
     }
 }
 
-void GamePlayer::scroll(const Vector2& delta)
+void GamePlayer::scroll(float y)
 {
-    camera_distance_desired_ = Math::clamp(camera_distance_desired_ - delta.y, 1.0f, 12.0f);
+    camera_distance_desired_ = Math::clamp(camera_distance_desired_ - y, 1.0f, 12.0f);
 }
 
 void GamePlayer::on_tick(float delta_time)

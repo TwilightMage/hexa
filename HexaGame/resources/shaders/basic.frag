@@ -1,4 +1,4 @@
-#version 330
+#version 450
 
 #include "utils_fs.glsl"
 
@@ -30,16 +30,16 @@ void main()
     return;
     #endif
     
-    //if (distanceDisolve(world_pos, cam_pos, render_distance, render_disolve)) discard;
+    //if (distanceDisolve(world_pos, cam_pos, shadow_distance, shadow_disolve)) discard;
     
     float diff = max(dot(norm, -sun_dir.xyz), 0.0);
     vec4 diffuse = diff * sun_diff;
 
     float shadow = 0;
-    if (!distanceDisolve(world_pos, cam_pos, shadow_distance, shadow_disolve))
-    {
+    //if (!distanceDisolve(world_pos, cam_pos, shadow_distance, shadow_disolve))
+    //{
         shadow = computeShadow(shadow_map_0, shadow_pos_0);
-    }
+    //}
 
     frag_color = (ambient_light + (1 - shadow) * diffuse) * tex_color;
 }

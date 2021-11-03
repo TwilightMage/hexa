@@ -1,8 +1,8 @@
 const float pi = 3.14159265359;
 
-const float shadow_distance = 1000;
+const float shadow_distance = 5000;
 const float shadow_disolve = 500;
-const float render_distance = 3000;
+const float render_distance = 10000;
 const float render_disolve = 500;
 
 float rand(float co)
@@ -34,4 +34,9 @@ float dither(float alpha, vec2 pos)
     float d = ditherIndexMatrix[(x + y * 4)] / 16.0;
     float distance = abs(closestAlpha - alpha);
     return (distance < d) ? closestAlpha : secondClosestAlpha;
+}
+
+bool in_range(float a, float m1, float m2)
+{
+    return (a / m1 - 1) * (a / m2 - 1) < 0;
 }

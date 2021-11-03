@@ -37,7 +37,7 @@ void ComplexTileInfo::post_loading()
 {
     if (material == nullptr)
     {
-        material = Game::get_instance()->get_material("Hexa/Basic")->clone(key.to_string());
+        material = Game::get_instance()->get_material("Hexa/BasicComplex")->clone(key.to_string());
         material->set_texture(key.to_string() + ".png", 0);
     }
 }

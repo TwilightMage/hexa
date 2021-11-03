@@ -99,7 +99,7 @@ void World::init()
     manager_->setShadowTextureSelfShadow(true);
     manager_->setShadowTexturePixelFormat(Ogre::PF_FLOAT32_R);
     manager_->setShadowTextureCount(1);
-    manager_->setShadowTextureSize(8192);
+    manager_->setShadowTextureSize(2048);
     manager_->setShadowFarDistance(5000);
 
     manager_->setSkyBox(true, "Hexa/Skybox", 300, true);

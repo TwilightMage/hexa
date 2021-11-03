@@ -5,6 +5,7 @@
 #include <OGRE/Main/OgreSceneManager.h>
 
 #include "Engine/GeometryEditor.h"
+#include "Engine/Material.h"
 #include "Engine/MeshComponent.h"
 #include "Engine/Physics/ConcaveMeshCollision.h"
 #include "Engine/Physics/ConvexMeshCollision.h"
@@ -55,13 +56,18 @@ void TilePresentationWorld::on_start()
 
     spawn_entity<TileDemoEntity>(Transform(Vector3(300.0f, 0.0f, 0.0f)), std::array<ConstPtr<SolidTileInfo>, 6>{Tiles::dirt, Tiles::dirt, Tiles::grass, Tiles::dirt, Tiles::grass, Tiles::grass});
 
-    {
-        const auto entity = spawn_entity<Entity>(Transform(Vector3(300.0f, 300.0f, 0.0f), Quaternion(Vector3(0, 0, 180))));
-        auto mesh = entity->create_component<MeshComponent>();
-        mesh->set_mesh(StaticMesh::load_file_obj("resources/meshes/monkey.obj", AutoCollisionMode::Complex));
-        mesh->set_material(HexaGame::get_instance()->get_material("UV_Test"), 0);
-        mesh->set_body_type(PhysicalBodyType::Kinematic);
-    }
+    /*{
+        auto monke_mat = HexaGame::get_instance()->get_material("Hexa/BasicComplex");
+        monke_mat->set_texture("UV_Test", 0);
+        auto mesh_asset = StaticMesh::load_file_obj("resources/meshes/monkey.obj", AutoCollisionMode::Complex);
+        mesh_asset->make_instanced();
+        for (uint i = 0; i < 100; i++)
+        {
+            const auto entity = spawn_entity<Entity>(Transform(Vector3(300.0f, 300.0f, 300.0f * i), Quaternion(Vector3(0, 0, 180))));
+            auto mesh = entity->create_component<MeshComponent>(mesh_asset, monke_mat);
+            mesh->set_body_type(PhysicalBodyType::Kinematic);
+        }
+    }*/
 
     {
         const auto entity = spawn_entity<Entity>(Transform(Vector3(300.0f, 600.0f, 0.0f), Quaternion(Vector3(0, 0, 180))));

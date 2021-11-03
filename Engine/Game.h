@@ -170,6 +170,7 @@ private:
     bool mouseReleased(int button);
     bool axisMoved(int axis, float value);
     bool mouseMoved(const Vector2& new_pos, const Vector2& delta);
+    bool wheelRolled(float y);
     void windowResized(Ogre::RenderWindow* rw);
 
     static Game* instance_;

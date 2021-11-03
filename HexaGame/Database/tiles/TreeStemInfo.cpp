@@ -18,16 +18,16 @@ void TreeStemInfo::post_loading()
 {
     ComplexTileInfo::post_loading();
 
-    const auto basic_mat = Game::get_instance()->get_material("Hexa/Basic");
+    const auto basic_complex_mat = Game::get_instance()->get_material("Hexa/BasicComplex");
     const auto foliage_mat = Game::get_instance()->get_material("Hexa/Foliage");
     
-    root_material_ = basic_mat->clone(key.to_string() + "_root");
+    root_material_ = basic_complex_mat->clone(key.to_string() + "_root");
     root_material_->set_texture(root_texture, 0);
 
     krone_material_ = foliage_mat->clone(key.to_string() + "_krone");
     krone_material_->set_texture(krone_texture, 0);
 
-    branch_material_ = basic_mat->clone(key.to_string() + "_branch");
+    branch_material_ = basic_complex_mat->clone(key.to_string() + "_branch");
     branch_material_->set_texture(branch_texture, 0);
 
     branch_krone_material_ = foliage_mat->clone(key.to_string() + "_branch_krone");
@@ -46,8 +46,8 @@ void TreeStemInfo::setup_spawned_entity(const Shared<ComplexTile>& new_tile, con
         Random tree_random(tree_custom_data->tree_seed);
         
         new_tile->set_location(new_tile->get_location() + Vector3(
-            tree_random.number(-0.1f, 0.1f),
-            tree_random.number(-0.1f, 0.1f),
+            tree_random.number(-10.f, 10.f),
+            tree_random.number(-10.f, 10.f),
             0)
         );
 
@@ -62,9 +62,7 @@ void TreeStemInfo::setup_spawned_entity(const Shared<ComplexTile>& new_tile, con
                     for (uint i = 0; i < root_count; i++)
                     {
                         auto root = MakeShared<Entity>();
-                        auto root_mesh_comp = root->create_component<MeshComponent>();
-                        root_mesh_comp->set_mesh(root_mesh);
-                        root_mesh_comp->set_material(root_material_, 0);
+                        auto root_mesh_comp = root->create_component<MeshComponent>(root_mesh, root_material_);
                         new_tile->get_world()->spawn_entity(root, Transform(new_tile->get_location(), Quaternion(Vector3(0, 0, (360.0f / root_count * i) + random.number(-1.0f, 1.0f) * 360.0f / root_count / 2 / root_count))));
 
                         tree_custom_data->tree_sub_parts.add(root);
@@ -73,15 +71,13 @@ void TreeStemInfo::setup_spawned_entity(const Shared<ComplexTile>& new_tile, con
                 break;
             case TreeStemCustomData::Type::Top:
                 {
-                    const uint krone_count = random.number(3, 5);
+                    const uint krone_count = 1;//random.number(3, 5);
                     for (uint i = 0; i < krone_count; i++)
                     {
-                        const Vector3 point = new_tile->get_location() + Quaternion(Vector3(0, 0, random.number(360.0f))).forward() * Vector3(1, 1, 2.0f) * 0.8f;
+                        const Vector3 point = new_tile->get_location() + Quaternion(Vector3(0, 0, random.number(360.0f))).forward() * Vector3(1, 1, 2.0f) * 80.f;
 
                         auto krone = MakeShared<Entity>();
-                        auto krone_mesh_comp = krone->create_component<MeshComponent>();
-                        krone_mesh_comp->set_mesh(krone_mesh);
-                        krone_mesh_comp->set_material(krone_material_, 0);
+                        auto krone_mesh_comp = krone->create_component<MeshComponent>(krone_mesh, krone_material_);
                         krone_mesh_comp->set_material_parameter(Quaternion(krone_mesh->get_bounds_half_size().z * 2, 1, 0, 0), 0, 0);
                         
                         new_tile->get_world()->spawn_entity(krone, Transform(point, Quaternion(Vector3(0, 0, random.number(360.0f)))));
@@ -104,21 +100,20 @@ void TreeStemInfo::setup_spawned_entity(const Shared<ComplexTile>& new_tile, con
                         const Vector3 branch_point = new_tile->get_location();
 
                         auto branch = MakeShared<Entity>();
-                        //branch->set_mesh(branch_mesh);
-                        //new_tile->get_world()->spawn_entity(branch, branch_point, rotation);
-                        //branch->get_material_instance()->set_param_value("texture", branch_texture);
+                        auto branch_mesh_comp = branch->create_component<MeshComponent>(branch_mesh, branch_material_);
 
+                        new_tile->get_world()->spawn_entity(branch, Transform(branch_point, rotation));
+                        
                         tree_custom_data->tree_sub_parts.add(branch);
 
-                        const Vector3 krone_point = new_tile->get_location() + rotation.forward() * 0.5f + Vector3(0, 0, 0.35f);
+                        const Vector3 krone_point = new_tile->get_location() + rotation.forward() * -50.f + Vector3(0, 0, 35.f);
 
                         auto krone = MakeShared<Entity>();
-                        //krone->set_mesh(branch_krone_mesh);
-                        //new_tile->get_world()->spawn_entity(krone, krone_point, rotation);
-                        //krone->set_material(HexaGame::foliage_material);
-                        //krone->get_material_instance()->set_param_value("texture", branch_krone_texture);
-                        //krone->get_material_instance()->set_param_value("height", branch_krone_mesh->get_bounds_half_size().z * 2);
+                        auto krone_mesh = krone->create_component<MeshComponent>(branch_krone_mesh, branch_krone_material_);
+                        krone_mesh->set_material_parameter(Quaternion(branch_krone_mesh->get_bounds_half_size().z * 2, 1, 0, 0), 0, 0);
 
+                        new_tile->get_world()->spawn_entity(krone, Transform(krone_point, rotation));
+                        
                         tree_custom_data->tree_sub_parts.add(krone);
                     }
                 }

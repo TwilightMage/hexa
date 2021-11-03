@@ -12,8 +12,15 @@ GameWorld::GameWorld(const Shared<WorldGenerator>& generator)
 void GameWorld::on_start()
 {
     HexaWorld::on_start();
-    
-    player_ = MakeShared<GamePlayer>();
+
+    if (Utils::ask_yes_no("Start as debug player?"))
+    {
+        player_ = MakeShared<DebugPlayer>();
+    }
+    else
+    {
+        player_ = MakeShared<GamePlayer>();
+    }
     spawn_entity(player_);
     Game::possess(player_);
 }

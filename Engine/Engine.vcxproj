@@ -210,6 +210,7 @@
     <ClInclude Include="Base64.h" />
     <ClInclude Include="CameraComponent.h" />
     <ClInclude Include="FastOperator.h" />
+    <ClInclude Include="GBufferSchemeHandler.h" />
     <ClInclude Include="KeyCode.h" />
     <ClInclude Include="Material.h" />
     <ClInclude Include="MeshComponent.h" />
@@ -336,6 +337,7 @@
     <ClCompile Include="AudioChannel.cpp" />
     <ClCompile Include="Base64.cpp" />
     <ClCompile Include="CameraComponent.cpp" />
+    <ClCompile Include="GBufferSchemeHandler.cpp" />
     <ClCompile Include="Material.cpp" />
     <ClCompile Include="MeshComponent.cpp" />
     <ClCompile Include="Module.cpp" />

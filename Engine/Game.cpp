@@ -358,6 +358,8 @@ void Game::setup()
 	add_resource_directories();
 
 	Ogre::ResourceGroupManager::getSingletonPtr()->addResourceLocation(Path("resources/SdkTrays.zip").get_absolute_string().c(), "Zip", module_name.c());
+
+	Ogre::MaterialManager::getSingleton().addListener(new GBufferSchemeHandler, "GBuffer");
 }
 
 void Game::init()

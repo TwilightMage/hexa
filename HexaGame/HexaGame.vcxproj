@@ -359,6 +359,8 @@
     <Content Include="resources\meshes\tiles\tree_root.obj" />
     <Content Include="resources\meshes\tiles\tree_stem.obj" />
     <Content Include="resources\shaders\flip_x.frag" />
+    <Content Include="resources\shaders\gbuffer.frag" />
+    <Content Include="resources\shaders\gbuffer.vert" />
     <Content Include="resources\shaders\quad.glsl" />
     <Content Include="resources\shaders\utils.glsl" />
     <Content Include="resources\shaders\skybox.frag" />

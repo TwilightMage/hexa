@@ -1,0 +1,18 @@
+vertex_program Hexa/SkyboxVS hlsl
+{
+    source skybox.hlsl
+    entry_point vert
+    target vs_2_0
+    
+    default_params
+    {
+        param_named_auto worldViewProj worldviewproj_matrix
+    }
+}
+
+fragment_program Hexa/SkyboxFS hlsl
+{
+    source skybox.hlsl
+    entry_point frag
+    target ps_2_0
+}

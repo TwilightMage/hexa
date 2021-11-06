@@ -1,0 +1,11 @@
+vertex_program Engine/ScreenQuadVS hlsl
+{
+	source quad.hlsl
+	entry_point vert
+	target vs_2_0
+	
+	default_params
+	{
+	    param_named_auto worldViewProj worldviewproj_matrix
+	}
+}

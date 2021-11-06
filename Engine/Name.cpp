@@ -60,6 +60,11 @@ Name::~Name()
     delete[] data_;
 }
 
+const char* Name::c() const
+{
+    return data_;
+}
+
 Name& Name::operator=(const Name& rhs)
 {
     if (&rhs == this) return *this;

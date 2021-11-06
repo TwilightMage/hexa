@@ -123,8 +123,7 @@ public:
 
     static const Path& get_app_path();
 
-    static const Shared<Material>& get_uv_test_material();
-    static const Shared<Material>& get_white_material();
+    static const Shared<Material>& get_basic_material(bool instanced);
     static const Shared<SpriteFont>& get_default_font();
     static const Shared<AudioChannel>& get_general_channel();
 
@@ -195,9 +194,6 @@ private:
     Map<String, Shared<Animation>> animations_;
     Map<String, Shared<Audio>> audios_;
     List<Shared<AudioChannel>> audio_channels_;
-
-    Shared<Material> uv_test_mat_;
-    Shared<Material> white_mat_;
     
     // Game
     Version game_version_ = {0, 1, 0};

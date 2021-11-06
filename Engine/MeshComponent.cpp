@@ -22,7 +22,7 @@ MeshComponent::MeshComponent(const Shared<StaticMesh>& mesh, const List<Shared<M
     : mesh_(mesh)
     , materials_(materials)
 {
-    materials_.force_size_fit(mesh->ogre_mesh_->getNumSubMeshes(), Game::get_uv_test_material());
+    materials_.force_size_fit(mesh->ogre_mesh_->getNumSubMeshes(), nullptr);
 }
 
 MeshComponent::MeshComponent(const Shared<StaticMesh>& mesh, const Shared<Material>& material)
@@ -31,7 +31,7 @@ MeshComponent::MeshComponent(const Shared<StaticMesh>& mesh, const Shared<Materi
 }
 
 MeshComponent::MeshComponent(const Shared<StaticMesh>& mesh)
-    : MeshComponent(mesh, Game::get_uv_test_material())
+    : MeshComponent(mesh, nullptr)
 {
 }
 
@@ -77,7 +77,7 @@ void MeshComponent::on_destroy()
 
 void MeshComponent::set_mesh(const Shared<StaticMesh>& mesh)
 {
-    set_mesh(mesh, Game::get_uv_test_material());
+    set_mesh(mesh, nullptr);
 }
 
 void MeshComponent::set_mesh(const Shared<StaticMesh>& mesh, const Shared<Material>& material)
@@ -92,7 +92,7 @@ void MeshComponent::set_mesh(const Shared<StaticMesh>& mesh, const List<Shared<M
         if (mesh == nullptr) return;
 
         auto temp_materials = materials;
-        temp_materials.force_size_fit(mesh->ogre_mesh_->getNumSubMeshes(), Game::get_uv_test_material());
+        temp_materials.force_size_fit(mesh->ogre_mesh_->getNumSubMeshes(), nullptr);
         
         if (materials_ == temp_materials) return;
 
@@ -114,7 +114,7 @@ void MeshComponent::set_mesh(const Shared<StaticMesh>& mesh, const List<Shared<M
 
             mesh_ = mesh;
             materials_ = materials;
-            materials_.force_size_fit(mesh->ogre_mesh_->getNumSubMeshes(), Game::get_uv_test_material());
+            materials_.force_size_fit(mesh->ogre_mesh_->getNumSubMeshes(), nullptr);
 
             if (mesh_)
             {
@@ -145,7 +145,7 @@ void MeshComponent::set_material(const Shared<Material>& material, uint material
             owner->detachObject(ogre_instanced_entities_[material_slot]);
             manager->destroyInstancedEntity(ogre_instanced_entities_[material_slot]);
 
-            ogre_instanced_entities_[material_slot] = cached_instance_managers_[material_slot]->createInstancedEntity(material->ogre_material_);
+            ogre_instanced_entities_[material_slot] = cached_instance_managers_[material_slot]->createInstancedEntity(get_valid_material(material_slot)->ogre_material_);
             owner->attachObject(ogre_instanced_entities_[material_slot]);
 
             if (material_slot == 0)
@@ -162,7 +162,7 @@ void MeshComponent::set_material(const Shared<Material>& material, uint material
         }
         else
         {
-            ogre_entity_->getSubEntity(material_slot)->setMaterial(material->ogre_material_ ? material->ogre_material_ : Ogre::MaterialManager::getSingleton().getByName("BaseWhite"));
+            ogre_entity_->getSubEntity(material_slot)->setMaterial(get_valid_material(material_slot)->ogre_material_);
         }
     }
 }
@@ -221,11 +221,11 @@ void MeshComponent::spawn_mesh(const Shared<Entity>& owner, const Shared<World>&
 {
     if (mesh_->instanced_)
     {
-        cached_instance_managers_ = world->get_or_create_instance_managers(mesh_, 100, 0);
+        cached_instance_managers_ = world->get_or_create_instance_managers(mesh_, 10000, 0);
                     
         for (uint i = 0; i < mesh_->ogre_mesh_->getNumSubMeshes(); i++)
         {
-            auto ent = cached_instance_managers_[i]->createInstancedEntity(materials_[i]->ogre_material_);
+            auto ent = cached_instance_managers_[i]->createInstancedEntity(get_valid_material(i)->ogre_material_);
             if (i > 0) ogre_instanced_entities_[0]->shareTransformWith(ent);
             owner->scene_node_->attachObject(ent);
             ogre_instanced_entities_.add(ent);
@@ -237,7 +237,7 @@ void MeshComponent::spawn_mesh(const Shared<Entity>& owner, const Shared<World>&
 
         for (uint i = 0; i < materials_.length(); i++)
         {
-            ogre_entity_->getSubEntity(i)->setMaterial(materials_[i]->ogre_material_);
+            ogre_entity_->getSubEntity(i)->setMaterial(get_valid_material(i)->ogre_material_);
         }
             
         owner->scene_node_->attachObject(ogre_entity_);
@@ -295,4 +295,9 @@ void MeshComponent::destroy_mesh(const Shared<Entity>& owner, const Shared<World
     {
         rigid_body_->removeCollider(rigid_body_->getCollider(0));
     }
+}
+
+const Shared<Material>& MeshComponent::get_valid_material(uint slot)
+{
+    return materials_[slot] ? materials_[slot] : Game::get_basic_material(mesh_->instanced_);
 }

@@ -28,7 +28,10 @@ private:
     float move_right_ = 0;
     float move_up_ = 0;
 
-    Shared<MeshEntity> arrows_;
+    float pitch_ = 0;
+    float yaw_ = 0;
+
+    Shared<Entity> arrows_;
 
     Shared<WorldChunkObserver> observer_;
     ChunkIndex old_chunk_ = ChunkIndex(0, 0);

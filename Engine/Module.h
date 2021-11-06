@@ -2,6 +2,8 @@
 
 #include "Array2D.h"
 #include "Color.h"
+#include "Map.h"
+#include "Name.h"
 #include "Path.h"
 #include "Pointers.h"
 #include "Set.h"
@@ -21,7 +23,7 @@ public:
 
     FORCEINLINE const String& get_module_name() const { return module_name; }
 
-    Shared<Material> get_material(const String& name) const;
+    Shared<Material> load_material(const Name& name);
 
     Shared<Texture> create_texture(const Array2D<Color>& pixels, const String& name);
     Shared<Texture> get_texture(const String& name) const;
@@ -47,4 +49,6 @@ private:
         "audio",
         "fonts"
     };
+
+    Map<Name, Shared<Material>> loaded_materials_;
 };

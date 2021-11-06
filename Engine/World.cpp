@@ -1,8 +1,10 @@
 ﻿#include "World.h"
 
+#include <OGRE/Main/OgreEntity.h>
 #include <OGRE/Main/OgreMesh.h>
 #include <OGRE/Main/OgreRoot.h>
 #include <OGRE/Main/OgreSceneManager.h>
+#include <OGRE/Main/OgreSubEntity.h>
 #include <reactphysics3d/reactphysics3d.h>
 #include <soloud/soloud_wav.h>
 
@@ -95,14 +97,14 @@ void World::init()
 
     world_root_ = manager_->getRootSceneNode()->createChildSceneNode();
 
-    manager_->setShadowTechnique(Ogre::SHADOWTYPE_TEXTURE_MODULATIVE_INTEGRATED);
+    manager_->setShadowTechnique(Ogre::SHADOWTYPE_NONE);
     manager_->setShadowTextureSelfShadow(true);
     manager_->setShadowTexturePixelFormat(Ogre::PF_FLOAT32_R);
     manager_->setShadowTextureCount(1);
     manager_->setShadowTextureSize(2048);
     manager_->setShadowFarDistance(5000);
 
-    manager_->setSkyBox(true, "Hexa/Skybox", 300, true);
+    manager_->setSkyBox(true, "Engine/Skybox", 300, true);
 
     set_ambient_light(Color::white(), 0.5f);
 

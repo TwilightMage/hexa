@@ -1,5 +1,6 @@
-fragment_program Hexa/Flip_X glsl
+fragment_program Hexa/Flip_X hlsl
 {
-    source flip_x.frag
-    profiles glsl330
+    source flip_x.hlsl
+    entry_point frag
+    target ps_2_0
 }

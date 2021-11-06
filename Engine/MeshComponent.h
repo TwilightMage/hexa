@@ -64,6 +64,7 @@ private:
     FORCEINLINE void spawn_mesh(const Shared<Entity>& owner, const Shared<World>& world);
     FORCEINLINE void update_visibility();
     FORCEINLINE void destroy_mesh(const Shared<Entity>& owner, const Shared<World>& world);
+    FORCEINLINE const Shared<Material>& get_valid_material(uint slot);
     
     Shared<StaticMesh> mesh_;
     List<Shared<Material>> materials_;

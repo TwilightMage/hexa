@@ -12,6 +12,7 @@
 #include "File.h"
 #include "Game.h"
 #include "GeometryEditor.h"
+#include "performance.h"
 #include "Physics/BoxCollision.h"
 #include "Physics/ConcaveMeshCollision.h"
 #include "Physics/SphereCollision.h"
@@ -150,6 +151,13 @@ void StaticMesh::make_instanced()
     instanced_ = true;
 }
 
+struct TriangleNormal
+{
+    StaticMesh::Triangle triangle;
+    Vector3 center;
+    Vector3 normal;
+};
+
 Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& sub_meshes, AutoCollisionMode collision_mode, bool compute_normals)
 {
     Shared<StaticMesh> result = MakeShared<StaticMesh>(name);
@@ -193,13 +201,102 @@ Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& s
         {
             if (collision_mode == AutoCollisionMode::Default)
             {
-                Bounds sub_bounds;
-                for (const auto& vert : sub_mesh.vertices)
+                if (sub_mesh.indices.length() == 3 * 2 * 6)
                 {
-                    sub_bounds.add(cast_object<Vector3>(vert.pos));
-                }
+                    List<TriangleNormal> triangles(2 * 6);
+                    for (uint i = 0; i < 2 * 6; i++)
+                    {
+                        triangles[i] = {
+                            sub_mesh.indices[i * 3 + 0],
+                            sub_mesh.indices[i * 3 + 1],
+                            sub_mesh.indices[i * 3 + 2]
+                        };
+                        triangles[i].normal = GeometryEditor::compute_normal(
+                            sub_mesh.vertices[triangles[i].triangle.i0].pos,
+                            sub_mesh.vertices[triangles[i].triangle.i1].pos,
+                            sub_mesh.vertices[triangles[i].triangle.i2].pos
+                            );
+                        triangles[i].center = (sub_mesh.vertices[triangles[i].triangle.i0].pos + sub_mesh.vertices[triangles[i].triangle.i1].pos + sub_mesh.vertices[triangles[i].triangle.i2].pos) / 3.f;
+                    }
 
-                result->collisions_.add(CollisionShapeInfo(sub_bounds.get_center(), Quaternion(), MakeShared<BoxCollision>(sub_bounds.get_extents())));
+                    List<Pair<uint, uint>> sides;
+                    List<uint> triangle_indices = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+                    bool error = false;
+                    for (uint i = 0; i < 6; i++)
+                    {
+                        bool pair_found = false;
+                        for (uint j = 1; j < triangle_indices.length(); j++)
+                        {
+                            if (1.f - triangles[triangle_indices[0]].normal.dot_product(triangles[triangle_indices[j]].normal) < KINDA_SMALL_NUMBER)
+                            {
+                                sides.add({ triangle_indices[0], triangle_indices[j] });
+                                triangle_indices.remove_at(j);
+                                triangle_indices.remove_at(0);
+                                pair_found = true;
+                                break;
+                            }
+                        }
+                        
+                        if (!pair_found)
+                        {
+                            error = true;
+                            break;
+                        }
+                    }
+                    
+                    if (error)
+                    {
+                        print_error("Static Mesh", "Failed to construct box collision from sub-mesh %s, proposed sub-mesh must be a box with 2 triangles on each side", sub_mesh.name.c());
+                        continue;
+                    }
+
+                    List<Pair<uint, uint>> opposites;
+                    List<uint> side_indices = { 0, 1, 2, 3, 4, 5 };
+                    for (uint i = 0; i < 3; i++)
+                    {
+                        bool opposite_found = false;
+                        for (uint j = 1; j < side_indices.length(); j++)
+                        {
+                            if (1.f + triangles[sides[side_indices[0]].key].normal.dot_product(triangles[sides[side_indices[j]].key].normal) < KINDA_SMALL_NUMBER)
+                            {
+                                opposites.add({ side_indices[0], side_indices[j] });
+                                side_indices.remove_at(j);
+                                side_indices.remove_at(0);
+                                opposite_found = true;
+                                break;
+                            }
+                        }
+
+                        if (!opposite_found)
+                        {
+                            error = true;
+                            break;
+                        }
+                    }
+
+                    if (error)
+                    {
+                        print_error("Static Mesh", "Failed to construct box collision from sub-mesh %s, proposed sub-mesh must be a box with 2 triangles on each side", sub_mesh.name.c());
+                        continue;
+                    }
+
+                    Quaternion box_rotation = Quaternion::look_at(triangles[sides[opposites[0].key].key].normal, triangles[sides[opposites[1].key].key].normal);
+                    Vector3 box_size = Vector3(
+                        Vector3::distance((triangles[sides[opposites[0].key].key].center + triangles[sides[opposites[0].key].value].center) / 2,
+                                            (triangles[sides[opposites[0].value].key].center + triangles[sides[opposites[0].value].value].center) / 2) / 2,
+                        Vector3::distance((triangles[sides[opposites[1].key].key].center + triangles[sides[opposites[1].key].value].center) / 2,
+                                            (triangles[sides[opposites[1].value].key].center + triangles[sides[opposites[1].value].value].center) / 2) / 2,
+                        Vector3::distance((triangles[sides[opposites[2].key].key].center + triangles[sides[opposites[2].key].value].center) / 2,
+                                            (triangles[sides[opposites[2].value].key].center + triangles[sides[opposites[2].value].value].center) / 2) / 2
+                    );
+                    Vector3 box_center = (triangles[0].center + triangles[1].center + triangles[2].center + triangles[3].center + triangles[4].center + triangles[5].center + triangles[6].center + triangles[7].center + triangles[8].center + triangles[9].center + triangles[10].center + triangles[11].center) / 12.f;
+
+                    result->collisions_.add(CollisionShapeInfo(box_center, box_rotation, MakeShared<BoxCollision>(box_size)));
+                }
+                else
+                {
+                    print_error("Static Mesh", "Failed to construct box collision from sub-mesh %s, proposed sub-mesh must be a box with 2 triangles on each side", sub_mesh.name.c());
+                }
             }
         }
         else if (sub_mesh.name.starts_with("CONVEX_")) // Convex collision
@@ -226,7 +323,7 @@ Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& s
                 result->collisions_.add(CollisionShapeInfo(sub_mesh_center, Quaternion(), MakeShared<ConvexMeshCollision>(vertices, sub_mesh.indices)));
             }
         }
-        else
+        else // Visible mesh
         {
             auto vertices = sub_mesh.vertices;
 
@@ -263,6 +360,9 @@ Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& s
             vertex_offset += vertices.length();
         }
     }
+
+    result->ogre_mesh_->sharedVertexData->vertexCount = vertices_copy.length();
+    
     Ogre::HardwareVertexBufferSharedPtr vbuf = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(offset, vertices_copy.length(), Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY);
     for (uint i = 0; i < vertices_copy.length(); i++)
     {

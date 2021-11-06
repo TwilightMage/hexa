@@ -5,7 +5,6 @@
 #include "Engine/MeshComponent.h"
 #include "Engine/World.h"
 #include "Engine/Physics/RaycastResult.h"
-#include "Engine/ui/TextBlock.h"
 #include "HexaGame/Paths.h"
 #include "HexaGame/WorldChunkObserver.h"
 #include "HexaGame/Worlds/HexaWorld.h"
@@ -13,20 +12,21 @@
 void DebugPlayer::on_start()
 {
     Player::on_start();
+
+    pitch_ = get_rotation().pitch();
+    yaw_ = get_rotation().yaw();
     
     if (auto world = get_world())
     {
-        auto arrows_mat = Game::get_instance()->get_material("Hexa/Axis_Arrows");
+        auto arrows_mat = Game::get_instance()->load_material("Hexa/Axis_Arrows");
         if (!arrows_mat)
         {
-            arrows_mat = Game::get_instance()->get_material("Hexa/Basic")->clone("Hexa/Axis_Arrows");
+            arrows_mat = Game::get_instance()->load_material("Engine/Basic")->clone("Hexa/Axis_Arrows");
             arrows_mat->set_texture("axis_arrows.png", 0);
         }
         
-        const auto arrows_mesh = StaticMesh::load_file_obj(RESOURCES_MESHES + "axis_arrows.obj");
-        
-        arrows_ = world->spawn_entity<MeshEntity>(Transform(Vector3(), Quaternion(), Vector3(0.1f)), arrows_mesh);
-        arrows_->mesh()->set_material(arrows_mat, 0);
+        arrows_ = world->spawn_entity<Entity>(Transform(Vector3(), Quaternion(), Vector3(0.1f)));
+        arrows_->create_component<MeshComponent>(StaticMesh::load_file_obj(RESOURCES_MESHES + "axis_arrows.obj"), arrows_mat);
 
         if (auto hexa_world = cast<HexaWorld>(world))
         {
@@ -115,17 +115,17 @@ void DebugPlayer::on_possess()
 
 void DebugPlayer::on_tick(float delta_time)
 {
+    yaw_ += Game::get_mouse_delta().x / 10.0f;
+    pitch_ += Game::get_mouse_delta().y / 10.0f;
+    pitch_ = Math::clamp(pitch_, -89.f, 89.f);
+    set_rotation(Quaternion(Vector3(0, pitch_, yaw_)));
+    
     static float speed = 500;
     auto pos = get_location();
     pos += get_rotation().forward() * delta_time * move_forward_ * speed;
     pos += get_rotation().right() * delta_time * move_right_ * speed;
     pos += Vector3::up() * delta_time * move_up_ * speed;
     set_location(pos);
-
-    auto rot = get_rotation();
-    rot = rot.rotate_around_up(Game::get_mouse_delta().x / 10.0f).normalized();
-    rot = rot.rotate_around(rot.right(), Game::get_mouse_delta().y / 10.0f).normalized();
-    set_rotation(rot);
 
     const ChunkIndex current_chunk = ChunkIndex::from_vector(get_location());
 
@@ -144,7 +144,7 @@ void DebugPlayer::on_tick(float delta_time)
         if (auto hit = world->raycast(get_location(), get_location() + get_rotation().forward() * 10000))
         {
             arrows_->set_location(hit->location);
-            arrows_->set_rotation(Quaternion::look_at(Vector3::zero(), hit->normal));
+            arrows_->set_rotation(Quaternion::look_at(hit->normal));
         }
         else
         {

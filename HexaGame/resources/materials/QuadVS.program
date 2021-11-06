@@ -1,4 +1,0 @@
-vertex_program QuadVS glsl
-{
-	source quad.glsl
-}

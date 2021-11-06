@@ -12,28 +12,12 @@ material Hexa/Foliage
             {
             }
             
-            shadow_caster_vertex_program_ref Hexa/FoliageVS_s
-            {
-            }
-            
-            shadow_caster_fragment_program_ref Hexa/FoliageFS_s
-            {
-            }
-            
             alpha_rejection greater_equal 192
             
             texture_unit
             {
-                texture UV_Test 2d
+                texture Engine/UV_Test 2d
                 filtering none
-            }
-            
-            texture_unit
-            {
-                content_type shadow
-                filtering none
-                tex_address_mode border
-                tex_border_colour 1 1 1 1
             }
         }
     }

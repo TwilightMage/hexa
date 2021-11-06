@@ -54,7 +54,7 @@ void DefaultWorldGenerator::generate_chunk(const EditableChunk& editable)
     {
         generate_plains(editable);
     }*/
-    generate_forest(editable);
+    generate_plains(editable);
 }
 
 void DefaultWorldGenerator::generate_plains(const EditableChunk& editable)

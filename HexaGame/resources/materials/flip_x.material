@@ -4,7 +4,7 @@ material Hexa/Flip_X
     {
         pass
         {
-            vertex_program_ref QuadVS
+            vertex_program_ref Engine/ScreenQuadVS
             {
             }
         

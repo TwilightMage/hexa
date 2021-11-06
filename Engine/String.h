@@ -25,8 +25,8 @@ public:
 
 	~String();
 
-	std::string std() const;
-	const char* c() const;
+	FORCEINLINE std::string std() const;
+	FORCEINLINE const char* c() const;
 	// return the cope of inner string
 	// may cause memory leak if you are not careful
 	char* c_copy() const;

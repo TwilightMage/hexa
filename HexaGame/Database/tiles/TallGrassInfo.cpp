@@ -12,7 +12,7 @@
 
 void TallGrassInfo::post_loading()
 {
-    material = Game::get_instance()->get_material("Hexa/Foliage")->clone(key.to_string());
+    material = Game::get_instance()->load_material("Hexa/Foliage")->clone(key.to_string());
     material->set_texture(texture, 0);
 }
 

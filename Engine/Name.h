@@ -14,6 +14,8 @@ public:
     explicit Name(const String& str);
     ~Name();
 
+    FORCEINLINE const char* c() const;
+
     FAST_OPERATOR(Name, ==, hash_);
     FAST_OPERATOR(Name, <=, hash_);
     FAST_OPERATOR(Name, <, hash_);

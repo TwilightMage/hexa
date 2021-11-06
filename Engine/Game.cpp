@@ -24,6 +24,7 @@
 #include "Set.h"
 #include "Settings.h"
 #include "SpriteFont.h"
+#include "StaticMesh.h"
 #include "World.h"
 #include "ui/Image.h"
 #include "ui/TextBlock.h"
@@ -211,14 +212,11 @@ const Path& Game::get_app_path()
 	return instance_->app_path_;
 }
 
-const Shared<Material>& Game::get_uv_test_material()
+const Shared<Material>& Game::get_basic_material(bool instanced)
 {
-	return instance_->uv_test_mat_;
-}
-
-const Shared<Material>& Game::get_white_material()
-{
-	return instance_->white_mat_;
+	return instanced
+		? instance_->load_material("Engine/Basic_Instanced")
+		: instance_->load_material("Engine/Basic");
 }
 
 const Shared<SpriteFont>& Game::get_default_font()
@@ -359,7 +357,7 @@ void Game::setup()
 
 	Ogre::ResourceGroupManager::getSingletonPtr()->addResourceLocation(Path("resources/SdkTrays.zip").get_absolute_string().c(), "Zip", module_name.c());
 
-	Ogre::MaterialManager::getSingleton().addListener(new GBufferSchemeHandler, "GBuffer");
+	//Ogre::MaterialManager::getSingleton().addListener(new GBufferSchemeHandler, "GBuffer");
 }
 
 void Game::init()
@@ -418,15 +416,15 @@ void Game::loading_stage()
 
 	register_resource_directories();
 
-	// White texture
+	// Engine/White texture
 	{
 		Array2D<Color> white(1, 1);
 		white.at(0, 0) = Color::white();
 		
-		create_texture(white, "White");
+		create_texture(white, "Engine/White");
 	}
 
-	// UV_Test texture
+	// Engine/UV_Test texture
 	{
 		const uint cc = 32;
 		const uint s = 512;
@@ -462,7 +460,7 @@ void Game::loading_stage()
 			}
 		}
 
-		create_texture(uv_test, "UV_Test");
+		create_texture(uv_test, "Engine/UV_Test");
 	}
 	
 	for (const auto& mod : mods_)
@@ -478,12 +476,6 @@ void Game::loading_stage()
 			Ogre::ResourceGroupManager::getSingletonPtr()->initialiseResourceGroup(mod->get_module_name().c());
 		}
 	}
-
-	white_mat_ = get_material("Hexa/Basic")->clone("White");
-	white_mat_->set_texture("White", 0);
-	
-	uv_test_mat_ = get_material("Hexa/Basic")->clone("UV_Test");
-	uv_test_mat_->set_texture("UV_Test", 0);
 
 	ogre_app_->load();
 	
@@ -554,9 +546,6 @@ void Game::render_loop()
 	const auto start_time = std::chrono::system_clock::now();
 	
 	auto tick_start = start_time;
-
-	Matrix4x4 m1;
-	Ogre::Matrix4 m2;
 	
 	while (!ogre_app_->getRoot()->endRenderingQueued())
 	{		

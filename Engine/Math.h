@@ -100,6 +100,11 @@ public:
         return std::pow(in, pow);
     }
 
+    constexpr static uint pow_of_two(uint pow)
+    {
+        return 1 << pow;
+    }
+
     template<typename T>
     FORCEINLINE static T log2(T from)
     {

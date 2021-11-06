@@ -50,7 +50,16 @@ const float uv_sines[6] = {
     Math::sin_deg(5 * 60.0f)
 };
 
-void add_poly(List<uint>& src_indices, List<uint> indices, int offset)
+struct TileMeshVariation
+{
+	StaticMesh::SubMesh sub_mesh;
+	uint down_index;
+	uint up_index;
+};
+
+Map<TileSide, TileMeshVariation> tile_mesh_variations;
+
+void add_poly(List<uint>& src_indices, List<uint> indices, uint offset)
 {
 	for (uint i = 1; i < indices.length() - 1; i++)
 	{
@@ -69,10 +78,9 @@ WorldGenerator::~WorldGenerator()
 	}
 }
 
-void WorldGenerator::generate_tile_mesh(TileSide sides, ConstPtr<SolidTileInfo> tileInfo, List<StaticMesh::Vertex>& vertices, List<uint>& indices, float seed)
-{
-    int vertexCount = 0;
-	uint int_seed = (uint)(seed * 127.2355f);
+TileMeshVariation generate_tile_mesh_raw(TileSide sides)
+{	
+	int vertexCount = 0;
 
 	if (!!(sides & TileSide::Up)) vertexCount += 6;
 	if (!!(sides & TileSide::Down)) vertexCount += 6;
@@ -83,47 +91,52 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, ConstPtr<SolidTileInfo> 
 	if (!!(sides & TileSide::BackLeft)) vertexCount += 4;
 	if (!!(sides & TileSide::FrontLeft)) vertexCount += 4;
 
-	if (vertexCount == 0) return;
+	if (vertexCount == 0) return TileMeshVariation();
 
-	vertices = List<StaticMesh::Vertex>(vertexCount);
-	indices.clear();
+	TileMeshVariation result;
+	
+	result.sub_mesh.vertices = List<StaticMesh::Vertex>(vertexCount);
 
 	int offset = 0;
 
 	// Floor
 	if (!!(sides & TileSide::Down))
 	{
-        const int angleOffset = tileInfo->randomize_floor_uv_angle ? int_seed % 6 : 0;
+        //const int angleOffset = tileInfo->randomize_floor_uv_angle ? int_seed % 6 : 0;
 
 		for (uint i = 0; i < 6; i++)
 		{
-			vertices[i + offset] = {
+			result.sub_mesh.vertices[i + offset] = {
 				Vector3(pos_coses[i] * 0.5f * 100, pos_sines[i] * 0.5f * 100, 0.0f),
-                floor_uv_pos + Vector2(uv_coses[(i + angleOffset) % 6] * cap_mult.x, uv_sines[(i + angleOffset) % 6] * cap_mult.y),
+                floor_uv_pos + Vector2(uv_coses[(i) % 6] * cap_mult.x, uv_sines[(i) % 6] * cap_mult.y),
                 Vector3::one()
             };
 		}
 
-		add_poly(indices, { 0, 5, 4, 3, 2, 1 }, offset);
+		result.down_index = offset;
 
+		add_poly(result.sub_mesh.indices, { 0, 5, 4, 3, 2, 1 }, offset);
+		
 		offset += 6;
 	}
 
 	// Ceil
 	if (!!(sides & TileSide::Up))
 	{
-		const uint angleOffset = tileInfo->randomize_floor_uv_angle ? int_seed % 6 : 0;
+		//const uint angleOffset = tileInfo->randomize_floor_uv_angle ? int_seed % 6 : 0;
 
 		for (uint i = 0; i < 6; i++)
 		{
-			vertices[i + offset] = {
+			result.sub_mesh.vertices[i + offset] = {
 				Vector3(pos_coses[i] * 0.5f * 100, pos_sines[i] * 0.5f * 100, HexaMath::tile_height * 100),
-                ceil_uv_pos + Vector2(uv_coses[(i + angleOffset) % 6] * cap_mult.x, uv_sines[(i + angleOffset) % 6] * cap_mult.y),
+                ceil_uv_pos + Vector2(uv_coses[(i) % 6] * cap_mult.x, uv_sines[(i) % 6] * cap_mult.y),
                 Vector3::one()
             };
 		}
 
-		add_poly(indices, { 0, 1, 2, 3, 4, 5 }, offset);
+		result.up_index = offset;
+
+		add_poly(result.sub_mesh.indices, { 0, 1, 2, 3, 4, 5 }, offset);
 
 		offset += 6;
 	}
@@ -138,22 +151,73 @@ void WorldGenerator::generate_tile_mesh(TileSide sides, ConstPtr<SolidTileInfo> 
 			{
 				uint jj = j - i;
 				Vector2 pos = Vector2(pos_coses[j % 6], pos_sines[j % 6]);
-				Vector2 uv_offset = Vector2((float)(int_seed % 6), (float)(int_seed % 3)) * wall_mult;
+				//Vector2 uv_offset = Vector2((float)(int_seed % 6), (float)(int_seed % 3)) * wall_mult;
 
-				vertices[jj + offset] = {
+				result.sub_mesh.vertices[jj + offset] = {
 					Vector3(pos.x * 0.5f * 100, pos.y * 0.5f * 100, 0.0f),
-					Vector2(j * wall_mult.x + uv_offset.x, wall_mult.y + uv_offset.y)
+					Vector2(j * wall_mult.x, wall_mult.y)
 				};
 
-				vertices[jj + offset + 2] = {
+				result.sub_mesh.vertices[jj + offset + 2] = {
 					Vector3(pos.x * 0.5f * 100, pos.y * 0.5f * 100, HexaMath::tile_height * 100),
-					Vector2(j * wall_mult.x + uv_offset.x, uv_offset.y)
+					Vector2(j * wall_mult.x, 0)
 				};
 			}
 
-			add_poly(indices, { 0, 1, 3, 2 }, offset);
+			add_poly(result.sub_mesh.indices, { 0, 1, 3, 2 }, offset);
 
 			offset += 4;
+		}
+	}
+
+	return result;
+}
+
+void WorldGenerator::init_tile_variations()
+{
+	const uint num_variants = Math::pow_of_two(8);
+	for (uint i = 0; i < num_variants; i++)
+	{
+		tile_mesh_variations[(TileSide)i] = generate_tile_mesh_raw((TileSide)i);
+	}
+}
+
+void WorldGenerator::generate_tile_mesh(TileSide sides, ConstPtr<SolidTileInfo> tileInfo, List<StaticMesh::Vertex>& vertices, List<uint>& indices, float seed)
+{
+	const auto& sample = tile_mesh_variations[sides];
+
+	vertices = sample.sub_mesh.vertices;
+	indices = sample.sub_mesh.indices;
+	
+	const uint int_seed = (uint)(seed * 127.2355f);
+
+	Vector2 uvs[6];
+	
+	if (tileInfo->randomize_floor_uv_angle && !!(sides & TileSide::Down))
+	{
+		const uint offset = int_seed % 6;
+		for (uint i = 0; i < 6; i++)
+		{
+			uvs[(i + offset) % 6] = vertices[sample.down_index + i].uv;
+		}
+
+		for (uint i = 0; i < 6; i++)
+		{
+			vertices[sample.down_index + i].uv = uvs[i];
+		}
+	}
+
+	if (tileInfo->randomize_ceil_uv_angle && !!(sides & TileSide::Up))
+	{
+		const uint offset = int_seed % 6;
+		for (uint i = 0; i < 6; i++)
+		{
+			uvs[(i + offset) % 6] = vertices[sample.up_index + i].uv;
+		}
+
+		for (uint i = 0; i < 6; i++)
+		{
+			vertices[sample.up_index + i].uv = uvs[i];
 		}
 	}
 }

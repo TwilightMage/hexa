@@ -16,7 +16,7 @@ TileInfo::TileInfo(
     , hardness(hardness)
     , block_nav(block_nav)
 {
-    material = Game::get_instance()->get_material("Hexa/Basic")->clone(("Hexa/Tiles/" + key.to_string()).c());
+    material = Game::get_instance()->load_material("Engine/Basic")->clone(("Hexa/Tiles/" + key.to_string()).c());
     material->set_texture(key.to_string() + ".png", 0);
 }
 
@@ -37,8 +37,8 @@ void ComplexTileInfo::post_loading()
 {
     if (material == nullptr)
     {
-        material = Game::get_instance()->get_material("Hexa/BasicComplex")->clone(key.to_string());
-        material->set_texture(key.to_string() + ".png", 0);
+        //material = Game::get_instance()->get_material("Hexa/BasicComplex")->clone(key.to_string());
+        //material->set_texture(key.to_string() + ".png", 0);
     }
 }
 

@@ -1,0 +1,45 @@
+material Engine/Basic
+{
+    technique
+    {
+        pass
+        {
+            vertex_program_ref Engine/BasicVS
+            {
+            }
+        
+            fragment_program_ref Engine/BasicFS
+            {
+            }
+            
+            texture_unit 0
+            {
+                texture Engine/UV_Test 2d
+                filtering none
+            }
+        }
+    }
+}
+
+material Engine/Basic_Instanced
+{
+    technique
+    {
+        pass
+        {
+            vertex_program_ref Engine/BasicVS_inst
+            {
+            }
+        
+            fragment_program_ref Engine/BasicFS
+            {
+            }
+            
+            texture_unit 0
+            {
+                texture Engine/UV_Test 2d
+                filtering none
+            }
+        }
+    }
+}

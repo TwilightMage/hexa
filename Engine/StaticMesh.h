@@ -39,6 +39,13 @@ public:
         Vector3 norm;
     };
 
+    struct Triangle
+    {
+        uint i0;
+        uint i1;
+        uint i2;
+    };
+
     struct EXPORT SubMesh
     {
         SubMesh(const String& name, const List<Vertex>& vertices, const List<uint>& indices);

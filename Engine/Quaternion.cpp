@@ -141,24 +141,31 @@ Quaternion Quaternion::from_axis_angle(const Vector3& axis, float angle)
     return Quaternion(axis.x * factor, axis.y * factor, axis.z * factor, cos(glm::radians(angle) / 2.0f)).normalized();
 }
 
-Quaternion Quaternion::look_at(const Vector3& normal)
+Quaternion Quaternion::look_at(const Vector3& direction)
 {
-    float dot = Vector3::forward().dot_product(normal);
-
-    if (Math::abs(dot + 1.0f) < 0.000001f)
-    {
-        return Quaternion(0, 0, 1, -0.0000000437113883f);
-    }
+    return look_at(direction, Vector3::up());
     
-    if (Math::abs(dot - 1.0f) < 0.000001f)
-    {
-        return Quaternion();
-    }
+    if (direction.magnitude() == 0) return Quaternion();
 
-    const float rotAngle = Math::acos_deg(dot);
-    Vector3 rotAxis = Vector3::forward().cross_product(normal);
-    rotAxis = rotAxis.normalized();
-    return from_axis_angle(rotAxis, rotAngle);
+    const Vector3 direction_normal = direction.normalized();
+    
+    const Vector3 rot_axis = Vector3::forward().cross_product(direction_normal);
+    const float dot = Vector3::forward().dot_product(direction_normal);
+
+    Quaternion q;
+    q.x = rot_axis.x;
+    q.y = rot_axis.y;
+    q.z = rot_axis.z;
+    q.w = dot + 1;
+
+    return q.normalized();
+}
+
+Quaternion Quaternion::look_at(const Vector3& direction, const Vector3& up)
+{
+    if (direction.magnitude() == 0) return Quaternion();
+    
+    return cast_object<Quaternion>(glm::quatLookAt(cast_object<glm::vec3>(direction), cast_object<glm::vec3>(up.normalized())));
 }
 
 Quaternion Quaternion::slerp(const Quaternion& a, const Quaternion& b, float alpha)

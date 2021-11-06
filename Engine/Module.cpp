@@ -18,12 +18,17 @@ void Module::on_add_resource_directories(Set<String>& local, Set<String>& global
 {
 }
 
-Shared<Material> Module::get_material(const String& name) const
+Shared<Material> Module::load_material(const Name& name)
 {
-    if (auto ogre_material = Ogre::MaterialManager::getSingleton().getByName(name.c(), module_name.c()))
+    if (auto loaded_material = loaded_materials_.find_or_default(name))
+    {
+        return loaded_material;
+    }
+    else if (const auto ogre_material = Ogre::MaterialManager::getSingleton().getByName(name.c(), module_name.c()))
     {
         auto result = MakeShared<Material>();
         result->ogre_material_ = ogre_material;
+        loaded_materials_[name] = result;
         return result;
     }
 

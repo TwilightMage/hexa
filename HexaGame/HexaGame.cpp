@@ -12,7 +12,6 @@
 #include "Engine/GeometryEditor.h"
 #include "Engine/Logger.h"
 #include "Engine/Material.h"
-#include "Engine/AnimationEditor/AnimationEditorWorld.h"
 #include "Entities/Characters/Slime.h"
 #include "ui/TileDatabaseViewer.h"
 #include "Worlds/GameWorld.h"
@@ -117,6 +116,8 @@ void HexaGame::on_loading_stage()
     foliage_material->init(foliage_shader, 0);
     foliage_material->cast_shadows = true;*/
 
+    WorldGenerator::init_tile_variations();
+
     plains_music = Audio::load(RESOURCES_AUDIO_MUSIC + "plains.ogg");
     plains_music->set_looped(true);
 
@@ -156,7 +157,7 @@ void HexaGame::on_unloading_stage()
 
 bool HexaGame::open_animation_editor(const String& entity_type, const String& entity_name) const
 {
-    auto editor = MakeShared<AnimationEditorWorld>();
+    /*auto editor = MakeShared<AnimationEditorWorld>();
     open_world(editor);
             
     if (entity_type == "character")
@@ -175,7 +176,7 @@ bool HexaGame::open_animation_editor(const String& entity_type, const String& en
     {
         print_error("Hexa", "Unknown entity type %s", entity_type.c());
     }
-
+*/
     return false;
 }
 

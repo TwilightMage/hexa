@@ -10,7 +10,9 @@
 template<typename T>
 class List : public Array<T>
 {
-public:    
+public:
+    using ItemType = std::conditional_t<(sizeof(T) > 8), const T&, T>;
+    
     using Array<T>::begin;
     using Array<T>::end;
 
@@ -36,7 +38,7 @@ public:
             this->inner_ = new T[allocated_length_];
             for (uint i = 0; i < length; i++)
             {
-                this->inner_[i] = std::move(inner[i]);
+                this->inner_[i] = inner[i];
             }
         }
     }
@@ -50,7 +52,7 @@ public:
             this->inner_ = new T[allocated_length_];
             for (uint i = 0; i < length; i++)
             {
-                this->inner_[i] = std::move(inner[i]);
+                this->inner_[i] = inner[i];
             }
         }
     }
@@ -95,7 +97,7 @@ public:
         return result;
     }
 
-    static List generate(uint size, const T& placeholder)
+    static List generate(uint size, ItemType placeholder)
     {
         auto result = List(size);
         for (uint i = 0; i < size; i++)
@@ -130,7 +132,7 @@ public:
         return *this;
     }
 
-    void add(const T& item)
+    void add(ItemType item)
     {
         if (length_ == allocated_length_)
         {
@@ -141,7 +143,7 @@ public:
     }
 
     template<typename... Items>
-    void add_many(const T& first, const Items&... rest)
+    void add_many(ItemType first, const Items&... rest)
     {
         add(first);
 
@@ -164,7 +166,7 @@ public:
         }
     }
 
-    void add_unique(const T& item)
+    void add_unique(ItemType item)
     {
         if (length_ > 0)
         {
@@ -177,7 +179,7 @@ public:
         add(item);
     }
 
-    bool contains(const T& item) const
+    bool contains(ItemType item) const
     {
         if (length_ == 0) return false;
         
@@ -188,7 +190,7 @@ public:
         return false;
     }
 
-    int index_of(const T& item) const
+    int index_of(ItemType item) const
     {
         if (length_ == 0) return -1;
         
@@ -199,7 +201,7 @@ public:
         return -1;
     }
 
-    int index_of(std::function<bool(const T& item)> predicate) const
+    int index_of(std::function<bool(ItemType item)> predicate) const
     {
         if (length_ == 0) return -1;
         
@@ -276,7 +278,18 @@ public:
         }
     }
 
-    void force_size_fit(uint new_size, const T& placeholder = T())
+    void replace(ItemType from, ItemType to)
+    {
+        for (uint i = 0; i < length_; i++)
+        {
+            if (inner_[i] == from)
+            {
+                inner_[i] = to;
+            }
+        }
+    }
+
+    void force_size_fit(uint new_size, ItemType placeholder = T())
     {
         if (length_ < new_size)
         {
@@ -305,7 +318,7 @@ public:
         }
     }
 
-    void remove(const T& item)
+    void remove(ItemType item)
     {
         uint offset = 0;
         for (uint i = 0; i < length_; i++)
@@ -334,7 +347,7 @@ public:
         length_ -= offset;
     }
 
-    void remove(bool(* predicate)(const T&))
+    void remove(bool(* predicate)(ItemType))
     {
         uint offset = 0;
         for (uint i = 0; i < length_; i++)
@@ -368,7 +381,7 @@ public:
         return at(index);
     }
 
-    FORCEINLINE const T& operator[](uint index) const
+    FORCEINLINE ItemType operator[](uint index) const
     {
         return at(index);
     }
@@ -383,7 +396,7 @@ public:
         return inner_[index];
     }
 
-    FORCEINLINE const T& at(uint index) const
+    FORCEINLINE ItemType at(uint index) const
     {
         if (index >= length_)
         {
@@ -398,7 +411,7 @@ public:
         return operator[](0);
     }
 
-    FORCEINLINE const T& first() const
+    FORCEINLINE ItemType first() const
     {
         return operator[](0);
     }
@@ -408,7 +421,7 @@ public:
         return length_ > 0 ? operator[](0) : T();
     }
 
-    FORCEINLINE const T& first_or_default() const
+    FORCEINLINE ItemType first_or_default() const
     {
         return length_ > 0 ? operator[](0) : T();
     }
@@ -418,7 +431,7 @@ public:
         return operator[](length_ - 1);
     }
 
-    FORCEINLINE const T& last() const
+    FORCEINLINE ItemType last() const
     {
         return operator[](length_ - 1);
     }
@@ -428,12 +441,12 @@ public:
         return length_ > 0 ? operator[](length_ - 1) : T();
     }
 
-    FORCEINLINE const T& last_or_default() const
+    FORCEINLINE ItemType last_or_default() const
     {
         return length_ > 0 ? operator[](length_ - 1) : T();
     }
 
-    bool all(std::function<bool(const T& item)> predicate) const
+    bool all(std::function<bool(ItemType item)> predicate) const
     {
         for (uint i = 0; i < length_; i++)
         {
@@ -443,7 +456,7 @@ public:
         return  true;
     }
 
-    bool any(std::function<bool(const T& item)> predicate) const
+    bool any(std::function<bool(ItemType item)> predicate) const
     {
         for (uint i = 0; i < length_; i++)
         {
@@ -453,7 +466,7 @@ public:
         return  false;
     }
     
-    bool none(std::function<bool(const T& item)> predicate) const
+    bool none(std::function<bool(ItemType item)> predicate) const
     {
         for (uint i = 0; i < length_; i++)
         {
@@ -463,7 +476,7 @@ public:
         return  true;
     }
 
-    bool count(std::function<bool(const T& item)> predicate) const
+    bool count(std::function<bool(ItemType item)> predicate) const
     {
         uint counter = 0;
         for (uint i = 0; i < length_; i++)
@@ -477,7 +490,7 @@ public:
         return  counter;
     }
 
-    List<T> where(std::function<bool(const T& item)> predicate) const
+    List<T> where(std::function<bool(ItemType item)> predicate) const
     {
         List<T> result;
         for (uint i = 0; i < length_; i++)
@@ -492,7 +505,7 @@ public:
     }
 
     template<typename ResultType>
-    List<ResultType> select(std::function<ResultType(const T& item)> fetcher)
+    List<ResultType> select(std::function<ResultType(ItemType item)> fetcher)
     {
         List<ResultType> result(length_);
 
@@ -504,7 +517,7 @@ public:
         return result;
     }
 
-    void insert(const T& item, uint indexAt)
+    void insert(ItemType item, uint indexAt)
     {
         if (indexAt > length_)
         {
@@ -601,7 +614,7 @@ public:
         }
     }
 
-    List operator+(const T& rhs)
+    List operator+(ItemType rhs)
     {
         List result = *this;
         result.add(rhs);
@@ -609,7 +622,7 @@ public:
         return result;
     }
 
-    List& operator+=(const T& rhs)
+    List& operator+=(ItemType rhs)
     {
         add(rhs);
 

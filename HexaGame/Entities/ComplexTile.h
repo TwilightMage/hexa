@@ -18,6 +18,8 @@ public:
 
     FORCEINLINE const TileIndex& get_index() const { return index_; }
 
+    FORCEINLINE const Shared<MeshComponent>& mesh() const { return mesh_component_; }
+
 protected:
     bool initial_is_blocking = true;
 

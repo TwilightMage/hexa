@@ -18,20 +18,20 @@ void TreeStemInfo::post_loading()
 {
     ComplexTileInfo::post_loading();
 
-    /*const auto basic_complex_mat = Game::get_instance()->get_material("Hexa/BasicComplex");
-    const auto foliage_mat = Game::get_instance()->get_material("Hexa/Foliage");
+    const auto basic_mat = Game::get_instance()->load_material("Engine/Basic_Instanced");
+    const auto foliage_mat = Game::get_instance()->load_material("Hexa/Foliage");
     
-    root_material_ = basic_complex_mat->clone(key.to_string() + "_root");
+    root_material_ = basic_mat->clone(key.to_string() + "_root");
     root_material_->set_texture(root_texture, 0);
 
     krone_material_ = foliage_mat->clone(key.to_string() + "_krone");
     krone_material_->set_texture(krone_texture, 0);
 
-    branch_material_ = basic_complex_mat->clone(key.to_string() + "_branch");
+    branch_material_ = basic_mat->clone(key.to_string() + "_branch");
     branch_material_->set_texture(branch_texture, 0);
 
     branch_krone_material_ = foliage_mat->clone(key.to_string() + "_branch_krone");
-    branch_krone_material_->set_texture(branch_krone_texture, 0);*/
+    branch_krone_material_->set_texture(branch_krone_texture, 0);
 }
 
 Shared<ComplexTileCustomData> TreeStemInfo::create_custom_data() const

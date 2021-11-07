@@ -30,7 +30,7 @@ vertex_program Engine/BasicVS_inst hlsl
     source basic.hlsl
     entry_point vert
     target vs_2_0
-    preprocessor_defines INSTANCING
+    preprocessor_defines INSTANCED
     
     default_params
     {

@@ -72,9 +72,9 @@ StaticMesh::StaticMesh(const String& name)
 {
 }
 
-Shared<StaticMesh> StaticMesh::construct(const String& name, const List<SubMesh>& sub_meshes, AutoCollisionMode collision_mode)
+Shared<StaticMesh> StaticMesh::construct(const String& name, const List<SubMesh>& sub_meshes, AutoCollisionMode collision_mode, bool compute_normals)
 {
-    const auto result = create(name, sub_meshes, collision_mode, true);
+    const auto result = create(name, sub_meshes, collision_mode, compute_normals);
 
     verbose("Mesh", "Constructed mesh %s", name.c());
 
@@ -168,7 +168,7 @@ Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& s
 
     Ogre::VertexDeclaration* decl = result->ogre_mesh_->sharedVertexData->vertexDeclaration;
     Ogre::VertexBufferBinding* bind = result->ogre_mesh_->sharedVertexData->vertexBufferBinding;
-    
+
     size_t offset = 0;
     decl->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_POSITION);
     offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
@@ -177,12 +177,28 @@ Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& s
     decl->addElement(0, offset, Ogre::VET_FLOAT3, Ogre::VES_NORMAL);
     offset += Ogre::VertexElement::getTypeSize(Ogre::VET_FLOAT3);
 
-    List<Vertex> vertices_copy;
-    List<uint> indices_copy;
+    uint visible_vertex_count = 0;
+    uint visible_index_count = 0;
+    for (const auto& sub_mesh : sub_meshes)
+    {
+        if (!sub_mesh.name.starts_with("SPHERE_") &&
+            !sub_mesh.name.starts_with("BOX_") &&
+            !sub_mesh.name.starts_with("CONVEX_"))
+        {
+            visible_vertex_count += sub_mesh.vertices.length();
+            visible_index_count += sub_mesh.indices.length();
+        }
+    }
+
+    List<Vertex> vertices_copy(visible_vertex_count);
+    List<uint> indices_copy(visible_index_count);
+
+    uint vci = 0;
+    uint ici = 0;
 
     uint vertex_offset = 0;
     Bounds visual_bounds;
-    for (auto& sub_mesh : sub_meshes)
+    for (const auto& sub_mesh : sub_meshes)
     {   
         if (sub_mesh.name.starts_with("SPHERE_")) // Sphere collision
         {
@@ -331,25 +347,29 @@ Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& s
             {
                 GeometryEditor::compute_normals(vertices, sub_mesh.indices, true);
             }
-            
+
+            memcpy(vertices_copy.get_data() + vci, vertices.get_data(), sizeof(Vertex) * vertices.length());
+            vci += vertices.length();
+
             for (uint i = 0; i < vertices.length(); i++)
             {
-                const auto& vert = vertices[i];
-                vertices_copy.add(Vertex{ vert.pos, vert.uv, vert.norm });
-
-                visual_bounds.add(cast_object<Vector3>(vert.pos));
+                visual_bounds.add(vertices[i].pos);
             }
 
             Ogre::HardwareIndexBufferSharedPtr ibuf = Ogre::HardwareBufferManager::getSingleton().createIndexBuffer(Ogre::HardwareIndexBuffer::IT_32BIT, sub_mesh.indices.length(), Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+            List<uint> indices_buff(sub_mesh.indices.get_data(), sub_mesh.indices.length());
             for (uint i = 0; i < sub_mesh.indices.length(); i++)
             {
-                uint ind = sub_mesh.indices[i] + vertex_offset;
-                if (collision_mode == AutoCollisionMode::Complex || collision_mode == AutoCollisionMode::Convex)
-                {
-                    indices_copy.add(ind);
-                }
-                ibuf->writeData(i * sizeof(uint), sizeof(uint), &ind, false);
+                indices_buff[i] = sub_mesh.indices[i] + vertex_offset;
             }
+
+            if (collision_mode == AutoCollisionMode::Complex || collision_mode == AutoCollisionMode::Convex)
+            {
+                memcpy(indices_copy.get_data() + ici, indices_buff.get_data(), sizeof(uint) * indices_buff.length());
+                ici += indices_buff.length();
+            }
+
+            ibuf->writeData(0, sizeof(uint) * indices_buff.length(), indices_buff.get_data(), false);
 
             auto sub = result->ogre_mesh_->createSubMesh();
             sub->useSharedVertices = true;
@@ -362,16 +382,9 @@ Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& s
     }
 
     result->ogre_mesh_->sharedVertexData->vertexCount = vertices_copy.length();
-    
-    Ogre::HardwareVertexBufferSharedPtr vbuf = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(offset, vertices_copy.length(), Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY);
-    for (uint i = 0; i < vertices_copy.length(); i++)
-    {
-        const auto& vert = vertices_copy[i];
 
-        vbuf->writeData(i * (sizeof(Vector3) + sizeof(Vector2) + sizeof(Vector3)),                                     sizeof(Vector3), &vert.pos, false);
-        vbuf->writeData(i * (sizeof(Vector3) + sizeof(Vector2) + sizeof(Vector3)) + sizeof(Vector3),                   sizeof(Vector2), &vert.uv, false);
-        vbuf->writeData(i * (sizeof(Vector3) + sizeof(Vector2) + sizeof(Vector3)) + sizeof(Vector3) + sizeof(Vector2), sizeof(Vector3), &vert.norm, false);
-    }
+    Ogre::HardwareVertexBufferSharedPtr vbuf = Ogre::HardwareBufferManager::getSingleton().createVertexBuffer(offset, vertices_copy.length(), Ogre::HardwareBuffer::HBU_STATIC_WRITE_ONLY);
+    vbuf->writeData(0, sizeof(Vertex) * vertices_copy.length(), vertices_copy.get_data());
     bind->setBinding(0, vbuf);
 
     if (collision_mode == AutoCollisionMode::Complex)
@@ -384,7 +397,7 @@ Shared<StaticMesh> StaticMesh::create(const String& name, const List<SubMesh>& s
     }
 
     result->ogre_mesh_->_setBounds(Ogre::AxisAlignedBox(cast_object<Ogre::Vector3>(visual_bounds.min), cast_object<Ogre::Vector3>(visual_bounds.max)));
-    result->ogre_mesh_->buildEdgeList();
+    //result->ogre_mesh_->buildEdgeList();
 
     return result;
 }

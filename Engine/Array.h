@@ -81,9 +81,19 @@ protected:
     {
         T* new_inner = newLength > 0 ? new T[newLength] : nullptr;
 
-        for (uint i = 0; i < (length_ < newLength ? length_ : newLength); i++)
+        if constexpr (std::is_convertible<T, std::size_t>::value)
         {
-            new_inner[i] = std::move(inner_[i]);
+            if (newLength > 0)
+            {
+                memcpy(new_inner, inner_, sizeof(T) * length_);
+            }
+        }
+        else
+        {
+            for (uint i = 0; i < (length_ < newLength ? length_ : newLength); i++)
+            {
+                new_inner[i] = std::move(inner_[i]);
+            }
         }
 
         delete[] inner_;

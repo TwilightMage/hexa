@@ -5,6 +5,7 @@
 #include "HexaSettings.h"
 #include "WorldChunk.h"
 #include "Engine/Game.h"
+#include "Engine/GeometryEditor.h"
 #include "Engine/Math.h"
 #include "Engine/performance.h"
 
@@ -109,7 +110,7 @@ TileMeshVariation generate_tile_mesh_raw(TileSide sides)
 			result.sub_mesh.vertices[i + offset] = {
 				Vector3(pos_coses[i] * 0.5f * 100, pos_sines[i] * 0.5f * 100, 0.0f),
                 floor_uv_pos + Vector2(uv_coses[(i) % 6] * cap_mult.x, uv_sines[(i) % 6] * cap_mult.y),
-                Vector3::one()
+                Vector3(0, 0, -1)
             };
 		}
 
@@ -130,7 +131,7 @@ TileMeshVariation generate_tile_mesh_raw(TileSide sides)
 			result.sub_mesh.vertices[i + offset] = {
 				Vector3(pos_coses[i] * 0.5f * 100, pos_sines[i] * 0.5f * 100, HexaMath::tile_height * 100),
                 ceil_uv_pos + Vector2(uv_coses[(i) % 6] * cap_mult.x, uv_sines[(i) % 6] * cap_mult.y),
-                Vector3::one()
+                Vector3(0, 0, 1)
             };
 		}
 
@@ -147,6 +148,7 @@ TileMeshVariation generate_tile_mesh_raw(TileSide sides)
 	{
 		if (!!(sides & sideOrder[i]))
 		{
+			const Vector3 norm = Vector3((pos_coses[i % 6] + pos_coses[(i + 1) % 6]) / 2.f, (pos_sines[i % 6] + pos_sines[(i + 1) % 6]) / 2.f, 0.f).normalized();
 			for (uint j = i; j < i + 2; j++)
 			{
 				uint jj = j - i;
@@ -155,12 +157,14 @@ TileMeshVariation generate_tile_mesh_raw(TileSide sides)
 
 				result.sub_mesh.vertices[jj + offset] = {
 					Vector3(pos.x * 0.5f * 100, pos.y * 0.5f * 100, 0.0f),
-					Vector2(j * wall_mult.x, wall_mult.y)
+					Vector2(j * wall_mult.x, wall_mult.y),
+					norm
 				};
 
 				result.sub_mesh.vertices[jj + offset + 2] = {
 					Vector3(pos.x * 0.5f * 100, pos.y * 0.5f * 100, HexaMath::tile_height * 100),
-					Vector2(j * wall_mult.x, 0)
+					Vector2(j * wall_mult.x, 0),
+					norm
 				};
 			}
 

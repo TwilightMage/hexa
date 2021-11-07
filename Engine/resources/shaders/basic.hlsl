@@ -2,6 +2,7 @@
 float4x4 world;
 #endif
 float4x4 viewProj;
+
 float4 ambientLight;
 float4 sunDiff;
 float4 sunDir;
@@ -16,7 +17,7 @@ struct v2f
 
 v2f vert(float4 posIn      : POSITION,
          float2 uv         : TEXCOORD0,
-         float3 norm       : NORMAL,
+         float4 norm       : NORMAL,
 #ifdef INSTANCED
          float4 mat14      : TEXCOORD1,
          float4 mat24      : TEXCOORD2,
@@ -42,7 +43,7 @@ v2f vert(float4 posIn      : POSITION,
     world[1].w = 0;
     world[2].w = 0;
     
-    Out.norm = mul(world, norm);
+    Out.norm = mul(world, norm).xyz;
 
     return Out;
 }

@@ -12,9 +12,7 @@
 #include "Engine/GeometryEditor.h"
 #include "Engine/MeshComponent.h"
 #include "Engine/World.h"
-#include "Engine/Physics/ConcaveMeshCollision.h"
 #include "Entities/ComplexTile.h"
-#include "HexaGame/ChunkMeshEntity.h"
 #include "Worlds/HexaWorld.h"
 
 FORCEINLINE bool coll_at(TileSide coll, TileSide side) { return !!(coll & side); }
@@ -1021,7 +1019,7 @@ void WorldChunk::regenerate_mesh(uint z, bool fill_complex)
             }
         }
     }
-    
+
     if (auto world = world_.lock())
     {
         Map<ConstPtr<SolidTileInfo>, StaticMesh::SubMesh> sub_mesh_map;
@@ -1036,7 +1034,7 @@ void WorldChunk::regenerate_mesh(uint z, bool fill_complex)
         const TileType plane_metadata_up = z < chunk_height - 1 ? plane_metadata[z + 1] : TileType::Air;
 
         const bool build_tiles = count_difference(plane_metadata[z] | plane_metadata_up | plane_metadata_down | plane_metadata_forward | plane_metadata_back | plane_metadata_right | plane_metadata_left | plane_metadata_front_right | plane_metadata_back_left) >= 2;
-        
+
         if (build_tiles || fill_complex)
         {
             for (int x = 0; x < chunk_size; x++)
@@ -1077,21 +1075,20 @@ void WorldChunk::regenerate_mesh(uint z, bool fill_complex)
             }
         }
 
-        if (mesh_entities_[z] == nullptr)
-        {
-            mesh_entities_[z] = MakeShared<ChunkMeshEntity>();
-            mesh_entities_[z]->mesh_component_->set_visibility(z < cap_z);
-            world->spawn_entity(mesh_entities_[z], index_.to_vector());
-        }
-
         if (sub_mesh_map.size() > 0)
         {
+            if (mesh_entities_[z] == nullptr)
+            {
+                mesh_entities_[z] = MakeShared<ChunkMeshEntity>();
+                mesh_entities_[z]->mesh_component_->set_visibility(z < cap_z);
+                world->spawn_entity(mesh_entities_[z], index_.to_vector());
+            }
             List<Shared<Material>> materials(sub_mesh_map.size());
             List<StaticMesh::SubMesh> sub_meshes(sub_mesh_map.size());
 
             {
                 uint i = 0;
-                for (auto pair : sub_mesh_map)
+                for (const auto& pair : sub_mesh_map)
                 {
                     materials[i] = pair.key->material;
                     sub_meshes[i] = pair.value;
@@ -1099,16 +1096,15 @@ void WorldChunk::regenerate_mesh(uint z, bool fill_complex)
                 }
             }
 
-            mesh_entities_[z]->mesh_component_->set_mesh(StaticMesh::construct(String::format("Chunk {%i %i %i}", index_.x, index_.y, z), sub_meshes, AutoCollisionMode::Complex));
-
-            for (uint i = 0; i < materials.length(); i++)
-            {
-                mesh_entities_[z]->mesh_component_->set_material(materials[i], i);
-            }
+            mesh_entities_[z]->mesh_component_->set_mesh(StaticMesh::construct(String::format("Chunk {%i %i %i}", index_.x, index_.y, z), sub_meshes, AutoCollisionMode::Complex, false), materials);
         }
         else
         {
-            mesh_entities_[z]->mesh_component_->set_mesh(nullptr);
+            if (mesh_entities_[z])
+            {
+                mesh_entities_[z]->destroy();
+                mesh_entities_[z] = nullptr;
+            }
         }
     }
 }

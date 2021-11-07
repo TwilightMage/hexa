@@ -206,6 +206,8 @@ void GeometryEditor::compute_faces(const List<StaticMesh::Vertex>& vertices, con
 
     List<List<uint>> faces;
     List<Triangle> triangles(indices.length() / 3);
+
+    // calculate normal for each triangle
     for (uint i = 0; i < indices.length() / 3; i++)
     {
         triangles[i].points[0] = indices[i * 3 + 0];
@@ -214,6 +216,7 @@ void GeometryEditor::compute_faces(const List<StaticMesh::Vertex>& vertices, con
         triangles[i].normal = compute_normal(vertices[indices[i * 3 + 0]].pos, vertices[indices[i * 3 + 1]].pos, vertices[indices[i * 3 + 2]].pos);
     }
 
+    // group triangles by normals
     for (uint i = 0; i < triangles.length(); i++)
     {
         bool face_found = false;
@@ -240,6 +243,7 @@ void GeometryEditor::compute_faces(const List<StaticMesh::Vertex>& vertices, con
 
     for (auto& face : faces)
     {
+        // gather indices for face
         List<uint> face_vertex_indices;
         for (auto triangle_id : face)
         {
@@ -247,13 +251,15 @@ void GeometryEditor::compute_faces(const List<StaticMesh::Vertex>& vertices, con
             face_vertex_indices.add_unique(triangles[triangle_id].points[1]);
             face_vertex_indices.add_unique(triangles[triangle_id].points[2]);
         }
-        
+
+        // calculate face center
         Vector3 center;
         for (auto face_index : face_vertex_indices)
         {
             center += vertices[face_index].pos;
         }
         center /= face_vertex_indices.length();
+        // order indices in counter-clockwise order
         Vector3 orient_axis_f = (vertices[face_vertex_indices[0]].pos - center).normalized();
         Vector3 orient_axis_l = orient_axis_f.cross_product(triangles[face[0]].normal);
         std::map<uint, float> angles;
@@ -309,6 +315,33 @@ void GeometryEditor::compute_normals(List<StaticMesh::Vertex>& vertices, const L
             normal_sum += norm;
         }
         vertices[index].norm = (normal_sum / vertex_normals.length()).normalized();
+    }
+}
+
+void GeometryEditor::remove_unused_vertices(List<StaticMesh::Vertex>& vertices, List<uint>& indices)
+{
+    List<bool> referred = List<bool>::generate(vertices.length(), false);
+
+    for (auto index : indices)
+    {
+        referred[index] = true;
+    }
+    
+    for (uint i = 0; i < vertices.length(); i++)
+    {
+        if (!referred[i])
+        {
+            vertices.remove_at(i);
+            referred.remove_at(i);
+
+            for (uint j = 0; j < indices.length(); j++)
+            {
+                if (indices[j] > i)
+                {
+                    indices[j--]--;
+                }
+            }
+        }
     }
 }
 

@@ -32,13 +32,20 @@ public:
     List(T* inner, uint length)
     {
         allocated_length_ = get_allocate_size(length);
-        this->length_ = length;
+        length_ = length;
         if (length > 0)
         {
-            this->inner_ = new T[allocated_length_];
-            for (uint i = 0; i < length; i++)
+            inner_ = new T[allocated_length_];
+            if constexpr (std::is_convertible<T, std::size_t>::value)
             {
-                this->inner_[i] = inner[i];
+                memcpy(inner_, inner, sizeof(T) * length_);
+            }
+            else
+            {
+                for (uint i = 0; i < length; i++)
+                {
+                    inner_[i] = inner[i];
+                }
             }
         }
     }
@@ -49,10 +56,17 @@ public:
         this->length_ = length;
         if (length > 0)
         {
-            this->inner_ = new T[allocated_length_];
-            for (uint i = 0; i < length; i++)
+            inner_ = new T[allocated_length_];
+            if constexpr (std::is_convertible<T, std::size_t>::value)
             {
-                this->inner_[i] = inner[i];
+                memcpy(inner_, inner, sizeof(T) * length_);
+            }
+            else
+            {
+                for (uint i = 0; i < length; i++)
+                {
+                    inner_[i] = inner[i];
+                }
             }
         }
     }
@@ -70,13 +84,20 @@ public:
     List(uint length)
     {
         allocated_length_ = get_allocate_size(length);
-        this->length_ = length;
+        length_ = length;
         if (length > 0)
         {
-            this->inner_ = new T[allocated_length_];
-            for (uint i = 0; i < length; i++)
+            inner_ = new T[allocated_length_];
+            if constexpr (std::is_convertible<T, std::size_t>::value)
             {
-                this->inner_[i] = T();
+                ZeroMemory(inner_, sizeof(T) * length_);
+            }
+            else
+            {
+                for (uint i = 0; i < length; i++)
+                {
+                    inner_[i] = T();
+                }
             }
         }
     }
@@ -119,9 +140,16 @@ public:
         if (length_ > 0)
         {
             inner_ = new T[allocated_length_];
-            for (uint i = 0; i < length_; i++)
+            if constexpr (std::is_convertible<T, std::size_t>::value)
             {
-                inner_[i] = std::move(rhs.inner_[i]);
+                memcpy(inner_, rhs.inner_, sizeof(T) * length_);
+            }
+            else
+            {
+                for (uint i = 0; i < length_; i++)
+                {
+                    inner_[i] = std::move(rhs.inner_[i]);
+                }
             }
         }
         else
@@ -159,10 +187,21 @@ public:
         {
             reallocate(get_allocate_size(length_ + items.length()));
         }
-        
-        for (const auto& item : items)
+
+        if constexpr (std::is_convertible<T, std::size_t>::value)
         {
-            inner_[length_++] = std::move(item);
+            if (items.length() > 0)
+            {
+                memcpy(inner_ + length_, items.inner_, sizeof(T) * items.length_);
+                length_ += items.length_;
+            }
+        }
+        else
+        {
+            for (const auto& item : items)
+            {
+                inner_[length_++] = std::move(item);
+            }
         }
     }
 

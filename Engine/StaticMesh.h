@@ -68,7 +68,7 @@ public:
 
     explicit StaticMesh(const String& name);
     
-    static Shared<StaticMesh> construct(const String& name, const List<SubMesh>& sub_meshes, AutoCollisionMode collision_mode = AutoCollisionMode::Default);
+    static Shared<StaticMesh> construct(const String& name, const List<SubMesh>& sub_meshes, AutoCollisionMode collision_mode = AutoCollisionMode::Default, bool compute_normals = true);
     static Shared<StaticMesh> load_file_obj(const Path& path, AutoCollisionMode collision_mode = AutoCollisionMode::Default);
 
     uint get_material_count() const;

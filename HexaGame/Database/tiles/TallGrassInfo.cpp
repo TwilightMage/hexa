@@ -27,7 +27,7 @@ void TallGrassInfo::neighbor_changed(const TileIndex& index, TileSide side, cons
 void TallGrassInfo::setup_spawned_entity(const Shared<ComplexTile>& new_entity, const Shared<ComplexTileCustomData>& custom_data) const
 {
     new_entity->set_collision_mask(HexaCollisionMaskBits::COMPLEX_NOBLOCK);
-    new_entity->find_component<MeshComponent>()->set_material_parameter(Quaternion(mesh->get_bounds_half_size().z * 2, 1, 0, 0), 0, 0);
+    new_entity->mesh()->set_material_parameter(Quaternion(mesh->get_bounds_half_size().z * 2, 1, 0, 0), 0, 0);
     
     Random random(new_entity->get_index().x + new_entity->get_index().y + new_entity->get_index().z);
     

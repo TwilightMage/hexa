@@ -27,7 +27,7 @@ public:
     Vector2 move_;
 
     Shared<WorldChunkObserver> observer_;
-    uint load_distance_ = 3;
+    uint load_distance_ = 10;
 
 private:
     void spawn_chunk_loaded(const Shared<WorldChunk>& sender);

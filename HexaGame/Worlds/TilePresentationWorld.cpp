@@ -32,7 +32,7 @@ void TilePresentationWorld::on_start()
                 List<uint> indices;
                 WorldGenerator::generate_tile_mesh(TileSide::All, solid_entry, vertices, indices, pos.x + pos.y + pos.z);
 
-                Shared<StaticMesh> mesh = StaticMesh::construct(String::format("tile %s", entry.value->key.to_string().c()), { StaticMesh::SubMesh(vertices, indices) }, AutoCollisionMode::Convex);
+                Shared<StaticMesh> mesh = StaticMesh::construct(String::format("tile %s", entry.value->key.to_string().c()), { StaticMesh::SubMesh(vertices, indices) }, AutoCollisionMode::Convex, false);
         
                 const auto entity = spawn_entity<SingleTile>(pos);
                 entity->mesh()->set_mesh(mesh);
@@ -59,7 +59,7 @@ void TilePresentationWorld::on_start()
     spawn_entity<TileDemoEntity>(Transform(Vector3(300.0f, 0.0f, 0.0f)), std::array<ConstPtr<SolidTileInfo>, 6>{Tiles::dirt, Tiles::dirt, Tiles::grass, Tiles::dirt, Tiles::grass, Tiles::grass});
     
     {
-        auto monke_mat = HexaGame::get_instance()->load_material("Hexa/Foliage");
+        auto monke_mat = HexaGame::get_instance()->load_material("Engine/Basic_Instanced");
         auto mesh_asset = StaticMesh::load_file_obj("resources/meshes/monkey.obj", AutoCollisionMode::Complex);
         mesh_asset->make_instanced();
         for (uint i = 0; i < 100; i++)

@@ -3,6 +3,7 @@
 #include "BasicTypes.h"
 #include "framework.h"
 #include "Math.h"
+#include "StreamUtils.h"
 
 String::String()
 	: inner_(new char('\0'))
@@ -78,12 +79,18 @@ String::String(char ch)
 }
 
 String::String(const char* c_str)
-	: inner_(new char[strlen(c_str) + 1])
-    , length_(static_cast<uint>(strlen(c_str)))
-    , allocated_length_(static_cast<uint>(strlen(c_str) + 1))
 {
-	memcpy(inner_, c_str, strlen(c_str));
-	inner_[length_] = '\0';
+	if (c_str == nullptr)
+	{
+		String();
+	}
+	else
+	{
+		inner_ = new char[strlen(c_str) + 1];
+		length_ = static_cast<uint>(strlen(c_str));
+		allocated_length_ = length_ + 1;
+		memcpy(inner_, c_str, strlen(c_str) + 1);
+	}
 }
 
 String::String(const char* c_str, uint size)
@@ -168,6 +175,18 @@ const char* String::begin() const
 const char* String::end() const
 {
 	return inner_ + length_;
+}
+
+void String::write_to_stream(std::ostream& stream) const
+{
+	StreamUtils::write_c_string(stream, inner_, length_);
+}
+
+void String::read_from_stream(std::istream& stream)
+{
+	delete[] inner_;
+	StreamUtils::read_c_string(stream, inner_, allocated_length_);
+	length_ = allocated_length_ - 1;
 }
 
 uint String::length() const
@@ -256,9 +275,11 @@ int String::last_index_of_char(const String& chars) const
 	return -1;
 }
 
-String String::substring(uint start, uint num) const
+String String::substring(int start, uint num) const
 {
 	if (start >= length_) return "";
+
+	if (start < 0) start += length_;
 	
 	const uint result_end = Math::min(length_, start + num);
 
@@ -272,8 +293,10 @@ String String::substring(uint start, uint num) const
 	return result;
 }
 
-String String::substring(uint start) const
+String String::substring(int start) const
 {
+	if (start < 0) start += length_;
+	
 	return substring(start, length_ - start);
 }
 
@@ -282,7 +305,7 @@ String String::replace(const String& from, const String& to) const
 	List<uint> positions = find(from);
 	const int offset = to.length_ - from.length_;
 
-	const uint newLength = static_cast<uint>(length_ + positions.length() * offset);
+	const uint newLength = length_ + positions.length() * offset;
     String result = String(' ', newLength);
 
 	uint counter = 0;
@@ -458,6 +481,47 @@ List<String> String::split(const String& delimiter, bool remove_empty) const
 	return result;
 }
 
+Pair<String, String> String::split_at(uint position, bool skip_split_char) const
+{
+	if (skip_split_char)
+	{
+		if (position >= length_) return { *this, "" };
+		if (position == 0) return { "", *this };
+
+		Pair result = { String(' ', position), String(' ', length_ - position) };
+
+		for (uint i = 0; i < position; i++)
+		{
+			result.key.inner_[i] = inner_[i];
+		}
+
+		for (uint i = position; i < length_; i++)
+		{
+			result.value.inner_[i] = inner_[position + i];
+		}
+
+		return result;
+	}
+	else
+	{
+		if (position >= length_) return { *this, "" };
+
+		Pair result = { String(' ', position), String(' ', length_ - position - 1) };
+
+		for (uint i = 0; i < position; i++)
+		{
+			result.key.inner_[i] = inner_[i];
+		}
+
+		for (uint i = position + 1; i < length_; i++)
+		{
+			result.value.inner_[i] = inner_[position + 1 + i];
+		}
+
+		return result;
+	}
+}
+
 List<uint> String::find(const String& substr) const
 {
 	List<uint> result;
@@ -542,6 +606,13 @@ uint64 String::hash(const String& str)
 	return hash_value;
 }
 
+bool String::is_number(const String& string)
+{
+	char* p;
+	double converted = strtod(string.c(), &p);
+	return p != string.c();
+}
+
 String String::operator*(uint rhs) const
 {
 	if (rhs == 0) return "";
@@ -571,16 +642,16 @@ String String::operator+(const String& rhs) const
 
 void String::operator+=(const String& rhs)
 {
-	const bool extend = length_ + rhs.length_ > allocated_length_;
+	const bool extend = length_ + rhs.length_ + 1 > allocated_length_;
 
 	char* target = inner_;
 	if (extend)
 	{
-		target = new char[length_ + rhs.length_];
+		target = new char[length_ + rhs.length_ + 1];
 		memcpy(target, inner_, length_);
 	}
 
-	memcpy(target + length_, rhs.inner_, rhs.length_);
+	memcpy(target + length_, rhs.inner_, rhs.length_ + 1);
 
 	length_ += rhs.length_;
 
@@ -657,7 +728,7 @@ char& String::operator[](uint index)
 {
 	if (index >= length_)
 	{
-		throw new std::out_of_range(String::format("Parameter \"index\" is greater than last character index - %i", length_ - 1).c());
+		throw new std::out_of_range(format("Parameter \"index\" is greater than last character index - %i", length_ - 1).c());
 	}
 
 	return inner_[index];
@@ -667,7 +738,7 @@ const char& String::operator[](uint index) const
 {
 	if (index >= length_)
 	{
-		throw new std::out_of_range(String::format("Parameter \"index\" is greater than last character index - %i", length_ - 1).c());
+		throw new std::out_of_range(format("Parameter \"index\" is greater than last character index - %i", length_ - 1).c());
 	}
 
 	return inner_[index];

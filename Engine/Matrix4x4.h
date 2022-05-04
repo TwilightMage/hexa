@@ -2,14 +2,16 @@
 
 #include <assert.h>
 
+#include "Compound.h"
+#include "IConvertible.h"
 #include "Quaternion.h"
 #include "Rect.h"
 #include "Vector3.h"
 
-class EXPORT Matrix4x4
+class EXPORT Matrix4x4 : public IData
 {
 public:
-    struct Row
+    struct Row : public IData
     {
         float x;
         float y;
@@ -95,8 +97,6 @@ public:
     explicit Matrix4x4(float scale);
     Matrix4x4(const Row& r0, const Row& r1, const Row& r2, const Row& r3);
     Matrix4x4(float x0, float y0, float z0, float w0, float x1, float y1, float z1, float w1, float x2, float y2, float z2, float w2, float x3, float y3, float z3, float w3);
-    
-    Row data[4];
 
     Matrix4x4 translate(const Vector3& by) const;
     Matrix4x4 rotate(const Quaternion& by) const;
@@ -110,6 +110,9 @@ public:
 
     static Vector3 un_project(const Vector2& screen_point, const Vector2& screen_size, const Matrix4x4& camera_model, const Matrix4x4& camera_view, const Matrix4x4& camera_projection);
 
+    void convert_to(Compound::Array& to) const;
+    void convert_from(const Compound::Array& from);
+    
     Matrix4x4 operator*(const Matrix4x4& rhs) const;
 
     Row operator*(const Row& rhs) const;
@@ -119,4 +122,6 @@ public:
 
     Vector3 operator*(const Vector3& rhs) const;
     Vector2 operator*(const Vector2& rhs) const;
+
+    Row data[4];
 };

@@ -1,7 +1,7 @@
 ﻿#include "TallGrassInfo.h"
 
 #include <HexaGame/HexaCollisionMaskBits.h>
-#include <OGRE/Main/OgreEntity.h>
+#include <OGRE/OgreEntity.h>
 
 #include "Engine/Material.h"
 #include "Engine/MeshComponent.h"
@@ -10,11 +10,11 @@
 #include "HexaGame/Entities/ComplexTile.h"
 #include "HexaGame/Worlds/HexaWorld.h"
 
-void TallGrassInfo::post_loading()
-{
-    material = Game::get_instance()->load_material("Hexa/Foliage")->clone(key.to_string());
-    material->set_texture(texture, 0);
-}
+//void TallGrassInfo::post_loading()
+//{
+//    material = Game::get_instance()->load_material("Hexa/Foliage")->clone(key.to_string());
+//    material->set_texture(texture, 0);
+//}
 
 void TallGrassInfo::neighbor_changed(const TileIndex& index, TileSide side, const Shared<HexaWorld>& world, ConstPtr<TileInfo> new_neighbor) const
 {

@@ -3,6 +3,7 @@
 #include "Array2D.h"
 #include "Color.h"
 #include "Map.h"
+#include "ModuleAssetID.h"
 #include "Name.h"
 #include "Path.h"
 #include "Pointers.h"
@@ -17,16 +18,14 @@ class EXPORT Module
     friend Game;
 
 public:
-    Module(const Path& root, const String& module_name);
+    explicit Module(const Name& module_name);
     
     virtual void on_add_resource_directories(Set<String>& local, Set<String>& global);
 
-    FORCEINLINE const String& get_module_name() const { return module_name; }
+    FORCEINLINE const Name& get_module_name() const { return module_name; }
+    FORCEINLINE const ModuleAssetID get_asset_id(const Name& asset_name) const { return ModuleAssetID(get_module_name(), asset_name); }
 
-    Shared<Material> load_material(const Name& name);
-
-    Shared<Texture> create_texture(const Array2D<Color>& pixels, const String& name);
-    Shared<Texture> get_texture(const String& name) const;
+    virtual Path get_module_path(const String& sub_path = "") const = 0;
 
 private:
     void add_resource_directories();
@@ -36,8 +35,7 @@ private:
 
     static void reset_global_resources_directories();
 
-    Path root;
-    String module_name;
+    Name module_name;
 
     Set<String> local_directories = Set<String>();
     inline static Set<String> global_directories = Set<String>();
@@ -49,6 +47,4 @@ private:
         "audio",
         "fonts"
     };
-
-    Map<Name, Shared<Material>> loaded_materials_;
 };

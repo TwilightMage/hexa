@@ -36,22 +36,22 @@ public:
 
     DECLARE_DATABASE_ENTRY(TreeStemInfo, ash_stem);
 
-    DATABASE_INIT_FUNC(TileInfo)
-    {        
-        INIT_DATABASE_ENTRY(air, AirTileInfo);
-        
-        INIT_SOLID_TILE_DATABASE_ENTRY(dirt, SolidTileInfo, { MetaTags::DIRT }, 1.0f, RESOURCES, Game::get_instance(), true, true);
-        INIT_SOLID_TILE_DATABASE_ENTRY(grass, GrassInfo, { MetaTags::DIRT }, 1.0f, RESOURCES, Game::get_instance(), true, true);
-        INIT_SOLID_TILE_DATABASE_ENTRY(stone, SolidTileInfo, { MetaTags::STONE }, 2.0f, RESOURCES, Game::get_instance(), true, true);
-        INIT_SOLID_TILE_DATABASE_ENTRY(sand, SolidTileInfo, { MetaTags::DIRT }, 0.5f, RESOURCES, Game::get_instance(), true, true);
-        INIT_SOLID_TILE_DATABASE_ENTRY(iron_ore, SolidTileInfo, { MetaTags::STONE }, 2.5f, RESOURCES, Game::get_instance(), true, true);
-        INIT_SOLID_TILE_DATABASE_ENTRY(stone_bricks, SolidTileInfo, { MetaTags::STONE }, 2.0f, RESOURCES, Game::get_instance(), true, true);
-
-        INIT_COMPLEX_TILE_DATABASE_ENTRY(tall_grass, TallGrassInfo, {}, 0.1f, RESOURCES, Game::get_instance(), "tall_grass", nullptr);
-        INIT_COMPLEX_TILE_DATABASE_ENTRY(blue_roses, TallGrassInfo, { MetaTags::FLOWER }, 0.1f, RESOURCES, Game::get_instance(), "tall_grass", nullptr);
-        INIT_COMPLEX_TILE_DATABASE_ENTRY(red_roses, TallGrassInfo, { MetaTags::FLOWER }, 0.1f, RESOURCES, Game::get_instance(), "tall_grass", nullptr);
-        INIT_COMPLEX_TILE_DATABASE_ENTRY(chamomile, TallGrassInfo, { MetaTags::FLOWER }, 0.1f, RESOURCES, Game::get_instance(), "tall_grass", nullptr);
-
-        INIT_COMPLEX_TILE_DATABASE_ENTRY(ash_stem, TreeStemInfo, {}, 1.0f, RESOURCES, Game::get_instance(), "tree" + "_stem", nullptr, LOAD_MESH(RESOURCES, MESHES_TILES, "tree" + "_root"), LOAD_TEX(Game::get_instance(), String("ash_stem") + "_root"), LOAD_MESH(RESOURCES, MESHES_TILES, "tree" + "_krone"), LOAD_TEX(Game::get_instance(), String("ash_stem") + "_krone"), LOAD_MESH(RESOURCES, MESHES_TILES, "tree" + "_branch"), LOAD_TEX(Game::get_instance(), String("ash_stem") + "_branch"), LOAD_MESH(RESOURCES, MESHES_TILES, "tree" + "_branch_krone"), LOAD_TEX(Game::get_instance(), String("ash_stem") + "_branch_krone"), "ash_log");
-    }
+    //DATABASE_INIT_FUNC(TileInfo)
+    //{        
+    //    INIT_DATABASE_ENTRY(air, AirTileInfo);
+    //    
+    //    INIT_SOLID_TILE_DATABASE_ENTRY(dirt, SolidTileInfo, { MetaTags::DIRT }, 1.0f, RESOURCES, Game::get_instance(), true, true);
+    //    INIT_SOLID_TILE_DATABASE_ENTRY(grass, GrassInfo, { MetaTags::DIRT }, 1.0f, RESOURCES, Game::get_instance(), true, true);
+    //    INIT_SOLID_TILE_DATABASE_ENTRY(stone, SolidTileInfo, { MetaTags::STONE }, 2.0f, RESOURCES, Game::get_instance(), true, true);
+    //    INIT_SOLID_TILE_DATABASE_ENTRY(sand, SolidTileInfo, { MetaTags::DIRT }, 0.5f, RESOURCES, Game::get_instance(), true, true);
+    //    INIT_SOLID_TILE_DATABASE_ENTRY(iron_ore, SolidTileInfo, { MetaTags::STONE }, 2.5f, RESOURCES, Game::get_instance(), true, true);
+    //    INIT_SOLID_TILE_DATABASE_ENTRY(stone_bricks, SolidTileInfo, { MetaTags::STONE }, 2.0f, RESOURCES, Game::get_instance(), true, true);
+    //
+    //    INIT_COMPLEX_TILE_DATABASE_ENTRY(tall_grass, TallGrassInfo, {}, 0.1f, RESOURCES, Game::get_instance(), "tall_grass", nullptr);
+    //    INIT_COMPLEX_TILE_DATABASE_ENTRY(blue_roses, TallGrassInfo, { MetaTags::FLOWER }, 0.1f, RESOURCES, Game::get_instance(), "tall_grass", nullptr);
+    //    INIT_COMPLEX_TILE_DATABASE_ENTRY(red_roses, TallGrassInfo, { MetaTags::FLOWER }, 0.1f, RESOURCES, Game::get_instance(), "tall_grass", nullptr);
+    //    INIT_COMPLEX_TILE_DATABASE_ENTRY(chamomile, TallGrassInfo, { MetaTags::FLOWER }, 0.1f, RESOURCES, Game::get_instance(), "tall_grass", nullptr);
+    //
+    //    INIT_COMPLEX_TILE_DATABASE_ENTRY(ash_stem, TreeStemInfo, {}, 1.0f, RESOURCES, Game::get_instance(), "tree" + "_stem", nullptr, LOAD_MESH(RESOURCES, MESHES_TILES, "tree" + "_root"), LOAD_TEX(Game::get_instance(), String("ash_stem") + "_root"), LOAD_MESH(RESOURCES, MESHES_TILES, "tree" + "_krone"), LOAD_TEX(Game::get_instance(), String("ash_stem") + "_krone"), LOAD_MESH(RESOURCES, MESHES_TILES, "tree" + "_branch"), LOAD_TEX(Game::get_instance(), String("ash_stem") + "_branch"), LOAD_MESH(RESOURCES, MESHES_TILES, "tree" + "_branch_krone"), LOAD_TEX(Game::get_instance(), String("ash_stem") + "_branch_krone"), "ash_log");
+    //}
 };

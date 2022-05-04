@@ -6,7 +6,7 @@ class AxisArrows : public Entity
 {
 public:
     AxisArrows();
-    
-    virtual void on_start() override;
+
+    void on_start() override;
     
 };

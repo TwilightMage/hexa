@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "WorldGenerator.h"
+#include "Engine/Compound.h"
 #include "Engine/PerlinNoise.h"
 
 class EXPORT DefaultWorldGenerator : public WorldGenerator
@@ -8,8 +9,8 @@ class EXPORT DefaultWorldGenerator : public WorldGenerator
 public:
     void init(uint seed) override;
     
-    JSON write_settings() const override;
-    void read_settings(const JSON& settings) override;
+    Compound::Object write_settings() const override;
+    void read_settings(const Compound::Object& settings) override;
 
 protected:
     void generate_chunk(const EditableChunk& editable) override;

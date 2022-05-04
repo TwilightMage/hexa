@@ -227,3 +227,19 @@ float Vector3::sum_all() const
 {
     return x + y + z;
 }
+
+void Vector3::convert_to(Compound::Object& to) const
+{
+    to = Compound::Object{
+        { "x", x},
+        { "y", y},
+        { "z", z}
+    };
+}
+
+void Vector3::convert_from(const Compound::Object& from)
+{
+    x = from.get_float("x", 0);
+    y = from.get_float("y", 0);
+    z = from.get_float("z", 0);
+}

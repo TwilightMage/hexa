@@ -24,6 +24,15 @@ std::chrono::system_clock::time_point to_time_point(const DateTime& in_time)
 	return result;
 }
 
+TimeInterval::TimeInterval(int days, int hours, int minutes, int seconds, int milliseconds)
+	: days(days)
+	, hours(hours)
+	, minutes(minutes)
+	, seconds(seconds)
+	, milliseconds(milliseconds)
+{
+}
+
 float TimeInterval::get_total_hours() const
 {
 	return get_total_minutes() / 60.0f;
@@ -41,16 +50,16 @@ float TimeInterval::get_total_seconds() const
 
 int TimeInterval::get_total_milliseconds() const
 {
-	return millisecond + (second + (minute + (hour * day * 24) * 60) * 60) * 1000;
+	return milliseconds + (seconds + (minutes + (hours * days * 24) * 60) * 60) * 1000;
 }
 
 String TimeInterval::to_string() const
 {
-	String result = String::make(millisecond) + "ms";
-	if (day > 0 || hour > 0 || minute > 0 || second > 0) result = String::make(second) + "s, " + result;
-	if (day > 0 || hour > 0 || minute > 0) result = String::make(second) + "m, " + result;
-	if (day > 0 || hour > 0) result = String::make(second) + "h, " + result;
-	if (day > 0) result = String::make(second) + "d, " + result;
+	String result = String::make(milliseconds) + "ms";
+	if (days > 0 || hours > 0 || minutes > 0 || seconds > 0) result = String::make(seconds) + "s, " + result;
+	if (days > 0 || hours > 0 || minutes > 0) result = String::make(seconds) + "m, " + result;
+	if (days > 0 || hours > 0) result = String::make(seconds) + "h, " + result;
+	if (days > 0) result = String::make(seconds) + "d, " + result;
 	return result;
 }
 

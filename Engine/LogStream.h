@@ -27,7 +27,7 @@ class EXPORT LogStream : public std::ostream
 {
 public:
     explicit LogStream(const DateTime& log_start_time, const String& root);
-	~LogStream();
+	~LogStream() override;
 
 private:
 	std::ofstream latest_log_file_;

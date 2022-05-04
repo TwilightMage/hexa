@@ -172,6 +172,20 @@ bool Vector2::operator!=(const Vector2& rhs) const
     return (x != rhs.x || y != rhs.y);
 }
 
+void Vector2::convert_to(Compound::Object& to) const
+{
+    to = Compound::Object{
+        { "x", x},
+        { "y", y }
+    };
+}
+
+void Vector2::convert_from(const Compound::Object& from)
+{
+    x = from.get_float("x", 0);
+    y = from.get_float("y", 0);
+}
+
 Vector2 Vector2::zero()
 {
     return Vector2(0.0f, 0.0f);

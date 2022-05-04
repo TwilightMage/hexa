@@ -7,7 +7,9 @@ vertex_program Engine/BasicVS hlsl
     default_params
     {
         param_named_auto world world_matrix
-        param_named_auto viewProj viewproj_matrix
+        param_named_auto view view_matrix
+        param_named_auto proj projection_matrix
+        param_named_auto farDistance far_clip_distance
     }
 }
 
@@ -16,13 +18,6 @@ fragment_program Engine/BasicFS hlsl
     source basic.hlsl
     entry_point frag
     target ps_2_0
-    
-    default_params
-    {
-        param_named_auto ambientLight ambient_light_colour
-        param_named_auto sunDiff light_diffuse_colour 0
-        param_named_auto sunDir light_direction 0
-    }
 }
 
 vertex_program Engine/BasicVS_inst hlsl
@@ -30,10 +25,12 @@ vertex_program Engine/BasicVS_inst hlsl
     source basic.hlsl
     entry_point vert
     target vs_2_0
-    preprocessor_defines INSTANCED
+    preprocessor_defines INSTANCING
     
     default_params
     {
-        param_named_auto viewProj viewproj_matrix
+        param_named_auto view view_matrix
+        param_named_auto proj projection_matrix
+        param_named_auto farDistance far_clip_distance
     }
 }

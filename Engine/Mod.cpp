@@ -7,9 +7,14 @@
 
 typedef Mod* (__stdcall *f_get_mod)(const Path& root);
 
-Mod::Mod(const Path& root, const String& module_name)
-    : Module(root, module_name)
+Mod::Mod(const Name& module_name)
+    : Module(module_name)
 {
+}
+
+Path Mod::get_module_path(const String& sub_path) const
+{
+    return "./mods/" + get_module_name().to_string() + "/" + sub_path;
 }
 
 const Mod::Info& Mod::get_mod_info() const
@@ -24,11 +29,6 @@ bool Mod::verify_signature(const Path& path)
     if (!path.get_child(path.filename + ".meta").exists()) return false;
 
     return true;
-}
-
-Path Mod::mod_path(const String& sub_path) const
-{
-    return "./mods/" + info_.name + "/" + sub_path;
 }
 
 void Mod::on_loading_stage()

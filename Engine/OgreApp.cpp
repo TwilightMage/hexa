@@ -84,5 +84,6 @@ void OgreApp::windowResized(Ogre::RenderWindow* rw)
 
 void OgreApp::set_window_icon(const Shared<Texture>& icon_texture)
 {
-    setWindowIcon((byte*)icon_texture->get_pixels().begin(), icon_texture->get_width(), icon_texture->get_height(), mWindows[0].native);
+    // TODO: Implement set_window_icon
+    //setWindowIcon((byte*)icon_texture->get_pixels().begin(), icon_texture->get_width(), icon_texture->get_height(), mWindows[0].native);
 }

@@ -6,15 +6,39 @@
 template<typename K, typename V>
 struct SimpleMap
 {
-    List<Pair<K, V>*> entries;
-
-    ~SimpleMap()
+    SimpleMap()
     {
-        /*for (uint i = 0; i < entries.length(); i++)
+    }
+
+    SimpleMap(const std::initializer_list<Pair<K, V>>& rhs)
+    {
+        for (const Pair<K, V>& entry : rhs)
         {
-            auto ptr = entries[i];
-            delete ptr;
-        }*/
+            operator[](entry.key) = entry.value;
+        }
+    }
+
+    SimpleMap(const List<Pair<K, V>>& rhs)
+    {
+        for (const Pair<K, V>& entry : rhs)
+        {
+            operator[](entry.key) = entry.value;
+        }
+    }
+
+    SimpleMap(const SimpleMap& rhs)
+        : entries(rhs.size())
+    {
+        uint i = 0;
+        for (Pair<K, V>* entry : rhs.entries)
+        {
+            entries[i++] = new Pair<K, V>(*entry);
+        }
+    }
+
+    FORCEINLINE SimpleMap copy() const
+    {
+        return *this;
     }
     
     FORCEINLINE V& operator[](const K& key)
@@ -27,33 +51,33 @@ struct SimpleMap
         return at(key);
     }
 
-    void clear()
+    FORCEINLINE void clear()
     {
         /*for (uint i = 0; i < entries.length(); i++) delete entries[i];*/
         entries.clear();
     }
 
-    Pair<K, V>** begin()
+    FORCEINLINE Pair<K, V>** begin()
     {
         return entries.begin();
     }
 
-    Pair<K, V>** end()
+    FORCEINLINE Pair<K, V>** end()
     {
         return entries.end();
     }
 
-    const Pair<K, V>* const* begin() const
+    FORCEINLINE const Pair<K, V>* const* begin() const
     {
         return entries.begin();
     }
 
-    const Pair<K, V>* const* end() const
+    FORCEINLINE const Pair<K, V>* const* end() const
     {
         return entries.end();
     }
 
-    uint size() const
+    FORCEINLINE uint size() const
     {
         return entries.length();
     }
@@ -202,7 +226,7 @@ struct SimpleMap
         return result;
     }
 
-    List<V> get_values() const requires std::is_default_constructible<V>::value
+    List<V> get_values() const
     {
         List<V> result;
 
@@ -213,4 +237,76 @@ struct SimpleMap
 
         return result;
     }
+
+    SimpleMap& chain(const K& key, const V& value)
+    {
+        operator[](key) = value;
+
+        return *this;
+    }
+
+    SimpleMap chain(const K& key, const V& value) const
+    {
+        SimpleMap result = *this;
+
+        result[key] = value;
+
+        return result;
+    }
+
+    void write_to_stream(std::ostream& stream) const requires Serializable<K> && Serializable<V>
+    {
+        StreamUtils::write(stream, entries.length());
+        for (uint i = 0; i < entries.length(); i++)
+        {
+            StreamUtils::write(stream, *entries[i]);
+        }
+    }
+
+    void read_from_stream(std::istream& stream) requires Serializable<K> && Serializable<V>
+    {
+        entries.resize(StreamUtils::read<uint>(stream));
+        for (uint i = 0; i < entries.length(); i++)
+        {
+            if (entries[i] == nullptr) entries[i] = new Pair<K, V>();
+            StreamUtils::read(stream, *entries[i]);
+        }
+    }
+
+    void merge(SimpleMap right, bool prefer_right = true)
+    {
+        if (prefer_right)
+        {
+            for (const auto& right_entry : right.entries)
+            {
+                operator[](right_entry->key) = right_entry->value;
+            }
+        }
+        else
+        {
+            for (const auto& right_entry : right.entries)
+            {
+                if (!contains(right_entry->key))
+                {
+                    operator[](right_entry->key) = right_entry->value;
+                }
+            }
+        }
+    }
+
+    SimpleMap& operator=(const SimpleMap& rhs)
+    {
+        if (*this == rhs) return *this;
+
+        entries = rhs.entries;
+
+        return *this;
+    }
+
+    bool operator==(const SimpleMap& rhs) const
+    {
+        return entries == rhs.entries;
+    }
+
+    List<Pair<K, V>*> entries;
 };

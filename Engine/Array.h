@@ -1,8 +1,9 @@
 ﻿#pragma once
 
 #include "framework.h"
+#include "IData.h"
 
-template<typename T>
+template<typename ValueType>
 class Array
 {
 public:   
@@ -11,22 +12,22 @@ public:
         delete[] inner_;
     }
 
-    FORCEINLINE const T* begin() const
+    FORCEINLINE const ValueType* begin() const
     {
         return inner_;
     }
 
-    FORCEINLINE const T* end() const
+    FORCEINLINE const ValueType* end() const
     {
         return inner_ + length_;
     }
 
-    FORCEINLINE T* begin()
+    FORCEINLINE ValueType* begin()
     {
         return inner_;
     }
 
-    FORCEINLINE T* end()
+    FORCEINLINE ValueType* end()
     {
         return inner_ + length_;
     }
@@ -36,12 +37,12 @@ public:
         return length_;
     }
 
-    FORCEINLINE T* get_data()
+    FORCEINLINE ValueType* get_data()
     {
         return inner_;
     }
 
-    FORCEINLINE const T* get_data() const
+    FORCEINLINE const ValueType* get_data() const
     {
         return inner_;
     }
@@ -79,27 +80,31 @@ protected:
 
     void reallocate(uint newLength)
     {
-        T* new_inner = newLength > 0 ? new T[newLength] : nullptr;
-
-        if constexpr (std::is_convertible<T, std::size_t>::value)
+        allocated_length_ = newLength;
+        if (newLength > 0)
         {
-            if (newLength > 0)
+            ValueType* new_inner = new ValueType[newLength];
+
+            if constexpr (Data<ValueType>)
             {
-                memcpy(new_inner, inner_, sizeof(T) * length_);
+                memcpy(new_inner, inner_, sizeof(ValueType) * length_);
             }
+            else
+            {
+                for (uint i = 0; i < (length_ < newLength ? length_ : newLength); i++)
+                {
+                    new_inner[i] = inner_[i];
+                }
+            }
+
+            delete[] inner_;
+            inner_ = new_inner;
         }
         else
         {
-            for (uint i = 0; i < (length_ < newLength ? length_ : newLength); i++)
-            {
-                new_inner[i] = std::move(inner_[i]);
-            }
+            delete[] inner_;
+            inner_ = nullptr;
         }
-
-        delete[] inner_;
-        inner_ = new_inner;
-
-        allocated_length_ = newLength;
     }
 
     void slack()
@@ -112,7 +117,7 @@ protected:
         }
     }
 
-    T* inner_ = nullptr;
+    ValueType* inner_ = nullptr;
     uint length_ = 0;
     uint allocated_length_ = 0;
 };

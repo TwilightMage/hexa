@@ -1,6 +1,7 @@
 ﻿#include "ItemToolInfo.h"
 
 #include "HexaGame/CharacterInventory.h"
+#include "HexaGame/MetaTags.h"
 #include "HexaGame/ComplexTileCustomData/TreeStemCustomData.h"
 #include "HexaGame/Database/Tiles.h"
 #include "HexaGame/Entities/Character.h"

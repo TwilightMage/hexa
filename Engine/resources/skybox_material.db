@@ -1,0 +1,24 @@
+{
+  "programs": {
+    "skybox_vs": {
+      "type": "vertex",
+      "source": "shaders/skybox",
+      "target": "vs_2_0",
+      "params": {
+        "worldViewProj": "worldviewproj_matrix"
+      }
+    },
+    "skybox_fs": {
+      "type": "fragment",
+      "source": "shaders/skybox",
+      "target": "ps_2_0"
+    }
+  },
+  "materials": {
+    "skybox": {
+      "vertex": "skybox_vs",
+      "fragment": "skybox_fs",
+      "depth": false
+    }
+  }
+}

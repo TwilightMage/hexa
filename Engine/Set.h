@@ -63,6 +63,18 @@ public:
         slack();
     }
 
+    explicit Set(const List<T>& list)
+    {
+        reallocate((uint)list.length());
+
+        for (const auto& item : list)
+        {
+            add(item);
+        }
+
+        slack();
+    }
+
     Set& operator=(const Set& rhs)
     {
         if (this == &rhs) return *this;
@@ -188,6 +200,11 @@ public:
         }
 
         return false;
+    }
+
+    List<T> to_list() const
+    {
+        return List<T>(inner_, length_);
     }
     
     const T& operator[](uint index) const

@@ -1,10 +1,10 @@
 ﻿#include "World.h"
 
-#include <OGRE/Main/OgreEntity.h>
-#include <OGRE/Main/OgreMesh.h>
-#include <OGRE/Main/OgreRoot.h>
-#include <OGRE/Main/OgreSceneManager.h>
-#include <OGRE/Main/OgreSubEntity.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreMesh.h>
+#include <OGRE/OgreRoot.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSubEntity.h>
 #include <reactphysics3d/reactphysics3d.h>
 #include <soloud/soloud_wav.h>
 
@@ -19,7 +19,7 @@
 #include "Texture.h"
 #include "HexaGame/Entities/ItemDrop.h"
 #include "Physics/RaycastCallback.h"
-#include "OGRE/Main/OgreHardwarePixelBuffer.h"
+#include "OGRE/OgreHardwarePixelBuffer.h"
 
 bool World::spawn_entity(const Shared<Entity>& entity, const Transform& transform)
 {

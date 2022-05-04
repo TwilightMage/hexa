@@ -1,29 +1,29 @@
 ﻿#include "Material.h"
 
-#include <OGRE/Main/OgreMaterial.h>
-#include <OGRE/Main/OgreTechnique.h>
+#include <OGRE/OgreMaterial.h>
+#include <OGRE/OgreTechnique.h>
 
+#include "Game.h"
+#include "Module.h"
 #include "Texture.h"
 
-Shared<Material> Material::clone(const String& new_name) const
+uint Material::get_textures_count() const
 {
-    auto result = MakeShared<Material>();
-    result->ogre_material_ = ogre_material_->clone(new_name.is_empty() ? ogre_material_->getName() + "_Clone" : new_name.c());
-    return result;
+    return ogre_material_->getTechnique(0)->getPass(0)->getNumTextureUnitStates();
+}
+
+Shared<Texture> Material::get_texture(uint index) const
+{
+    if (index >= textures_.length()) return nullptr;
+    
+    return textures_[index];
 }
 
 void Material::set_texture(const Shared<Texture>& texture, uint index)
 {
-    for (uint i = 0; i < ogre_material_->getNumTechniques(); i++)
-    {
-        ogre_material_->getTechnique(i)->getPass(0)->getTextureUnitState(index)->setTexture(texture->ogre_texture_);
-    }
-}
-
-void Material::set_texture(const String& texture, uint index)
-{
-    for (uint i = 0; i < ogre_material_->getNumTechniques(); i++)
-    {
-        ogre_material_->getTechnique(i)->getPass(0)->getTextureUnitState(index)->setTextureName(texture.c());
-    }
+    if (index >= textures_.length()) return;
+    
+    textures_[index] = texture;
+    
+    ogre_material_->getTechnique(0)->getPass(0)->getTextureUnitState(index)->setTexture(texture ? Game::get_uv_test_texture()->ogre_texture_ : texture->ogre_texture_);
 }

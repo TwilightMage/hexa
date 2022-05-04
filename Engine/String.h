@@ -5,9 +5,11 @@
 #include <sstream>
 
 #include "framework.h"
+#include "ISerializable.h"
 #include "List.h"
+#include "Pair.h"
 
-class EXPORT String
+class EXPORT String : public ISerializable
 {
 public:
 	String();
@@ -39,14 +41,17 @@ public:
 	const char* begin() const;
 	const char* end() const;
 
-	uint length() const;
-	uint allocated_length() const;
+	void write_to_stream(std::ostream& stream) const override;
+	void read_from_stream(std::istream& stream) override;;
+
+	FORCEINLINE uint length() const;
+	FORCEINLINE uint allocated_length() const;
 	int index_of(const String& substr) const;
 	int last_index_of(const String& substr) const;
 	int index_of_char(const String& chars) const;
 	int last_index_of_char(const String& chars) const;
-	String substring(uint start, uint num) const;
-	String substring(uint start) const;
+	String substring(int start, uint num) const;
+	String substring(int start) const;
 	String replace(const String& from, const String& to) const;
 	String remove(const String& substring) const;
 	String fit(int new_length, char filler = ' ') const;
@@ -60,6 +65,7 @@ public:
 	bool contains(const String& substr) const;
 	bool is_empty() const;
 	List<String> split(const String& delimiter, bool remove_empty = false) const;
+	Pair<String, String> split_at(uint position, bool skip_split_char = false) const;
 	List<uint> find(const String& substr) const;
 
 	static bool replace_single(String& src, const String& from, const String& to);
@@ -111,6 +117,24 @@ public:
 		str >> result;
 		return result;
 	}
+
+	template<typename T>
+	static bool try_parse(const String& string, T& out_value)
+	{
+		char* p;
+		double converted = strtod(string.c(), &p);
+		if (p != string.c())
+		{
+			return false;
+		}
+		else
+		{
+			out_value = (T) converted;
+			return true;
+		}
+	}
+
+	static bool is_number(const String& string);
 	
 	template<class C>
 	static String from_ptr(C* ptr)
@@ -176,5 +200,5 @@ template<class Elem, class Traits>
 inline std::basic_ostream<Elem, Traits>& operator<<(std::basic_ostream<Elem, Traits>& o_stream, const String& str)
 {
 	o_stream << str.c();
-	return (o_stream);
+	return (o_stream);	
 }

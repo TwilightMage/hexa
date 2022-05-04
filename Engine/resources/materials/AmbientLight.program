@@ -1,0 +1,25 @@
+vertex_program DeferredShading/post/vs hlsl
+{
+	source vs.hlsl
+	target vs_2_0
+	
+	default_params
+	{
+		//param_named_auto invProj inverse_projection_matrix
+		param_named_auto flip render_target_flipping
+		param_named farCorner float3 1 1 1
+	}
+}
+
+fragment_program DeferredShading/post/Ambient_ps hlsl
+{
+	source Ambient.hlsl
+	target ps_2_0
+	
+	default_params
+	{
+		param_named_auto ambientColor ambient_light_colour
+		param_named_auto proj projection_matrix
+		param_named_auto farClipDistance far_clip_distance
+	}
+}

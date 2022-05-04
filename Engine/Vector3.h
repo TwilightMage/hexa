@@ -5,7 +5,7 @@
 #include "String.h"
 #include "Vector2.h"
 
-class EXPORT Vector3
+class EXPORT Vector3 : public IData
 {
 public:
     Vector3();
@@ -53,6 +53,9 @@ public:
     Vector3 operator-() const;
 
     FORCEINLINE float sum_all() const;
+
+    void convert_to(Compound::Object& to) const;
+    void convert_from(const Compound::Object& from);
     
     float x;
     float y;

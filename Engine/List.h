@@ -6,19 +6,19 @@
 
 #include "Array.h"
 #include "BasicTypes.h"
+#include "IConvertible.h"
+#include "StreamUtils.h"
 
-template<typename T>
-class List : public Array<T>
+template<typename ValueType>
+class List : public Array<ValueType>
 {
 public:
-    using ItemType = std::conditional_t<(sizeof(T) > 8), const T&, T>;
-    
-    using Array<T>::begin;
-    using Array<T>::end;
+    using Array<ValueType>::begin;
+    using Array<ValueType>::end;
 
-    using Array<T>::get_data;
-    using Array<T>::operator==;
-    using Array<T>::operator!=;
+    using Array<ValueType>::get_data;
+    using Array<ValueType>::operator==;
+    using Array<ValueType>::operator!=;
 
     List()
     {
@@ -29,16 +29,16 @@ public:
     {
     }
 
-    List(T* inner, uint length)
+    List(ValueType* inner, uint length)
     {
         allocated_length_ = get_allocate_size(length);
         length_ = length;
         if (length > 0)
         {
-            inner_ = new T[allocated_length_];
-            if constexpr (std::is_convertible<T, std::size_t>::value)
+            inner_ = new ValueType[allocated_length_];
+            if constexpr (Data<ValueType>)
             {
-                memcpy(inner_, inner, sizeof(T) * length_);
+                memcpy(inner_, inner, sizeof(ValueType) * length_);
             }
             else
             {
@@ -50,16 +50,16 @@ public:
         }
     }
 
-    List(const T* inner, uint length)
+    List(const ValueType* inner, uint length)
     {
         allocated_length_ = get_allocate_size(length);
         this->length_ = length;
         if (length > 0)
         {
-            inner_ = new T[allocated_length_];
-            if constexpr (std::is_convertible<T, std::size_t>::value)
+            inner_ = new ValueType[allocated_length_];
+            if constexpr (std::is_convertible<ValueType, std::size_t>::value)
             {
-                memcpy(inner_, inner, sizeof(T) * length_);
+                memcpy(inner_, inner, sizeof(ValueType) * length_);
             }
             else
             {
@@ -71,13 +71,13 @@ public:
         }
     }
 
-    List(const std::vector<T>& vec)
+    List(const std::vector<ValueType>& vec)
         : List(vec.data(), static_cast<uint>(vec.size()))
     {
     }
 
-    List(const std::initializer_list<T>& il)
-        : List(static_cast<const T*>(il.begin()), static_cast<uint>(il.size()))
+    List(const std::initializer_list<ValueType>& il)
+        : List(static_cast<const ValueType*>(il.begin()), static_cast<uint>(il.size()))
     {
     }
 
@@ -87,16 +87,16 @@ public:
         length_ = length;
         if (length > 0)
         {
-            inner_ = new T[allocated_length_];
-            if constexpr (std::is_convertible<T, std::size_t>::value)
+            inner_ = new ValueType[allocated_length_];
+            if constexpr (std::is_convertible<ValueType, std::size_t>::value)
             {
-                ZeroMemory(inner_, sizeof(T) * length_);
+                ZeroMemory(inner_, sizeof(ValueType) * length_);
             }
             else
             {
                 for (uint i = 0; i < length; i++)
                 {
-                    inner_[i] = T();
+                    inner_[i] = ValueType();
                 }
             }
         }
@@ -108,7 +108,7 @@ public:
         return {{items...}};
     }
 
-    static List generate(uint size, std::function<T(uint index)> generator)
+    static List generate(uint size, std::function<ValueType(uint index)> generator)
     {
         auto result = List(size);
         for (uint i = 0; i < size; i++)
@@ -118,7 +118,7 @@ public:
         return result;
     }
 
-    static List generate(uint size, ItemType placeholder)
+    static List generate(uint size, const ValueType& placeholder)
     {
         auto result = List(size);
         for (uint i = 0; i < size; i++)
@@ -128,7 +128,7 @@ public:
         return result;
     }
 
-    List& operator=(const List& rhs)
+    List operator=(const List& rhs)
     {
         if (this == &rhs) return *this;
 
@@ -139,10 +139,10 @@ public:
 
         if (length_ > 0)
         {
-            inner_ = new T[allocated_length_];
-            if constexpr (std::is_convertible<T, std::size_t>::value)
+            inner_ = new ValueType[allocated_length_];
+            if constexpr (std::is_convertible<ValueType, std::size_t>::value)
             {
-                memcpy(inner_, rhs.inner_, sizeof(T) * length_);
+                memcpy(inner_, rhs.inner_, sizeof(ValueType) * length_);
             }
             else
             {
@@ -160,7 +160,7 @@ public:
         return *this;
     }
 
-    void add(ItemType item)
+    void add(const ValueType& item)
     {
         if (length_ == allocated_length_)
         {
@@ -171,7 +171,7 @@ public:
     }
 
     template<typename... Items>
-    void add_many(ItemType first, const Items&... rest)
+    void add_many(const ValueType& first, const Items&... rest)
     {
         add(first);
 
@@ -181,18 +181,18 @@ public:
         }
     }
 
-    void add_many(const List<T>& items)
+    void add_many(const List<ValueType>& items)
     {
         if (length_ + items.length() > allocated_length_)
         {
             reallocate(get_allocate_size(length_ + items.length()));
         }
 
-        if constexpr (std::is_convertible<T, std::size_t>::value)
+        if constexpr (std::is_convertible<ValueType, std::size_t>::value)
         {
             if (items.length() > 0)
             {
-                memcpy(inner_ + length_, items.inner_, sizeof(T) * items.length_);
+                memcpy(inner_ + length_, items.inner_, sizeof(ValueType) * items.length_);
                 length_ += items.length_;
             }
         }
@@ -205,7 +205,7 @@ public:
         }
     }
 
-    void add_unique(ItemType item)
+    void add_unique(const ValueType& item)
     {
         if (length_ > 0)
         {
@@ -218,7 +218,7 @@ public:
         add(item);
     }
 
-    bool contains(ItemType item) const
+    bool contains(const ValueType& item) const
     {
         if (length_ == 0) return false;
         
@@ -229,7 +229,7 @@ public:
         return false;
     }
 
-    int index_of(ItemType item) const
+    int index_of(const ValueType& item) const
     {
         if (length_ == 0) return -1;
         
@@ -240,7 +240,7 @@ public:
         return -1;
     }
 
-    int index_of(std::function<bool(ItemType item)> predicate) const
+    int index_of(std::function<bool(const ValueType& item)> predicate) const
     {
         if (length_ == 0) return -1;
         
@@ -266,7 +266,7 @@ public:
             }
         }
 
-        inner_[length_ - 1] = T();
+        inner_[length_ - 1] = ValueType();
         
         --length_;
     }
@@ -283,11 +283,11 @@ public:
         {
             allocated_length_ = new_allocated_length;
             length_ -= size;
-            T* new_inner;
+            ValueType* new_inner;
 
             if (allocated_length_ > 0)
             {
-                new_inner = new T[allocated_length_];
+                new_inner = new ValueType[allocated_length_];
 
                 for (uint i = 0; i < start; i++)
                 {
@@ -312,12 +312,12 @@ public:
             for (uint i = start + size; i < length_ - size; i++)
             {
                 inner_[i - size] = std::move(inner_[i]);
-                inner_[i] = T();
+                inner_[i] = ValueType();
             }
         }
     }
 
-    void replace(ItemType from, ItemType to)
+    void replace(const ValueType& from, const ValueType& to)
     {
         for (uint i = 0; i < length_; i++)
         {
@@ -328,7 +328,7 @@ public:
         }
     }
 
-    void force_size_fit(uint new_size, ItemType placeholder = T())
+    void resize(uint new_size, const ValueType& placeholder = ValueType())
     {
         if (length_ < new_size)
         {
@@ -352,12 +352,12 @@ public:
 
             for (length_ = allocated_length_; length_ > new_size; --length_)
             {
-                inner_[length_] = T();
+                inner_[length_] = ValueType();
             }
         }
     }
 
-    void remove(ItemType item)
+    void remove(const ValueType& item)
     {
         uint offset = 0;
         for (uint i = 0; i < length_; i++)
@@ -373,20 +373,20 @@ public:
                     }
                     else
                     {
-                        inner_[i] = T();
+                        inner_[i] = ValueType();
                     }
                 }
             }
             else
             {
-                inner_[i] = T();
+                inner_[i] = ValueType();
             }
         }
 
         length_ -= offset;
     }
 
-    void remove(bool(* predicate)(ItemType))
+    void remove(bool(* predicate)(const ValueType&))
     {
         uint offset = 0;
         for (uint i = 0; i < length_; i++)
@@ -402,90 +402,104 @@ public:
                     }
                     else
                     {
-                        inner_[i] = T();
+                        inner_[i] = ValueType();
                     }
                 }
             }
             else
             {
-                inner_[i] = T();
+                inner_[i] = ValueType();
             }
         }
 
         length_ -= offset;
     }
 
-    FORCEINLINE T& operator[](uint index)
+    List without(const ValueType& item) const
     {
-        return at(index);
+        List result = *this;
+        result.remove(item);
+        return result;
     }
 
-    FORCEINLINE ItemType operator[](uint index) const
+    List without(bool(* predicate)(const ValueType&)) const
     {
-        return at(index);
-    }
-
-    FORCEINLINE T& at(uint index)
-    {
-        if (index >= length_)
-        {
-            throw new std::out_of_range("Parameter \"index\" is greater than last item index");
-        }
-
-        return inner_[index];
-    }
-
-    FORCEINLINE ItemType at(uint index) const
-    {
-        if (index >= length_)
-        {
-            throw new std::out_of_range("Parameter \"index\" is greater than last item index");
-        }
-
-        return inner_[index];
-    }
-
-    FORCEINLINE T& first()
-    {
-        return operator[](0);
-    }
-
-    FORCEINLINE ItemType first() const
-    {
-        return operator[](0);
-    }
-
-    FORCEINLINE T& first_or_default()
-    {
-        return length_ > 0 ? operator[](0) : T();
-    }
-
-    FORCEINLINE ItemType first_or_default() const
-    {
-        return length_ > 0 ? operator[](0) : T();
+        List result = *this;
+        result.remove(predicate);
+        return result;
     }
     
-    FORCEINLINE T& last()
+    FORCEINLINE ValueType& operator[](uint index)
+    {
+        return at(index);
+    }
+
+    FORCEINLINE const ValueType& operator[](uint index) const
+    {
+        return at(index);
+    }
+
+    FORCEINLINE ValueType& at(uint index)
+    {
+        if (index >= length_)
+        {
+            throw new std::out_of_range("Parameter \"index\" is greater than last item index");
+        }
+
+        return inner_[index];
+    }
+
+    FORCEINLINE const ValueType& at(uint index) const
+    {
+        if (index >= length_)
+        {
+            throw new std::out_of_range("Parameter \"index\" is greater than last item index");
+        }
+
+        return inner_[index];
+    }
+
+    FORCEINLINE ValueType& first()
+    {
+        return operator[](0);
+    }
+
+    FORCEINLINE const ValueType& first() const
+    {
+        return operator[](0);
+    }
+
+    FORCEINLINE ValueType& first_or_default()
+    {
+        return length_ > 0 ? operator[](0) : ValueType();
+    }
+
+    FORCEINLINE const ValueType& first_or_default() const
+    {
+        return length_ > 0 ? operator[](0) : ValueType();
+    }
+    
+    FORCEINLINE ValueType& last()
     {
         return operator[](length_ - 1);
     }
 
-    FORCEINLINE ItemType last() const
+    FORCEINLINE const ValueType& last() const
     {
         return operator[](length_ - 1);
     }
 
-    FORCEINLINE T& last_or_default()
+    FORCEINLINE ValueType& last_or_default()
     {
-        return length_ > 0 ? operator[](length_ - 1) : T();
+        return length_ > 0 ? operator[](length_ - 1) : ValueType();
     }
 
-    FORCEINLINE ItemType last_or_default() const
+    FORCEINLINE const ValueType& last_or_default() const
     {
-        return length_ > 0 ? operator[](length_ - 1) : T();
+        return length_ > 0 ? operator[](length_ - 1) : ValueType();
     }
 
-    bool all(std::function<bool(ItemType item)> predicate) const
+    bool all(std::function<bool(const ValueType& item)> predicate) const
     {
         for (uint i = 0; i < length_; i++)
         {
@@ -495,7 +509,7 @@ public:
         return  true;
     }
 
-    bool any(std::function<bool(ItemType item)> predicate) const
+    bool any(std::function<bool(const ValueType& item)> predicate) const
     {
         for (uint i = 0; i < length_; i++)
         {
@@ -505,7 +519,7 @@ public:
         return  false;
     }
     
-    bool none(std::function<bool(ItemType item)> predicate) const
+    bool none(std::function<bool(const ValueType& item)> predicate) const
     {
         for (uint i = 0; i < length_; i++)
         {
@@ -515,7 +529,7 @@ public:
         return  true;
     }
 
-    bool count(std::function<bool(ItemType item)> predicate) const
+    bool count(std::function<bool(const ValueType& item)> predicate) const
     {
         uint counter = 0;
         for (uint i = 0; i < length_; i++)
@@ -529,9 +543,9 @@ public:
         return  counter;
     }
 
-    List<T> where(std::function<bool(ItemType item)> predicate) const
+    List<ValueType> where(std::function<bool(const ValueType& item)> predicate) const
     {
-        List<T> result;
+        List<ValueType> result;
         for (uint i = 0; i < length_; i++)
         {
             if (predicate(inner_[i]))
@@ -544,26 +558,59 @@ public:
     }
 
     template<typename ResultType>
-    List<ResultType> select(std::function<ResultType(ItemType item)> fetcher)
+    List<ResultType> select(std::function<ResultType(const ValueType& item)> processor) const
     {
         List<ResultType> result(length_);
 
         for (uint i = 0; i < length_; i++)
         {
-            result[i] = fetcher(operator[](i));
+            result[i] = processor(operator[](i));
         }
 
         return result;
     }
 
-    void insert(ItemType item, uint indexAt)
+    List<ValueType>& for_each(std::function<void(ValueType& item, uint i)> function)
+    {
+        for (uint i = 0; i < length_; i++)
+        {
+            function(inner_[i], i);
+        }
+
+        return *this;
+    }
+
+    const List<ValueType>& for_each(std::function<void(const ValueType& item, uint i)> function) const
+    {
+        for (uint i = 0; i < length_; i++)
+        {
+            function(inner_[i], i);
+        }
+
+        return *this;
+    }
+
+    template<typename NewValueType>
+    List<NewValueType> convert() const requires Convertible<ValueType, NewValueType>
+    {
+        List<NewValueType> result(length_);
+
+        for (uint i = 0; i < length_; i++)
+        {
+            ::convert(inner_[i], result[i]);
+        }
+
+        return result;
+    }
+
+    void insert(const ValueType& item, uint indexAt)
     {
         if (indexAt > length_)
         {
             throw new std::out_of_range("Parameter \"indexAt\" is greater than last available index");
         }
 
-        T item_copy = item;
+        ValueType item_copy = item;
         if (length_ == allocated_length_)
         {
             reallocate(get_allocate_size(length_ + 1));
@@ -637,7 +684,7 @@ public:
         }
     }
 
-    void sort(const std::function<bool(T a, T b)> predicate)
+    void sort(const std::function<bool(ValueType a, ValueType b)> predicate)
     {
         if (inner_ == nullptr) return;
         
@@ -653,7 +700,7 @@ public:
         }
     }
 
-    List operator+(ItemType rhs)
+    List operator+(const ValueType& rhs)
     {
         List result = *this;
         result.add(rhs);
@@ -661,7 +708,7 @@ public:
         return result;
     }
 
-    List& operator+=(ItemType rhs)
+    List& operator+=(const ValueType& rhs)
     {
         add(rhs);
 
@@ -737,12 +784,33 @@ public:
         return *this;
     }
 
-private:
-    using Array<T>::get_allocate_size;
-    using Array<T>::reallocate;
-    using Array<T>::slack;
+    void write_to_stream(std::ostream& stream) const requires Serializable<ValueType>
+    {
+        StreamUtils::write<uint>(stream, length_);
+        for (uint i = 0; i < length_; i++)
+        {
+            StreamUtils::write(stream, inner_[i]);
+        }
+    }
 
-    using Array<T>::inner_;
-    using Array<T>::length_;
-    using Array<T>::allocated_length_;
+    void read_from_stream(std::istream& stream) requires Serializable<ValueType>
+    {
+        clear();
+        uint new_length = StreamUtils::read<uint>(stream);
+        reallocate(get_allocate_size(new_length));
+        length_ = new_length;
+        for (uint i = 0; i < length_; i++)
+        {
+            inner_[i] = StreamUtils::read<ValueType>(stream);
+        }
+    }
+
+private:
+    using Array<ValueType>::get_allocate_size;
+    using Array<ValueType>::reallocate;
+    using Array<ValueType>::slack;
+
+    using Array<ValueType>::inner_;
+    using Array<ValueType>::length_;
+    using Array<ValueType>::allocated_length_;
 };

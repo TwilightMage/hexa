@@ -2,12 +2,12 @@
 
 #include "Engine/ui/VerticalList.h"
 
-DatabaseViewer::DatabaseViewer(const Shared<DatabaseBase>& database)
+DatabaseViewer::DatabaseViewer(const Shared<TableBase>& database)
     : database_(database)
 {
 }
 
-const Shared<DatabaseBase>& DatabaseViewer::get_database() const
+const Shared<TableBase>& DatabaseViewer::get_database() const
 {
     return database_;
 }

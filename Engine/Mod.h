@@ -13,7 +13,7 @@ class EXPORT Mod : public Module
     friend Game;
     
 public:
-    Mod(const Path& root, const String& module_name);
+    Mod(const Name& module_name);
     
     struct Info
     {
@@ -24,6 +24,8 @@ public:
         Version mod_version;
         Version target_game_version;
     };
+
+    Path get_module_path(const String& sub_path) const override;
     
     const Info& get_mod_info() const;
 
@@ -43,4 +45,4 @@ private:
     HINSTANCE dll_;
 };
 
-#define IMPLEMENT_MOD_ENTRY(ModTypeName) extern "C" Mod EXPORT *get_mod(const Path& root) { return new ModTypeName(root); }
+#define IMPLEMENT_MOD_ENTRY(ModTypeName) extern "C" Mod EXPORT *get_mod() { return new ModTypeName(); }

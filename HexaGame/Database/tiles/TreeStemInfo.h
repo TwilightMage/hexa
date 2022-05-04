@@ -6,41 +6,41 @@
 class TreeStemInfo : public ComplexTileInfo
 {
 public:
-    TreeStemInfo(
-        const Name& key,
-        const Set<Name>& tags,
-        float hardness,
-        const Shared<StaticMesh>& mesh,
-        const Shared<Texture>& texture,
-        const Shared<Material>& material,
-        const Shared<StaticMesh>& roots_mesh,
-        const Shared<Texture>& roots_texture,
-        const Shared<StaticMesh>& krone_mesh,
-        const Shared<Texture>& krone_texture,
-        const Shared<StaticMesh>& branch_mesh,
-        const Shared<Texture>& branch_texture,
-        const Shared<StaticMesh>& branch_krone_mesh,
-        const Shared<Texture>& branch_krone_texture,
-        const Name& log_item_name
-        )
-        : ComplexTileInfo(key, tags + Set{ MetaTags::PLANT, MetaTags::WOOD, MetaTags::STEM }, hardness, true, mesh, texture, material)
-        , root_mesh(roots_mesh)
-        , root_texture(roots_texture)
-        , krone_mesh(krone_mesh)
-        , krone_texture(krone_texture)
-        , branch_mesh(branch_mesh)
-        , branch_texture(branch_texture)
-        , branch_krone_mesh(branch_krone_mesh)
-        , branch_krone_texture(branch_krone_texture)
-        , log_item_name(log_item_name)
-    {
-        root_mesh->make_instanced();
-        krone_mesh->make_instanced();
-        branch_mesh->make_instanced();
-        branch_krone_mesh->make_instanced();
-    }
+    //TreeStemInfo(
+    //    const Name& key,
+    //    const Set<Name>& tags,
+    //    float hardness,
+    //    const Shared<StaticMesh>& mesh,
+    //    const Shared<Texture>& texture,
+    //    const Shared<Material>& material,
+    //    const Shared<StaticMesh>& roots_mesh,
+    //    const Shared<Texture>& roots_texture,
+    //    const Shared<StaticMesh>& krone_mesh,
+    //    const Shared<Texture>& krone_texture,
+    //    const Shared<StaticMesh>& branch_mesh,
+    //    const Shared<Texture>& branch_texture,
+    //    const Shared<StaticMesh>& branch_krone_mesh,
+    //    const Shared<Texture>& branch_krone_texture,
+    //    const Name& log_item_name
+    //    )
+    //    : ComplexTileInfo(key, tags + Set{ MetaTags::PLANT, MetaTags::WOOD, MetaTags::STEM }, hardness, true, mesh, texture, material)
+    //    , root_mesh(roots_mesh)
+    //    , root_texture(roots_texture)
+    //    , krone_mesh(krone_mesh)
+    //    , krone_texture(krone_texture)
+    //    , branch_mesh(branch_mesh)
+    //    , branch_texture(branch_texture)
+    //    , branch_krone_mesh(branch_krone_mesh)
+    //    , branch_krone_texture(branch_krone_texture)
+    //    , log_item_name(log_item_name)
+    //{
+    //    root_mesh->make_instanced();
+    //    krone_mesh->make_instanced();
+    //    branch_mesh->make_instanced();
+    //    branch_krone_mesh->make_instanced();
+    //}
 
-    void post_loading() override;
+    //void post_loading() override;
     Shared<ComplexTileCustomData> create_custom_data() const override;
     void setup_spawned_entity(const Shared<ComplexTile>& new_tile, const Shared<ComplexTileCustomData>& custom_data) const override;
     void on_tile_break(const TileIndex& index, const Shared<HexaWorld>& world) const override;

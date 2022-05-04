@@ -6,7 +6,7 @@
 class EXPORT ExampleMod : public Mod
 {
 public:
-    ExampleMod(const Path& root) : Mod(root, "ExampleMod") {};
+    ExampleMod() : Mod("example_mod") {};
     
     void on_start(const Shared<EventBus>& event_bus) override;
 

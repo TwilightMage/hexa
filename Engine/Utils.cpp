@@ -90,7 +90,7 @@ List<String> Utils::get_callstack(uint offset)
         //get symbol name for address
         pSymbol->SizeOfStruct = sizeof(SYMBOL_INFO);
         pSymbol->MaxNameLen = MAX_SYM_NAME;
-        SymFromAddr(process, ( ULONG64 )stack.AddrPC.Offset, &displacement, pSymbol);
+        SymFromAddr(process, stack.AddrPC.Offset, &displacement, pSymbol);
 
         line = (IMAGEHLP_LINE64 *)malloc(sizeof(IMAGEHLP_LINE64));
         line->SizeOfStruct = sizeof(IMAGEHLP_LINE64);       

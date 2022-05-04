@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include <OGRE/Bites/OgreApplicationContext.h>
-#include <OGRE/Bites/OgreTrays.h>
-#include <OGRE/Bites/OgreWindowEventUtilities.h>
+#include <OGRE/OgreApplicationContext.h>
+#include <OGRE/OgreTrays.h>
+#include <OGRE/OgreWindowEventUtilities.h>
 
 #include "KeyCode.h"
 #include "Pointers.h"

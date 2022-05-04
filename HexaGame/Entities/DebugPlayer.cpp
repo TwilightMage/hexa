@@ -5,6 +5,7 @@
 #include "Engine/MeshComponent.h"
 #include "Engine/World.h"
 #include "Engine/Physics/RaycastResult.h"
+#include "HexaGame/HexaGame.h"
 #include "HexaGame/Paths.h"
 #include "HexaGame/WorldChunkObserver.h"
 #include "HexaGame/Worlds/HexaWorld.h"
@@ -18,11 +19,11 @@ void DebugPlayer::on_start()
     
     if (auto world = get_world())
     {
-        auto arrows_mat = Game::get_instance()->load_material("Hexa/Axis_Arrows");
+        auto arrows_mat = Game::get_material(ModuleAssetID("hexa:materials/axis_arrows"));
         if (!arrows_mat)
         {
-            arrows_mat = Game::get_instance()->load_material("Engine/Basic")->clone("Hexa/Axis_Arrows");
-            arrows_mat->set_texture("axis_arrows.png", 0);
+            arrows_mat = Game::clone_material(Game::get_material(ModuleAssetID("hexa:materials/basic")), ModuleAssetID("hexa:materials/axis_arrows"));
+            arrows_mat->set_texture(Game::get_texture(ModuleAssetID("hexa:textures/axis_arrows")), 0);
         }
         
         arrows_ = world->spawn_entity<Entity>(Transform(Vector3(), Quaternion(), Vector3(0.1f)));

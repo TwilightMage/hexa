@@ -1,0 +1,10 @@
+{
+  "vertex": "shaders/basic_vs",
+  "fragment": "shaders/basic_fs",
+  "textures": [
+    {
+      "default": "uv_test",
+      "filtering": null
+    }
+  ]
+}

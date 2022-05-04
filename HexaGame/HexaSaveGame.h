@@ -2,12 +2,11 @@
 
 #include "ChunkIndex.h"
 #include "TileIndex.h"
+#include "Engine/Compound.h"
 #include "Engine/Map.h"
-#include "Engine/Path.h"
 #include "Engine/Pointers.h"
 #include "Engine/SaveGame.h"
 
-class JSON;
 class TileInfo;
 
 class EXPORT HexaSaveGame : public SaveGame
@@ -17,5 +16,5 @@ public:
 
     Shared<Map<TileIndex, ConstPtr<TileInfo>>> get_chunk_modifications(const ChunkIndex& index) const;
     void save_chunk_modifications(const ChunkIndex& index, const Map<TileIndex, ConstPtr<TileInfo>>& modifications);
-    Shared<JSON> get_world_settings() const;
+    Shared<Compound::Object> get_world_settings() const;
 };

@@ -74,3 +74,15 @@ bool Version::operator !=(const Version& rhs) const
 {
     return version_number != rhs.version_number || patch_number != rhs.patch_number || fix_number != rhs.fix_number;
 }
+
+void Version::convert_to(Compound::Array& to) const
+{
+    to = Compound::Array { (int)version_number, (int)patch_number, (int)fix_number };
+}
+
+void Version::convert_from(const Compound::Array& from)
+{
+    version_number = (from.length() >= 1) ? from[0].get_int32(0) : 0;
+    patch_number = (from.length() >= 2) ? from[0].get_int32(0) : 0;
+    fix_number = (from.length() >= 3) ? from[0].get_int32(0) : 0;
+}

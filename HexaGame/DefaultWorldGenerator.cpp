@@ -20,16 +20,17 @@ void DefaultWorldGenerator::init(uint seed)
     generator_.reseed(seed);
 }
 
-JSON DefaultWorldGenerator::write_settings() const
+Compound::Object DefaultWorldGenerator::write_settings() const
 {
-    return JSON()
-    .with_object("general", JSON()
-        .with_float("ground_level", ground_level)
-        .with_float("ground_amplitude", ground_amplitude)
-        );
+    return Compound::Object{
+        {"general", Compound::Object{
+            {"ground_level", ground_level},
+            {"ground_amplitude", ground_amplitude}
+        }}
+    };
 }
 
-void DefaultWorldGenerator::read_settings(const JSON& settings)
+void DefaultWorldGenerator::read_settings(const Compound::Object& settings)
 {
     const auto general = settings.get_object("general");
     ground_level = general.get_float("ground_level", 30);

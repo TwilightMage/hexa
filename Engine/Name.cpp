@@ -32,15 +32,7 @@ Name::Name(const char* c_str)
         data_ = new char[size_ + 1];
         memcpy(data_, c_str, size_ + 1);
 
-        const int p = 31;
-        const int m = 1e9 + 9;
-        hash_ = 0;
-        uint64 p_pow = 1;
-        for (uint i = 0; i < size_; i++)
-        {
-            hash_ = (hash_ + (data_[i] - 'a' + 1) * p_pow) % m;
-            p_pow = (p_pow * p) % m;
-        }
+        recalculate_hash();
     }
     else
     {
@@ -51,8 +43,21 @@ Name::Name(const char* c_str)
 }
 
 Name::Name(const String& str)
-    : Name(str.c())
 {
+    if (str.length() > 0)
+    {
+        data_ = new char[str.length() + 1];
+        memcpy(data_, str.c(), str.length() + 1);
+        size_ = str.length();
+
+        recalculate_hash();
+    }
+    else
+    {
+        data_ = nullptr;
+        size_ = 0;
+        hash_ = 0;
+    }
 }
 
 Name::~Name()
@@ -84,4 +89,51 @@ Name& Name::operator=(const Name& rhs)
     }
 
     return *this;
+}
+
+void Name::write_to_stream(std::ostream& stream) const
+{
+    StreamUtils::write_c_string(stream, data_);
+}
+
+void Name::read_from_stream(std::istream& stream)
+{
+    delete data_;
+    StreamUtils::read_c_string(stream, data_, size_);
+    recalculate_hash();
+}
+
+void Name::convert_to(String& to) const
+{
+    to = to_string();
+}
+
+void Name::convert_from(const String& from)
+{
+    if (from.length() > 0)
+    {
+        data_ = new char[from.length() + 1];
+        memcpy(data_, from.c(), from.length() + 1);
+
+        recalculate_hash();
+    }
+    else
+    {
+        data_ = nullptr;
+        size_ = 0;
+        hash_ = 0;
+    }
+}
+
+void Name::recalculate_hash()
+{
+    const int p = 31;
+    const int m = 1e9 + 9;
+    hash_ = 0;
+    uint64 p_pow = 1;
+    for (uint i = 0; i < size_; i++)
+    {
+        hash_ = (hash_ + (data_[i] - 'a' + 1) * p_pow) % m;
+        p_pow = (p_pow * p) % m;
+    }
 }

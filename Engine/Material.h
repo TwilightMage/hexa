@@ -1,47 +1,34 @@
 ﻿#pragma once
 
+#include "ModuleAssetID.h"
 #include "Pointers.h"
 
+class Game;
 class Texture;
 class TileInfo;
 class MeshComponent;
 class Module;
 
 namespace Ogre {
-    class Pass;
-    class Technique;
     class Material;
 }
 
 class EXPORT Material
 {
-    friend Module;
+    friend Game;
     friend MeshComponent;
 public:
-    class Technique
-    {
-    public:
-        class Pass
-        {
-        public:
-            
-        
-        private:
-            Ogre::Pass* ogre_pass_ = nullptr;
-        };
-
-        Shared<Pass> get_pass(uint index) const;
-        Shared<Pass> get_pass(const String& name) const;
+    FORCEINLINE const ModuleAssetID& get_id() const { return id_; }
     
-    private:
-        Ogre::Technique* ogre_technique_ = nullptr;
-    };
-    
-    Shared<Material> clone(const String& new_name = "") const;
-
+    uint get_textures_count() const;
+    Shared<Texture> get_texture(uint index) const;
     void set_texture(const Shared<Texture>& texture, uint index);
-    void set_texture(const String& texture, uint index);
+
+    FORCEINLINE bool is_instanced() const { return ogre_material_instancing_ != nullptr; }
     
 private:
     Shared<Ogre::Material> ogre_material_;
+    Shared<Ogre::Material> ogre_material_instancing_;
+    List<Shared<Texture>> textures_;
+    ModuleAssetID id_;
 };

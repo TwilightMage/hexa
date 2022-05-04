@@ -1,7 +1,7 @@
 #pragma once
 
 #include "BasicTypes.h"
-#include "Engine/Database.h"
+#include "Engine/Table.h"
 
 #define DECLARE_DATABASE_ENTRY(type, name)            inline static ConstPtr<type> name = nullptr;
 #define INIT_DATABASE_ENTRY(name, type, ...)          name = database->add(new type(#name, __VA_ARGS__));

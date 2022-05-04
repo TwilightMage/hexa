@@ -112,7 +112,7 @@ uint File::Reader::get_size() const
 
 uint File::Reader::get_position()
 {
-	return static_cast<uint>(stream_.tellg());
+	return stream_.tellg();
 }
 
 Shared<File::Writer> File::Writer::open(const Path& path)

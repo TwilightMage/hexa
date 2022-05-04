@@ -1,0 +1,57 @@
+{
+  "items": {
+    "iron_shovel": {
+      "display_name": "Iron Shovel",
+      "category": [ "tools" ],
+      "tags": [ "iron" ],
+      "mesh_name": "shovel",
+      "shovel_power": 1.0,
+      "stack": 1,
+      "mass": 1.0,
+      "target": "inside"
+    },
+    "iron_pickaxe": {
+      "display_name": "Iron Pickaxe",
+      "category": [ "tools" ],
+      "tags": [ "iron" ],
+      "mesh_name": "pickaxe",
+      "pickaxe_power": 1.0,
+      "stack": 1,
+      "mass": 1.0,
+      "target": "inside"
+    },
+    "iron_axe": {
+      "display_name": "Iron Axe",
+      "category": [ "tools" ],
+      "tags": [ "iron" ],
+      "mesh_name": "axe",
+      "axe_power": 1.0,
+      "stack": 1,
+      "mass": 1.0,
+      "target": "inside"
+    },
+    "stone_bricks": {
+      "display_name": "Stone Bricks",
+      "category": [ "tiles", "resources" ],
+      "tags": [ "stone" ],
+      "mesh_name": "bricks",
+      "mass": 2.0,
+      "place_tile": "stone_bricks"
+    },
+    "dirt_pile": {
+      "display_name": "Pile Of Dirt",
+      "category": [ "tiles", "resources" ],
+      "tags": [ "dirt" ],
+      "mesh_name": "pile",
+      "mass": 0.1,
+      "place_tile": "dirt"
+    },
+    "ash_log": {
+      "display_name": "Ash Log",
+      "category": [ "resources" ],
+      "tags": [ "wood" ],
+      "mesh_name": "log",
+      "mass": 4.0
+    }
+  }
+}

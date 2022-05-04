@@ -1,9 +1,11 @@
 ﻿#pragma once
 
+#include "Compound.h"
+#include "IConvertible.h"
 #include "Pointers.h"
 #include "Vector2.h"
 
-class EXPORT Rect
+class EXPORT Rect : public IData
 {
 public:
     Rect();
@@ -20,6 +22,9 @@ public:
     FORCEINLINE int right() const;
     FORCEINLINE int top() const;
     FORCEINLINE int bottom() const;
+
+    void convert_to(Compound::Object& to) const;
+    void convert_from(const Compound::Object& from);
 
     int x;
     int y;

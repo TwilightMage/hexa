@@ -161,6 +161,16 @@ public:
         return data_.end();
     }
 
+    void write_to_stream(std::ostream& stream) const requires Serializable<Key> && Serializable<Value>
+    {
+        data_.write_to_stream(stream);
+    }
+
+    void read_from_stream(std::istream& stream) requires Serializable<Key> && Serializable<Value>
+    {
+        data_.read_from_stream(stream);
+    }
+
 private:
     Tree1D<Key, Value> data_;
 };

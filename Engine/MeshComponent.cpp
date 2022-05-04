@@ -1,12 +1,12 @@
 ﻿#include "MeshComponent.h"
 
-#include <OGRE/Main/OgreEntity.h>
-#include <OGRE/Main/OgreInstancedEntity.h>
-#include <OGRE/Main/OgreMaterialManager.h>
-#include <OGRE/Main/OgreMesh.h>
-#include <OGRE/Main/OgreSceneManager.h>
-#include <OGRE/Main/OgreSceneNode.h>
-#include <OGRE/Main/OgreSubEntity.h>
+#include <OGRE/OgreEntity.h>
+#include <OGRE/OgreInstancedEntity.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreMesh.h>
+#include <OGRE/OgreSceneManager.h>
+#include <OGRE/OgreSceneNode.h>
+#include <OGRE/OgreSubEntity.h>
 #include <reactphysics3d/body/RigidBody.h>
 #include <reactphysics3d/collision/Collider.h>
 #include <reactphysics3d/engine/PhysicsWorld.h>
@@ -22,7 +22,7 @@ MeshComponent::MeshComponent(const Shared<StaticMesh>& mesh, const List<Shared<M
     : mesh_(mesh)
     , materials_(materials)
 {
-    materials_.force_size_fit(mesh->ogre_mesh_->getNumSubMeshes(), nullptr);
+    materials_.resize(mesh->ogre_mesh_->getNumSubMeshes(), nullptr);
 }
 
 MeshComponent::MeshComponent(const Shared<StaticMesh>& mesh, const Shared<Material>& material)
@@ -92,7 +92,7 @@ void MeshComponent::set_mesh(const Shared<StaticMesh>& mesh, const List<Shared<M
         if (mesh == nullptr) return;
 
         auto temp_materials = materials;
-        temp_materials.force_size_fit(mesh->ogre_mesh_->getNumSubMeshes(), nullptr);
+        temp_materials.resize(mesh->ogre_mesh_->getNumSubMeshes(), nullptr);
         
         if (materials_ == temp_materials) return;
 
@@ -114,7 +114,7 @@ void MeshComponent::set_mesh(const Shared<StaticMesh>& mesh, const List<Shared<M
 
             mesh_ = mesh;
             materials_ = materials;
-            materials_.force_size_fit(mesh->ogre_mesh_->getNumSubMeshes(), nullptr);
+            materials_.resize(mesh->ogre_mesh_->getNumSubMeshes(), nullptr);
 
             if (mesh_)
             {

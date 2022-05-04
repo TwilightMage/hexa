@@ -1,6 +1,9 @@
 #pragma once
 
+#include "Pointers.h"
 #include "String.h"
+
+class Module;
 
 enum class EPathType
 {
@@ -16,7 +19,7 @@ enum class EPathType
 
 IMPLEMENT_ENUM(EPathType)
 
-class EXPORT Path
+class EXPORT Path : public ISerializable
 {
 public:
 	Path();
@@ -31,17 +34,26 @@ public:
 	Path get_absolute() const;
 	List<Path> list() const;
 	String get_extension() const;
+	Path with_extension(const String& new_extension);
+
+	static String sanitize(const String& path_string);
 
 	Path operator+(const Path& rhs) const;
 
 	String to_string() const;
 	String get_absolute_string() const;
+
+	EPathType get_type() const;
+
+	void write_to_stream(std::ostream& stream) const override;
+	void read_from_stream(std::istream& stream) override;
 	
 	String parent;
 	String filename;
 	String extension;
-	EPathType type;
 
 private:
+	void setup_from_string(const String& string);
+	
 	bool is_global_;
 };

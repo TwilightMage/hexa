@@ -17,11 +17,4 @@ fragment_program Hexa/FoliageFS hlsl
     entry_point frag
     target ps_2_0
     preprocessor_defines ALPHA_CUT
-    
-    default_params
-    {
-        param_named_auto ambientLight ambient_light_colour
-        param_named_auto sunDiff light_diffuse_colour 0
-        param_named_auto sunDir light_direction 0
-    }
 }

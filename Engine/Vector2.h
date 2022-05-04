@@ -1,11 +1,13 @@
 ﻿#pragma once
 
+#include "Compound.h"
 #include "framework.h"
+#include "IConvertible.h"
 #include "String.h"
 
 class Vector3;
 
-class EXPORT Vector2
+class EXPORT Vector2 : public IData
 {
 public:
     Vector2();
@@ -41,6 +43,9 @@ public:
     void operator/=(float rhs);
     bool operator==(const Vector2& rhs) const;
     bool operator!=(const Vector2& rhs) const;
+
+    void convert_to(Compound::Object& to) const;
+    void convert_from(const Compound::Object& from);
     
     float x;
     float y;

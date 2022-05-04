@@ -1,6 +1,6 @@
 ﻿#include "Texture.h"
 
-#include <OGRE/Main/OgreTextureManager.h>
+#include <OGRE/OgreTextureManager.h>
 
 #include "Assert.h"
 #include "File.h"
@@ -48,29 +48,30 @@ Texture::Editor::Editor(const Shared<Texture>& target)
     target_->edit_count_increase();
 }
 
-Texture::Texture(const String& name)
-    : Object(name)
+Texture::Texture()
+    : edit_count_(0)
+    , delayed_activation_(false)
+{
+}
+
+Texture::Texture(const Array2D<Color>& pixels)
+    : pixels_(pixels)
     , edit_count_(0)
     , delayed_activation_(false)
 {
 }
 
-Texture::Texture(const String& name, const Array2D<Color>& pixels)
-    : Object(name)
-    , pixels_(pixels)
-    , edit_count_(0)
-    , delayed_activation_(false)
-{
-}
-
-Texture::Texture(const String& name, uint width, uint height, const List<Color>& pixels)
-    : Texture(name, Array2D(width, height, pixels))
+Texture::Texture(uint width, uint height, const List<Color>& pixels)
+    : Texture(Array2D(width, height, pixels))
 {
 }
 
 Shared<Texture> Texture::load_png(const Path& path)
 {
-    if (const auto found = Game::instance_->textures_.find(path.get_absolute_string()))
+    assert(false);
+    return nullptr;
+    
+    /*if (const auto found = Game::instance_->textures_.find(path.get_absolute_string()))
     {
         return *found;
     }
@@ -101,7 +102,7 @@ Shared<Texture> Texture::load_png(const Path& path)
     {
         print_error("Texture", "Unknown error on loading texture %s", path.get_absolute_string().c());
     }
-    return nullptr;
+    return nullptr;*/
 }
 
 uint Texture::get_gl_texture_id()

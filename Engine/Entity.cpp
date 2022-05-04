@@ -1,6 +1,6 @@
 ﻿#include "Entity.h"
 
-#include <OGRE/Main/OgreSceneNode.h>
+#include <OGRE/OgreSceneNode.h>
 #include <reactphysics3d/body/RigidBody.h>
 #include <reactphysics3d/engine/PhysicsCommon.h>
 

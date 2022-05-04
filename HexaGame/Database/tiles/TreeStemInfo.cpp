@@ -14,25 +14,25 @@
 #include "HexaGame/Entities/ComplexTile.h"
 #include "HexaGame/Worlds/HexaWorld.h"
 
-void TreeStemInfo::post_loading()
-{
-    ComplexTileInfo::post_loading();
-
-    const auto basic_mat = Game::get_instance()->load_material("Engine/Basic_Instanced");
-    const auto foliage_mat = Game::get_instance()->load_material("Hexa/Foliage");
-    
-    root_material_ = basic_mat->clone(key.to_string() + "_root");
-    root_material_->set_texture(root_texture, 0);
-
-    krone_material_ = foliage_mat->clone(key.to_string() + "_krone");
-    krone_material_->set_texture(krone_texture, 0);
-
-    branch_material_ = basic_mat->clone(key.to_string() + "_branch");
-    branch_material_->set_texture(branch_texture, 0);
-
-    branch_krone_material_ = foliage_mat->clone(key.to_string() + "_branch_krone");
-    branch_krone_material_->set_texture(branch_krone_texture, 0);
-}
+//void TreeStemInfo::post_loading()
+//{
+//    ComplexTileInfo::post_loading();
+//
+//    const auto basic_mat = Game::get_instance()->load_material("Engine/Basic_Instanced");
+//    const auto foliage_mat = Game::get_instance()->load_material("Hexa/Foliage");
+//    
+//    root_material_ = basic_mat->clone(key.to_string() + "_root");
+//    root_material_->set_texture(root_texture, 0);
+//
+//    krone_material_ = foliage_mat->clone(key.to_string() + "_krone");
+//    krone_material_->set_texture(krone_texture, 0);
+//
+//    branch_material_ = basic_mat->clone(key.to_string() + "_branch");
+//    branch_material_->set_texture(branch_texture, 0);
+//
+//    branch_krone_material_ = foliage_mat->clone(key.to_string() + "_branch_krone");
+//    branch_krone_material_->set_texture(branch_krone_texture, 0);
+//}
 
 Shared<ComplexTileCustomData> TreeStemInfo::create_custom_data() const
 {
@@ -125,7 +125,7 @@ void TreeStemInfo::setup_spawned_entity(const Shared<ComplexTile>& new_tile, con
 
 void TreeStemInfo::on_tile_break(const TileIndex& index, const Shared<HexaWorld>& world) const
 {
-    world->spawn_drop(index, HexaGame::item_database->get(log_item_name), Quaternion(Vector3(0, 0, Random::static_number(360.0f))).forward() * 1.0f * Random::static_number<float>() + Vector3(0, 0, 0.2f));
+    //world->spawn_drop(index, HexaGame::item_database->get(log_item_name), Quaternion(Vector3(0, 0, Random::static_number(360.0f))).forward() * 1.0f * Random::static_number<float>() + Vector3(0, 0, 0.2f));
 }
 
 void TreeStemInfo::on_tile_destroyed(const TileIndex& index, const Shared<ComplexTile>& destroyed_tile, const Shared<HexaWorld>& world) const

@@ -1,0 +1,39 @@
+{
+  "programs": {
+    "basic_vs": {
+      "type": "vertex",
+      "source": "shaders/basic",
+      "target": "vs_2_0",
+      "instancing": true,
+      "params": {
+        "world": "world_matrix",
+        "view": "view_matrix",
+        "proj": "projection_matrix",
+        "farDistance": "far_clip_distance"
+      },
+      "instancing_params": {
+        "view": "view_matrix",
+        "proj": "projection_matrix",
+        "farDistance": "far_clip_distance"
+      }
+    },
+    "basic_fs": {
+      "type": "fragment",
+      "source": "shaders/basic",
+      "target": "ps_2_0"
+    }
+  },
+  "materials": {
+    "basic": {
+      "vertex": "basic_vs",
+      "fragment": "basic_fs",
+      "textures": [
+        {
+          "default": "uv_test",
+          "type": "2d",
+          "filtering": null
+        }
+      ]
+    }
+  }
+}

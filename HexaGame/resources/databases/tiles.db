@@ -1,0 +1,70 @@
+{
+  "tiles": {
+    "dirt": {
+      "tags": [ "dirt" ],
+      "hardness": 1.0,
+      "randomize_ceil_uv_angle": true,
+      "randomize_floor_uv_angle": true,
+      "drops": {
+        "dirt_pile": 1
+      }
+    },
+    "grass": {
+      "tags": [ "dirt", "plant" ],
+      "hardness": 1.0,
+      "randomize_ceil_uv_angle": true,
+      "randomize_floor_uv_angle": true,
+      "drops": {
+        "dirt_pile": 1
+      }
+    },
+    "stone": {
+      "tags": [ "stone" ],
+      "hardness": 2.0,
+      "randomize_ceil_uv_angle": true,
+      "randomize_floor_uv_angle": true,
+      "drops": {
+        "stone_bricks": 1
+      }
+    },
+    "sand": {
+      "tags": [ "sand" ],
+      "hardness": 0.5,
+      "randomize_ceil_uv_angle": true,
+      "randomize_floor_uv_angle": true,
+      "drops": {
+        "sand_pile": 1
+      }
+    },
+    "tall_grass": {
+      "mesh": "meshes/tiles/tall_grass",
+      "tags": [ "plant" ],
+      "hardness": 0.1,
+      "drops": {
+        "wheat_seeds": {
+          "0": 9,
+          "1": 1
+        }
+      },
+      "material": "foliage"
+    },
+    "blue_roses": {
+      "mesh": "meshes/tiles/tall_grass",
+      "tags": [ "plant", "flower", "blue" ],
+      "hardness": 0.1,
+      "material": "foliage"
+    },
+    "red_roses": {
+      "mesh": "meshes/tiles/tall_grass",
+      "tags": [ "plant", "flower", "red" ],
+      "hardness": 0.1,
+      "material": "foliage"
+    },
+    "chamomile": {
+      "mesh": "meshes/tiles/tall_grass",
+      "tags": [ "plant", "flower", "white" ],
+      "hardness": 0.1,
+      "material": "foliage"
+    }
+  }
+}

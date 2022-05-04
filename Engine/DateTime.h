@@ -2,13 +2,15 @@
 
 #include "String.h"
 
-struct EXPORT TimeInterval
+struct EXPORT TimeInterval : public IData
 {
-	int day;
-	int hour;
-	int minute;
-	int second;
-	int millisecond;
+	TimeInterval(int days, int hours, int minutes, int seconds, int milliseconds);
+	
+	int days;
+	int hours;
+	int minutes;
+	int seconds;
+	int milliseconds;
 
 	[[nodiscard]] float get_total_hours() const;
 	[[nodiscard]] float get_total_minutes() const;
@@ -18,7 +20,7 @@ struct EXPORT TimeInterval
 	[[nodiscard]] String to_string() const;
 };
 
-struct EXPORT DateTime
+struct EXPORT DateTime : public IData
 {
 	DateTime(int year, int month, int day, int hour, int minute, int second, int millisecond = 0);
 	DateTime();

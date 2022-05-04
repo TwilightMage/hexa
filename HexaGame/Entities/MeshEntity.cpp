@@ -13,5 +13,5 @@ MeshEntity::MeshEntity(const Shared<StaticMesh>& mesh)
 void MeshEntity::on_start()
 {
     mesh_component_->set_body_type(PhysicalBodyType::Kinematic);
-    mesh_component_->set_mesh(mesh_, Game::get_instance()->load_material("Engine/Basic"));
+    mesh_component_->set_mesh(mesh_, Game::get_material(ModuleAssetID("hexa:materials/basic")));
 }

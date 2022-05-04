@@ -248,12 +248,12 @@ void WorldGenerator::request_chunk_generation(const Shared<WorldChunk>& chunk)
 	pending_chunks_mutex_.unlock();
 }
 
-JSON WorldGenerator::write_settings() const
+Compound::Object WorldGenerator::write_settings() const
 {
-	return JSON();
+	return Compound::Object();
 }
 
-void WorldGenerator::read_settings(const JSON& settings)
+void WorldGenerator::read_settings(const Compound::Object& settings)
 {
 }
 

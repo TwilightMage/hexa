@@ -1,7 +1,7 @@
 ﻿#pragma once
 
+#include "Compound.h"
 #include "framework.h"
-#include "JSON.h"
 
 class EXPORT Settings
 {
@@ -14,8 +14,8 @@ public:
 
     float audio_general = 1.0f;
 
-    virtual void read_settings(const JSON& json);
-    virtual void write_settings(JSON& json);
+    virtual void read_settings(const Compound::Object& compound);
+    virtual Compound::Object write_settings();
 
 private:
     float physics_tick_interval_ = 1.0f / 60.0f;

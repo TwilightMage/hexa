@@ -112,7 +112,7 @@ FORCEINLINE void memcpy_b(void* dst, void* src, size_t size)
 template<typename To, typename From>
 FORCEINLINE To& cast_object(From& rhs)
 {
-	static_assert(sizeof(To) == sizeof(From));
+	static_assert(sizeof(To) == sizeof(From), "Types have different size");
 	return *reinterpret_cast<To*>(&rhs);
 }
 
@@ -120,7 +120,7 @@ FORCEINLINE To& cast_object(From& rhs)
 template<typename To, typename From>
 FORCEINLINE const To& cast_object(const From& rhs)
 {
-	static_assert(sizeof(To) == sizeof(From));
+	static_assert(sizeof(To) == sizeof(From), "Types have different size");
 	return *reinterpret_cast<const To*>(&rhs);
 }
 

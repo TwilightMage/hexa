@@ -8,7 +8,7 @@
 #include "TileInfo.h"
 #include "TileSide.h"
 #include "Engine/BasicTypes.h"
-#include "Engine/JSON.h"
+#include "Engine/Compound.h"
 #include "Engine/Map.h"
 #include "Engine/StaticMesh.h"
 #include "Engine/SimpleMap.h"
@@ -25,8 +25,8 @@ public:
 
     virtual void init(uint seed) = 0;
     
-    virtual JSON write_settings() const;
-    virtual void read_settings(const JSON& settings);
+    virtual Compound::Object write_settings() const;
+    virtual void read_settings(const Compound::Object& settings);
 
     void allocate_thread_pool();
 

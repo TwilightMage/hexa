@@ -1,0 +1,29 @@
+compositor DeferredShading/GBuffer
+{
+    technique
+    {
+        // GBuffer textures
+        // PF_BYTE_RGBA would be sufficient for color, but D3D9 requires same bitdepth for all MRTs
+        texture mrt_output target_width target_height PF_FLOAT16_RGBA PF_FLOAT16_RGBA chain_scope
+        
+        target mrt_output
+        {
+            input none
+            pass clear
+            {
+            }
+            
+            shadows off
+            material_scheme GBuffer
+            
+            // everything but the lights and their meshes
+            // could do this with something like a visibility mask too
+            pass render_scene
+            {
+                //These values are synchronized with the code
+                first_render_queue 10
+                last_render_queue  79   
+            }
+        }
+    }
+}

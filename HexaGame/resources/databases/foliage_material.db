@@ -1,0 +1,36 @@
+{
+  "programs": {
+    "foliage_vs": {
+      "type": "vertex",
+      "source": "shaders/foliage",
+      "target": "vs_2_0",
+      "params": {
+        "viewProj": "viewproj_matrix",
+        "time": "time"
+      }
+    },
+    "foliage_fs": {
+      "type": "fragment",
+      "source": "engine:shaders/basic",
+      "target": "ps_2_0",
+      "defines": [ "ALPHA_CUT" ]
+    }
+  },
+  "materials": {
+    "foliage": {
+      "vertex": "foliage_vs",
+      "fragment": "foliage_fs",
+      "alpha_rejection": {
+        "op": "greater_equal",
+        "val": 192
+      },
+      "textures": [
+        {
+          "default": "engine:uv_test",
+          "type": "2d",
+          "filtering": "none"
+        }
+      ]
+    }
+  }
+}

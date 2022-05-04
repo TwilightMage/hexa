@@ -46,3 +46,21 @@ String Color::to_string() const
 {
     return String::format("{ r=%i, g=%i, b=%i, a=%i }", r, g, b, a);
 }
+
+void Color::convert_to(Compound::Object& to) const
+{
+    to = Compound::Object{
+        { "r", r },
+        { "g", g },
+        { "b", b },
+        { "a", a }
+    };
+}
+
+void Color::convert_from(const Compound::Object& from)
+{
+    r = from.get_char("r", 255);
+    g = from.get_char("g", 255);
+    b = from.get_char("b", 255);
+    a = from.get_char("a", 255);
+}

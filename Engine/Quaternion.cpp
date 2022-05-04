@@ -165,7 +165,7 @@ Quaternion Quaternion::look_at(const Vector3& direction, const Vector3& up)
 {
     if (direction.magnitude() == 0) return Quaternion();
     
-    return cast_object<Quaternion>(glm::quatLookAt(cast_object<glm::vec3>(direction), cast_object<glm::vec3>(up.normalized())));
+    return cast_object<Quaternion>(quatLookAt(cast_object<glm::vec3>(direction), cast_object<glm::vec3>(up.normalized())));
 }
 
 Quaternion Quaternion::slerp(const Quaternion& a, const Quaternion& b, float alpha)
@@ -231,4 +231,22 @@ bool Quaternion::operator!=(const Quaternion& rhs) const
 Quaternion Quaternion::operator-() const
 {
     return Quaternion(-x, -y, -z, -w);
+}
+
+void Quaternion::convert_to(Compound::Object& to) const
+{
+    to = Compound::Object{
+        { "x", x },
+        { "y", y },
+        { "z", z },
+        { "w", w }
+    };
+}
+
+void Quaternion::convert_from(const Compound::Object& from)
+{
+    x = from.get_float("x", 0);
+    y = from.get_float("y", 0);
+    z = from.get_float("z", 0);
+    w = from.get_float("w", 1);
 }

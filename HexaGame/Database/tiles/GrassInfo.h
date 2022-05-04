@@ -5,16 +5,16 @@
 class GrassInfo : public SolidTileInfo
 {
 public:
-    GrassInfo(
-        const Name& key,
-        const Set<Name>& tags,
-        float hardness,
-        const Shared<Texture>& texture,
-        bool randomize_ceil_uv_angle,
-        bool randomize_floor_uv_angle
-        )
-        : SolidTileInfo(key, tags + Set{ MetaTags::PLANT, MetaTags::GRASS }, hardness, texture, randomize_ceil_uv_angle, randomize_floor_uv_angle)
-    {}
+    //GrassInfo(
+    //    const Name& key,
+    //    const Set<Name>& tags,
+    //    float hardness,
+    //    const Shared<Texture>& texture,
+    //    bool randomize_ceil_uv_angle,
+    //    bool randomize_floor_uv_angle
+    //    )
+    //    : SolidTileInfo(key, tags + Set{ MetaTags::PLANT, MetaTags::GRASS }, hardness, texture, randomize_ceil_uv_angle, randomize_floor_uv_angle)
+    //{}
 
     List<ItemContainer> get_drops(const TileIndex& index, const Shared<HexaWorld>& world) const override;
 };

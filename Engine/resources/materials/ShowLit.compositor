@@ -1,0 +1,50 @@
+compositor DeferredShading/ShowLit
+{
+ 
+    technique
+    {
+        //Reference the main Gbuffer texture
+        texture_ref mrt_output DeferredShading/GBuffer mrt_output
+        
+        target_output
+        {
+            input none
+            //We will dispatch the shadow texture rendering ourselves
+            shadows off
+            
+            pass clear
+            {
+                
+            }
+            
+            // render skies and other pre-gbuffer objects
+            pass render_scene
+            {
+                first_render_queue 1
+                last_render_queue  9            
+            }
+            
+            //Render the lights and their meshes
+            pass render_custom DeferredLight
+            {
+                input 0 mrt_output 0
+                input 1 mrt_output 1
+            }
+            
+            //Render the objects that skipped rendering into the gbuffer
+            pass render_scene
+            {
+                material_scheme NoGBuffer
+                first_render_queue 10
+                last_render_queue 79
+            }
+            
+            //Render the post-GBuffer render queue objects
+            pass render_scene
+            {
+                //This value is synchronized with the code
+                first_render_queue 80
+            }
+        }
+    }
+}

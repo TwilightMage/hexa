@@ -1,9 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?> 
 <AutoVisualizer xmlns="http://schemas.microsoft.com/vstudio/debugger/natvis/2010">
+    <Type Name="Compound::Value">
+        <DisplayString Condition="type == 0">Null</DisplayString>
+        <DisplayString Condition="type == 1">{{String}} {*(String*)data}</DisplayString>
+        <DisplayString Condition="type == 2">{{char}} {*(char*)data}</DisplayString>
+        <DisplayString Condition="type == 3">{{short}} {*(short*)data}</DisplayString>
+        <DisplayString Condition="type == 4">{{int32}} {*(int32*)data}</DisplayString>
+        <DisplayString Condition="type == 5">{{int64}} {*(int64*)data}</DisplayString>
+        <DisplayString Condition="type == 6">{{bool}} {*(bool*)data}</DisplayString>
+        <DisplayString Condition="type == 7">{{float}} {*(float*)data}</DisplayString>
+        <DisplayString Condition="type == 8">{{double}} {*(double*)data}</DisplayString>
+        <DisplayString Condition="type == 9">{{Array}} {*(Compound::Array*)data}</DisplayString>
+        <DisplayString Condition="type == 10">{{Object}} {*(Compound::Object*)data}</DisplayString>
+        <DisplayString Condition="type == 11">{{Binary}} {binary_type_size} bytes</DisplayString>
+        <Expand>
+            <ExpandedItem Condition="type == 1">*(String*)data</ExpandedItem>
+            <ExpandedItem Condition="type == 9">*(Compound::Array*)data</ExpandedItem>
+            <ExpandedItem Condition="type == 10">*(Compound::Object*)data</ExpandedItem>
+        </Expand>
+    </Type>
+    
     <Type Name="String">
         <DisplayString Condition="length_ > 0">{inner_,na}</DisplayString>
         <DisplayString Condition="length_ == 0">empty</DisplayString>
-        <StringView Condition="length_ > 0">inner</StringView>
         <Expand>
             <Item Name="[allocated length]" ExcludeView="simple">allocated_length_</Item>
             <ArrayItems>
@@ -93,6 +112,10 @@
         <DisplayString>{x} = {value}</DisplayString>
     </Type>
 
+    <Type Name="Pair&lt;*&gt;">
+        <DisplayString>{key} = {value}</DisplayString>
+    </Type>
+
     <Type Name="Map&lt;*&gt;">
         <DisplayString>{{ size = {data_.size_} }}</DisplayString>
         <Expand>
@@ -104,6 +127,14 @@
                 <RightPointer>right</RightPointer>
                 <ValueNode Condition="this != nullptr">point</ValueNode>
             </TreeItems>
+        </Expand>
+    </Type>
+
+    <Type Name="SimpleMap&lt;*&gt;">
+        <DisplayString>{{ size = {entries.length_} }}</DisplayString>
+        <Expand>
+            <Item Name="[size]">entries.length_</Item>
+            <ExpandedItem>entries</ExpandedItem>
         </Expand>
     </Type>
     

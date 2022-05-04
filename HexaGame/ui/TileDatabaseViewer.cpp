@@ -2,17 +2,17 @@
 
 
 #include "TileDatabaseRow.h"
-#include "Engine/Database.h"
+#include "Engine/Table.h"
 #include "HexaGame/TileInfo.h"
 
-TileDatabaseViewer::TileDatabaseViewer(const Shared<Database<TileInfo>>& database)
+TileDatabaseViewer::TileDatabaseViewer(const Shared<Table<TileInfo>>& database)
     : DatabaseViewer(database)
 {
 }
 
 List<Shared<UIElement>> TileDatabaseViewer::construct_all_rows()
 {
-    if (auto database = cast<Database<TileInfo>>(get_database()))
+    if (auto database = cast<Table<TileInfo>>(get_database()))
     {
         List<Shared<UIElement>> result;
 

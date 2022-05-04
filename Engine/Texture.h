@@ -1,13 +1,14 @@
 ﻿#pragma once
 
 #include <map>
-#include <OGRE/Main/OgreHeaderSuffix.h>
+#include <OGRE/OgreHeaderSuffix.h>
 
 #include "Array2D.h"
 #include "Color.h"
 #include "ITexture.h"
 #include "IUsageCountable.h"
 #include "List.h"
+#include "ModuleAssetID.h"
 #include "Object.h"
 #include "Path.h"
 #include "Pointers.h"
@@ -25,7 +26,7 @@ namespace Ogre
     class Texture;
 }
 
-class EXPORT Texture : public Object, public ITexture, public IUsageCountable<Texture>, public EnableSharedFromThis<Texture>
+class EXPORT Texture : public ITexture, public IUsageCountable<Texture>, public EnableSharedFromThis<Texture>
 {
     IMPLEMENT_USAGE_COUNTER(Texture);
     
@@ -57,9 +58,9 @@ public:
         Shared<Texture> target_;
     };
     
-    Texture(const String& name);
-    Texture(const String& name, const Array2D<Color>& pixels);
-    Texture(const String& name, uint width, uint height, const List<Color>& pixels);
+    Texture();
+    Texture(const Array2D<Color>& pixels);
+    Texture(uint width, uint height, const List<Color>& pixels);
     
     static Shared<Texture> load_png(const Path& path);
 
@@ -77,6 +78,8 @@ public:
     void put_pixels(uint width, uint height, const List<Color>& pixels);
 
     Shared<Editor> edit();
+
+    FORCEINLINE const ModuleAssetID& get_id() const { return id_; }
 
 protected:
     void load() override;
@@ -96,6 +99,7 @@ private:
     bool delayed_activation_;
 
     Shared<Ogre::Texture> ogre_texture_;
+    ModuleAssetID id_;
 };
 
 typedef Slot<Texture> TextureSlot;

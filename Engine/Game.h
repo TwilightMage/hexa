@@ -2,6 +2,7 @@
 
 #include <mutex>
 
+#include "Table.h"
 #include "EventBus.h"
 #include "GameInfo.h"
 #include "KeyCode.h"
@@ -15,6 +16,7 @@
 #include "Vector3.h"
 #include "Version.h"
 
+class TableBase;
 class OgreApp;
 
 namespace OgreBites {
@@ -59,6 +61,7 @@ namespace Ogre
     class Viewport;
     class RenderWindow;
     class Root;
+    class GpuProgram;
 
     namespace RTShader
     {
@@ -76,7 +79,7 @@ enum class GameStage
     Unloading
 };
 
-class EXPORT Game : public Module
+class EXPORT Game : public Module, public std::enable_shared_from_this<Game>
 {
     friend AudioChannel;
     friend Audio;
@@ -92,7 +95,8 @@ class EXPORT Game : public Module
     
 public:
     Game(const String& name, int argc, char* argv[]);
-    ~Game();
+
+    Path get_module_path(const String& sub_path = "") const override;
 
     void launch();
 
@@ -106,7 +110,7 @@ public:
 
     static const List<String>& get_args();
 
-    static Game* get_instance();
+    static Shared<Game> get_instance();
 
     static const GameInfo& get_info();
     static const Shared<Settings>& get_settings();
@@ -123,9 +127,22 @@ public:
 
     static const Path& get_app_path();
 
+    static Shared<Texture> load_texture(const ModuleAssetID& id);
+    static Shared<Texture> create_texture(const Array2D<Color>& pixels, const ModuleAssetID& id);
+    static Shared<Texture> get_texture(const ModuleAssetID& id);
+
+    static Shared<Material> load_material(const ModuleAssetID& id);
+    static Shared<Material> clone_material(const Shared<Material>& material, const ModuleAssetID& new_id);
+    static Shared<Material> get_material(const ModuleAssetID& id);
+
+    FORCEINLINE static Shared<Texture>& get_white_texture() { return instance_->white_texture_; }
+    FORCEINLINE static Shared<Texture>& get_uv_test_texture() { return instance_->uv_test_texture_; }
+
     static const Shared<Material>& get_basic_material(bool instanced);
     static const Shared<SpriteFont>& get_default_font();
     static const Shared<AudioChannel>& get_general_channel();
+    static const List<Shared<Mod>>& get_mods();
+    static const Shared<Module>& get_module_by_name(const Name& module_name);
 
     static uint get_screen_width();
     static uint get_screen_height();
@@ -141,6 +158,20 @@ public:
 
     static GameStage get_stage();
 
+    template<Convertible<Compound::Object> T>
+    Shared<Table<T>> create_table(const Name& name)
+    {
+        if (!CheckError(get_stage() == GameStage::Initialization, "Database", "Table %s can be created only during initialization", name.c())) return nullptr;
+        
+        Shared<TableBase>& slot = tables_[name];
+        
+        if (!CheckError(!slot, "Database", "Table %s already exists in database", name.c())) return nullptr;
+            
+        slot = MakeSharedInternal(Table<T>, name.to_string());
+
+        return cast<Table<T>>(slot);
+    }
+
     void on_add_resource_directories(Set<String>& local, Set<String>& global) override;
     
 protected:
@@ -148,6 +179,7 @@ protected:
     virtual Shared<Settings> generate_settings_object();
     virtual Shared<SaveGame> generate_save_game_object(const String& profile_name);
     virtual Shared<EventBus> generate_event_bus_object();
+    virtual void on_init();
     virtual void on_loading_stage();
     virtual void on_start();
     virtual void on_tick(float delta_time);
@@ -156,11 +188,15 @@ protected:
     void setup();
     
 private:
-    void init();
+    bool handle_tool();
+    void initialization_stage();
     void loading_stage();
     void start();
     void render_loop();
     void unloading_stage();
+
+    void search_table_files(const Path& path);
+    void load_tables(const Path& path);
 
     bool keyPressed(KeyCode key, bool repeat);
     bool keyReleased(KeyCode key);
@@ -172,7 +208,10 @@ private:
     bool wheelRolled(float y);
     void windowResized(Ogre::RenderWindow* rw);
 
-    static Game* instance_;
+    static Shared<Texture> load_texture_path(const Path& path, const Name& name, const Name& module_name);
+    static bool load_shader_program(const ModuleAssetID& id, bool& instancing);
+
+    inline static Shared<Game> instance_ = nullptr;
 
     List<String> args_;
 
@@ -190,7 +229,8 @@ private:
 
     // Assets
     Map<String, Shared<StaticMesh>> meshes_;
-    Map<String, Shared<Texture>> textures_;
+    Map<ModuleAssetID, Shared<Texture>> textures_;
+    Map<ModuleAssetID, Shared<Material>> materials_;
     Map<String, Shared<Animation>> animations_;
     Map<String, Shared<Audio>> audios_;
     List<Shared<AudioChannel>> audio_channels_;
@@ -202,8 +242,12 @@ private:
     Shared<AudioChannel> general_channel_;
     List<Shared<Mod>> mods_;
     GameStage stage_ = GameStage::Unloaded;
+    Map<Name, Shared<TableBase>> tables_;
+
+    Shared<Texture> white_texture_;
+    Shared<Texture> uv_test_texture_;
     
-    // Game Play
+    // Gameplay
     Shared<CameraComponent> current_camera_;
     Shared<IControllable> current_controllable_;
     Shared<UIInputElement> ui_input_element_;

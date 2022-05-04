@@ -1,12 +1,12 @@
 ﻿#include "StaticMesh.h"
 
 #include <OBJ-Loader/OBJ_Loader.h>
-#include <OGRE/Main/OgreHardwareBufferManager.h>
-#include <OGRE/Main/OgreMesh.h>
-#include <OGRE/Main/OgreMeshManager.h>
-#include <OGRE/Main/OgreResourceGroupManager.h>
-#include <OGRE/Main/OgreSubMesh.h>
-#include <OGRE/Main/OgreVertexIndexData.h>
+#include <OGRE/OgreHardwareBufferManager.h>
+#include <OGRE/OgreMesh.h>
+#include <OGRE/OgreMeshManager.h>
+#include <OGRE/OgreResourceGroupManager.h>
+#include <OGRE/OgreSubMesh.h>
+#include <OGRE/OgreVertexIndexData.h>
 
 #include "Assert.h"
 #include "File.h"

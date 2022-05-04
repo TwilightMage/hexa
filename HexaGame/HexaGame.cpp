@@ -5,26 +5,135 @@
 #include "DefaultWorldGeneratorInfo.h"
 #include "HexaSaveGame.h"
 #include "HexaSettings.h"
+#include "InventoryItem.h"
+#include "ItemLogic.h"
+#include "TileLogic.h"
+#include "WorldGenerator.h"
 #include "Database/Items.h"
 #include "Database/Tiles.h"
-#include "WorldGenerator.h"
 #include "Engine/Audio.h"
 #include "Engine/GeometryEditor.h"
 #include "Engine/Logger.h"
-#include "Engine/Material.h"
 #include "Entities/Characters/Slime.h"
 #include "ui/TileDatabaseViewer.h"
 #include "Worlds/GameWorld.h"
 #include "Worlds/TilePresentationWorld.h"
 
 HexaGame::HexaGame(int argc, char* argv[])
-    : Game("Hexa", argc, argv)
+    : Game("hexa", argc, argv)
 {
 }
 
 void HexaGame::register_world_generator(const Shared<WorldGeneratorInfo>& generator_info)
 {
     cast<HexaGame>(get_instance())->generator_infos_[generator_info->get_name()] = generator_info;
+}
+
+Shared<HexaGame> HexaGame::get_instance()
+{
+    return cast<HexaGame>(Game::get_instance());
+}
+
+void HexaGame::register_item(const ModuleAssetID& key, const Compound::Object& new_item, bool force_replace)
+{
+    if (get_stage() == GameStage::Loading)
+    {
+        item_database_->add_record_compound(key, new_item, force_replace);
+    }
+    else
+    {
+        print_error("HexaGame", "Item registration allowed only during loading stage");
+    }
+}
+
+Compound::Object* HexaGame::modify_item_data(const ModuleAssetID& key)
+{
+    if (get_stage() == GameStage::Loading)
+    {
+        return item_database_->get_record(key);
+    }
+
+    return nullptr;
+}
+
+ConstPtr<Compound::Object> HexaGame::get_item_data(const ModuleAssetID& key) const
+{
+    return item_database_->get_record(key);
+}
+
+const Map<ModuleAssetID, Compound::Object*>& HexaGame::get_all_items() const
+{
+    return item_database_->records();
+}
+
+void HexaGame::register_item_logic(const ModuleAssetID& key, const Shared<ItemLogic>& logic)
+{
+    if (get_stage() == GameStage::Loading)
+    {
+        item_logic_[key] = logic;
+    }
+}
+
+Shared<ItemLogic> HexaGame::get_item_logic(const ModuleAssetID& key) const
+{
+    return item_logic_.find_or_default(key);
+}
+
+void HexaGame::register_tile(const ModuleAssetID& key, const TileInfo& new_item, bool force_replace)
+{
+    if (get_stage() == GameStage::Loading)
+    {
+        tile_table_->add_record(key, new_item, force_replace);
+    }
+    else
+    {
+        print_error("HexaGame", "Item registration allowed only during loading stage");
+    }
+}
+
+TileInfo* HexaGame::modify_tile_data(const ModuleAssetID& key)
+{
+    if (get_stage() == GameStage::Loading)
+    {
+        return tile_table_->get_record(key);
+    }
+
+    return nullptr;
+}
+
+ConstPtr<TileInfo> HexaGame::get_tile_data(const ModuleAssetID& key) const
+{
+    return tile_table_->get_record(key);
+}
+
+void HexaGame::register_tile_logic(const ModuleAssetID& key, const Shared<TileLogic>& logic)
+{
+    if (get_stage() == GameStage::Loading)
+    {
+        tile_logic_[key] = logic;
+    }
+}
+
+Shared<TileLogic> HexaGame::get_tile_logic(const ModuleAssetID& key) const
+{
+    return tile_logic_.find_or_default(key);
+}
+
+Shared<InventoryItem> HexaGame::create_item(const ModuleAssetID& key, uint count)
+{
+    if (auto item_data = get_item_data(key))
+    {
+        // TODO: Update item creation
+        /*if (auto logic = item_logic_.find_or_default(Name(item_data->get_string("logic", "item"))))
+        {
+            auto data = *item_data;
+            data.remove("logic");
+
+            return MakeShared<InventoryItem>(key, data, logic, count);
+        }*/
+    }
+
+    return nullptr;
 }
 
 void HexaGame::init_game_info(GameInfo& outInfo)
@@ -83,9 +192,16 @@ void HexaGame::on_tick(float delta_time)
     }
 }
 
+void HexaGame::on_init()
+{
+    item_database_ = create_table<Compound::Object>("items");
+    tile_table_ = create_table<TileInfo>("tiles");
+    character_table_ = create_table<Compound::Object>("characters");
+}
+
 void HexaGame::on_loading_stage()
 {
-    set_cursor_texture(Texture::load_png(RESOURCES_TEXTURES_UI + "cursor.png"), 0, 0);
+    //set_cursor_texture(Texture::load_png(RESOURCES_TEXTURES_UI + "cursor.png"), 0, 0);
     
     /*tile_cap_shader = Shader::compile("tile cap", {
         RESOURCES_ENGINE_SHADERS + "basic_3d.vert",
@@ -137,22 +253,16 @@ void HexaGame::on_loading_stage()
     ambient_channel_->set_volume(get_settings<HexaSettings>()->audio_ambient);
     effects_channel_ = AudioChannel::create(get_general_channel());
     effects_channel_->set_volume(get_settings<HexaSettings>()->audio_effects);
+
+    tile_logic_[get_asset_id("tile")] = MakeShared<TileLogic>();
     
-    Tiles::init(tile_database);
-
-    Items::init(item_database);
-
-    Characters::init(character_database);
+    item_logic_[get_asset_id("item")] = MakeShared<ItemLogic>();
 }
 
 void HexaGame::on_unloading_stage()
 {
     music_channel_.reset();
     ambient_channel_.reset();
-
-    tile_database->clear();
-    item_database->clear();
-    character_database->clear();
 }
 
 bool HexaGame::open_animation_editor(const String& entity_type, const String& entity_name) const
@@ -185,7 +295,7 @@ void HexaGame::open_game_world()
     const auto default_world_generator_info = MakeShared<DefaultWorldGeneratorInfo>();
     register_world_generator(default_world_generator_info);
 
-    if (const auto save_game = cast<HexaSaveGame>(Game::get_save_game()))
+    if (const auto save_game = cast<HexaSaveGame>(get_save_game()))
     {
         if (const auto world_settings = save_game->get_world_settings())
         {
@@ -196,7 +306,7 @@ void HexaGame::open_game_world()
             {
                 auto generator = generator_infos_[generator_name]->create_generator();
                 generator->allocate_thread_pool();
-                generator->init(generator_settings.get_int("seed", 0));
+                generator->init(generator_settings.get_int32("seed", 0));
                 generator->read_settings(generator_settings.get_object("settings"));
 
                 const auto world = MakeShared<GameWorld>(generator);

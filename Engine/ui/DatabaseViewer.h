@@ -3,15 +3,15 @@
 #include "Engine/ui/UIElement.h"
 
 class VerticalList;
-class DatabaseBase;
+class TableBase;
 class DatabaseViewerRow;
 
 class EXPORT DatabaseViewer : public UIElement
 {
 public:
-    explicit DatabaseViewer(const Shared<DatabaseBase>& database);
+    explicit DatabaseViewer(const Shared<TableBase>& database);
     
-    const Shared<DatabaseBase>& get_database() const;
+    const Shared<TableBase>& get_database() const;
 
 protected:
     void on_parent_size_changed() override;
@@ -22,6 +22,6 @@ protected:
 private:
     void update_geometry();
     
-    Shared<DatabaseBase> database_;
+    Shared<TableBase> database_;
     Shared<VerticalList> records_list_;
 };

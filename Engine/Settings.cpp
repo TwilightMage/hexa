@@ -2,20 +2,23 @@
 
 #include "Math.h"
 
-void Settings::read_settings(const JSON& json)
+void Settings::read_settings(const Compound::Object& compound)
 {
-    const auto graphics = json.get_object("graphics");
-    fps_limit = Math::clamp(graphics.get_int("fps cap", 60), 1, 10000);
+    const auto graphics = compound.get_object("graphics");
+    fps_limit = Math::clamp(graphics.get_int32("fps cap", 60), 1, 10000);
 
-    const auto audio = json.get_object("audio");
+    const auto audio = compound.get_object("audio");
     audio_general = Math::clamp(audio.get_float("general", 1.0f), 0.0f, 1.0f);
 }
 
-void Settings::write_settings(JSON& json)
-{   
-    json
-    .with_object("graphics", JSON()
-        .with_int("fps cap", fps_limit))
-    .with_object("audio", JSON()
-        .with_float("general", audio_general));
+Compound::Object Settings::write_settings()
+{
+    return {
+        {"graphics", Compound::Object{
+            {"fps_cap", (int32)fps_limit}
+        }},
+        {"audio", Compound::Object{
+            {"general", audio_general}
+        }}
+    };
 }

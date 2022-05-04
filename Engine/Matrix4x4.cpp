@@ -198,6 +198,41 @@ Vector3 Matrix4x4::un_project(const Vector2& screen_point, const Vector2& screen
 	return Vector3(pos.x / pos.w, pos.y / pos.w, pos.z / pos.w).normalized();
 }
 
+void Matrix4x4::convert_to(Compound::Array& to) const
+{
+	to = Compound::Array{
+		data[0].x,
+		data[0].y,
+		data[0].z,
+		data[0].w,
+		data[1].x,
+		data[1].y,
+		data[1].z,
+		data[1].w,
+		data[2].x,
+		data[2].y,
+		data[2].z,
+		data[2].w,
+		data[3].x,
+		data[3].y,
+		data[3].z,
+		data[3].w
+	};
+}
+
+void Matrix4x4::convert_from(const Compound::Array& from)
+{
+	for (uint i = 0; i < from.length(); i++)
+	{
+		data[i / 4][i % 4] = from[i].get_float(0);
+	}
+	
+	data[0].x = 1;
+	data[1].y = 1;
+	data[2].z = 1;
+	data[3].w = 1;
+}
+
 Matrix4x4 Matrix4x4::operator*(const Matrix4x4& rhs) const
 {
     const Row SrcA0 = data[0];

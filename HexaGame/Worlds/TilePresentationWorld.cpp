@@ -1,8 +1,8 @@
 ﻿#include "TilePresentationWorld.h"
 
-#include <OGRE/Main/OgreInstancedEntity.h>
-#include <OGRE/Main/OgreMaterialManager.h>
-#include <OGRE/Main/OgreSceneManager.h>
+#include <OGRE/OgreInstancedEntity.h>
+#include <OGRE/OgreMaterialManager.h>
+#include <OGRE/OgreSceneManager.h>
 
 #include "Engine/GeometryEditor.h"
 #include "Engine/Material.h"
@@ -22,30 +22,30 @@ void TilePresentationWorld::on_start()
         uint x = 0;
         uint y = 0;
         uint i = 2;
-        for (auto& entry : HexaGame::tile_database->records())
+        for (auto& entry : HexaGame::get_instance()->get_all_items())
         {
-            if (auto solid_entry = cast<SolidTileInfo>(entry.value))
-            {
-                const Vector3 pos = TileIndex(x, y++, 0).to_vector();
-        
-                List<StaticMesh::Vertex> vertices;
-                List<uint> indices;
-                WorldGenerator::generate_tile_mesh(TileSide::All, solid_entry, vertices, indices, pos.x + pos.y + pos.z);
-
-                Shared<StaticMesh> mesh = StaticMesh::construct(String::format("tile %s", entry.value->key.to_string().c()), { StaticMesh::SubMesh(vertices, indices) }, AutoCollisionMode::Convex, false);
-        
-                const auto entity = spawn_entity<SingleTile>(pos);
-                entity->mesh()->set_mesh(mesh);
-                entity->mesh()->set_material(entry.value->material, 0);
-                entity->mesh()->set_body_type(PhysicalBodyType::Kinematic);
-
-                if (i++ == 3)
-                {
-                    x++;
-                    y--;
-                    i -= 3;
-                }
-            }
+            //if (auto solid_entry = cast<SolidTileInfo>(entry.value))
+            //{
+            //    const Vector3 pos = TileIndex(x, y++, 0).to_vector();
+            //
+            //    List<StaticMesh::Vertex> vertices;
+            //    List<uint> indices;
+            //    WorldGenerator::generate_tile_mesh(TileSide::All, solid_entry, vertices, indices, pos.x + pos.y + pos.z);
+            //
+            //    Shared<StaticMesh> mesh = StaticMesh::construct(String::format("tile %s", entry.value->key.to_string().c()), { StaticMesh::SubMesh(vertices, indices) }, AutoCollisionMode::Convex, false);
+            //
+            //    const auto entity = spawn_entity<SingleTile>(pos);
+            //    entity->mesh()->set_mesh(mesh);
+            //    entity->mesh()->set_material(entry.value->material, 0);
+            //    entity->mesh()->set_body_type(PhysicalBodyType::Kinematic);
+            //
+            //    if (i++ == 3)
+            //    {
+            //        x++;
+            //        y--;
+            //        i -= 3;
+            //    }
+            //}
         }
     }
     
@@ -59,7 +59,7 @@ void TilePresentationWorld::on_start()
     spawn_entity<TileDemoEntity>(Transform(Vector3(300.0f, 0.0f, 0.0f)), std::array<ConstPtr<SolidTileInfo>, 6>{Tiles::dirt, Tiles::dirt, Tiles::grass, Tiles::dirt, Tiles::grass, Tiles::grass});
     
     {
-        auto monke_mat = HexaGame::get_instance()->load_material("Engine/Basic_Instanced");
+        auto monke_mat = Game::get_material(ModuleAssetID("hexa:materials/basic"));
         auto mesh_asset = StaticMesh::load_file_obj("resources/meshes/monkey.obj", AutoCollisionMode::Complex);
         mesh_asset->make_instanced();
         for (uint i = 0; i < 100; i++)
@@ -74,7 +74,7 @@ void TilePresentationWorld::on_start()
         const auto entity = spawn_entity<Entity>(Transform(Vector3(300.0f, 600.0f, 0.0f), Quaternion(Vector3(0, 0, 180))));
         auto mesh = entity->create_component<MeshComponent>();
         mesh->set_mesh(StaticMesh::load_file_obj("resources/meshes/multi_coll_sphere.obj"));
-        mesh->set_material(Game::get_instance()->load_material("Engine/Basic"), 0);
+        mesh->set_material(Game::get_material(ModuleAssetID("hexa:materials/basic")), 0);
         mesh->set_body_type(PhysicalBodyType::Kinematic);
     }
 
@@ -82,7 +82,7 @@ void TilePresentationWorld::on_start()
         const auto entity = spawn_entity<Entity>(Transform(Vector3(300.0f, 900.0f, 0.0f), Quaternion(Vector3(0, 0, 180))));
         auto mesh = entity->create_component<MeshComponent>();
         mesh->set_mesh(StaticMesh::load_file_obj("resources/meshes/multi_coll_convex.obj"));
-        mesh->set_material(Game::get_instance()->load_material("Engine/Basic"), 0);
+        mesh->set_material(Game::get_material(ModuleAssetID("hexa:materials/basic")), 0);
         mesh->set_body_type(PhysicalBodyType::Kinematic);
     }
 
@@ -90,7 +90,7 @@ void TilePresentationWorld::on_start()
         const auto entity = spawn_entity<Entity>(Transform(Vector3(0.0f, 0.0f, -300.0f)));
         auto mesh = entity->create_component<MeshComponent>();
         mesh->set_mesh(StaticMesh::load_file_obj("resources/meshes/floor.obj", AutoCollisionMode::Convex));
-        mesh->set_material(Game::get_instance()->load_material("Engine/Basic"), 0);
+        mesh->set_material(Game::get_material(ModuleAssetID("hexa:materials/basic")), 0);
         mesh->set_body_type(PhysicalBodyType::Kinematic);
     }
 }

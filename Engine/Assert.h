@@ -45,3 +45,14 @@ FORCEINLINE bool CheckImpl(bool condition, const String& category, const String&
     return condition;
 }
 #define Check(condition, category, error_message_format, ...) CheckImpl((condition), category, error_message_format, __VA_ARGS__)
+
+template<typename... T>
+FORCEINLINE bool CheckErrorImpl(bool condition, const String& category, const String& error_message_format, T... params)
+{
+    if (!condition)
+    {
+        print_error(category, error_message_format, std::forward<T>(params)...);
+    }
+    return condition;
+}
+#define CheckError(condition, category, error_message_format, ...) CheckErrorImpl((condition), category, error_message_format, __VA_ARGS__)

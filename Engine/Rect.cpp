@@ -79,3 +79,21 @@ int Rect::bottom() const
 {
     return y + h;
 }
+
+void Rect::convert_to(Compound::Object& to) const
+{
+    to = Compound::Object{
+        { "x", x },
+        { "y", y },
+        { "w", w },
+        { "h", h }
+    };
+}
+
+void Rect::convert_from(const Compound::Object& from)
+{
+    x = from.get_int32("x", 0);
+    y = from.get_int32("y", 0);
+    w = from.get_int32("w", 0);
+    h = from.get_int32("h", 0);
+}

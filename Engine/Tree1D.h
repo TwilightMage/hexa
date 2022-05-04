@@ -33,6 +33,35 @@ public:
         {
             h = Math::max(left ? left->h : 0, right ? right->h : 0) + 1;
         }
+
+        void write_to_stream(std::ostream& stream) const requires Serializable<KeyType> && Serializable<ValueType>
+        {
+            StreamUtils::write(stream, point);
+            StreamUtils::write(stream, (char)(!!left << 1 | !!right));
+            if (left) left->write_to_stream(stream);
+            if (right) right->write_to_stream(stream);
+        }
+
+        void read_from_stream(std::istream& stream) requires Serializable<KeyType> && Serializable<ValueType>
+        {
+            StreamUtils::read(stream, point);
+            const char state = StreamUtils::read<char>(stream);
+            if (state & 2)
+            {
+                if (!left) left = new Node();
+                left->read_from_stream(stream);
+                
+            }
+            else if (left) Tree1D::destroy(left);
+            if (state & 1)
+            {
+                if (!right) right = new Node();
+                right->read_from_stream(stream);
+            }
+            else if (right) Tree1D::destroy(right);
+
+            update_h();
+        }
     };
 
     class Iterator
@@ -450,6 +479,21 @@ public:
     uint size() const
     {
         return size_;
+    }
+
+    void write_to_stream(std::ostream& stream) const requires Serializable<KeyType> && Serializable<ValueType>
+    {
+        StreamUtils::write(root_ != nullptr);
+        if (root_ != nullptr) root_->write_to_stream(stream);
+    }
+
+    void read_from_stream(std::istream& stream) requires Serializable<KeyType> && Serializable<ValueType>
+    {
+        if (StreamUtils::read<bool>(stream))
+        {
+            root_ = new Node();
+            root_->read_from_stream(stream);
+        }
     }
 
 private:
